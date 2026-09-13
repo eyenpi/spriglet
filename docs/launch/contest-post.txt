@@ -1,0 +1,5 @@
+I used GitHub Copilot CLI to add Spriglet’s welcome and controls 🌱 A quiet macOS pet that walks, reacts, and settles. Swift + Blender; code and artwork are MIT.
+
+https://github.com/eyenpi/spriglet-public
+
+#githubcopilotdaycontest #sweepstakes

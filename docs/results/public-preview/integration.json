@@ -1,0 +1,67 @@
+{
+  "kind": "public-preview-local-integration",
+  "recordedAtUTC": "2026-09-13T21:03:48.567902+00:00",
+  "version": "0.1.0",
+  "build": "2",
+  "bundleIdentifier": "dev.spriglet.app",
+  "builds": {
+    "Debug": {
+      "status": "passed",
+      "executableSHA256": "2d1212b872de2e1d3ffa6fe786c56ce3627231dffba5f51cd76355a1ce7f5127"
+    },
+    "Release": {
+      "status": "passed",
+      "executableSHA256": "6e94b67ed94ded838fa4b50382e2c635790b2e7d63ff5a557e76d3215ad4e3e8"
+    }
+  },
+  "sourceSHA256": {
+    "Sources/Spriglet/App/SprigletApp.swift": "2fd05f8123db659795a43321ad958a2dfec71fb9710d29ba644e0a28b7a876ba",
+    "Sources/Spriglet/App/PrototypeView.swift": "2142ccd5df3fa133f0b34bbb117bbf8f079d5e45aebd6b3437633d59cbf8bc5b",
+    "Sources/Spriglet/App/PetRuntime.swift": "4b3a1d705f1ed7f9926a2f90449bfc50558b59702f947fa8065aca9e958981a9",
+    "Configuration/Info.plist": "4197ecbc1e1aebc7bbd4b4f42a710b40bee97ac4c7bb814ce3ee6c3cd637e6af",
+    "Spriglet.xcodeproj/project.pbxproj": "0e268bfb3222f25d35ae1532315d58918415f6a0fb113efdc126944672869a70"
+  },
+  "checks": [
+    {
+      "name": "Swift Testing",
+      "result": "passed",
+      "testFunctions": 61,
+      "suites": 8
+    },
+    {
+      "name": "PNG/contact validator regression tests",
+      "result": "passed",
+      "tests": 11
+    },
+    {
+      "name": "Release validator regression tests",
+      "result": "passed",
+      "tests": 12
+    },
+    {
+      "name": "Release entitlements",
+      "result": "passed",
+      "sandbox": true,
+      "debuggerEntitlementPresent": false
+    },
+    {
+      "name": "App icon compiled into application",
+      "result": "passed",
+      "iconName": "AppIcon"
+    },
+    {
+      "name": "Welcome review UI",
+      "result": "passed",
+      "observations": [
+        "Actual Sprout still and readable first-run instructions were visible.",
+        "Get Started opened everyday controls.",
+        "Diagnostics was collapsed initially.",
+        "Nap changed to Wake Up; waking returned to Resting.",
+        "Pause disabled motion controls and showed an explanation.",
+        "Resuming restored motion controls.",
+        "Welcome completion and pet preference keys remained unchanged in temporary welcome review."
+      ]
+    }
+  ],
+  "scope": "Local source/build integration and CUA UI observations. The public export separately sanitizes file metadata and records fresh verification. No Developer ID signature or notarization exists."
+}

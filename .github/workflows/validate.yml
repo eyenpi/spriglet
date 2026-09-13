@@ -1,0 +1,43 @@
+name: Validate Spriglet
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Show the selected stable toolchain
+        run: |
+          xcodebuild -version
+          xcrun swift --version
+          xcrun --show-sdk-version
+      - name: Swift Testing
+        run: ./scripts/test.sh
+      - name: Validator regression tests
+        run: |
+          python3 -m unittest discover -s tools/CharacterSampleValidation -p 'test_*.py'
+          python3 -m unittest discover -s tools/ReleaseValidation -p 'test_*.py'
+          python3 -m unittest discover -s tools/PublicRelease -p 'test_*.py'
+      - name: Character assets and grounded motion
+        run: |
+          mkdir -p .build
+          python3 tools/CharacterSampleValidation/validate_assets.py Sources/Spriglet/Resources/SproutSample/manifest.json --contacts art/sprout/sample-v01/contact-samples.json --output .build/ci-assets.json
+      - name: Debug and Release builds
+        run: |
+          for configuration in Debug Release; do
+            xcodebuild -project Spriglet.xcodeproj -scheme Spriglet -configuration "$configuration" -derivedDataPath .build/ci-xcode -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO build
+          done

@@ -1,0 +1,29 @@
+{
+  "tool": "GitHub Copilot CLI",
+  "version": "1.0.83",
+  "scope": "First-run welcome, compact everyday controls, temporary review behavior",
+  "files": {
+    "Sources/Spriglet/App/SprigletApp.swift": {
+      "copilotSHA256": "2fd05f8123db659795a43321ad958a2dfec71fb9710d29ba644e0a28b7a876ba",
+      "integratedSHA256": "2fd05f8123db659795a43321ad958a2dfec71fb9710d29ba644e0a28b7a876ba"
+    },
+    "Sources/Spriglet/App/PrototypeView.swift": {
+      "copilotSHA256": "25f6c48d83691f8d5eb408aa3a180dadfaf0bb9ad9a1110a5d8c4419046663db",
+      "integratedSHA256": "2142ccd5df3fa133f0b34bbb117bbf8f079d5e45aebd6b3437633d59cbf8bc5b"
+    },
+    "Sources/Spriglet/App/PetRuntime.swift": {
+      "copilotSHA256": "0c2bec7edb42592b38a6bdb90f2126c307e72ac597199273eda7161f28fe359f",
+      "integratedSHA256": "4b3a1d705f1ed7f9926a2f90449bfc50558b59702f947fa8065aca9e958981a9"
+    }
+  },
+  "integrationAdjustments": [
+    "Controls menu explicitly leaves the welcome view.",
+    "Lifecycle logger follows the public app bundle identity.",
+    "Motion-unavailable copy uses the public product name."
+  ],
+  "date": "2026-09-13",
+  "copilotPatchSHA256": "774d4f7c8cdf32da701fb6f23497656b4acbbebd45b534ad1a3b06f8c0221ca5",
+  "cliRelease": "https://github.com/github/copilot-cli/releases/tag/v1.0.83",
+  "cliArchiveSHA256": "80a5ded6f1db484b4661af676ea914605ecfbcaf49f6b4bed81e6df16cbd56bd",
+  "verificationScope": "The CLI edited the listed source files. The coordinating development session reviewed and integrated the changes, then built and inspected the resulting native app. This is not a claim that Copilot created the pre-existing renderer or artwork."
+}

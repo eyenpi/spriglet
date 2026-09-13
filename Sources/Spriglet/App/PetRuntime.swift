@@ -42,12 +42,13 @@ final class PetRuntime {
     @ObservationIgnored private var isInteracting = false
     @ObservationIgnored private let isCommandLineProbe = CommandLine.arguments.contains("--probe")
         || CommandLine.arguments.contains("--soak")
-        || CommandLine.arguments.contains("--sample-review")
-    @ObservationIgnored private let logger = Logger(subsystem: "dev.spriglet.prototype", category: "lifecycle")
+    @ObservationIgnored private let isTemporaryReview = CommandLine.arguments.contains("--sample-review")
+        || CommandLine.arguments.contains("--welcome-review")
+    @ObservationIgnored private let logger = Logger(subsystem: "dev.spriglet.app", category: "lifecycle")
 
     init(preferencesStore: PetPreferencesStore = PetPreferencesStore()) {
         self.preferencesStore = preferencesStore
-        let preferences = isCommandLineProbe ? PetPreferences() : preferencesStore.load()
+        let preferences = isCommandLineProbe || isTemporaryReview ? PetPreferences() : preferencesStore.load()
         isHidden = preferences.isHidden
         isPaused = preferences.isPaused
         clickThrough = preferences.clickThrough
@@ -139,6 +140,8 @@ final class PetRuntime {
             runSoak(terminateWhenFinished: true)
         } else if isCommandLineProbe {
             runProbe(terminateWhenFinished: true)
+        } else if CommandLine.arguments.contains("--welcome-review") {
+            autonomousBehavior = false
         } else {
             reconcileBehaviorSchedule()
         }
@@ -160,7 +163,7 @@ final class PetRuntime {
 
     func preview(_ action: PetAction) {
         guard permitsMotion else {
-            message = "Show and resume the pet to interact. Reduce Motion keeps this prototype still."
+            message = "Show and resume the pet to interact. Reduce Motion keeps Spriglet still."
             return
         }
         cancelBehaviorSchedule()
@@ -364,7 +367,7 @@ final class PetRuntime {
     }
 
     private func savePreferences() {
-        guard isRunning, !sampling, !isCommandLineProbe else { return }
+        guard isRunning, !sampling, !isCommandLineProbe, !isTemporaryReview else { return }
         preferencesStore.save(snapshotPreferencesForProbe())
     }
 

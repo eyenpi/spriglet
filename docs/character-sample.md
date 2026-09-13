@@ -4,7 +4,7 @@ The sample carries the selected A · Sprout design into the app: warm olive velv
 
 ## Play and inspect
 
-Build with `./scripts/run.sh`, open **Prototype Controls…** from the leaf menu, and choose **Play Character Sample**. **Idle**, **Pet**, **Walk Left**, and **Walk Right** let you inspect the same assets separately. The full sample chooses a direction with room for the complete path. Explicit walking directions report insufficient room before starting.
+Build with `./scripts/run.sh`, open **Spriglet Controls…** from the leaf menu, and choose **Play Character Sample**. **Idle**, **Pet**, **Walk Left**, and **Walk Right** let you inspect the same assets separately. The full sample chooses a direction with room for the complete path. Explicit walking directions report insufficient room before starting.
 
 For a review without modifying saved preferences, quit an existing Spriglet instance and launch the built executable with `--sample-review`. That mode opens controls, starts the sample, and disables automatic behavior. The [native validation fixture](../tools/CharacterSampleValidation/README.md) supplies known light and dark backgrounds with a real 224-point pet window.
 
@@ -66,6 +66,8 @@ ImageIO decodes frames with [`kCGImageSourceShouldCacheImmediately`](https://dev
 The app remains SwiftUI/Observation for controls and AppKit for the transparent nonactivating panel. Development uses Xcode 26.6, Swift 6.3.3, and macOS SDK 26.5 with Swift 6 semantics, complete concurrency checking, and warnings treated as errors. New APIs were checked against current Apple/Swift documentation and the installed SDK. No deprecated Core Video display-link API or legacy Blender particle-hair system was introduced.
 
 ## Validation evidence
+
+These retained runs belong to the character-sample milestone. The subsequent public preview adds welcome/controls, an app icon, release tooling, and publication cleanup; its current checks are described in [public-preview.md](public-preview.md). Historical binary/source hashes below are not claims about that later UI build.
 
 The retained results in [docs/results/character-sample](results/character-sample) identify the actual source, exported assets, checks, and observations. The [validation README](../tools/CharacterSampleValidation/README.md) explains how to reproduce the native fixture and asset/contact checks. The [review exporter](../tools/CharacterSampleReview/README.md) reproduces both background-comparison movies.
 

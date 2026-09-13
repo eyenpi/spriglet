@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "verifierSHA256": "bfd4f958afafc483dae7ff3fd402da4dd0718a081b4ab855fec66ed47468bb05",
+  "blender": "5.2.1 LTS",
+  "xcode": "Xcode 26.6\nBuild version 17F113",
+  "originalModelSHA256": "0f8db1da1428c0fbc6e0f89604ec5fda0f5dcb4d3175d10820192b1845dd1002",
+  "provenanceVerified": true,
+  "catalogCompiled": true,
+  "compilerWarningsOrErrors": [],
+  "appIconName": "AppIcon",
+  "images": [
+    {
+      "file": "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_16x16@1x.png",
+      "pixels": 16,
+      "colorSpace": "sRGB",
+      "minimumAlpha": 1.0,
+      "maximumAlpha": 1.0,
+      "sha256": "ae0a72e782b8508bdaddfc75848bebd0a7de2a8bc354a572e22fe210f6311abf"
+    },
+    {
+      "file": "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_16x16@2x.png",
+      "pixels": 32,
+      "colorSpace": "sRGB",
+      "minimumAlpha": 1.0,
+      "maximumAlpha": 1.0,
+      "sha256": "1615bfdaad43e43b81e9fc21918abff8386a62094b5fb264209265f19aa0d7aa"
+    },
+    {
+      "file": "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_32x32@1x.png",
+      "pixels": 32,
+      "colorSpace": "sRGB",
+      "minimumAlpha": 1.0,
+      "maximumAlpha": 1.0,
+      "sha256": "1615bfdaad43e43b81e9fc21918abff8386a62094b5fb264209265f19aa0d7aa"
+    },
+    {
+      "file": "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_32x32@2x.png",
+      "pixels": 64,
+      "colorSpace": "sRGB",
+      "minimumAlpha": 1.0,
+      "maximumAlpha": 1.0,
+      "sha256": "e95143578fc340bd36a5bc3e2afc6e3c88491d8bad76901675a2298478c066ef"
+    },
+    {
+      "file": "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_128x128@1x.png",
+      "pixels": 128,
+      "colorSpace": "sRGB",
+      "minimumAlpha": 1.0,
+      "maximumAlpha": 1.0,
+      "sha256": "22765d07b16b465eb31bf773730d7ac9346e20cad2ea3274a457673094e44743"
+    },
+    {
+      "file": "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png",
+      "pixels": 256,
+      "colorSpace": "sRGB",
+      "minimumAlpha": 1.0,
+      "maximumAlpha": 1.0,
+      "sha256": "8261ef1879fe1627f1ff515af48378f6d86e3db3b6067dc01a1b37e3cdf56e84"
+    },
+    {
+      "file": "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_256x256@1x.png",
+      "pixels": 256,
+      "colorSpace": "sRGB",
+      "minimumAlpha": 1.0,
+      "maximumAlpha": 1.0,
+      "sha256": "8261ef1879fe1627f1ff515af48378f6d86e3db3b6067dc01a1b37e3cdf56e84"
+    },
+    {
+      "file": "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_256x256@2x.png",
+      "pixels": 512,
+      "colorSpace": "sRGB",
+      "minimumAlpha": 1.0,
+      "maximumAlpha": 1.0,
+      "sha256": "f46dc8ff0734a50a2ffdbbf6f7664468639e4059e168771c8c08a20f10253112"
+    },
+    {
+      "file": "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_512x512@1x.png",
+      "pixels": 512,
+      "colorSpace": "sRGB",
+      "minimumAlpha": 1.0,
+      "maximumAlpha": 1.0,
+      "sha256": "f46dc8ff0734a50a2ffdbbf6f7664468639e4059e168771c8c08a20f10253112"
+    },
+    {
+      "file": "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_512x512@2x.png",
+      "pixels": 1024,
+      "colorSpace": "sRGB",
+      "minimumAlpha": 1.0,
+      "maximumAlpha": 1.0,
+      "sha256": "91b81983e5f6fc6a6717e30ffd497f910b44b5d0b457e23255e4b124c1b323e5"
+    }
+  ],
+  "rendered": false,
+  "savedBlend": false,
+  "scope": "All ten catalog slot dimensions, decoded opaque alpha, source hashes, and a clean current macOS actool compile. System masking and appearance transformations need native app review."
+}

@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-09-13T21:07:23.255955+00:00",
+  "result": "passed-with-manual-follow-up",
+  "appVersion": "0.1.0",
+  "appBuild": "2",
+  "sourceApp": ".build/xcode/Build/Products/Release/Spriglet.app",
+  "sourceInfoSHA256": "cfbe5a3a8e527e2237c424c67d1fa51ee280393eff5710e164ca7443e6f612a2",
+  "sourceExecutableSHA256": "6e94b67ed94ded838fa4b50382e2c635790b2e7d63ff5a557e76d3215ad4e3e8",
+  "fixture": ".build/launch-review-98a6c5d4329f4e4bb94e6ea362cb6907/SprigletLaunchReview.app",
+  "fixtureExecutableSHA256": "260e9453116f280df6383f7c984ef77e60e61b9391e2b25758a395e94d439440",
+  "testBundleIdentifier": "dev.spriglet.launch-review.abb80d329dc548f9b423f2f732a82a11",
+  "isolation": {
+    "modifiedInfoPlistKeys": [
+      "CFBundleIdentifier"
+    ],
+    "signature": "ad-hoc with existing sandbox-only entitlements",
+    "normalPreferenceDomainsUnchanged": true,
+    "normalPreferencesBefore": {
+      "normalSandboxPreferences": {
+        "exists": true,
+        "sha256": "7542b0f3ada05e255b22d48311579bb25200c87ca4f2563c59722f2b8203e826"
+      },
+      "normalUserPreferences": {
+        "exists": false,
+        "sha256": null
+      }
+    },
+    "normalPreferencesAfter": {
+      "normalSandboxPreferences": {
+        "exists": true,
+        "sha256": "7542b0f3ada05e255b22d48311579bb25200c87ca4f2563c59722f2b8203e826"
+      },
+      "normalUserPreferences": {
+        "exists": false,
+        "sha256": null
+      }
+    },
+    "fixtureTerminated": true
+  },
+  "method": "CUA-only native UI interaction; read-only plist/process checks for persistence and lifecycle. No app code or normal app preferences were changed.",
+  "checks": [
+    {
+      "name": "normal-first-launch-welcome",
+      "status": "pass",
+      "evidence": [
+        "Welcome to Spriglet",
+        "Get Started",
+        "Sprout image"
+      ],
+      "launchArguments": []
+    },
+    {
+      "name": "get-started-opens-controls",
+      "status": "pass",
+      "evidence": [
+        "Spriglet Controls",
+        "Play Character Sample",
+        "Everyday controls",
+        "Diagnostics collapsed"
+      ]
+    },
+    {
+      "name": "completion-persists-in-isolated-domain",
+      "status": "pass",
+      "preferenceKey": "dev.spriglet.welcomeCompleted",
+      "value": true
+    },
+    {
+      "name": "normal-relaunch-suppresses-welcome-and-controls",
+      "status": "pass",
+      "evidence": "A new process launched normally after Command-Q. Its only exposed window was spriglet.pet; no prototype controls window or welcome/Get Started content was present.",
+      "launchArguments": []
+    },
+    {
+      "name": "pet-remains-available-after-relaunch",
+      "status": "pass",
+      "evidence": "The spriglet.pet window exposed the accessible Spriglet button, and the CUA screenshot showed the rendered companion at 224 by 224 points."
+    },
+    {
+      "name": "standard-application-menu-remains-available",
+      "status": "pass",
+      "evidence": "The Spriglet application menu opened and exposed About Spriglet and Quit Spriglet."
+    },
+    {
+      "name": "leaf-menu-show-welcome-is-transient",
+      "status": "not-verified",
+      "evidence": "CUA exposed the standard application menu but not the MenuBarExtra leaf menu. A bounded standard keyboard-navigation attempt did not reveal it; Show Welcome was not invoked. This is an automation limitation, not an observed application failure."
+    },
+    {
+      "name": "completion-survives-final-quit",
+      "status": "pass",
+      "preferenceKey": "dev.spriglet.welcomeCompleted",
+      "value": true
+    },
+    {
+      "name": "normal-preferences-preserved",
+      "status": "pass",
+      "evidence": "Normal sandbox preference-file hash and ordinary preference-domain absence match the pre-test baseline."
+    },
+    {
+      "name": "disposable-process-terminated",
+      "status": "pass"
+    }
+  ],
+  "limitations": [
+    "Show Welcome through the leaf menu needs a manual end-to-end check; source inspection alone was not treated as UI evidence.",
+    "CUA getAXState transparently relaunches a quit app. This was used intentionally for the normal relaunch check; the last quit used inventory inspection instead so the fixture remained stopped.",
+    "This checks the current local ad hoc Release copy, not a notarized download or a fresh Gatekeeper-enabled Mac."
+  ]
+}

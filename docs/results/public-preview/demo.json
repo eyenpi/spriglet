@@ -1,0 +1,133 @@
+{
+  "kind": "public-animation-asset-demo",
+  "sourceMoviesUnchanged": true,
+  "sources": [
+    {
+      "movie": "sprout-walkRight-light-dark.mp4",
+      "sha256": "7d512fbbb0372d02bba822eb18df6917ea5eddf5cd94c8c20b472bfe7745d80a"
+    },
+    {
+      "movie": "sprout-walkLeft-light-dark.mp4",
+      "sha256": "f880675f5d10303cf463fa69111eceaad560044fb162d4e63663b200c257f6ad"
+    }
+  ],
+  "assetManifestSHA256": "93f2099530e66a91bdbb7b32a9ec88587c731448853bd09ac2382f8f9e58fd79",
+  "exporterSHA256": "5aa894a0686043ef215c73d5b629d1c77c175a6c9f33220f80361fb414c3fe7d",
+  "mp4": {
+    "file": "spriglet-demo.mp4",
+    "sha256": "0ef204be6845bb8ba28f3fa2412b555217098ef4575b93e268fb59bca4516cc2",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1600,
+        "height": 1000,
+        "avg_frame_rate": "30/1",
+        "duration": "14.866667",
+        "nb_read_frames": "446",
+        "tags": {
+          "language": "und",
+          "handler_name": "VideoHandler",
+          "encoder": "Lavc63.1.101 libx264"
+        }
+      }
+    ],
+    "format": {
+      "duration": "14.866667",
+      "size": "1086409",
+      "tags": {
+        "major_brand": "isom",
+        "minor_version": "512",
+        "compatible_brands": "isomiso2avc1mp41",
+        "title": "Spriglet \u2014 public source preview",
+        "encoder": "Lavf63.1.101",
+        "comment": "Animation asset demo; not a desktop recording"
+      }
+    }
+  },
+  "gif": {
+    "file": "spriglet-demo.gif",
+    "sha256": "0966d2a4b11f2e3d23a245aa67f287dff83467ea6b705ae413d6f6cdeaa9ba6c",
+    "requestedFramesPerSecond": 15,
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "gif",
+        "codec_type": "video",
+        "width": 800,
+        "height": 500,
+        "avg_frame_rate": "50/3",
+        "duration": "14.870000",
+        "nb_read_frames": "223"
+      }
+    ],
+    "format": {
+      "duration": "14.870000",
+      "size": "3254898"
+    }
+  },
+  "segments": [
+    {
+      "phase": "intro",
+      "frames": 45,
+      "caption": "Meet Sprout."
+    },
+    {
+      "phase": "idle",
+      "frames": 37,
+      "caption": "Idle \u00b7 A moment of calm"
+    },
+    {
+      "phase": "walkRight",
+      "frames": 73,
+      "caption": "Walk right \u00b7 Small, grounded steps"
+    },
+    {
+      "phase": "pet",
+      "frames": 34,
+      "caption": "Petting reaction \u00b7 A happy little nuzzle"
+    },
+    {
+      "phase": "settle",
+      "frames": 25,
+      "caption": "Settle \u00b7 Back to a quiet rest"
+    },
+    {
+      "phase": "middle",
+      "frames": 18,
+      "caption": "A little quiet company, in light or dark."
+    },
+    {
+      "phase": "idle",
+      "frames": 37,
+      "caption": "Idle \u00b7 A moment of calm"
+    },
+    {
+      "phase": "walkLeft",
+      "frames": 73,
+      "caption": "Walk left \u00b7 The same soft light"
+    },
+    {
+      "phase": "pet",
+      "frames": 34,
+      "caption": "Petting reaction \u00b7 A happy little nuzzle"
+    },
+    {
+      "phase": "settle",
+      "frames": 25,
+      "caption": "Settle \u00b7 Back to a quiet rest"
+    },
+    {
+      "phase": "outro",
+      "frames": 45,
+      "caption": "Make it yours \u00b7 MIT code + artwork"
+    }
+  ],
+  "localPathMetadataFound": false,
+  "fontsRedistributed": false,
+  "scope": "Exact existing review movie motion with neutral holds and rasterized titles; no new character render. MP4 is 30fps; GIF is a reduced-rate 15fps preview, subject to GIF timing quantization. Neither is a desktop recording.",
+  "ffmpeg": "ffmpeg version 9.0.1 Copyright (c) 2000-2026 the FFmpeg developers"
+}
