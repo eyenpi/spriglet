@@ -1,0 +1,24 @@
+{
+  "recordedAt": "2026-09-13T10:39:04.662721+00:00",
+  "build": "Debug builds during this milestone; exact-source final Release assertions are stored separately in probe.json.",
+  "method": "Native UI automation of the app, plus direct executable launch with --controls when the saved pet was hidden. App-targeted automation may activate the target, so these are not physical cross-app focus checks.",
+  "observations": [
+    "A normal autonomous blink ran after launch: Quiet moments changed from 0 to 1; an ordinary next deadline was scheduled.",
+    "Quiet Behavior off, Pause on, Hide Pet on produced no scheduled deadline.",
+    "After quitting and relaunching, controls showed Quiet Behavior off, Pause on, Hide Pet on, click-through off, all-Spaces on, and no deadline.",
+    "Starting a diagnostic temporarily showed/unpaused the pet and enabled click-through. Cancel Check restored all original choices and no deadline.",
+    "Starting another diagnostic then quitting ended the process (exit 0, no remaining Spriglet process).",
+    "A subsequent new process still loaded the original hidden/paused/quiet-off choices; transient diagnostic values had not overwritten them.",
+    "Original default choices were restored after testing: shown, unpaused, quiet behavior on, click-through off, all-Spaces on.",
+    "Nap transitioned Active\u2192Napping and scheduled one resting deadline; Wake Up transitioned Active\u2192Resting and scheduled the next deadline."
+  ],
+  "toolLimitation": "With every pet window hidden and the controls scene suppressed, the automation initial-window lookup timed out although the process was running. The optional --controls launch flag presents controls without changing saved pet settings.",
+  "memoryObservation": {
+    "scope": "Separate live Debug process with controls open, not the Release probe",
+    "tool": "vmmap -summary",
+    "currentMiB": 39.5,
+    "peakMiB": 134.0,
+    "meaning": "This process peak had fallen at the snapshot; this does not identify the Release spike cause or establish a memory budget."
+  },
+  "remaining": "Physical cross-app click/focus, transparent host compositing over known backgrounds, multi-display and actual OS sleep/Reduce Motion transitions, GPU/energy and long soak tests remain open."
+}

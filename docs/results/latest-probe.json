@@ -1,0 +1,133 @@
+{
+  "checks" : [
+    {
+      "detail" : "The initial pose must complete a scene update before zero idle callbacks can pass. This is not a GPU-output assertion.",
+      "name" : "initial-scene-updated",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "Scene\/render callbacks and movement clock during static pose; not GPU submissions.",
+      "name" : "static-scene-stops",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "Requires visible app and system motion policy permitting animation.",
+      "name" : "reaction-runs-and-finishes",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "A finite reaction must return to an idle scene without an update loop.",
+      "name" : "finished-scene-stops",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "A finite desktop movement changes position and releases its display link.",
+      "name" : "movement-runs-and-finishes",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "Pause must interrupt a rendering reaction and window movement, stop their callbacks, and reject new animation.",
+      "name" : "pause-stops-work",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "Clearing pause while hidden must not restart the renderer.",
+      "name" : "hidden-stops-work",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "Checks NSWindow configuration only; an external mouse click is still required.",
+      "name" : "whole-window-click-through-configured",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "Checks window focus eligibility; manual typing in another app is still required.",
+      "name" : "pet-cannot-become-key",
+      "outcome" : "passed"
+    }
+  ],
+  "limitations" : [
+    "Short smoke measurements, not energy\/battery benchmarks or an eight-hour soak.",
+    "Scene updates are not actual GPU submissions; use Instruments for renderer and WindowServer costs.",
+    "Motion eligibility and app activity are sampled at phase boundaries; temporary changes between samples may be missed.",
+    "Physical mouse routing, focus during another app's typing, full-screen, Spaces, Stage Manager and multiple displays require separate validation.",
+    "Procedural character does not predict the footprint of production sprite atlases."
+  ],
+  "measurements" : [
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "cpuPercentOfOneCore" : 0.026381041711872267,
+      "footprintMiB" : 20.766448974609375,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 3.0059464999940246,
+      "startedAt" : "2026-09-13T10:06:13Z",
+      "state" : "static-visible"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "cpuPercentOfOneCore" : 3.0324984425510486,
+      "footprintMiB" : 21.969619750976562,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 96,
+      "sceneUpdateDelta" : 95,
+      "seconds" : 3.113241499988362,
+      "startedAt" : "2026-09-13T10:06:16Z",
+      "state" : "finite-reaction"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "cpuPercentOfOneCore" : 0.041367415397345564,
+      "footprintMiB" : 21.641494750976562,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 3.111144333379343,
+      "startedAt" : "2026-09-13T10:06:19Z",
+      "state" : "settled-visible"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "cpuPercentOfOneCore" : 6.950304636509226,
+      "footprintMiB" : 21.735244750976562,
+      "movementTickDelta" : 360,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 3.718167958315462,
+      "startedAt" : "2026-09-13T10:06:22Z",
+      "state" : "finite-window-movement"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "cpuPercentOfOneCore" : 0.07858759843732023,
+      "footprintMiB" : 21.938369750976562,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 3.1429895417531952,
+      "startedAt" : "2026-09-13T10:06:26Z",
+      "state" : "paused"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "cpuPercentOfOneCore" : 0.09154429316678284,
+      "footprintMiB" : 21.969619750976562,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 3.1492951666004956,
+      "startedAt" : "2026-09-13T10:06:29Z",
+      "state" : "hidden"
+    }
+  ],
+  "os" : "Version 26.6.2 (Build 25G83)",
+  "outcome" : "passed",
+  "recordedAt" : "2026-09-13T10:06:33Z"
+}

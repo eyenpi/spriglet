@@ -1,0 +1,16 @@
+{
+  "outcome": "discarded",
+  "reason": "xctrace --launch resolved the older Debug app although the command named the Release executable. Probe JSON had the old eight-check schema. This trace is not evidence for current source or Release performance.",
+  "intendedTarget": ".build/xcode/Build/Products/Release/Spriglet.app/Contents/MacOS/Spriglet",
+  "observedTarget": [
+    {
+      "name": "Spriglet",
+      "pid": "86462",
+      "path": "/Users/ali/W/personal/spriglet/.build/xcode/Build/Products/Debug/Spriglet.app"
+    }
+  ],
+  "durationSeconds": "22.717978",
+  "startDate": "2026-09-13T12:00:37.700+02:00",
+  "nextMethod": "Launch the required Release executable directly, record its PID, and attach Instruments to that exact PID. Verify target path and matching probe schema before attributing measurements.",
+  "artifactCleanup": "The generated roughly 4.2 GiB binary trace was deleted. Small local capture logs remain under .build/profiles; none establish a GPU budget."
+}
