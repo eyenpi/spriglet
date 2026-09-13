@@ -1,0 +1,18 @@
+{
+  "architectures": [
+    "arm64"
+  ],
+  "build": "2",
+  "bundleIdentifier": "dev.spriglet.app",
+  "minimumMacOS": "26.0",
+  "notarizationTicketValidated": false,
+  "resources": {
+    "manifestSHA256": "93f2099530e66a91bdbb7b32a9ec88587c731448853bd09ac2382f8f9e58fd79",
+    "pngCount": 244,
+    "privacyManifestSHA256": "7902c140e39ab84b36edb680a6da4dc677136b1ace6d65c99fce3b85af779fdb"
+  },
+  "schemaVersion": 1,
+  "signature": "none",
+  "systemPolicyPassed": false,
+  "version": "0.1.0"
+}

@@ -1,0 +1,373 @@
+{
+  "checks": [
+    {
+      "detail": "The initial pose must complete a layer content assignment before zero idle callbacks can pass. This is not a GPU-output assertion.",
+      "name": "initial-frame-submitted",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Layer assignments/display-link callbacks and movement clock during static pose; not GPU submissions.",
+      "name": "static-frame-clock-stops",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Requires visible app and system motion policy permitting animation.",
+      "name": "reaction-runs-and-finishes",
+      "outcome": "passed"
+    },
+    {
+      "detail": "A finite reaction must return to a static pose without a display link.",
+      "name": "finished-frame-clock-stops",
+      "outcome": "passed"
+    },
+    {
+      "detail": "A finite authored walk changes position and releases its shared pose/movement clock.",
+      "name": "movement-runs-and-finishes",
+      "outcome": "passed"
+    },
+    {
+      "detail": "The app's Play Character Sample command completes idle, walk, pet, and settle with window travel and no remaining frame clock.",
+      "name": "complete-sample-runs-and-settles",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Pause must interrupt an authored walk, stop both pose and movement callbacks, and reject new animation.",
+      "name": "pause-stops-work",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Clearing pause while hidden must not restart the renderer.",
+      "name": "hidden-stops-work",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Checks NSWindow configuration only; an external mouse click is still required.",
+      "name": "whole-window-click-through-configured",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Checks window focus eligibility; manual typing in another app is still required.",
+      "name": "pet-cannot-become-key",
+      "outcome": "passed"
+    },
+    {
+      "detail": "The legacy request maps to a supported sample sequence and settles awake; these are not three additional animation assets.",
+      "name": "blink-runs-and-settles",
+      "outcome": "passed"
+    },
+    {
+      "detail": "The legacy request maps to a supported sample sequence and settles awake; these are not three additional animation assets.",
+      "name": "lookAround-runs-and-settles",
+      "outcome": "passed"
+    },
+    {
+      "detail": "The legacy request maps to a supported sample sequence and settles awake; these are not three additional animation assets.",
+      "name": "stretch-runs-and-settles",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Nap selects one static sleep image and synchronizes runtime state. This sample does not include a separate animated sleep transition.",
+      "name": "nap-settles-asleep",
+      "outcome": "passed"
+    },
+    {
+      "detail": "A nap is a static pose; ordinary autonomous deadlines remain disabled during this probe.",
+      "name": "nap-stops-rendering",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Interaction leaves the static nap pose, plays pet and settle, and finishes awake.",
+      "name": "interaction-wakes-pet",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Repeated reactions coalesce after the current look clip instead of snapping its pose.",
+      "name": "interaction-waits-for-clip-boundary",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Replacing a pending deadline yields exactly one finite automatic action; no polling loop is installed.",
+      "name": "replacement-deadline-fires-once",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Pause cancels the deadline before it can start an action.",
+      "name": "pause-cancels-pending-behavior",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Hiding the pet cancels its resting deadline.",
+      "name": "hide-cancels-pending-behavior",
+      "outcome": "passed"
+    },
+    {
+      "detail": "Turning quiet behavior off cancels its pending deadline.",
+      "name": "preference-cancels-pending-behavior",
+      "outcome": "passed"
+    },
+    {
+      "detail": "A longer final resting interval records footprint after the transitions and confirms no continuing work.",
+      "name": "completed-checks-stay-settled",
+      "outcome": "passed"
+    }
+  ],
+  "limitations": [
+    "Short smoke measurements, not energy/battery benchmarks or an eight-hour soak.",
+    "Layer content assignments and display-link callbacks do not prove compositor presentation or GPU submissions; use Instruments for those costs.",
+    "Motion eligibility and app activity are sampled at phase boundaries; temporary changes between samples may be missed.",
+    "Physical mouse routing, focus during another app's typing, full-screen, Spaces, Stage Manager and multiple displays require separate validation.",
+    "Measurements cover the bundled Sprout sample and bounded image decoder, not a future full animation library."
+  ],
+  "measurements": [
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 0.021506323615992144,
+      "displayLinkCallbackDelta": 0,
+      "footprintMiB": 16.813369750976562,
+      "movementFrameDelta": 0,
+      "seconds": 3.138611749978736,
+      "startedAt": "2026-09-13T21:19:43Z",
+      "state": "static-visible",
+      "submittedFrameDelta": 0
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 21.827961239282576,
+      "displayLinkCallbackDelta": 60,
+      "footprintMiB": 18.704017639160156,
+      "movementFrameDelta": 0,
+      "seconds": 3.072778958361596,
+      "startedAt": "2026-09-13T21:19:47Z",
+      "state": "finite-reaction",
+      "submittedFrameDelta": 56
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 0.030131265334294777,
+      "displayLinkCallbackDelta": 0,
+      "footprintMiB": 18.704017639160156,
+      "movementFrameDelta": 0,
+      "seconds": 3.1196831250563264,
+      "startedAt": "2026-09-13T21:19:50Z",
+      "state": "settled-visible",
+      "submittedFrameDelta": 0
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 21.082721600877864,
+      "displayLinkCallbackDelta": 74,
+      "footprintMiB": 18.750892639160156,
+      "movementFrameDelta": 68,
+      "seconds": 4.210144291631877,
+      "startedAt": "2026-09-13T21:19:53Z",
+      "state": "finite-window-movement",
+      "submittedFrameDelta": 68
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 31.72550632655362,
+      "displayLinkCallbackDelta": 169,
+      "footprintMiB": 18.750892639160156,
+      "movementFrameDelta": 69,
+      "seconds": 6.648653541691601,
+      "startedAt": "2026-09-13T21:19:57Z",
+      "state": "complete-character-sample",
+      "submittedFrameDelta": 163
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 0.10425061101821645,
+      "displayLinkCallbackDelta": 0,
+      "footprintMiB": 18.016517639160156,
+      "movementFrameDelta": 0,
+      "seconds": 3.078159416676499,
+      "startedAt": "2026-09-13T21:20:04Z",
+      "state": "paused",
+      "submittedFrameDelta": 0
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 0.13102498054328965,
+      "displayLinkCallbackDelta": 0,
+      "footprintMiB": 18.094642639160156,
+      "movementFrameDelta": 0,
+      "seconds": 3.181836000061594,
+      "startedAt": "2026-09-13T21:20:07Z",
+      "state": "hidden",
+      "submittedFrameDelta": 0
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 15.697509846880422,
+      "displayLinkCallbackDelta": 39,
+      "footprintMiB": 18.922767639160156,
+      "movementFrameDelta": 0,
+      "seconds": 3.084106999915093,
+      "startedAt": "2026-09-13T21:20:11Z",
+      "state": "blink",
+      "submittedFrameDelta": 35
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 17.085417362443174,
+      "displayLinkCallbackDelta": 39,
+      "footprintMiB": 18.875892639160156,
+      "movementFrameDelta": 0,
+      "seconds": 3.012235458358191,
+      "startedAt": "2026-09-13T21:20:14Z",
+      "state": "lookAround",
+      "submittedFrameDelta": 35
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 17.372160378375483,
+      "displayLinkCallbackDelta": 39,
+      "footprintMiB": 18.875892639160156,
+      "movementFrameDelta": 0,
+      "seconds": 3.1311937499558553,
+      "startedAt": "2026-09-13T21:20:17Z",
+      "state": "stretch",
+      "submittedFrameDelta": 35
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 0.11407985682425177,
+      "displayLinkCallbackDelta": 0,
+      "footprintMiB": 18.875892639160156,
+      "movementFrameDelta": 0,
+      "seconds": 1.0808218333404511,
+      "startedAt": "2026-09-13T21:20:20Z",
+      "state": "fall-asleep",
+      "submittedFrameDelta": 0
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 0.048451353097516955,
+      "displayLinkCallbackDelta": 0,
+      "footprintMiB": 18.875892639160156,
+      "movementFrameDelta": 0,
+      "seconds": 1.095944624976255,
+      "startedAt": "2026-09-13T21:20:21Z",
+      "state": "static-nap",
+      "submittedFrameDelta": 0
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 27.193780126005603,
+      "displayLinkCallbackDelta": 60,
+      "footprintMiB": 19.641517639160156,
+      "movementFrameDelta": 0,
+      "seconds": 3.028968375059776,
+      "startedAt": "2026-09-13T21:20:22Z",
+      "state": "wake-and-react",
+      "submittedFrameDelta": 55
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 29.103833691743425,
+      "displayLinkCallbackDelta": 99,
+      "footprintMiB": 19.641517639160156,
+      "movementFrameDelta": 0,
+      "seconds": 4.107740625040606,
+      "startedAt": "2026-09-13T21:20:26Z",
+      "state": "queued-reaction",
+      "submittedFrameDelta": 89
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 1,
+      "cpuPercentOfOneCore": 23.642225127935948,
+      "displayLinkCallbackDelta": 39,
+      "footprintMiB": 19.641517639160156,
+      "movementFrameDelta": 0,
+      "seconds": 2.3256440416444093,
+      "startedAt": "2026-09-13T21:20:30Z",
+      "state": "scheduled-blink",
+      "submittedFrameDelta": 35
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 0.08017016061857045,
+      "displayLinkCallbackDelta": 0,
+      "footprintMiB": 19.641517639160156,
+      "movementFrameDelta": 0,
+      "seconds": 0.7671183333732188,
+      "startedAt": "2026-09-13T21:20:32Z",
+      "state": "cancelled-by-pause",
+      "submittedFrameDelta": 0
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 0.4725164842399161,
+      "displayLinkCallbackDelta": 0,
+      "footprintMiB": 18.938392639160156,
+      "movementFrameDelta": 0,
+      "seconds": 0.7648410416441038,
+      "startedAt": "2026-09-13T21:20:33Z",
+      "state": "cancelled-by-hide",
+      "submittedFrameDelta": 0
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 0.1398346284250069,
+      "displayLinkCallbackDelta": 0,
+      "footprintMiB": 18.954017639160156,
+      "movementFrameDelta": 0,
+      "seconds": 0.7880737499799579,
+      "startedAt": "2026-09-13T21:20:34Z",
+      "state": "cancelled-by-preference",
+      "submittedFrameDelta": 0
+    },
+    {
+      "appActiveAtEnd": false,
+      "appActiveAtStart": false,
+      "automaticActionDelta": 0,
+      "cpuPercentOfOneCore": 0.01961911821415398,
+      "displayLinkCallbackDelta": 0,
+      "footprintMiB": 18.813392639160156,
+      "movementFrameDelta": 0,
+      "seconds": 10.622291874955408,
+      "startedAt": "2026-09-13T21:20:35Z",
+      "state": "final-settled",
+      "submittedFrameDelta": 0
+    }
+  ],
+  "os": "Version 26.6.2 (Build 25G83)",
+  "outcome": "passed",
+  "recordedAt": "2026-09-13T21:20:45Z"
+}

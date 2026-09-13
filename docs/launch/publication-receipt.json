@@ -1,0 +1,158 @@
+{
+  "kind": "spriglet-publication-receipt",
+  "recordedAtUTC": "2026-09-13T21:33:24.551284+00:00",
+  "publicRepository": "https://github.com/eyenpi/spriglet-public",
+  "publicBranch": "codex/public-preview",
+  "publicCommit": "65b5bc0fd0d1aa76fb52dedb0d26e987e18f9318",
+  "publicHistoryCommits": 1,
+  "privateHistoryImported": false,
+  "license": "MIT for code and artwork",
+  "release": {
+    "assets": [
+      {
+        "apiUrl": "https://api.github.com/repos/eyenpi/spriglet-public/releases/assets/561965988",
+        "contentType": "image/gif",
+        "createdAt": "2026-09-13T21:28:26Z",
+        "digest": "sha256:0966d2a4b11f2e3d23a245aa67f287dff83467ea6b705ae413d6f6cdeaa9ba6c",
+        "downloadCount": 0,
+        "id": "RA_kwDOUZf-784hfuuk",
+        "label": "",
+        "name": "spriglet-demo.gif",
+        "size": 3254898,
+        "state": "uploaded",
+        "updatedAt": "2026-09-13T21:28:27Z",
+        "url": "https://github.com/eyenpi/spriglet-public/releases/download/v0.1.0-preview.1/spriglet-demo.gif"
+      },
+      {
+        "apiUrl": "https://api.github.com/repos/eyenpi/spriglet-public/releases/assets/561965987",
+        "contentType": "video/mp4",
+        "createdAt": "2026-09-13T21:28:26Z",
+        "digest": "sha256:0ef204be6845bb8ba28f3fa2412b555217098ef4575b93e268fb59bca4516cc2",
+        "downloadCount": 0,
+        "id": "RA_kwDOUZf-784hfuuj",
+        "label": "",
+        "name": "spriglet-demo.mp4",
+        "size": 1086409,
+        "state": "uploaded",
+        "updatedAt": "2026-09-13T21:28:26Z",
+        "url": "https://github.com/eyenpi/spriglet-public/releases/download/v0.1.0-preview.1/spriglet-demo.mp4"
+      }
+    ],
+    "isDraft": false,
+    "isPrerelease": true,
+    "publishedAt": "2026-09-13T21:31:54Z",
+    "tagName": "v0.1.0-preview.1",
+    "targetCommitish": "65b5bc0fd0d1aa76fb52dedb0d26e987e18f9318",
+    "url": "https://github.com/eyenpi/spriglet-public/releases/tag/v0.1.0-preview.1"
+  },
+  "publicCI": {
+    "conclusion": "success",
+    "databaseId": 34783864560,
+    "headSha": "65b5bc0fd0d1aa76fb52dedb0d26e987e18f9318",
+    "jobs": [
+      {
+        "completedAt": "2026-09-13T21:30:57Z",
+        "conclusion": "success",
+        "databaseId": 103795669800,
+        "name": "macos",
+        "startedAt": "2026-09-13T21:27:19Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-09-13T21:27:20Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-09-13T21:27:19Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-13T21:27:24Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 2,
+            "startedAt": "2026-09-13T21:27:20Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-13T21:27:29Z",
+            "conclusion": "success",
+            "name": "Show the selected stable toolchain",
+            "number": 3,
+            "startedAt": "2026-09-13T21:27:24Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-13T21:28:02Z",
+            "conclusion": "success",
+            "name": "Swift Testing",
+            "number": 4,
+            "startedAt": "2026-09-13T21:27:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-13T21:28:04Z",
+            "conclusion": "success",
+            "name": "Validator regression tests",
+            "number": 5,
+            "startedAt": "2026-09-13T21:28:02Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-13T21:29:28Z",
+            "conclusion": "success",
+            "name": "Character assets and grounded motion",
+            "number": 6,
+            "startedAt": "2026-09-13T21:28:04Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-13T21:30:52Z",
+            "conclusion": "success",
+            "name": "Debug and Release builds",
+            "number": 7,
+            "startedAt": "2026-09-13T21:29:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-13T21:30:54Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 14,
+            "startedAt": "2026-09-13T21:30:52Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-13T21:30:56Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 15,
+            "startedAt": "2026-09-13T21:30:54Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/eyenpi/spriglet-public/actions/runs/34783864560/job/103795669800"
+      }
+    ],
+    "status": "completed",
+    "url": "https://github.com/eyenpi/spriglet-public/actions/runs/34783864560"
+  },
+  "publicManifestSHA256": "26e6fd0bf480f110cfcf48e876ca8a707b38f2fbd943e4e09dde794352299203",
+  "publicCheckout": "../spriglet-public-export",
+  "signedOutPageReview": {
+    "sourceVisible": true,
+    "MITRecognizedByGitHub": true,
+    "readmeDemoRenders": true,
+    "method": "Unauthenticated web and CUA browser review"
+  },
+  "distribution": "Source and media preview only; no unsigned app ZIP was uploaded. Developer ID signing and notarization remain pending.",
+  "contest": {
+    "entrySubmitted": false,
+    "submissionMethod": "User manually publishes one public X, Instagram, or LinkedIn post. No automated participation.",
+    "caption": "docs/launch/contest-post.txt",
+    "video": "docs/media/spriglet-demo.mp4",
+    "deadlinePacific": "2026-09-13 23:59 America/Los_Angeles",
+    "deadlineBerlin": "2026-09-14 08:59 Europe/Berlin",
+    "officialRules": "https://github.com/katiejliu/github-copilot-day-sweepstakes/blob/main/README.md"
+  }
+}
