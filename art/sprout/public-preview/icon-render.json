@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "blender": "5.2.1 LTS",
+  "blenderBuildHash": "9e2066aef7ef",
+  "sourceModel": "art/sprout/sample-v01/sprout-sample-v01.blend",
+  "sourceModelSHA256": "0f8db1da1428c0fbc6e0f89604ec5fda0f5dcb4d3175d10820192b1845dd1002",
+  "sourceUnchanged": true,
+  "scriptSHA256": "d53984f62d1f98f7c434ec1fc5df42408631a1ee7ecb7a304c9a3af0b288f9be",
+  "iconScene": "spriglet-icon.blend",
+  "iconSceneSHA256": "eaec873206f78a9335cdd1b8c4773e99e931fe236a7eb1b1a840f91a4d99a4ba",
+  "resolution": 1024,
+  "samples": 128,
+  "renderDevice": "METAL",
+  "foregroundImage": "sprout-icon-foreground.png",
+  "foregroundImageSHA256": "f11473936fb55807ab1aa4e63d8e40c927863381999e376e30fc006b0513e2e5",
+  "appIconImage": "spriglet-app-icon-1024.png",
+  "appIconImageSHA256": "91b81983e5f6fc6a6717e30ffd497f910b44b5d0b457e23255e4b124c1b323e5",
+  "composition": "Near-frontal portrait from the existing neutral rig pose; lower body cropped by camera; full-bleed warm gradient; no baked outer shadow or enclosure mask",
+  "preferencesSaved": false
+}
