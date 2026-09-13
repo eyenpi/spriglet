@@ -81,27 +81,46 @@ struct PrototypeView: View {
                         Button("Recenter") { runtime.recenter() }
                         Button("Next Display") { runtime.moveToNextDisplay() }
                     }
+                    HStack {
+                        Text("Move pet")
+                        Spacer()
+                        Button("Left", systemImage: "arrow.left") { runtime.nudge(dx: -48) }
+                            .accessibilityLabel("Move pet left")
+                        Button("Down", systemImage: "arrow.down") { runtime.nudge(dy: -48) }
+                            .accessibilityLabel("Move pet down")
+                        Button("Up", systemImage: "arrow.up") { runtime.nudge(dy: 48) }
+                            .accessibilityLabel("Move pet up")
+                        Button("Right", systemImage: "arrow.right") { runtime.nudge(dx: 48) }
+                            .accessibilityLabel("Move pet right")
+                    }.labelStyle(.iconOnly)
+                    Text("Spriglet remembers where you place it. If that display is unavailable, it stays within reach on your main display.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }.disabled(runtime.sampling)
                 Section("Measurements · refresh on demand") {
                     LabeledContent("Scene updates", value: "\(runtime.sceneUpdates)")
                     LabeledContent("Quiet moments", value: "\(runtime.automaticActionCount)")
                     LabeledContent("Resting deadline", value: runtime.hasScheduledBehavior ? "Scheduled" : "None")
                     LabeledContent("Physical footprint", value: runtime.footprintMiB.map { $0.formatted(.number.precision(.fractionLength(1))) + " MiB" } ?? "Unavailable")
+                    LabeledContent("Desktop position", value: runtime.positionDescription)
                     LabeledContent("Low Power Mode", value: runtime.lowPower ? "On" : "Off")
                     LabeledContent("Reduce Motion", value: runtime.reduceMotion ? "On" : "Off")
                     HStack {
                         Button("Refresh") { runtime.refreshMeasurements() }
                         Button(runtime.sampling ? "Checking…" : "Run Automatic Check") { runtime.runProbe() }
-                        if runtime.probeResult != nil {
+                        if runtime.reportJSON != nil {
                             Button("Copy Report") { runtime.copyReport() }
                         }
                     }.disabled(runtime.sampling)
+                    Button("Run 100-Cycle Check") { runtime.runSoak() }
+                        .disabled(runtime.sampling)
+                    Text("About four minutes. Checks repeated activity and resting; cancel any time.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
             }.formStyle(.grouped)
             if runtime.sampling {
                 Button("Cancel Check") { runtime.cancelProbe() }
             }
-            Text(runtime.sampling ? "Checking behaviors and resting. Your saved choices stay unchanged." : runtime.message)
+            Text(runtime.sampling ? runtime.diagnosticProgress + " Your saved choices stay unchanged." : runtime.message)
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }

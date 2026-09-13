@@ -74,11 +74,7 @@ enum RuntimeProbe {
     private static let signposter = OSSignposter(subsystem: "dev.spriglet.prototype", category: "probe")
 
     static func run(runtime: PetRuntime) async throws -> ProbeReport {
-        let originalPreferences = PetPreferences(
-            isHidden: runtime.isHidden, isPaused: runtime.isPaused,
-            clickThrough: runtime.clickThrough, allSpaces: runtime.allSpaces,
-            autonomousBehavior: runtime.autonomousBehavior
-        )
+        let originalPreferences = runtime.snapshotPreferencesForProbe()
         defer {
             runtime.restoreAfterProbe(originalPreferences)
         }

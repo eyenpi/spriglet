@@ -1,4 +1,5 @@
 import AppKit
+import ColorSync
 import QuartzCore
 import SprigletCore
 
@@ -14,8 +15,22 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     /// The value is true when AppKit reports some of the panel as visible.
     var onOcclusionChanged: (@MainActor (Bool) -> Void)?
     var onScreenChanged: (@MainActor () -> Void)?
+    /// Fires only after a completed drag or an explicit placement command.
+    var onPlacementSettled: (@MainActor (PetSavedPlacement) -> Void)?
     private(set) var isMoving = false
     private(set) var movementTickCount: UInt64 = 0
+    private(set) var savedPlacement: PetSavedPlacement?
+
+    /// A nonmutating snapshot of the actual position, which may differ after a walk.
+    var currentPlacement: PetSavedPlacement? {
+        guard let screen = currentScreen, let displayUUID = stableDisplayUUID(for: screen) else { return nil }
+        return PetSavedPlacement.capture(
+            displayUUID: displayUUID,
+            origin: panel.frame.origin,
+            windowSize: panel.frame.size,
+            visibleFrame: screen.visibleFrame
+        )
+    }
 
     var movementFrameRate: Int = 60 {
         didSet { updateMovementFrameRate() }
@@ -74,7 +89,9 @@ final class PetWindowController: NSObject, NSWindowDelegate {
             self?.move(to: origin, following: pointer)
         }
         interactionView.onDragEnded = { [weak self] in
-            self?.constrainToVisibleArea()
+            guard let self else { return }
+            constrainToVisibleArea()
+            rememberSettledPlacement()
         }
 
         // Foundation's actor-isolated observation is available in macOS 26.
@@ -86,12 +103,16 @@ final class PetWindowController: NSObject, NSWindowDelegate {
             guard let self else { return }
             stopMovement()
             interactionView.cancelInteraction()
-            constrainToVisibleArea()
+            if let savedPlacement {
+                applyPlacement(savedPlacement)
+            } else {
+                constrainToVisibleArea()
+            }
             updateMovementFrameRate()
             onScreenChanged?()
         }
 
-        recenter()
+        placeAtRestingPosition()
     }
 
     isolated deinit {
@@ -113,10 +134,33 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         panel.orderOut(nil)
     }
 
+    /// Restores silently; the runtime remains responsible for persistence.
+    /// Diagnostics can restore an actual-position snapshot while retaining the
+    /// user's saved home, including a home on a currently disconnected display.
+    func restorePlacement(_ placement: PetSavedPlacement?, preservingSavedPlacement: Bool = false) {
+        stopMovement()
+        interactionView.cancelInteraction()
+        if !preservingSavedPlacement {
+            savedPlacement = placement
+        }
+        if let placement {
+            applyPlacement(placement)
+        } else if preservingSavedPlacement {
+            constrainToVisibleArea()
+        } else {
+            placeAtRestingPosition()
+        }
+    }
+
     /// Restores the pet near the lower edge of its current display.
     func recenter() {
         stopMovement()
         interactionView.cancelInteraction()
+        placeAtRestingPosition()
+        rememberSettledPlacement()
+    }
+
+    private func placeAtRestingPosition() {
         guard let screen = currentScreen else { return }
         panel.setFrameOrigin(PetPlacement.restingOrigin(
             windowSize: panel.frame.size,
@@ -129,14 +173,26 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         interactionView.cancelInteraction()
         let screens = NSScreen.screens
         guard !screens.isEmpty else { return }
-        let index = currentScreen.flatMap { current in
-            screens.firstIndex { $0.frame == current.frame }
-        } ?? -1
+        let index = currentScreen.flatMap { screenIndex(matching: $0, in: screens) } ?? -1
         let nextScreen = screens[(index + 1) % screens.count]
         panel.setFrameOrigin(PetPlacement.restingOrigin(
             windowSize: panel.frame.size,
             visibleFrame: nextScreen.visibleFrame
         ))
+        rememberSettledPlacement()
+    }
+
+    /// An accessible alternative to dragging, bounded to the current usable area.
+    func nudge(dx: CGFloat, dy: CGFloat) {
+        guard dx.isFinite, dy.isFinite, let screen = currentScreen else { return }
+        stopMovement()
+        interactionView.cancelInteraction()
+        panel.setFrameOrigin(PetPlacement.clampedOrigin(
+            NSPoint(x: panel.frame.minX + dx, y: panel.frame.minY + dy),
+            windowSize: panel.frame.size,
+            visibleFrame: screen.visibleFrame
+        ))
+        rememberSettledPlacement()
     }
 
     /// Whole-window click-through is the supported, deterministic fallback.
@@ -231,11 +287,49 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         // across a display disconnect. Frame coordinates are in AppKit points.
         let screens = NSScreen.screens
         if let panelScreen = panel.screen,
-           let connectedScreen = screens.first(where: { $0.frame == panelScreen.frame }) {
-            return connectedScreen
+           let index = screenIndex(matching: panelScreen, in: screens) {
+            return screens[index]
         }
         return nearestScreen(to: NSPoint(x: panel.frame.midX, y: panel.frame.midY))
             ?? NSScreen.main ?? screens.first
+    }
+
+    private func rememberSettledPlacement() {
+        guard let placement = currentPlacement, placement != savedPlacement else { return }
+        savedPlacement = placement
+        onPlacementSettled?(placement)
+    }
+
+    private func applyPlacement(_ placement: PetSavedPlacement) {
+        let screens = NSScreen.screens
+        let fallbackIndex = NSScreen.main.flatMap { screenIndex(matching: $0, in: screens) } ?? 0
+        guard let index = placement.displayIndex(
+            in: screens.map { stableDisplayUUID(for: $0) },
+            fallbackIndex: fallbackIndex
+        ), let origin = placement.restoredOrigin(
+            windowSize: panel.frame.size,
+            visibleFrame: screens[index].visibleFrame
+        ) else {
+            constrainToVisibleArea()
+            return
+        }
+        // Falling back never overwrites the user's preferred display identity.
+        panel.setFrameOrigin(origin)
+    }
+
+    private func screenIndex(matching screen: NSScreen, in screens: [NSScreen]) -> Int? {
+        if let displayID = screen.cgDirectDisplayID {
+            return screens.firstIndex { $0.cgDirectDisplayID == displayID }
+        }
+        return screens.firstIndex { $0.frame == screen.frame }
+    }
+
+    private func stableDisplayUUID(for screen: NSScreen) -> UUID? {
+        // cgDirectDisplayID is the typed macOS 26 API. Persist ColorSync's UUID,
+        // not a screen-array index, localized display name, or session display ID.
+        guard let displayID = screen.cgDirectDisplayID,
+              let displayUUID = CGDisplayCreateUUIDFromDisplayID(displayID)?.takeRetainedValue() else { return nil }
+        return UUID(uuidString: CFUUIDCreateString(nil, displayUUID) as String)
     }
 
     private func updateCollectionBehavior() {
