@@ -1,0 +1,40 @@
+{
+  "kind": "sprout-model-review",
+  "status": "awaiting-user-review",
+  "blender": "5.2.1 LTS",
+  "blender_build_hash": "9e2066aef7ef",
+  "model": "sprout-design-v01.blend",
+  "renders": [
+    "sprout-v01-hero.png",
+    "sprout-v01-front.png",
+    "sprout-v01-side.png",
+    "sprout-v01-back.png"
+  ],
+  "resolution": 960,
+  "samples": 64,
+  "fur": true,
+  "fur_density": 9000.0,
+  "rigged": false,
+  "animated": false,
+  "engine": "CYCLES",
+  "concept": "A \u00b7 Sprout",
+  "source": "docs/concepts/character-study-01.png",
+  "palette_srgb": {
+    "moss": "63662E",
+    "cream": "F1DBAB",
+    "leaf": "536730"
+  },
+  "groom_binding": "rigid parenting; not bound for surface deformation",
+  "strand_count": 102578,
+  "source_sha256": {
+    "art/sprout/scripts/build_design.py": "f3d8859bc86fada87b95eec3bd7e2bcf62724bbd381e882088910e551547bbd9",
+    "art/sprout/scripts/coat_fibers.py": "497fc75c5302a298935bab4746142e6964b19063519e2cecbef7b0d046b60f38"
+  },
+  "artifact_sha256": {
+    "sprout-design-v01.blend": "90aba50314aa702de827b8fa2e2e0bf353c2744b3d655773150bc2437b3c2597",
+    "sprout-v01-hero.png": "770e1fbac0c6eca4f5e172088ca6d40029ab06712df04534a03d81f7e87439bb",
+    "sprout-v01-front.png": "69c5e803e5c14b31e79d5524f994cee5b2fe7080be6f5feb65652862d7224703",
+    "sprout-v01-side.png": "bdb5b87f0a721fe48c478e3dd9bf6fc0967cdd26b1b929460bce8b484ae5d673",
+    "sprout-v01-back.png": "e5462b617df73c2eaaddf00b485bf5116a03ef95ade38c5e377e9a887766007e"
+  }
+}

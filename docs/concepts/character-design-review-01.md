@@ -36,9 +36,13 @@ The official [download page](https://www.blender.org/download/) and [5.2 release
 
 Blender will supply the editable model, rig, animation, and rendered frames. After Effects is optional for later compositing or presentation work. No additional application account or connector is needed for the current modeling workflow. The Swift app continues to consume rendered assets; Blender is an offline authoring tool.
 
+## First actual Blender model
+
+The [editable model review](../../art/sprout/README.md) now includes a canonical `.blend` file, reproducible authoring scripts, and neutral front, three-quarter, side, and back renders. This is a first 3D interpretation of the selected concept. It has editable native mesh geometry, materials, cameras, and short hair curves. The user requested that the first draft's face and colors be brought closer to A. The revised model has fuller cream cheeks, peach blush, a tapered olive forehead, smaller eyes, and warmer materials with reduced white reflection. The model remains unrigged and unanimated; the revision awaits the user's feedback before rigging.
+
 ## Work after the base design is selected
 
-1. Create a canonical Blender model and show neutral front, three-quarter, side, and back views. Compare its proportions and material with the selected concept.
+1. **Model draft created; review pending.** Compare its proportions and material with the selected concept using the four actual Blender views.
 2. Review a turntable and small-size renders. Refine the actual 3D design with the user before committing to the full rig and clip library.
 3. Rig the body, limbs, ears/crown, gaze, and eyelids for the agreed design. Define ground anchors and facing conventions.
 4. Author the first idle → short walk → petting reaction → settle sample, including clean movement starts/stops and synchronized foot contact. Review the animation itself with the user.

@@ -2,7 +2,7 @@
 
 A local macOS desktop companion. The **phase 3 desktop reliability prototype** remembers where you place it and occasionally blinks, looks around, stretches, or naps, with finite animations and quiet intervals between them. Your settings stay on this Mac. Some desktop and performance acceptance checks from phase 1 remain open.
 
-The green character is procedural placeholder artwork. The user selected **A · Sprout** in the [character design review](docs/concepts/character-design-review-01.md). Its Blender model and production animation library are subsequent work. The [original researched plan](docs/app-plan-2026-09-13.md) is retained as historical planning context.
+The green character in the app is procedural placeholder artwork. The user selected **A · Sprout** in the [character design review](docs/concepts/character-design-review-01.md). Its [first editable Blender model and four rendered views](art/sprout/README.md) are ready for feedback; the model is unrigged and unanimated. The [original researched plan](docs/app-plan-2026-09-13.md) is retained as historical planning context.
 
 ## Run it
 

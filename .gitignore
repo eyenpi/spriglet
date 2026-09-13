@@ -32,6 +32,11 @@ playground.xcworkspace
 
 .build/
 
+# Blender authoring caches and automatic backup copies
+__pycache__/
+*.py[cod]
+*.blend[0-9]*
+
 # CocoaPods
 #
 # We recommend against adding the Pods directory to your .gitignore. However

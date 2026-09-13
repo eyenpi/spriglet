@@ -1,0 +1,465 @@
+{
+  "kind": "sprout-model-review-verification",
+  "schema_version": 1,
+  "verified_at_utc": "2026-09-13T17:36:17.853693+00:00",
+  "status": "passed-readback-with-limitations",
+  "user_revision_approval": "pending",
+  "model": "art/sprout/review-01/sprout-design-v01.blend",
+  "model_sha256": "90aba50314aa702de827b8fa2e2e0bf353c2744b3d655773150bc2437b3c2597",
+  "manifest": "art/sprout/review-01/model-review.json",
+  "manifest_sha256": "a78b41df95fab30beee57af7a99784f6457bbda9157916c1c89143bcf9f8f902",
+  "verification_method": "Fresh Blender background factory-startup process, saved file reopened with Python auto-execution disabled; no rendering or saving of the .blend during verification.",
+  "blender": "5.2.1 LTS",
+  "blender_build_hash": "9e2066aef7ef",
+  "check_count": 14,
+  "passed_checks": 14,
+  "checks": [
+    {
+      "id": "manifest-file-hashes",
+      "status": "pass",
+      "evidence": {
+        "matched_files": 7,
+        "files": [
+          {
+            "kind": "source",
+            "path": "art/sprout/scripts/build_design.py",
+            "sha256": "f3d8859bc86fada87b95eec3bd7e2bcf62724bbd381e882088910e551547bbd9"
+          },
+          {
+            "kind": "source",
+            "path": "art/sprout/scripts/coat_fibers.py",
+            "sha256": "497fc75c5302a298935bab4746142e6964b19063519e2cecbef7b0d046b60f38"
+          },
+          {
+            "kind": "artifact",
+            "path": "art/sprout/review-01/sprout-design-v01.blend",
+            "sha256": "90aba50314aa702de827b8fa2e2e0bf353c2744b3d655773150bc2437b3c2597"
+          },
+          {
+            "kind": "artifact",
+            "path": "art/sprout/review-01/sprout-v01-hero.png",
+            "sha256": "770e1fbac0c6eca4f5e172088ca6d40029ab06712df04534a03d81f7e87439bb"
+          },
+          {
+            "kind": "artifact",
+            "path": "art/sprout/review-01/sprout-v01-front.png",
+            "sha256": "69c5e803e5c14b31e79d5524f994cee5b2fe7080be6f5feb65652862d7224703"
+          },
+          {
+            "kind": "artifact",
+            "path": "art/sprout/review-01/sprout-v01-side.png",
+            "sha256": "bdb5b87f0a721fe48c478e3dd9bf6fc0967cdd26b1b929460bce8b484ae5d673"
+          },
+          {
+            "kind": "artifact",
+            "path": "art/sprout/review-01/sprout-v01-back.png",
+            "sha256": "e5462b617df73c2eaaddf00b485bf5116a03ef95ade38c5e377e9a887766007e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fresh-blender-reopen",
+      "status": "pass",
+      "evidence": {
+        "background": true,
+        "factory_startup_argument": true,
+        "disable_autoexec_argument": true,
+        "opened_model": "art/sprout/review-01/sprout-design-v01.blend"
+      }
+    },
+    {
+      "id": "recorded-blender-build",
+      "status": "pass",
+      "evidence": {
+        "version": "5.2.1 LTS",
+        "build_hash": "9e2066aef7ef"
+      }
+    },
+    {
+      "id": "editable-character-collections",
+      "status": "pass",
+      "evidence": [
+        {
+          "collection": "01 · Body and limbs",
+          "object_count": 6,
+          "expected_names_and_types_match": true,
+          "inside_character_collection": true
+        },
+        {
+          "collection": "02 · Leaf ears and crown",
+          "object_count": 5,
+          "expected_names_and_types_match": true,
+          "inside_character_collection": true
+        },
+        {
+          "collection": "03 · Face",
+          "object_count": 8,
+          "expected_names_and_types_match": true,
+          "inside_character_collection": true
+        },
+        {
+          "collection": "04 · Short velvet groom",
+          "object_count": 11,
+          "expected_names_and_types_match": true,
+          "inside_character_collection": true
+        }
+      ]
+    },
+    {
+      "id": "closed-character-meshes",
+      "status": "pass",
+      "evidence": {
+        "mesh_count": 14,
+        "base_and_evaluated_measurements": 28,
+        "all_local_editable_mesh_data": true,
+        "all_world_coordinates_finite": true,
+        "boundary_edges_total": 0,
+        "nonmanifold_edges_total": 0,
+        "inconsistent_winding_edges_total": 0,
+        "loose_vertices_total": 0,
+        "zero_area_faces_at_1e_minus_12_total": 0,
+        "all_base_and_evaluated_signed_volumes_positive": true,
+        "meshes": [
+          {
+            "name": "Crown leaf 1",
+            "base_vertices": 458,
+            "evaluated_vertices": 1874,
+            "evaluated_signed_world_volume": 0.0009986380892991547
+          },
+          {
+            "name": "Crown leaf 2",
+            "base_vertices": 458,
+            "evaluated_vertices": 1874,
+            "evaluated_signed_world_volume": 0.0008715682515701474
+          },
+          {
+            "name": "Crown leaf 3",
+            "base_vertices": 458,
+            "evaluated_vertices": 1874,
+            "evaluated_signed_world_volume": 0.0006826226636336591
+          },
+          {
+            "name": "Left eye",
+            "base_vertices": 1490,
+            "evaluated_vertices": 1490,
+            "evaluated_signed_world_volume": 0.0036153719138180083
+          },
+          {
+            "name": "Left foot",
+            "base_vertices": 1490,
+            "evaluated_vertices": 1490,
+            "evaluated_signed_world_volume": 0.018506785102270377
+          },
+          {
+            "name": "Left leaf ear",
+            "base_vertices": 458,
+            "evaluated_vertices": 1874,
+            "evaluated_signed_world_volume": 0.02728695198509258
+          },
+          {
+            "name": "Left paw",
+            "base_vertices": 1490,
+            "evaluated_vertices": 1490,
+            "evaluated_signed_world_volume": 0.028350820956047584
+          },
+          {
+            "name": "Nose",
+            "base_vertices": 1490,
+            "evaluated_vertices": 1490,
+            "evaluated_signed_world_volume": 0.00016646315421407556
+          },
+          {
+            "name": "Right eye",
+            "base_vertices": 1490,
+            "evaluated_vertices": 1490,
+            "evaluated_signed_world_volume": 0.003615371913818009
+          },
+          {
+            "name": "Right foot",
+            "base_vertices": 1490,
+            "evaluated_vertices": 1490,
+            "evaluated_signed_world_volume": 0.018506785102270377
+          },
+          {
+            "name": "Right leaf ear",
+            "base_vertices": 458,
+            "evaluated_vertices": 1874,
+            "evaluated_signed_world_volume": 0.02535217852624918
+          },
+          {
+            "name": "Right paw",
+            "base_vertices": 1490,
+            "evaluated_vertices": 1490,
+            "evaluated_signed_world_volume": 0.028350820956047584
+          },
+          {
+            "name": "Rounded tail",
+            "base_vertices": 1490,
+            "evaluated_vertices": 1490,
+            "evaluated_signed_world_volume": 0.05752562525047257
+          },
+          {
+            "name": "Sprout body",
+            "base_vertices": 11778,
+            "evaluated_vertices": 11778,
+            "evaluated_signed_world_volume": 1.9612686335509533
+          }
+        ],
+        "excluded": "Studio floor, five beveled face line CURVE objects, and eleven native hair CURVES objects."
+      }
+    },
+    {
+      "id": "editable-face-lines",
+      "status": "pass",
+      "evidence": {
+        "names": [
+          "Left brow",
+          "Left smile",
+          "Nose to smile",
+          "Right brow",
+          "Right smile"
+        ],
+        "all_bezier_with_finite_controls_and_handles": true,
+        "control_point_counts": [
+          3,
+          3,
+          2,
+          3,
+          3
+        ],
+        "bevel_radius_range": [
+          0.005499999970197678,
+          0.006000000052154064
+        ]
+      }
+    },
+    {
+      "id": "body-color-attribute",
+      "status": "pass",
+      "evidence": {
+        "names": [
+          "CoatTint"
+        ],
+        "domain": "POINT",
+        "type": "FLOAT_COLOR",
+        "colors": 11778,
+        "body_vertices": 11778,
+        "finite": true,
+        "remaining_modifiers": []
+      }
+    },
+    {
+      "id": "native-groom-data-and-parenting",
+      "status": "pass",
+      "evidence": {
+        "groom_objects": 11,
+        "total_strands": 102578,
+        "total_control_points": 410312,
+        "manifest_strands": 102578,
+        "all_native_curves": true,
+        "all_four_point_curves": true,
+        "finite_positions_radii_colors": true,
+        "radius_range": [
+          4.320000152802095e-05,
+          0.000750000006519258
+        ],
+        "maximum_local_identity_error": 5.960464477539063e-08,
+        "maximum_parent_inverse_identity_error": 0.0,
+        "maximum_world_transform_error_from_parent": 0.0,
+        "all_rigid_parented_to_expected_mesh": true,
+        "all_surface_bindings_absent": true,
+        "all_groom_modifiers_absent": true,
+        "parent_strand_counts": {
+          "Crown leaf 1": 563,
+          "Crown leaf 2": 499,
+          "Crown leaf 3": 408,
+          "Left foot": 3340,
+          "Left leaf ear": 4376,
+          "Left paw": 4067,
+          "Right foot": 3340,
+          "Right leaf ear": 4110,
+          "Right paw": 4067,
+          "Rounded tail": 6496,
+          "Sprout body": 71312
+        }
+      }
+    },
+    {
+      "id": "saved-camera-and-render-configuration",
+      "status": "pass",
+      "evidence": {
+        "engine": "CYCLES",
+        "device": "CPU",
+        "samples": 64,
+        "denoising": true,
+        "maximum_bounces": 6,
+        "resolution": [
+          960,
+          960
+        ],
+        "resolution_percentage": 100,
+        "file_format": "PNG",
+        "color_mode": "RGBA",
+        "color_depth": "8",
+        "film_transparent": false,
+        "view_transform": "AgX",
+        "look": "None",
+        "exposure": 0.0,
+        "gamma": 1.0,
+        "seed": 0,
+        "animated_seed": false,
+        "active_camera": "Camera · three-quarter",
+        "cameras": [
+          {
+            "name": "Camera · back",
+            "type": "ORTHO",
+            "orthographic_scale": 3.200000047683716,
+            "world_position": [
+              0.0,
+              10.0,
+              2.6500000953674316
+            ],
+            "finite_transform": true
+          },
+          {
+            "name": "Camera · front",
+            "type": "ORTHO",
+            "orthographic_scale": 3.200000047683716,
+            "world_position": [
+              0.0,
+              -10.0,
+              2.6500000953674316
+            ],
+            "finite_transform": true
+          },
+          {
+            "name": "Camera · side",
+            "type": "ORTHO",
+            "orthographic_scale": 3.200000047683716,
+            "world_position": [
+              10.0,
+              0.0,
+              2.6500000953674316
+            ],
+            "finite_transform": true
+          },
+          {
+            "name": "Camera · three-quarter",
+            "type": "ORTHO",
+            "orthographic_scale": 3.200000047683716,
+            "world_position": [
+              4.5,
+              -10.0,
+              3.25
+            ],
+            "finite_transform": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "saved-review-image-headers",
+      "status": "pass",
+      "evidence": {
+        "image_count": 4,
+        "all_headers": "960 × 960, 8-bit RGBA PNG",
+        "scope": "PNG headers and manifest SHA-256 checks; visual approval is separate."
+      }
+    },
+    {
+      "id": "self-contained-model-dependencies",
+      "status": "pass",
+      "evidence": {
+        "images": [
+          {
+            "name": "Render Result",
+            "source": "VIEWER",
+            "external": false,
+            "packed": false,
+            "external_exists": null
+          },
+          {
+            "name": "Viewer Node",
+            "source": "VIEWER",
+            "external": false,
+            "packed": false,
+            "external_exists": null
+          }
+        ],
+        "other_external_capable_datablock_counts": {
+          "libraries": 0,
+          "sounds": 0,
+          "movieclips": 0,
+          "volumes": 0,
+          "cache_files": 0
+        },
+        "fonts": [],
+        "linked_objects": [],
+        "scope": "Saved image, font, library, sound, movie, volume, and cache references; no external image textures exist."
+      }
+    },
+    {
+      "id": "unrigged-and-unanimated",
+      "status": "pass",
+      "evidence": {
+        "actions": 0,
+        "armature_datablocks": 0,
+        "armature_objects": [],
+        "armature_modifiers": [],
+        "animation_data_owners": [],
+        "shape_keys": 0,
+        "character_constraints": []
+      }
+    },
+    {
+      "id": "foot-ground-anchor",
+      "status": "pass",
+      "evidence": {
+        "declared_ground_z": 0,
+        "floor_minimum_world_z": 0.0,
+        "floor_maximum_world_z": 0.0,
+        "feet": [
+          {
+            "name": "Left foot",
+            "mesh_minimum_world_z": 0.0,
+            "mesh_clearance_above_floor": 0.0,
+            "groom_control_point_minimum_world_z": -0.00796516239643097,
+            "groom_native_bounds_minimum_world_z": -0.008008360862731934,
+            "groom_native_bounds_clearance_above_floor": -0.008008360862731934,
+            "sample_count": 123580,
+            "sampled_centerline_minimum_world_z": -0.00796516239643097
+          },
+          {
+            "name": "Right foot",
+            "mesh_minimum_world_z": 0.0,
+            "mesh_clearance_above_floor": 0.0,
+            "groom_control_point_minimum_world_z": -0.00852452963590622,
+            "groom_native_bounds_minimum_world_z": -0.008567728102207184,
+            "groom_native_bounds_clearance_above_floor": -0.008567728102207184,
+            "sample_count": 123580,
+            "sampled_centerline_minimum_world_z": -0.00852452963590622
+          }
+        ]
+      }
+    },
+    {
+      "id": "files-unchanged-during-readback",
+      "status": "pass",
+      "evidence": "Manifest, both source scripts, saved model, and four PNG files were rehashed at completion."
+    }
+  ],
+  "observations": [
+    "The separate foot meshes meet the declared Z=0 ground anchor; the floor contact check compares actual saved mesh coordinates, not a camera projection.",
+    "Short foot fibers extend below their foot mesh surface. Native groom bounds and sampled centerline minima are reported separately; lower hairs may be occluded by the studio floor.",
+    "The groom is editable native hair data with rigid parent transforms and no deforming surface binding."
+  ],
+  "limitations": [
+    "Artistic approval of the revised face, palette, proportions, texture, and all four views remains pending. This readback does not certify visual similarity to the concept.",
+    "Closed positive-volume mesh checks are per mesh, for both saved base geometry and evaluated modifiers; they do not prove a single watertight character union, absence of intersections between parts, or rig deformation quality.",
+    "Beveled face curves, groom curves, and the open studio plane are intentionally excluded from closed-volume checks.",
+    "Groom minima include exact stored control-point coordinates, Blender native object bounds, and sampled EVALUATED centerline points. They are not an analytic bound on every rendered curve segment and radius or a ray-traced contact-shadow measurement.",
+    "No new render was produced in this readback. PNG header checks and hashes verify the retained files; image appearance is reviewed separately.",
+    "This unrigged, unanimated offline model has not been validated for production alpha edges, animation, the native app, GPU cost, energy, or battery use."
+  ]
+}
