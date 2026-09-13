@@ -8,13 +8,16 @@ struct PetMenu: View {
         Text("Spriglet · \(runtime.status)")
         Divider()
         Group {
+            Button("Play Character Sample") { runtime.characterSample() }.disabled(!runtime.permitsMotion)
             Button(runtime.isHidden ? "Show Pet" : "Hide Pet") { runtime.setHidden(!runtime.isHidden) }
             Button(runtime.isPaused ? "Resume" : "Pause") { runtime.setPaused(!runtime.isPaused) }
             Button("Pet Spriglet") { runtime.play() }.disabled(!runtime.permitsMotion)
             Button(runtime.isSleeping ? "Wake Spriglet" : "Take a Nap") {
                 runtime.preview(runtime.isSleeping ? .wakeUp : .fallAsleep)
             }.disabled(!runtime.permitsMotion)
-            Button("Try a Short Walk") { runtime.walk() }.disabled(!runtime.permitsMotion)
+            Button("Short Walk") { runtime.walk() }.disabled(!runtime.permitsMotion)
+            Button("Walk Left") { runtime.walk(direction: .walkLeft) }.disabled(!runtime.permitsMotion)
+            Button("Walk Right") { runtime.walk(direction: .walkRight) }.disabled(!runtime.permitsMotion)
             Button("Bring Pet Home") { runtime.recenter() }
             Divider()
             Toggle("Pass Clicks Through", isOn: Binding(get: { runtime.clickThrough }, set: { runtime.setClickThrough($0) }))
@@ -51,18 +54,23 @@ struct PrototypeView: View {
                     .background(.quaternary, in: .capsule)
             }
 
-            Text("Spriglet rests, notices little things, and occasionally gets sleepy. This is still test artwork; the finished character comes later.")
+            Text("Meet Sprout: a small idle moment, a short walk, a happy pet reaction, and a gentle settle.")
                 .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            Button("Play Character Sample", systemImage: "play.fill") { runtime.characterSample() }
+                .buttonStyle(.borderedProminent)
+                .disabled(!runtime.permitsMotion || runtime.sampling)
+            if let issue = runtime.characterIssue {
+                Text(issue).font(.callout).foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             Form {
                 Section("Quiet company") {
                     Toggle("Quiet Behavior", isOn: Binding(get: { runtime.autonomousBehavior }, set: { runtime.setAutonomousBehavior($0) }))
-                    Text("Occasional blinks, looks, stretches, and naps. Your choices stay on this Mac.")
+                    Text("Occasional idle moments and naps. Your choices stay on this Mac.")
                         .font(.caption).foregroundStyle(.secondary)
                     HStack {
-                        Button("Blink") { runtime.preview(.blink) }
-                        Button("Look Around") { runtime.preview(.lookAround) }
-                        Button("Stretch") { runtime.preview(.stretch) }
+                        Button("Idle") { runtime.preview(.lookAround) }
                         Button(runtime.isSleeping ? "Wake Up" : "Nap") {
                             runtime.preview(runtime.isSleeping ? .wakeUp : .fallAsleep)
                         }
@@ -71,7 +79,8 @@ struct PrototypeView: View {
                 Section("Try the companion") {
                     HStack {
                         Button("Pet") { runtime.play() }
-                        Button("Short Walk") { runtime.walk() }
+                        Button("Walk Left") { runtime.walk(direction: .walkLeft) }
+                        Button("Walk Right") { runtime.walk(direction: .walkRight) }
                     }.disabled(!runtime.permitsMotion || runtime.sampling)
                     Toggle("Pause", isOn: Binding(get: { runtime.isPaused }, set: { runtime.setPaused($0) }))
                     Toggle("Hide Pet", isOn: Binding(get: { runtime.isHidden }, set: { runtime.setHidden($0) }))
@@ -97,7 +106,7 @@ struct PrototypeView: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }.disabled(runtime.sampling)
                 Section("Measurements · refresh on demand") {
-                    LabeledContent("Scene updates", value: "\(runtime.sceneUpdates)")
+                    LabeledContent("Submitted frames", value: "\(runtime.submittedFrames)")
                     LabeledContent("Quiet moments", value: "\(runtime.automaticActionCount)")
                     LabeledContent("Resting deadline", value: runtime.hasScheduledBehavior ? "Scheduled" : "None")
                     LabeledContent("Physical footprint", value: runtime.footprintMiB.map { $0.formatted(.number.precision(.fractionLength(1))) + " MiB" } ?? "Unavailable")
@@ -113,7 +122,7 @@ struct PrototypeView: View {
                     }.disabled(runtime.sampling)
                     Button("Run 100-Cycle Check") { runtime.runSoak() }
                         .disabled(runtime.sampling)
-                    Text("About four minutes. Checks repeated activity and resting; cancel any time.")
+                    Text("About 6–7 minutes. Checks repeated activity and resting; cancel any time.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }.formStyle(.grouped)

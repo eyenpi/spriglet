@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "blender": "5.2.1 LTS",
+  "blenderBuildHash": "9e2066aef7ef",
+  "sourceReview": "art/sprout/review-01/sprout-design-v01.blend",
+  "sourceReviewSHA256": "90aba50314aa702de827b8fa2e2e0bf353c2744b3d655773150bc2437b3c2597",
+  "model": "sprout-sample-v01.blend",
+  "modelSHA256": "0f8db1da1428c0fbc6e0f89604ec5fda0f5dcb4d3175d10820192b1845dd1002",
+  "rigBoneCount": 14,
+  "contactSamplesSHA256": "76e9a72b89aec18a68669582f01b97482c13e492e600e494df3c336534d2209b",
+  "groomBindingVerificationSHA256": "c9959c5a98ee893a5450cb802347e7b873eac7513c0467506dffa6a4b10cabcd",
+  "strandCount": 72985,
+  "groomBinding": "Native Deform Curves on Surface with attachment UV atlas and rest_position",
+  "rigActionNames": {
+    "idle": "Sprout \u00b7 idle",
+    "walkRight": "Sprout \u00b7 walkRight",
+    "walkLeft": "Sprout \u00b7 walkLeft",
+    "pet": "Sprout \u00b7 pet",
+    "settle": "Sprout \u00b7 settle",
+    "demo": "Sprout \u00b7 COMPLETE SAMPLE \u00b7 idle walk pet settle",
+    "sleep": "Sprout \u00b7 sleep pose"
+  },
+  "clipFrameCounts": {
+    "idle": 37,
+    "walkRight": 73,
+    "walkLeft": 73,
+    "pet": 34,
+    "settle": 25
+  },
+  "framesPerSecond": 30,
+  "canvasPixels": {
+    "width": 448,
+    "height": 448
+  },
+  "displaySizePoints": {
+    "width": 224,
+    "height": 224
+  },
+  "groundAnchorPixels": {
+    "x": 224.0,
+    "y": 50.43461561203003
+  },
+  "maximumGroomRootError": 4.842304232499576e-07,
+  "shadow": "Bounded Cycles shadow catcher with smooth transparent edge; compositor denoises RGB and preserves raw alpha",
+  "alphaBorderCriterion": "Every pixel on all four exported PNG borders must have alpha exactly 0",
+  "savedRenderSettings": {
+    "resolution": 448,
+    "samples": 48,
+    "filmTransparent": true,
+    "cyclesAutomaticDenoising": false,
+    "compositorColorDenoising": true
+  },
+  "technologyReferences": [
+    "https://docs.blender.org/manual/en/5.2/modeling/modifiers/deform/armature.html",
+    "https://docs.blender.org/manual/en/5.2/modeling/geometry_nodes/curve/operations/deform_curves_on_surface.html",
+    "https://docs.blender.org/api/5.2/bpy.types.ActionSlot.html",
+    "https://docs.blender.org/api/5.2/bpy.types.Scene.html"
+  ],
+  "sourceSHA256": {
+    "art/sprout/scripts/build_sample.py": "dfd701d4b5322c2fc520ffb0368f2cf29ad86d5380d9e1ef1beddcc33fab0aca",
+    "art/sprout/scripts/sample_motion.py": "c8529a74571f85f2b47bd696f456cb140820754d81fa7d7877f0c7557db81d1b",
+    "art/sprout/scripts/sample_groom.py": "dfb03b0c9cf610c476b0c8f499b149e88badf61f4b6dd71d88495599644658ed",
+    "art/sprout/scripts/build_design.py": "f3d8859bc86fada87b95eec3bd7e2bcf62724bbd381e882088910e551547bbd9",
+    "art/sprout/scripts/coat_fibers.py": "497fc75c5302a298935bab4746142e6964b19063519e2cecbef7b0d046b60f38"
+  },
+  "phase": "exported",
+  "renderSamples": 48,
+  "renderDevice": "METAL",
+  "runtimeManifestSHA256": "93f2099530e66a91bdbb7b32a9ec88587c731448853bd09ac2382f8f9e58fd79",
+  "alphaVerificationSHA256": "79f9193c3bbc6dcf3d3fe749bead9b942301fe7f458bf9698ab6d1b74560a662",
+  "runtimeFrameCount": 244
+}

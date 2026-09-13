@@ -18,7 +18,8 @@ final class PetRuntime {
     private(set) var automaticActionCount: UInt64 = 0
     private(set) var lowPower = false
     private(set) var reduceMotion = false
-    private(set) var sceneUpdates: UInt64 = 0
+    private(set) var submittedFrames: UInt64 = 0
+    private(set) var characterIssue: String?
     private(set) var footprintMiB: Double?
     private(set) var positionDescription = "Unavailable"
     private(set) var sampling = false
@@ -26,7 +27,7 @@ final class PetRuntime {
     private(set) var diagnosticProgress = ""
     private(set) var message = "Quiet company. Spriglet rests between small moments of activity."
 
-    @ObservationIgnored let renderer = PetRenderView(frame: NSRect(x: 0, y: 0, width: 192, height: 192))
+    @ObservationIgnored let renderer = PetRenderView(frame: NSRect(x: 0, y: 0, width: 224, height: 224))
     @ObservationIgnored private(set) var desktop: PetWindowController!
     private var policy = ActivityPolicy()
     @ObservationIgnored private var tokens: [NotificationCenter.ObservationToken] = []
@@ -41,6 +42,7 @@ final class PetRuntime {
     @ObservationIgnored private var isInteracting = false
     @ObservationIgnored private let isCommandLineProbe = CommandLine.arguments.contains("--probe")
         || CommandLine.arguments.contains("--soak")
+        || CommandLine.arguments.contains("--sample-review")
     @ObservationIgnored private let logger = Logger(subsystem: "dev.spriglet.prototype", category: "lifecycle")
 
     init(preferencesStore: PetPreferencesStore = PetPreferencesStore()) {
@@ -63,11 +65,11 @@ final class PetRuntime {
         return isSleeping ? "Napping" : "Resting"
     }
 
-    var permitsMotion: Bool { policy.allowsAnimation && !reduceMotion }
+    var permitsMotion: Bool { policy.allowsAnimation && !reduceMotion && renderer.assetError == nil }
 
     func start() {
         guard desktop == nil else { return }
-        desktop = PetWindowController(contentView: renderer) { [weak renderer] point in
+        desktop = PetWindowController(contentView: renderer, size: renderer.displaySize) { [weak renderer] point in
             renderer?.containsPet(at: point) ?? false
         }
         desktop.onPetClicked = { [weak self] in
@@ -80,6 +82,7 @@ final class PetRuntime {
             if interacting {
                 cancelBehaviorSchedule()
                 behaviorPlanner.resetAfterInteraction()
+                renderer.resetPose()
             } else {
                 reconcileBehaviorSchedule()
             }
@@ -91,6 +94,9 @@ final class PetRuntime {
         }
         desktop.onOcclusionChanged = { [weak self] visible in self?.setSuspension(.occluded, active: !visible) }
         desktop.onScreenChanged = { [weak self] in self?.refreshEnvironment() }
+        desktop.onMovementInterrupted = { [weak self] in self?.renderer.resetPose() }
+        desktop.onWalkRequested = { [weak self] in self?.walk() }
+        desktop.onImageOffsetChanged = { [weak self] offset in self?.renderer.setImageOffset(offset) }
         desktop.onPlacementSettled = { [weak self] _ in
             self?.savePreferences()
             self?.refreshMeasurements()
@@ -102,6 +108,19 @@ final class PetRuntime {
             if !animating { refreshMeasurements() }
             reconcileBehaviorSchedule()
         }
+        renderer.onPlaybackWillStart = { [weak self] timeline in
+            self?.desktop.beginAuthoredMotion(timeline.rootOffsets) ?? false
+        }
+        renderer.onFrame = { [weak self] snapshot in
+            self?.desktop.applyAuthoredFrame(snapshot) ?? false
+        }
+        renderer.onPlaybackStopped = { [weak self] in self?.desktop.finishAuthoredMotion() }
+        renderer.onAssetError = { [weak self] error in
+            self?.characterIssue = error
+            self?.message = error
+        }
+        characterIssue = renderer.assetError
+        if let characterIssue { message = characterIssue }
         desktop.setClickThrough(clickThrough)
         desktop.setAllSpaces(allSpaces)
         desktop.restorePlacement(initialPlacement)
@@ -113,7 +132,10 @@ final class PetRuntime {
         refreshMeasurements()
         isRunning = true
         logger.info("Companion started; finite activity with a single cancellable resting deadline")
-        if CommandLine.arguments.contains("--soak") {
+        if CommandLine.arguments.contains("--sample-review") {
+            autonomousBehavior = false
+            characterSample()
+        } else if CommandLine.arguments.contains("--soak") {
             runSoak(terminateWhenFinished: true)
         } else if isCommandLineProbe {
             runProbe(terminateWhenFinished: true)
@@ -148,13 +170,42 @@ final class PetRuntime {
         reconcileBehaviorSchedule()
     }
 
-    func walk() {
+    func walk(direction: SampleClipID? = nil) {
         guard permitsMotion else { return }
         cancelBehaviorSchedule()
         behaviorPlanner.resetAfterInteraction()
-        if renderer.isSleeping { renderer.play(.wakeUp) }
-        desktop.beginWalk(duration: 3)
+        renderer.resetPose()
+        guard let clip = fittingWalk(preferred: direction) else {
+            message = "There is not enough room for a planted short walk in that direction. Move Spriglet away from the edge."
+            reconcileBehaviorSchedule()
+            return
+        }
+        renderer.playWalk(clip)
         reconcileBehaviorSchedule()
+    }
+
+    func characterSample() {
+        guard permitsMotion else { return }
+        cancelBehaviorSchedule()
+        behaviorPlanner.resetAfterInteraction()
+        renderer.resetPose()
+        guard let clip = fittingWalk(preferred: nil, sample: true) else {
+            message = "Move Spriglet away from the screen edge to play the complete character sample."
+            reconcileBehaviorSchedule()
+            return
+        }
+        message = "Sprout · idle, a planted short walk, a happy pet reaction, then settle."
+        renderer.playSample(walk: clip)
+        reconcileBehaviorSchedule()
+    }
+
+    private func fittingWalk(preferred: SampleClipID?, sample: Bool = false) -> SampleClipID? {
+        let candidates: [SampleClipID] = preferred.map { [$0] } ?? [.walkLeft, .walkRight]
+        return candidates.first { direction in
+            guard direction == .walkLeft || direction == .walkRight,
+                  let offsets = renderer.rootOffsets(for: sample ? [.idle, direction, .pet, .settle] : [direction]) else { return false }
+            return desktop.canFitRootMotion(offsets)
+        }
     }
 
     func setPaused(_ value: Bool) {
@@ -188,7 +239,7 @@ final class PetRuntime {
         autonomousBehavior = value
         reconcileBehaviorSchedule()
         savePreferences()
-        message = value ? "Spriglet will occasionally blink, look around, stretch, or nap." : "Quiet behavior is off. You can still interact with Spriglet."
+        message = value ? "Spriglet will occasionally play its idle sample or settle into a nap." : "Quiet behavior is off. You can still interact with Spriglet."
     }
 
     func recenter() {
@@ -214,7 +265,7 @@ final class PetRuntime {
     }
 
     func refreshMeasurements() {
-        sceneUpdates = renderer.sceneUpdateCount
+        submittedFrames = renderer.submittedFrameCount
         footprintMiB = ProcessSample.capture().footprintBytes.map { Double($0) / 1_048_576 }
         if let frame = desktop?.panel.frame {
             positionDescription = String(format: "x %.0f, y %.0f · %.0f × %.0f pt", frame.minX, frame.minY, frame.width, frame.height)
@@ -234,7 +285,7 @@ final class PetRuntime {
         probePlacement = desktop.currentPlacement
         sampling = true
         cancelBehaviorSchedule()
-        diagnosticProgress = extended ? "Warming up for 100 activity cycles. About four minutes; cancel any time." : "Checking behaviors and resting."
+        diagnosticProgress = extended ? "Warming up for 100 activity cycles. About 6–7 minutes; cancel any time." : "Checking behaviors and resting."
         message = "Running a finite check. Controls return when it finishes."
         probeTask = Task { [weak self] in
             guard let self else { return }
@@ -305,7 +356,6 @@ final class PetRuntime {
         let maxFPS = desktop?.panel.screen?.maximumFramesPerSecond ?? 60
         let fps = lowPower ? 30 : maxFPS
         renderer.setPreferredFramesPerSecond(fps)
-        desktop?.movementFrameRate = fps
         if reduceMotion {
             desktop?.stopMovement()
             renderer.resetPose()

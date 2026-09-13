@@ -13,7 +13,7 @@ fi
 task_report="$(mktemp -t spriglet-soak)"
 trap 'rm -f "$task_report"' EXIT
 task_executable="$task_root/.build/xcode/Build/Products/Release/Spriglet.app/Contents/MacOS/Spriglet"
-print -u2 'Running 100 show/hide/reaction cycles and a final rest (about four to five minutes). Use Cancel Check in Spriglet to cancel.'
+print -u2 'Running 100 show/hide/reaction cycles and a final rest (about 6–7 minutes). Use Cancel Check in Spriglet to cancel.'
 "$task_executable" --soak > "$task_report"
 if [[ ! -s "$task_report" ]]; then
     print -u2 'The soak ended without a report, for example after cancellation or quitting.'

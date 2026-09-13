@@ -13,7 +13,7 @@ struct SprigletApp: App {
         }
         .defaultSize(width: 480, height: 740)
         .windowResizability(.contentSize)
-        .defaultLaunchBehavior(CommandLine.arguments.contains("--controls") ? .presented : .suppressed)
+        .defaultLaunchBehavior(CommandLine.arguments.contains("--controls") || CommandLine.arguments.contains("--sample-review") ? .presented : .suppressed)
     }
 }
 

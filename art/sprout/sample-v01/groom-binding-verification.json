@@ -1,0 +1,2470 @@
+{
+  "maximumRootError": 4.842304232499576e-07,
+  "tolerance": 0.0005,
+  "samples": [
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Sprout body",
+      "strand": 0,
+      "rootError": 1.1920928955078125e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Sprout body",
+      "strand": 1,
+      "rootError": 6.143906154658885e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Sprout body",
+      "strand": 2,
+      "rootError": 5.1619136559035694e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Sprout body",
+      "strand": 3,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Sprout body",
+      "strand": 4,
+      "rootError": 8.429369702178807e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Sprout body",
+      "strand": 5,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Sprout body",
+      "strand": 6,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Sprout body",
+      "strand": 7,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left foot",
+      "strand": 0,
+      "rootError": 2.986047331594191e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left foot",
+      "strand": 1,
+      "rootError": 3.414284955677271e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left foot",
+      "strand": 2,
+      "rootError": 1.666000468656264e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left foot",
+      "strand": 3,
+      "rootError": 2.1073424255447017e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left foot",
+      "strand": 4,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left foot",
+      "strand": 5,
+      "rootError": 1.666000468656264e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left foot",
+      "strand": 6,
+      "rootError": 6.828569911354542e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left foot",
+      "strand": 7,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left paw",
+      "strand": 0,
+      "rootError": 4.2146848510894035e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left paw",
+      "strand": 1,
+      "rootError": 1.1920928955078125e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left paw",
+      "strand": 2,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left paw",
+      "strand": 3,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left paw",
+      "strand": 4,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left paw",
+      "strand": 5,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left paw",
+      "strand": 6,
+      "rootError": 0.0
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left paw",
+      "strand": 7,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right foot",
+      "strand": 0,
+      "rootError": 1.4901161193847656e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right foot",
+      "strand": 1,
+      "rootError": 4.470348358154297e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right foot",
+      "strand": 2,
+      "rootError": 3.650024149988857e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right foot",
+      "strand": 3,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right foot",
+      "strand": 4,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right foot",
+      "strand": 5,
+      "rootError": 3.161013638317052e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right foot",
+      "strand": 6,
+      "rootError": 5.972094663188382e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right foot",
+      "strand": 7,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right paw",
+      "strand": 0,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right paw",
+      "strand": 1,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right paw",
+      "strand": 2,
+      "rootError": 1.1920928955078125e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right paw",
+      "strand": 3,
+      "rootError": 1.228781230931777e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right paw",
+      "strand": 4,
+      "rootError": 6.664001874625056e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right paw",
+      "strand": 5,
+      "rootError": 4.2146848510894035e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right paw",
+      "strand": 6,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right paw",
+      "strand": 7,
+      "rootError": 6.664001874625056e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Rounded tail",
+      "strand": 0,
+      "rootError": 6.705522537231445e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Rounded tail",
+      "strand": 1,
+      "rootError": 2.9804368680522825e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Rounded tail",
+      "strand": 2,
+      "rootError": 1.2377834115800373e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Rounded tail",
+      "strand": 3,
+      "rootError": 0.0
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Rounded tail",
+      "strand": 4,
+      "rootError": 0.0
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Rounded tail",
+      "strand": 5,
+      "rootError": 6.006850114687196e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Rounded tail",
+      "strand": 6,
+      "rootError": 6.143906154658885e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Rounded tail",
+      "strand": 7,
+      "rootError": 1.2036781326982014e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left leaf ear",
+      "strand": 0,
+      "rootError": 2.4027400458748785e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left leaf ear",
+      "strand": 1,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left leaf ear",
+      "strand": 2,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left leaf ear",
+      "strand": 3,
+      "rootError": 3.725290298461914e-09
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left leaf ear",
+      "strand": 4,
+      "rootError": 2.4578447942743725e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left leaf ear",
+      "strand": 5,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left leaf ear",
+      "strand": 6,
+      "rootError": 2.4586915969848633e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Left leaf ear",
+      "strand": 7,
+      "rootError": 1.3348812510944096e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right leaf ear",
+      "strand": 0,
+      "rootError": 4.777675730550706e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right leaf ear",
+      "strand": 1,
+      "rootError": 1.1921292747407888e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right leaf ear",
+      "strand": 2,
+      "rootError": 0.0
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right leaf ear",
+      "strand": 3,
+      "rootError": 2.384185791015625e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right leaf ear",
+      "strand": 4,
+      "rootError": 0.0
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right leaf ear",
+      "strand": 5,
+      "rootError": 2.98059601444849e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right leaf ear",
+      "strand": 6,
+      "rootError": 7.450580596923828e-09
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Right leaf ear",
+      "strand": 7,
+      "rootError": 1.1934018492431453e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 1",
+      "strand": 0,
+      "rootError": 2.384476811558792e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 1",
+      "strand": 1,
+      "rootError": 3.725290298461914e-09
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 1",
+      "strand": 2,
+      "rootError": 1.4930236657970956e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 1",
+      "strand": 3,
+      "rootError": 6.984919309616089e-10
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 1",
+      "strand": 4,
+      "rootError": 2.3888560196770133e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 1",
+      "strand": 5,
+      "rootError": 2.3848405372975275e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 1",
+      "strand": 6,
+      "rootError": 7.679882693323606e-09
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 1",
+      "strand": 7,
+      "rootError": 7.508562643358995e-09
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 2",
+      "strand": 0,
+      "rootError": 7.450580596923828e-09
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 2",
+      "strand": 1,
+      "rootError": 7.450580596923828e-09
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 2",
+      "strand": 2,
+      "rootError": 2.384476811558792e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 2",
+      "strand": 3,
+      "rootError": 7.450580596923828e-09
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 2",
+      "strand": 4,
+      "rootError": 7.450580596923828e-09
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 2",
+      "strand": 5,
+      "rootError": 1.5359765386647212e-08
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 2",
+      "strand": 6,
+      "rootError": 2.385678032204507e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 2",
+      "strand": 7,
+      "rootError": 3.725290298461914e-09
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 3",
+      "strand": 0,
+      "rootError": 5.587935447692871e-09
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 3",
+      "strand": 1,
+      "rootError": 2.384185791015625e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 3",
+      "strand": 2,
+      "rootError": 2.386512961692656e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 3",
+      "strand": 3,
+      "rootError": 3.725290298461914e-09
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 3",
+      "strand": 4,
+      "rootError": 0.0
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 3",
+      "strand": 5,
+      "rootError": 2.384185791015625e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 3",
+      "strand": 6,
+      "rootError": 2.403894931808364e-07
+    },
+    {
+      "clip": "idle",
+      "frame": 14,
+      "surface": "Crown leaf 3",
+      "strand": 7,
+      "rootError": 7.450580596923828e-09
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Sprout body",
+      "strand": 0,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Sprout body",
+      "strand": 1,
+      "rootError": 1.4901161193847656e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Sprout body",
+      "strand": 2,
+      "rootError": 1.3657139822709083e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Sprout body",
+      "strand": 3,
+      "rootError": 1.1920928955078125e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Sprout body",
+      "strand": 4,
+      "rootError": 1.3328003749250113e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Sprout body",
+      "strand": 5,
+      "rootError": 1.6049041769309353e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Sprout body",
+      "strand": 6,
+      "rootError": 1.4901161193847656e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Sprout body",
+      "strand": 7,
+      "rootError": 4.2146848510894035e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left foot",
+      "strand": 0,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left foot",
+      "strand": 1,
+      "rootError": 2.2351741790771484e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left foot",
+      "strand": 2,
+      "rootError": 1.862645149230957e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left foot",
+      "strand": 3,
+      "rootError": 1.666000468656264e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left foot",
+      "strand": 4,
+      "rootError": 6.143906154658885e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left foot",
+      "strand": 5,
+      "rootError": 1.4901161193847656e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left foot",
+      "strand": 6,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left foot",
+      "strand": 7,
+      "rootError": 4.012260442327338e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left paw",
+      "strand": 0,
+      "rootError": 1.2202813740193247e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left paw",
+      "strand": 1,
+      "rootError": 1.228781230931777e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left paw",
+      "strand": 2,
+      "rootError": 1.4057727354849284e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left paw",
+      "strand": 3,
+      "rootError": 1.2013700229374393e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left paw",
+      "strand": 4,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left paw",
+      "strand": 5,
+      "rootError": 1.228781230931777e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left paw",
+      "strand": 6,
+      "rootError": 2.4755668231600746e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left paw",
+      "strand": 7,
+      "rootError": 8.940696716308594e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right foot",
+      "strand": 0,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right foot",
+      "strand": 1,
+      "rootError": 8.560065398421926e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right foot",
+      "strand": 2,
+      "rootError": 3.332000937312528e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right foot",
+      "strand": 3,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right foot",
+      "strand": 4,
+      "rootError": 6.664001874625056e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right foot",
+      "strand": 5,
+      "rootError": 6.006850114687196e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right foot",
+      "strand": 6,
+      "rootError": 5.972094663188382e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right foot",
+      "strand": 7,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right paw",
+      "strand": 0,
+      "rootError": 1.3328003749250113e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right paw",
+      "strand": 1,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right paw",
+      "strand": 2,
+      "rootError": 1.3328003749250113e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right paw",
+      "strand": 3,
+      "rootError": 8.429369702178807e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right paw",
+      "strand": 4,
+      "rootError": 1.3328003749250113e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right paw",
+      "strand": 5,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right paw",
+      "strand": 6,
+      "rootError": 8.429369702178807e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right paw",
+      "strand": 7,
+      "rootError": 6.664001874625056e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Rounded tail",
+      "strand": 0,
+      "rootError": 7.028863677424642e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Rounded tail",
+      "strand": 1,
+      "rootError": 6.109930376282605e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Rounded tail",
+      "strand": 2,
+      "rootError": 1.0956407464930968e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Rounded tail",
+      "strand": 3,
+      "rootError": 3.725290298461914e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Rounded tail",
+      "strand": 4,
+      "rootError": 4.2146848510894035e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Rounded tail",
+      "strand": 5,
+      "rootError": 1.0195323961529142e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Rounded tail",
+      "strand": 6,
+      "rootError": 7.300048299977713e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Rounded tail",
+      "strand": 7,
+      "rootError": 6.537857940340133e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left leaf ear",
+      "strand": 0,
+      "rootError": 2.4027400458748785e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left leaf ear",
+      "strand": 1,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left leaf ear",
+      "strand": 2,
+      "rootError": 1.1920928955078125e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left leaf ear",
+      "strand": 3,
+      "rootError": 2.7314279645418166e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left leaf ear",
+      "strand": 4,
+      "rootError": 4.842304232499576e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left leaf ear",
+      "strand": 5,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left leaf ear",
+      "strand": 6,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Left leaf ear",
+      "strand": 7,
+      "rootError": 1.3657139822709083e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right leaf ear",
+      "strand": 0,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right leaf ear",
+      "strand": 1,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right leaf ear",
+      "strand": 2,
+      "rootError": 2.407356265396403e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right leaf ear",
+      "strand": 3,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right leaf ear",
+      "strand": 4,
+      "rootError": 7.563807258101908e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right leaf ear",
+      "strand": 5,
+      "rootError": 2.388837865275353e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right leaf ear",
+      "strand": 6,
+      "rootError": 2.421152116249788e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Right leaf ear",
+      "strand": 7,
+      "rootError": 1.2489448945403256e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 1",
+      "strand": 0,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 1",
+      "strand": 1,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 1",
+      "strand": 2,
+      "rootError": 4.2146848510894035e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 1",
+      "strand": 3,
+      "rootError": 3.332000937312528e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 1",
+      "strand": 4,
+      "rootError": 1.4901161193847656e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 1",
+      "strand": 5,
+      "rootError": 4.770699320310986e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 1",
+      "strand": 6,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 1",
+      "strand": 7,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 2",
+      "strand": 0,
+      "rootError": 2.384185791015625e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 2",
+      "strand": 1,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 2",
+      "strand": 2,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 2",
+      "strand": 3,
+      "rootError": 2.4027400458748785e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 2",
+      "strand": 4,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 2",
+      "strand": 5,
+      "rootError": 2.4027400458748785e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 2",
+      "strand": 6,
+      "rootError": 2.457562461863554e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 2",
+      "strand": 7,
+      "rootError": 2.457562461863554e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 3",
+      "strand": 0,
+      "rootError": 3.332000937312528e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 3",
+      "strand": 1,
+      "rootError": 4.784786990718762e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 3",
+      "strand": 2,
+      "rootError": 3.725290298461914e-09
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 3",
+      "strand": 3,
+      "rootError": 7.916241884231567e-09
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 3",
+      "strand": 4,
+      "rootError": 6.365778852490731e-08
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 3",
+      "strand": 5,
+      "rootError": 2.4578447942743725e-07
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 3",
+      "strand": 6,
+      "rootError": 9.313225746154785e-10
+    },
+    {
+      "clip": "walkRight",
+      "frame": 30,
+      "surface": "Crown leaf 3",
+      "strand": 7,
+      "rootError": 7.450580596923828e-09
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Sprout body",
+      "strand": 0,
+      "rootError": 1.228781230931777e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Sprout body",
+      "strand": 1,
+      "rootError": 1.0323827311807139e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Sprout body",
+      "strand": 2,
+      "rootError": 1.9082797281243946e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Sprout body",
+      "strand": 3,
+      "rootError": 1.2489448945403256e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Sprout body",
+      "strand": 4,
+      "rootError": 1.4600096599955427e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Sprout body",
+      "strand": 5,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Sprout body",
+      "strand": 6,
+      "rootError": 1.228781230931777e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Sprout body",
+      "strand": 7,
+      "rootError": 1.1920928955078125e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left foot",
+      "strand": 0,
+      "rootError": 6.143906154658885e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left foot",
+      "strand": 1,
+      "rootError": 2.6863450374185958e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left foot",
+      "strand": 2,
+      "rootError": 6.143906154658885e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left foot",
+      "strand": 3,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left foot",
+      "strand": 4,
+      "rootError": 7.028863677424642e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left foot",
+      "strand": 5,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left foot",
+      "strand": 6,
+      "rootError": 6.143906154658885e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left foot",
+      "strand": 7,
+      "rootError": 1.4901161193847656e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left paw",
+      "strand": 0,
+      "rootError": 1.2731557704981462e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left paw",
+      "strand": 1,
+      "rootError": 1.4525049712420927e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left paw",
+      "strand": 2,
+      "rootError": 2.1420419216156006e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left paw",
+      "strand": 3,
+      "rootError": 1.2111849187716082e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left paw",
+      "strand": 4,
+      "rootError": 4.470348358154297e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left paw",
+      "strand": 5,
+      "rootError": 1.3328003749250113e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left paw",
+      "strand": 6,
+      "rootError": 1.1944189326376765e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left paw",
+      "strand": 7,
+      "rootError": 1.7881393432617188e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right foot",
+      "strand": 0,
+      "rootError": 1.341104507446289e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right foot",
+      "strand": 1,
+      "rootError": 8.940696716308594e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right foot",
+      "strand": 2,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right foot",
+      "strand": 3,
+      "rootError": 6.664001874625056e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right foot",
+      "strand": 4,
+      "rootError": 1.3328003749250113e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right foot",
+      "strand": 5,
+      "rootError": 1.1920928955078125e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right foot",
+      "strand": 6,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right foot",
+      "strand": 7,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right paw",
+      "strand": 0,
+      "rootError": 1.7881393432617188e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right paw",
+      "strand": 1,
+      "rootError": 1.0323827311807139e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right paw",
+      "strand": 2,
+      "rootError": 1.3328003749250113e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right paw",
+      "strand": 3,
+      "rootError": 1.6858739404357614e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right paw",
+      "strand": 4,
+      "rootError": 1.3328003749250113e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right paw",
+      "strand": 5,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right paw",
+      "strand": 6,
+      "rootError": 8.429369702178807e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right paw",
+      "strand": 7,
+      "rootError": 1.7881393432617188e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Rounded tail",
+      "strand": 0,
+      "rootError": 8.059035112255788e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Rounded tail",
+      "strand": 1,
+      "rootError": 1.3738191809196602e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Rounded tail",
+      "strand": 2,
+      "rootError": 4.2146848510894035e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Rounded tail",
+      "strand": 3,
+      "rootError": 5.271647758068482e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Rounded tail",
+      "strand": 4,
+      "rootError": 1.2377834115800373e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Rounded tail",
+      "strand": 5,
+      "rootError": 8.024520884654677e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Rounded tail",
+      "strand": 6,
+      "rootError": 6.664001874625056e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Rounded tail",
+      "strand": 7,
+      "rootError": 4.280032699210963e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left leaf ear",
+      "strand": 0,
+      "rootError": 4.81067551891742e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left leaf ear",
+      "strand": 1,
+      "rootError": 6.006850114687196e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left leaf ear",
+      "strand": 2,
+      "rootError": 1.1926748300777466e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left leaf ear",
+      "strand": 3,
+      "rootError": 2.457562461863554e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left leaf ear",
+      "strand": 4,
+      "rootError": 2.385349660155493e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left leaf ear",
+      "strand": 5,
+      "rootError": 6.50593981019146e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left leaf ear",
+      "strand": 6,
+      "rootError": 2.4027400458748785e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Left leaf ear",
+      "strand": 7,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right leaf ear",
+      "strand": 0,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right leaf ear",
+      "strand": 1,
+      "rootError": 6.664001874625056e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right leaf ear",
+      "strand": 2,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right leaf ear",
+      "strand": 3,
+      "rootError": 2.384185791015625e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right leaf ear",
+      "strand": 4,
+      "rootError": 8.429369702178807e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right leaf ear",
+      "strand": 5,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right leaf ear",
+      "strand": 6,
+      "rootError": 1.3328003749250113e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Right leaf ear",
+      "strand": 7,
+      "rootError": 1.228781230931777e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 1",
+      "strand": 0,
+      "rootError": 2.384185791015625e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 1",
+      "strand": 1,
+      "rootError": 2.6656007498500226e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 1",
+      "strand": 2,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 1",
+      "strand": 3,
+      "rootError": 6.664001874625056e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 1",
+      "strand": 4,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 1",
+      "strand": 5,
+      "rootError": 4.814712530792806e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 1",
+      "strand": 6,
+      "rootError": 2.457562461863554e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 1",
+      "strand": 7,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 2",
+      "strand": 0,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 2",
+      "strand": 1,
+      "rootError": 2.4755668231600746e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 2",
+      "strand": 2,
+      "rootError": 6.664001874625056e-08
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 2",
+      "strand": 3,
+      "rootError": 2.384185791015625e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 2",
+      "strand": 4,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 2",
+      "strand": 5,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 2",
+      "strand": 6,
+      "rootError": 2.4027400458748785e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 2",
+      "strand": 7,
+      "rootError": 2.4027400458748785e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 3",
+      "strand": 0,
+      "rootError": 2.457562461863554e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 3",
+      "strand": 1,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 3",
+      "strand": 2,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 3",
+      "strand": 3,
+      "rootError": 2.457562461863554e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 3",
+      "strand": 4,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 3",
+      "strand": 5,
+      "rootError": 0.0
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 3",
+      "strand": 6,
+      "rootError": 2.384185791015625e-07
+    },
+    {
+      "clip": "walkLeft",
+      "frame": 42,
+      "surface": "Crown leaf 3",
+      "strand": 7,
+      "rootError": 2.4755668231600746e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Sprout body",
+      "strand": 0,
+      "rootError": 1.2013700229374393e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Sprout body",
+      "strand": 1,
+      "rootError": 6.828569911354542e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Sprout body",
+      "strand": 2,
+      "rootError": 4.2146848510894035e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Sprout body",
+      "strand": 3,
+      "rootError": 0.0
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Sprout body",
+      "strand": 4,
+      "rootError": 8.429369702178807e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Sprout body",
+      "strand": 5,
+      "rootError": 1.1920928955078125e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Sprout body",
+      "strand": 6,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Sprout body",
+      "strand": 7,
+      "rootError": 1.2377834115800373e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left foot",
+      "strand": 0,
+      "rootError": 2.986047331594191e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left foot",
+      "strand": 1,
+      "rootError": 3.414284955677271e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left foot",
+      "strand": 2,
+      "rootError": 1.666000468656264e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left foot",
+      "strand": 3,
+      "rootError": 2.1073424255447017e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left foot",
+      "strand": 4,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left foot",
+      "strand": 5,
+      "rootError": 1.666000468656264e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left foot",
+      "strand": 6,
+      "rootError": 6.828569911354542e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left foot",
+      "strand": 7,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left paw",
+      "strand": 0,
+      "rootError": 2.384185791015625e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left paw",
+      "strand": 1,
+      "rootError": 8.429369702178807e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left paw",
+      "strand": 2,
+      "rootError": 0.0
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left paw",
+      "strand": 3,
+      "rootError": 1.7881393432617188e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left paw",
+      "strand": 4,
+      "rootError": 8.429369702178807e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left paw",
+      "strand": 5,
+      "rootError": 1.3328003749250113e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left paw",
+      "strand": 6,
+      "rootError": 1.1920928955078125e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left paw",
+      "strand": 7,
+      "rootError": 8.429369702178807e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right foot",
+      "strand": 0,
+      "rootError": 1.4901161193847656e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right foot",
+      "strand": 1,
+      "rootError": 4.470348358154297e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right foot",
+      "strand": 2,
+      "rootError": 3.650024149988857e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right foot",
+      "strand": 3,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right foot",
+      "strand": 4,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right foot",
+      "strand": 5,
+      "rootError": 3.161013638317052e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right foot",
+      "strand": 6,
+      "rootError": 5.972094663188382e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right foot",
+      "strand": 7,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right paw",
+      "strand": 0,
+      "rootError": 1.4600096599955427e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right paw",
+      "strand": 1,
+      "rootError": 7.300048299977713e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right paw",
+      "strand": 2,
+      "rootError": 1.1920928955078125e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right paw",
+      "strand": 3,
+      "rootError": 1.3328003749250113e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right paw",
+      "strand": 4,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right paw",
+      "strand": 5,
+      "rootError": 1.3657139822709083e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right paw",
+      "strand": 6,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right paw",
+      "strand": 7,
+      "rootError": 1.228781230931777e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Rounded tail",
+      "strand": 0,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Rounded tail",
+      "strand": 1,
+      "rootError": 4.217834912277672e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Rounded tail",
+      "strand": 2,
+      "rootError": 6.664001874625056e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Rounded tail",
+      "strand": 3,
+      "rootError": 2.9802322387695312e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Rounded tail",
+      "strand": 4,
+      "rootError": 6.664001874625056e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Rounded tail",
+      "strand": 5,
+      "rootError": 7.450580596923828e-09
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Rounded tail",
+      "strand": 6,
+      "rootError": 6.664001874625056e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Rounded tail",
+      "strand": 7,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left leaf ear",
+      "strand": 0,
+      "rootError": 2.384476811558792e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left leaf ear",
+      "strand": 1,
+      "rootError": 6.143906154658885e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left leaf ear",
+      "strand": 2,
+      "rootError": 7.450580596923828e-09
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left leaf ear",
+      "strand": 3,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left leaf ear",
+      "strand": 4,
+      "rootError": 2.4856369670647795e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left leaf ear",
+      "strand": 5,
+      "rootError": 3.332000937312528e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left leaf ear",
+      "strand": 6,
+      "rootError": 1.228781230931777e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Left leaf ear",
+      "strand": 7,
+      "rootError": 1.228781230931777e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right leaf ear",
+      "strand": 0,
+      "rootError": 2.4131141216608354e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right leaf ear",
+      "strand": 1,
+      "rootError": 6.244724472701628e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right leaf ear",
+      "strand": 2,
+      "rootError": 5.960464477539063e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right leaf ear",
+      "strand": 3,
+      "rootError": 2.407356265396403e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right leaf ear",
+      "strand": 4,
+      "rootError": 3.332000937312528e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right leaf ear",
+      "strand": 5,
+      "rootError": 3.0719530773294423e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right leaf ear",
+      "strand": 6,
+      "rootError": 0.0
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Right leaf ear",
+      "strand": 7,
+      "rootError": 1.3328003749250113e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 1",
+      "strand": 0,
+      "rootError": 1.1920928955078125e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 1",
+      "strand": 1,
+      "rootError": 1.0536712127723509e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 1",
+      "strand": 2,
+      "rootError": 2.6863450374185958e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 1",
+      "strand": 3,
+      "rootError": 1.666000468656264e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 1",
+      "strand": 4,
+      "rootError": 1.2036781326982014e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 1",
+      "strand": 5,
+      "rootError": 2.4646110694144804e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 1",
+      "strand": 6,
+      "rootError": 2.385349660155493e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 1",
+      "strand": 7,
+      "rootError": 2.356080457693621e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 2",
+      "strand": 0,
+      "rootError": 3.578800129628918e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 2",
+      "strand": 1,
+      "rootError": 5.774199962615967e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 2",
+      "strand": 2,
+      "rootError": 1.1780402288468106e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 2",
+      "strand": 3,
+      "rootError": 3.1480390654507057e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 2",
+      "strand": 4,
+      "rootError": 3.725290298461914e-09
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 2",
+      "strand": 5,
+      "rootError": 2.385349660155493e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 2",
+      "strand": 6,
+      "rootError": 1.5359765386647212e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 2",
+      "strand": 7,
+      "rootError": 3.003425057343598e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 3",
+      "strand": 0,
+      "rootError": 2.9933003112651774e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 3",
+      "strand": 1,
+      "rootError": 2.461529787157895e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 3",
+      "strand": 2,
+      "rootError": 3.1828894262453654e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 3",
+      "strand": 3,
+      "rootError": 1.192238405779396e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 3",
+      "strand": 4,
+      "rootError": 1.1944189326376765e-07
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 3",
+      "strand": 5,
+      "rootError": 1.5543952333251496e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 3",
+      "strand": 6,
+      "rootError": 6.047862803583674e-08
+    },
+    {
+      "clip": "pet",
+      "frame": 25,
+      "surface": "Crown leaf 3",
+      "strand": 7,
+      "rootError": 5.122274160385132e-09
+    }
+  ]
+}
