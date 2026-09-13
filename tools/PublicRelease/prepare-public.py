@@ -178,6 +178,11 @@ def load_png_reader():
 
 def scrub_text(text: str, relative: str, source_root: Path, personal_emails: set[str]) -> str:
     source = source_root.as_posix()
+    # A redacted private note has no public target. Remove the entire Markdown
+    # link so an angled local target cannot become a malformed placeholder link.
+    private_note = r"/Users/[A-Za-z0-9_.-]+/Library/Mobile Documents/"
+    note_link = re.compile(r"\[[^\]\r\n]+\]\((?:<" + private_note + r"[^<>\r\n]+>|" + private_note + r"[^()\r\n]+)\)")
+    text = note_link.sub("private local note (not published)", text)
     # Real local Markdown targets become usable relative links in the public tree.
     pattern = re.compile(r"\]\(<?" + re.escape(source) + r"/([^)>\n]+)>?\)")
     def local_link(match):

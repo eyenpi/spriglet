@@ -87,6 +87,14 @@ class TextPrivacyTests(unittest.TestCase):
         self.assertNotIn("private-session", clean)
         self.assertNotIn(PRIVATE_HOME, clean)
 
+    def test_private_note_markdown_link_becomes_readable_plain_text(self):
+        path = PRIVATE_HOME + "/Library/Mobile Documents/iCloud~md~obsidian/Documents/Main/Private Draft.md"
+        for target in ["<" + path + ">", path]:
+            with self.subTest(angled=target.startswith("<")):
+                text = "Source brief: [Private Draft.md](" + target + "). [Public art](../art/source.png)."
+                clean = PUBLIC.scrub_text(text, "docs/plan.md", Path(PRIVATE_HOME) / "project", set())
+                self.assertEqual(clean, "Source brief: private local note (not published). [Public art](../art/source.png).")
+
     def test_json_keeps_measured_values_and_historical_hashes(self):
         original_hash = "b" * 64
         text = json.dumps({"passed": True, "cpu": .1, "artifactSHA256": original_hash,
