@@ -24,6 +24,10 @@ final class PetRenderView: NSView, @MainActor SKViewDelegate {
     private var queuedAction: PetAction?
     private var isSuspended = false
     private var needsPresentation = true
+    /// A delegate decision, not proof that a GPU frame was presented. The scene
+    /// update counter remains the independent evidence that SpriteKit ran it.
+    private var hasAllowedInitialFrame = false
+    private var windowObservation: NotificationCenter.ObservationToken?
 
     override var isOpaque: Bool { false }
 
@@ -37,6 +41,10 @@ final class PetRenderView: NSView, @MainActor SKViewDelegate {
         configureRenderer()
     }
 
+    isolated deinit {
+        if let windowObservation { NotificationCenter.default.removeObserver(windowObservation) }
+    }
+
     private func configureRenderer() {
         spriteView.frame = bounds
         spriteView.autoresizingMask = [.width, .height]
@@ -46,11 +54,21 @@ final class PetRenderView: NSView, @MainActor SKViewDelegate {
         addSubview(spriteView)
         petScene.onClipFinished = { [weak self] sleeping in self?.finishClip(sleeping: sleeping) }
         spriteView.presentScene(petScene)
+        spriteView.isPaused = true
     }
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
-        if window != nil { requestPresentation() } else { spriteView.isPaused = true }
+        if let windowObservation { NotificationCenter.default.removeObserver(windowObservation) }
+        windowObservation = nil
+        guard let window else {
+            spriteView.isPaused = true
+            return
+        }
+        windowObservation = NotificationCenter.default.addObserver(
+            of: window, for: PetWindowOcclusionChanged.self
+        ) { [weak self] _ in self?.requestPresentation() }
+        requestPresentation()
     }
 
     override func setFrameSize(_ newSize: NSSize) {
@@ -78,11 +96,12 @@ final class PetRenderView: NSView, @MainActor SKViewDelegate {
 
     /// Stops frame processing and cancels active/queued clips. Resuming presents
     /// neutral; until then, the last frame can remain visible if its host does.
+    /// A never-rendered visible host gets one neutral frame even while suspended.
     func setSuspended(_ suspended: Bool) {
         guard suspended != isSuspended else { return }
         isSuspended = suspended
         cancelClips()
-        if suspended { spriteView.isPaused = true } else { requestPresentation() }
+        if suspended { updateRenderReadiness() } else { requestPresentation() }
     }
 
     func resetPose() {
@@ -138,12 +157,22 @@ final class PetRenderView: NSView, @MainActor SKViewDelegate {
 
     private func requestPresentation() {
         needsPresentation = true
-        if !isSuspended, window != nil { spriteView.isPaused = false }
+        updateRenderReadiness()
+    }
+
+    private var hostIsVisible: Bool {
+        window?.isVisible == true && window?.occlusionState.contains(.visible) == true
+    }
+
+    private func updateRenderReadiness() {
+        // Ordering a cold paused window in must still reveal its static pose.
+        // Hidden hosts get no warm-up loop, and an existing pause stays immediate.
+        spriteView.isPaused = !hostIsVisible || (isSuspended && hasAllowedInitialFrame)
     }
 
     func view(_ view: SKView, shouldRenderAtTime time: TimeInterval) -> Bool {
         viewRenderCallbackCount &+= 1
-        guard !isSuspended else {
+        guard hostIsVisible, !isSuspended || !hasAllowedInitialFrame else {
             view.isPaused = true
             return false
         }
@@ -154,6 +183,16 @@ final class PetRenderView: NSView, @MainActor SKViewDelegate {
             return false
         }
         needsPresentation = false
+        hasAllowedInitialFrame = true
         return true
     }
+}
+
+/// AppKit's stable notification, delivered through Foundation's macOS 26 API.
+private struct PetWindowOcclusionChanged: NotificationCenter.MainActorMessage {
+    typealias Subject = NSWindow
+
+    static var name: Notification.Name { NSWindow.didChangeOcclusionStateNotification }
+
+    static func makeMessage(_ notification: Notification) -> Self? { Self() }
 }

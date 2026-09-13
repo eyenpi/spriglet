@@ -20,8 +20,10 @@ final class PetRuntime {
     private(set) var reduceMotion = false
     private(set) var sceneUpdates: UInt64 = 0
     private(set) var footprintMiB: Double?
+    private(set) var positionDescription = "Unavailable"
     private(set) var sampling = false
-    private(set) var probeResult: ProbeReport?
+    private(set) var reportJSON: String?
+    private(set) var diagnosticProgress = ""
     private(set) var message = "Quiet company. Spriglet rests between small moments of activity."
 
     @ObservationIgnored let renderer = PetRenderView(frame: NSRect(x: 0, y: 0, width: 192, height: 192))
@@ -33,9 +35,12 @@ final class PetRuntime {
     @ObservationIgnored private var behaviorGeneration: UInt64 = 0
     @ObservationIgnored private var behaviorPlanner = PetBehaviorPlanner(seed: UInt64.random(in: .min ... .max))
     @ObservationIgnored private let preferencesStore: PetPreferencesStore
+    @ObservationIgnored private let initialPlacement: PetSavedPlacement?
+    @ObservationIgnored private var probePlacement: PetSavedPlacement?
     @ObservationIgnored private var isRunning = false
     @ObservationIgnored private var isInteracting = false
     @ObservationIgnored private let isCommandLineProbe = CommandLine.arguments.contains("--probe")
+        || CommandLine.arguments.contains("--soak")
     @ObservationIgnored private let logger = Logger(subsystem: "dev.spriglet.prototype", category: "lifecycle")
 
     init(preferencesStore: PetPreferencesStore = PetPreferencesStore()) {
@@ -46,6 +51,7 @@ final class PetRuntime {
         clickThrough = preferences.clickThrough
         allSpaces = preferences.allSpaces
         autonomousBehavior = preferences.autonomousBehavior
+        initialPlacement = preferences.placement
     }
 
     var status: String {
@@ -80,10 +86,15 @@ final class PetRuntime {
         }
         desktop.onMovementChanged = { [weak self] moving in
             self?.isMoving = moving
+            if !moving { self?.refreshMeasurements() }
             self?.reconcileBehaviorSchedule()
         }
         desktop.onOcclusionChanged = { [weak self] visible in self?.setSuspension(.occluded, active: !visible) }
         desktop.onScreenChanged = { [weak self] in self?.refreshEnvironment() }
+        desktop.onPlacementSettled = { [weak self] _ in
+            self?.savePreferences()
+            self?.refreshMeasurements()
+        }
         renderer.onAnimationStateChanged = { [weak self] animating in
             guard let self else { return }
             isAnimating = animating
@@ -93,6 +104,7 @@ final class PetRuntime {
         }
         desktop.setClickThrough(clickThrough)
         desktop.setAllSpaces(allSpaces)
+        desktop.restorePlacement(initialPlacement)
         setSuspension(.hidden, active: isHidden)
         setSuspension(.userPaused, active: isPaused)
         observeEnvironment()
@@ -101,7 +113,9 @@ final class PetRuntime {
         refreshMeasurements()
         isRunning = true
         logger.info("Companion started; finite activity with a single cancellable resting deadline")
-        if isCommandLineProbe {
+        if CommandLine.arguments.contains("--soak") {
+            runSoak(terminateWhenFinished: true)
+        } else if isCommandLineProbe {
             runProbe(terminateWhenFinished: true)
         } else {
             reconcileBehaviorSchedule()
@@ -191,24 +205,55 @@ final class PetRuntime {
         refreshEnvironment()
     }
 
+    func nudge(dx: CGFloat = 0, dy: CGFloat = 0) {
+        cancelBehaviorSchedule()
+        behaviorPlanner.resetAfterInteraction()
+        desktop.nudge(dx: dx, dy: dy)
+        refreshMeasurements()
+        reconcileBehaviorSchedule()
+    }
+
     func refreshMeasurements() {
         sceneUpdates = renderer.sceneUpdateCount
         footprintMiB = ProcessSample.capture().footprintBytes.map { Double($0) / 1_048_576 }
+        if let frame = desktop?.panel.frame {
+            positionDescription = String(format: "x %.0f, y %.0f · %.0f × %.0f pt", frame.minX, frame.minY, frame.width, frame.height)
+        }
     }
 
     func runProbe(terminateWhenFinished: Bool = false) {
-        guard !sampling else { return }
+        runDiagnostic(extended: false, terminateWhenFinished: terminateWhenFinished)
+    }
+
+    func runSoak(terminateWhenFinished: Bool = false) {
+        runDiagnostic(extended: true, terminateWhenFinished: terminateWhenFinished)
+    }
+
+    private func runDiagnostic(extended: Bool, terminateWhenFinished: Bool) {
+        guard isRunning, !sampling else { return }
+        probePlacement = desktop.currentPlacement
         sampling = true
         cancelBehaviorSchedule()
+        diagnosticProgress = extended ? "Warming up for 100 activity cycles. About four minutes; cancel any time." : "Checking behaviors and resting."
         message = "Running a finite check. Controls return when it finishes."
         probeTask = Task { [weak self] in
             guard let self else { return }
             do {
-                let report = try await RuntimeProbe.run(runtime: self)
-                probeResult = report
-                print(report.json)
-                switch report.outcome {
-                case .passed: message = "Automatic checks passed. Desktop interaction still needs the manual matrix."
+                let outcome: ProbeOutcome
+                let json: String
+                if extended {
+                    let report = try await SoakProbe.run(runtime: self)
+                    outcome = report.outcome
+                    json = report.json
+                } else {
+                    let report = try await RuntimeProbe.run(runtime: self)
+                    outcome = report.outcome
+                    json = report.json
+                }
+                reportJSON = json
+                print(json)
+                switch outcome {
+                case .passed: message = extended ? "100-cycle checks passed. Resource observations are in the report." : "Automatic checks passed. Desktop interaction still needs the manual matrix."
                 case .failed: message = "A check failed. Inspect the report before relying on idle behavior."
                 case .blocked: message = "Check blocked by visibility or a system motion/power setting. No preference was changed."
                 }
@@ -219,6 +264,8 @@ final class PetRuntime {
                 message = "The check could not finish. Try again when Spriglet can move."
             }
             sampling = false
+            probePlacement = nil
+            diagnosticProgress = ""
             refreshMeasurements()
             probeTask = nil
             if terminateWhenFinished { NSApp.terminate(nil) }
@@ -227,13 +274,18 @@ final class PetRuntime {
     }
 
     func copyReport() {
-        guard let report = probeResult else { return }
+        guard let reportJSON else { return }
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(report.json, forType: .string)
+        NSPasteboard.general.setString(reportJSON, forType: .string)
     }
 
     func cancelProbe() {
         probeTask?.cancel()
+    }
+
+    func updateDiagnosticProgress(_ progress: String) {
+        guard sampling else { return }
+        diagnosticProgress = progress
     }
 
     func setSuspension(_ reason: SuspensionReason, active: Bool) {
@@ -263,10 +315,15 @@ final class PetRuntime {
 
     private func savePreferences() {
         guard isRunning, !sampling, !isCommandLineProbe else { return }
-        preferencesStore.save(PetPreferences(
+        preferencesStore.save(snapshotPreferencesForProbe())
+    }
+
+    func snapshotPreferencesForProbe() -> PetPreferences {
+        PetPreferences(
             isHidden: isHidden, isPaused: isPaused, clickThrough: clickThrough,
-            allSpaces: allSpaces, autonomousBehavior: autonomousBehavior
-        ))
+            allSpaces: allSpaces, autonomousBehavior: autonomousBehavior,
+            placement: desktop.savedPlacement
+        )
     }
 
     private func reconcileBehaviorSchedule() {
@@ -322,6 +379,11 @@ final class PetRuntime {
         desktop.stopMovement()
         renderer.resetPose()
         setClickThrough(preferences.clickThrough)
+        setAllSpaces(preferences.allSpaces)
+        desktop.restorePlacement(preferences.placement)
+        if let probePlacement {
+            desktop.restorePlacement(probePlacement, preservingSavedPlacement: true)
+        }
         setPaused(preferences.isPaused)
         setHidden(preferences.isHidden)
         setAutonomousBehavior(preferences.autonomousBehavior)

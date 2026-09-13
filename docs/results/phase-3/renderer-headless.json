@@ -1,0 +1,50 @@
+{
+  "mode" : "headless",
+  "results" : [
+    {
+      "detail" : "Cancellation followed by a late mouse-up produces no click; direct handler invocation only.",
+      "name" : "cancelled press clears interaction",
+      "passed" : true
+    },
+    {
+      "detail" : "Cancelled drag is not committed by a late mouse-up; direct handler invocation only.",
+      "name" : "cancelled drag clears interaction",
+      "passed" : true
+    },
+    {
+      "after" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0,
+        "sleeping" : false,
+        "visible" : false
+      },
+      "detail" : "Host was constructed but never ordered onscreen.",
+      "name" : "hidden paused has no initial update",
+      "passed" : true
+    },
+    {
+      "after" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0,
+        "sleeping" : false,
+        "visible" : false
+      },
+      "before" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0,
+        "sleeping" : false,
+        "visible" : false
+      },
+      "detail" : "Two snapshots 500 ms apart; no continuous warm-up rendering.",
+      "name" : "hidden paused callbacks stay settled",
+      "passed" : true
+    }
+  ],
+  "scope" : "Hidden own windows and direct responder calls only. Visible first-presentation checks were not run."
+}

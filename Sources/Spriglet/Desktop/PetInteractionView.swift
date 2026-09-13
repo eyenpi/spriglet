@@ -91,6 +91,10 @@ final class PetInteractionView: NSView {
         }
     }
 
+    override func mouseCancelled(with event: NSEvent) {
+        cancelInteraction()
+    }
+
     override func accessibilityPerformPress() -> Bool {
         cancelInteraction()
         setInteracting(true)

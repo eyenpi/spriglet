@@ -1,0 +1,3223 @@
+{
+  "buildIdentity" : {
+    "appVersion" : "0.1.0",
+    "buildVersion" : "1",
+    "bundleIdentifier" : "dev.spriglet.prototype",
+    "configuration" : "Release",
+    "executablePath" : "\/Users\/ali\/W\/personal\/spriglet\/.build\/xcode\/Build\/Products\/Release\/Spriglet.app\/Contents\/MacOS\/Spriglet",
+    "processID" : 92475,
+    "sdkBuild" : "25F70",
+    "xcodeBuild" : "17F113"
+  },
+  "completedCycles" : 100,
+  "configuration" : {
+    "baselineSeconds" : 3,
+    "checkpointEveryCycles" : 10,
+    "checkpointSeconds" : 0.75,
+    "cycleCount" : 100,
+    "finalRestIntervalSeconds" : 15,
+    "finalRestIntervals" : 3,
+    "hiddenSeconds" : 0.25,
+    "reactionSettlingSeconds" : 1.35,
+    "showSettlingSeconds" : 0.25,
+    "warmUpSeconds" : 2
+  },
+  "cycles" : [
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 1,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 2,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 3,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 4,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 5,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 6,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 7,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 8,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 9,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 10,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 11,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 12,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 13,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 14,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 15,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 16,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 17,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 18,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 19,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 20,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 21,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 22,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 23,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 24,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 25,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 26,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 27,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 28,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 29,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 30,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 31,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 68,
+        "sceneUpdates" : 67
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 70,
+        "sceneUpdates" : 68
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 32,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 88,
+        "sceneUpdates" : 87
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 90,
+        "sceneUpdates" : 88
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 33,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 34,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 35,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 36,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 37,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 38,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 39,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 40,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 41,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 42,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 43,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 44,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 45,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 46,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 47,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 48,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 49,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 50,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 51,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 52,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 53,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 54,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 55,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 56,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 57,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 58,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 59,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 60,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 61,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 62,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 63,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 64,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 65,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 66,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 67,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 68,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 69,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 70,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 71,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 72,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 73,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 74,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 75,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 76,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 77,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 78,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 79,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 80,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 81,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 82,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 83,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 84,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 85,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 86,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 87,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 88,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 89,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 90,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 91,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 92,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 93,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 94,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 95,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 96,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 97,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 98,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 99,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 100,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 96,
+        "sceneUpdates" : 95
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "movementTicks" : 0,
+        "renderCallbacks" : 98,
+        "sceneUpdates" : 96
+      }
+    }
+  ],
+  "elapsedSeconds" : 251.24127279163804,
+  "footprintSamples" : [
+    {
+      "completedCycles" : 0,
+      "elapsedSeconds" : 3.4053232916630805,
+      "footprintMiB" : 114.14147186279297,
+      "phase" : "warm-up-reaction"
+    },
+    {
+      "completedCycles" : 0,
+      "elapsedSeconds" : 6.422383791650645,
+      "footprintMiB" : 22.03209686279297,
+      "phase" : "baseline-settled"
+    },
+    {
+      "completedCycles" : 9,
+      "elapsedSeconds" : 24.09626862499863,
+      "footprintMiB" : 114.23522186279297,
+      "phase" : "cycle-10-hidden"
+    },
+    {
+      "completedCycles" : 9,
+      "elapsedSeconds" : 24.380559374927543,
+      "footprintMiB" : 114.23522186279297,
+      "phase" : "cycle-10-shown"
+    },
+    {
+      "completedCycles" : 10,
+      "elapsedSeconds" : 25.747184291598387,
+      "footprintMiB" : 114.23522186279297,
+      "phase" : "cycle-10-reaction-settled"
+    },
+    {
+      "completedCycles" : 10,
+      "elapsedSeconds" : 26.522192291682586,
+      "footprintMiB" : 24.36022186279297,
+      "phase" : "settled-after-10-cycles"
+    },
+    {
+      "completedCycles" : 19,
+      "elapsedSeconds" : 44.020698708249256,
+      "footprintMiB" : 114.32897186279297,
+      "phase" : "cycle-20-hidden"
+    },
+    {
+      "completedCycles" : 19,
+      "elapsedSeconds" : 44.30946729169227,
+      "footprintMiB" : 114.32897186279297,
+      "phase" : "cycle-20-shown"
+    },
+    {
+      "completedCycles" : 20,
+      "elapsedSeconds" : 45.678103624959476,
+      "footprintMiB" : 114.32897186279297,
+      "phase" : "cycle-20-reaction-settled"
+    },
+    {
+      "completedCycles" : 20,
+      "elapsedSeconds" : 46.459080250002444,
+      "footprintMiB" : 24.45397186279297,
+      "phase" : "settled-after-20-cycles"
+    },
+    {
+      "completedCycles" : 29,
+      "elapsedSeconds" : 63.989467624924146,
+      "footprintMiB" : 114.32897186279297,
+      "phase" : "cycle-30-hidden"
+    },
+    {
+      "completedCycles" : 29,
+      "elapsedSeconds" : 64.28476125001907,
+      "footprintMiB" : 114.32897186279297,
+      "phase" : "cycle-30-shown"
+    },
+    {
+      "completedCycles" : 30,
+      "elapsedSeconds" : 65.67083974997513,
+      "footprintMiB" : 114.32897186279297,
+      "phase" : "cycle-30-reaction-settled"
+    },
+    {
+      "completedCycles" : 30,
+      "elapsedSeconds" : 66.43549370835535,
+      "footprintMiB" : 22.21959686279297,
+      "phase" : "settled-after-30-cycles"
+    },
+    {
+      "completedCycles" : 39,
+      "elapsedSeconds" : 84.00749545835424,
+      "footprintMiB" : 114.32897186279297,
+      "phase" : "cycle-40-hidden"
+    },
+    {
+      "completedCycles" : 39,
+      "elapsedSeconds" : 84.272181874956,
+      "footprintMiB" : 114.32897186279297,
+      "phase" : "cycle-40-shown"
+    },
+    {
+      "completedCycles" : 40,
+      "elapsedSeconds" : 85.6225405416917,
+      "footprintMiB" : 114.32897186279297,
+      "phase" : "cycle-40-reaction-settled"
+    },
+    {
+      "completedCycles" : 40,
+      "elapsedSeconds" : 86.37325512501411,
+      "footprintMiB" : 22.21959686279297,
+      "phase" : "settled-after-40-cycles"
+    },
+    {
+      "completedCycles" : 49,
+      "elapsedSeconds" : 103.94906233332586,
+      "footprintMiB" : 114.32897186279297,
+      "phase" : "cycle-50-hidden"
+    },
+    {
+      "completedCycles" : 49,
+      "elapsedSeconds" : 104.20717904157937,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-50-shown"
+    },
+    {
+      "completedCycles" : 50,
+      "elapsedSeconds" : 105.59210541658103,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-50-reaction-settled"
+    },
+    {
+      "completedCycles" : 50,
+      "elapsedSeconds" : 106.3462712499313,
+      "footprintMiB" : 22.23522186279297,
+      "phase" : "settled-after-50-cycles"
+    },
+    {
+      "completedCycles" : 59,
+      "elapsedSeconds" : 123.87943862495013,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-60-hidden"
+    },
+    {
+      "completedCycles" : 59,
+      "elapsedSeconds" : 124.13308245828375,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-60-shown"
+    },
+    {
+      "completedCycles" : 60,
+      "elapsedSeconds" : 125.52107133332174,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-60-reaction-settled"
+    },
+    {
+      "completedCycles" : 60,
+      "elapsedSeconds" : 126.27895191661082,
+      "footprintMiB" : 22.23522186279297,
+      "phase" : "settled-after-60-cycles"
+    },
+    {
+      "completedCycles" : 69,
+      "elapsedSeconds" : 143.84998516668566,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-70-hidden"
+    },
+    {
+      "completedCycles" : 69,
+      "elapsedSeconds" : 144.14162441669032,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-70-shown"
+    },
+    {
+      "completedCycles" : 70,
+      "elapsedSeconds" : 145.50170974992216,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-70-reaction-settled"
+    },
+    {
+      "completedCycles" : 70,
+      "elapsedSeconds" : 146.2927376666339,
+      "footprintMiB" : 24.46959686279297,
+      "phase" : "settled-after-70-cycles"
+    },
+    {
+      "completedCycles" : 79,
+      "elapsedSeconds" : 163.71645037492272,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-80-hidden"
+    },
+    {
+      "completedCycles" : 79,
+      "elapsedSeconds" : 163.99146558332723,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-80-shown"
+    },
+    {
+      "completedCycles" : 80,
+      "elapsedSeconds" : 165.35602075001225,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-80-reaction-settled"
+    },
+    {
+      "completedCycles" : 80,
+      "elapsedSeconds" : 166.13622783333994,
+      "footprintMiB" : 24.46959686279297,
+      "phase" : "settled-after-80-cycles"
+    },
+    {
+      "completedCycles" : 89,
+      "elapsedSeconds" : 183.63362374994904,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-90-hidden"
+    },
+    {
+      "completedCycles" : 89,
+      "elapsedSeconds" : 183.9343311249977,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-90-shown"
+    },
+    {
+      "completedCycles" : 90,
+      "elapsedSeconds" : 185.30572062497959,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-90-reaction-settled"
+    },
+    {
+      "completedCycles" : 90,
+      "elapsedSeconds" : 186.08295733330306,
+      "footprintMiB" : 22.23522186279297,
+      "phase" : "settled-after-90-cycles"
+    },
+    {
+      "completedCycles" : 99,
+      "elapsedSeconds" : 203.79009395826142,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-100-hidden"
+    },
+    {
+      "completedCycles" : 99,
+      "elapsedSeconds" : 204.088313666638,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-100-shown"
+    },
+    {
+      "completedCycles" : 100,
+      "elapsedSeconds" : 205.45675241667777,
+      "footprintMiB" : 114.34459686279297,
+      "phase" : "cycle-100-reaction-settled"
+    },
+    {
+      "completedCycles" : 100,
+      "elapsedSeconds" : 206.22506170824636,
+      "footprintMiB" : 24.46959686279297,
+      "phase" : "settled-after-100-cycles"
+    },
+    {
+      "completedCycles" : 100,
+      "elapsedSeconds" : 221.2265030000126,
+      "footprintMiB" : 22.14147186279297,
+      "phase" : "final-rest-1"
+    },
+    {
+      "completedCycles" : 100,
+      "elapsedSeconds" : 236.23303754162043,
+      "footprintMiB" : 22.14147186279297,
+      "phase" : "final-rest-2"
+    },
+    {
+      "completedCycles" : 100,
+      "elapsedSeconds" : 251.24125679163262,
+      "footprintMiB" : 22.14147186279297,
+      "phase" : "final-rest-3"
+    }
+  ],
+  "functionalChecks" : [
+    {
+      "detail" : "The initial pose completed a scene update before any quiet interval could pass.",
+      "name" : "initial-scene-updated",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "A finite reaction warms rendering resources before the settled baseline.",
+      "name" : "warm-up-reaction-settles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "The warmed baseline has no scene, render, movement, or autonomous callbacks, or pending deadline.",
+      "name" : "baseline-stays-settled",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no scene, render, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-10-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no scene, render, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-20-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no scene, render, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-30-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no scene, render, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-40-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no scene, render, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-50-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no scene, render, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-60-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no scene, render, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-70-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no scene, render, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-80-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no scene, render, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-90-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no scene, render, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-100-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "All 100 requested show\/hide\/reaction cycles completed.",
+      "name" : "all-requested-cycles-completed",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "A fifteen-second final interval remains stopped; footprint and CPU are observations only.",
+      "name" : "final-rest-1-stays-settled",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "A fifteen-second final interval remains stopped; footprint and CPU are observations only.",
+      "name" : "final-rest-2-stays-settled",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "A fifteen-second final interval remains stopped; footprint and CPU are observations only.",
+      "name" : "final-rest-3-stays-settled",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "All 100 completed cycles hid the window and stopped scene, render, movement, and autonomous callbacks while hidden.",
+      "name" : "observed-hidden-phases-stop",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "Every completed cycle started a reaction, completed scene updates, and settled awake.",
+      "name" : "observed-reactions-run-and-settle",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "Completed cycles had no autonomous actions, movement ticks, or remaining behavior deadline.",
+      "name" : "cycles-have-no-unsolicited-work",
+      "outcome" : "passed"
+    }
+  ],
+  "kind" : "desktop-soak",
+  "limitations" : [
+    "This is a bounded repeated-interaction workload, not a natural-behavior or multi-hour soak.",
+    "Functional outcomes cover observed counters and app\/window state. Resource values are observations without pass\/fail budgets.",
+    "Scene and render callbacks are not GPU submissions. CPU values cover this process only, not WindowServer or GPU work.",
+    "Footprint is sampled at finite checkpoints; peaks and policy\/activity changes between samples may be missed.",
+    "Each cycle checks motion eligibility after showing and after its reaction. Temporary system changes that clear between boundaries may be missed.",
+    "The run temporarily uses shown, unpaused, click-through, manual-only choices; normal scheduling and preference writes are suppressed by the diagnostic lifecycle.",
+    "Settings and placement are restored by diagnostic cleanup; this report does not independently prove persistence or cancellation behavior.",
+    "Physical click routing, cross-app focus, desktop transparency, Spaces, full-screen, display transitions, actual sleep\/wake, GPU energy, and battery life need separate validation.",
+    "Procedural artwork does not predict the memory footprint of production sprite atlases."
+  ],
+  "measurements" : [
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 4.205524511260843,
+      "footprintMiB" : 114.14147186279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 96,
+      "sceneUpdateDelta" : 95,
+      "seconds" : 1.358807916752994,
+      "startedAt" : "2026-09-13T11:21:06Z",
+      "state" : "warm-up-reaction"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.014815937252806534,
+      "footprintMiB" : 22.03209686279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 3.0170214166864753,
+      "startedAt" : "2026-09-13T11:21:07Z",
+      "state" : "baseline-settled"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.025420960732425234,
+      "footprintMiB" : 24.36022186279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 0.7749510416761041,
+      "startedAt" : "2026-09-13T11:21:30Z",
+      "state" : "settled-after-10-cycles"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.011908433747641677,
+      "footprintMiB" : 24.45397186279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 0.7809591250261292,
+      "startedAt" : "2026-09-13T11:21:50Z",
+      "state" : "settled-after-20-cycles"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.027464148521689047,
+      "footprintMiB" : 22.21959686279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 0.7646332083968446,
+      "startedAt" : "2026-09-13T11:22:10Z",
+      "state" : "settled-after-30-cycles"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.026908958301134787,
+      "footprintMiB" : 22.21959686279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 0.7506793750217184,
+      "startedAt" : "2026-09-13T11:22:30Z",
+      "state" : "settled-after-40-cycles"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.023602805881041217,
+      "footprintMiB" : 22.23522186279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 0.7541476250626147,
+      "startedAt" : "2026-09-13T11:22:50Z",
+      "state" : "settled-after-50-cycles"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.032459947783729175,
+      "footprintMiB" : 22.23522186279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 0.7578570416662842,
+      "startedAt" : "2026-09-13T11:23:10Z",
+      "state" : "settled-after-60-cycles"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.021491804063325702,
+      "footprintMiB" : 24.46959686279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 0.7909992083441466,
+      "startedAt" : "2026-09-13T11:23:30Z",
+      "state" : "settled-after-70-cycles"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.027686056145293115,
+      "footprintMiB" : 24.46959686279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 0.7801761250011623,
+      "startedAt" : "2026-09-13T11:23:49Z",
+      "state" : "settled-after-80-cycles"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.02753409354533353,
+      "footprintMiB" : 22.23522186279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 0.7772182499757037,
+      "startedAt" : "2026-09-13T11:24:09Z",
+      "state" : "settled-after-90-cycles"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.023168324821763783,
+      "footprintMiB" : 24.46959686279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 0.7682903333334252,
+      "startedAt" : "2026-09-13T11:24:30Z",
+      "state" : "settled-after-100-cycles"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.0046928985363045425,
+      "footprintMiB" : 22.14147186279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 15.00138974993024,
+      "startedAt" : "2026-09-13T11:24:30Z",
+      "state" : "final-rest-1"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.0018392018221651898,
+      "footprintMiB" : 22.14147186279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 15.006509708357044,
+      "startedAt" : "2026-09-13T11:24:45Z",
+      "state" : "final-rest-2"
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.0028984167317941322,
+      "footprintMiB" : 22.14147186279297,
+      "movementTickDelta" : 0,
+      "renderCallbackDelta" : 0,
+      "sceneUpdateDelta" : 0,
+      "seconds" : 15.008193791727535,
+      "startedAt" : "2026-09-13T11:25:00Z",
+      "state" : "final-rest-3"
+    }
+  ],
+  "os" : "Version 26.6.2 (Build 25G83)",
+  "outcome" : "passed",
+  "recordedAt" : "2026-09-13T11:25:15Z",
+  "resourceObservations" : {
+    "baselineSettledFootprintMiB" : 22.03209686279297,
+    "finalMinusBaselineMiB" : 0.109375,
+    "finalSettledFootprintMiB" : 22.14147186279297,
+    "interpretation" : "Measurements only: no memory, CPU, GPU, or battery budget is asserted. The maximum is the largest sampled footprint, not the process high-water mark. Compare the final rest with the warmed baseline and investigate retained differences with Allocations.",
+    "maximumObservedSampleMiB" : 114.34459686279297,
+    "sampleCount" : 45
+  },
+  "startedAt" : "2026-09-13T11:21:04Z"
+}

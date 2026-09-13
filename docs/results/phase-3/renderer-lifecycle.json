@@ -1,0 +1,211 @@
+{
+  "mode" : "native-visible",
+  "results" : [
+    {
+      "detail" : "Cancellation followed by a late mouse-up produces no click; direct handler invocation only.",
+      "name" : "cancelled press clears interaction",
+      "passed" : true
+    },
+    {
+      "detail" : "Cancelled drag is not committed by a late mouse-up; direct handler invocation only.",
+      "name" : "cancelled drag clears interaction",
+      "passed" : true
+    },
+    {
+      "after" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0,
+        "sleeping" : false,
+        "visible" : false
+      },
+      "detail" : "Host was constructed but never ordered onscreen.",
+      "name" : "hidden paused has no initial update",
+      "passed" : true
+    },
+    {
+      "after" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0,
+        "sleeping" : false,
+        "visible" : false
+      },
+      "before" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0,
+        "sleeping" : false,
+        "visible" : false
+      },
+      "detail" : "Two snapshots 500 ms apart; no continuous warm-up rendering.",
+      "name" : "hidden paused callbacks stay settled",
+      "passed" : true
+    },
+    {
+      "after" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 2,
+        "sceneUpdates" : 1,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "detail" : "A new visible paused host receives exactly one neutral scene update.",
+      "name" : "cold paused first presentation",
+      "passed" : true
+    },
+    {
+      "after" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 2,
+        "sceneUpdates" : 1,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "before" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 2,
+        "sceneUpdates" : 1,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "detail" : "No continuing scene or render-delegate callbacks after initial presentation.",
+      "name" : "cold paused callbacks settle",
+      "passed" : true
+    },
+    {
+      "after" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 2,
+        "sceneUpdates" : 1,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "before" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 0,
+        "sceneUpdates" : 0,
+        "sleeping" : false,
+        "visible" : false
+      },
+      "detail" : "Showing the previously hidden host does not require resuming animation.",
+      "name" : "hidden paused first show presents",
+      "passed" : true
+    },
+    {
+      "after" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 2,
+        "sceneUpdates" : 1,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "before" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 2,
+        "sceneUpdates" : 1,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "detail" : "The initial static presentation consumes no continuing callback loop.",
+      "name" : "shown paused callbacks settle",
+      "passed" : true
+    },
+    {
+      "after" : {
+        "action" : "react",
+        "animating" : true,
+        "appActive" : false,
+        "renderCallbacks" : 14,
+        "sceneUpdates" : 12,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "before" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 4,
+        "sceneUpdates" : 2,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "detail" : "The pause check interrupts real active scene work.",
+      "name" : "reaction was active before pause",
+      "passed" : true
+    },
+    {
+      "after" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 14,
+        "sceneUpdates" : 12,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "before" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 14,
+        "sceneUpdates" : 12,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "detail" : "An already-presented renderer gets no extra scene frame when paused.",
+      "name" : "existing reaction pauses immediately",
+      "passed" : true
+    },
+    {
+      "after" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 16,
+        "sceneUpdates" : 13,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "before" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 14,
+        "sceneUpdates" : 12,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "detail" : "Cancelled animation does not restart; reset is applied in the next scene update.",
+      "name" : "resume restores static neutral",
+      "passed" : true
+    },
+    {
+      "after" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 16,
+        "sceneUpdates" : 13,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "before" : {
+        "animating" : false,
+        "appActive" : false,
+        "renderCallbacks" : 16,
+        "sceneUpdates" : 13,
+        "sleeping" : false,
+        "visible" : true
+      },
+      "detail" : "The resumed neutral pose becomes static again.",
+      "name" : "resumed neutral callbacks settle",
+      "passed" : true
+    }
+  ],
+  "scope" : "Disposable native windows, callback counts, and direct responder calls. No cross-application physical input or GPU performance claim."
+}

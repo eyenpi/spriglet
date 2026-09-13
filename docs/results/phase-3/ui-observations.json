@@ -1,0 +1,72 @@
+{
+  "recordedAt": "2026-09-13T11:27:57.982727+00:00",
+  "build": "Debug for the first eight observations; final Release for the in-app soak cancellation. Native SwiftUI controls, ad-hoc signing, same recorded phase-3 source.",
+  "method": "Native app UI automation through CUA; app-process exit was separately verified. Screenshots were inspected inline, not retained as repository images.",
+  "observations": [
+    {
+      "scenario": "Cold launch with shown and paused saved",
+      "outcome": "passed",
+      "observed": "Pause stayed on; Refresh reported 1 scene update and no behavior deadline. Closing controls revealed the visible static pet image."
+    },
+    {
+      "scenario": "Position commands and relaunch",
+      "outcome": "passed",
+      "observed": "Left and Up changed origin from (1308,92) to (1260,140), 48 points each. A fresh hidden+paused process restored (1260,140), both flags, Quiet Behavior on, and click-through off."
+    },
+    {
+      "scenario": "Cold hidden+paused then first Show",
+      "outcome": "passed",
+      "observed": "The hidden fresh process remained at 0 scene updates after Refresh. Show while Pause stayed on produced 1 scene update and no resting deadline."
+    },
+    {
+      "scenario": "Cancel quick check after actual diagnostic movement",
+      "outcome": "passed",
+      "observed": "During the check the measured origin changed to (1014,140). Cancel restored (1260,140), paused=true, hidden=false, clickThrough=false, autonomousBehavior=true and no deadline."
+    },
+    {
+      "scenario": "Quit during the 100-cycle check",
+      "outcome": "passed",
+      "observed": "Started from hidden=true and paused=true at (1260,140). The check temporarily used shown/unpaused/click-through/manual-only flags. Native Quit exited with status 0 and pgrep found no Spriglet process. A fresh process restored the original hidden+paused flags, home, Quiet Behavior on, and click-through off."
+    },
+    {
+      "scenario": "Placement edge limits and restoring normal choices",
+      "outcome": "passed",
+      "observed": "Repeated Right and Down commands stopped at (1308,92) on the current display. Show and Resume returned to visible, unpaused, Quiet Behavior on, click-through off, all-Spaces on and one behavior deadline."
+    },
+    {
+      "scenario": "Disposable background fixture calibration",
+      "outcome": "observed-only",
+      "observed": "A coordinate click on the dark target increased its blank mouse-down count to 1. A later discrete window-stack prediction differed from the fixture window. Separate app-targeted automation can affect activation/order, so this does not certify cross-app first-click routing or focus retention."
+    },
+    {
+      "scenario": "Physical drag through the UI automation tool",
+      "outcome": "not-verified",
+      "observed": "CUA returned noWindowsAvailable when asked to drag the nonactivating pet panel, although it could inspect the panel and image. Directional native controls were used to validate placement persistence. This is a test-tool limitation, not evidence that physical dragging fails."
+    },
+    {
+      "scenario": "Cancel the in-app 100-cycle check",
+      "outcome": "passed",
+      "observed": "On Release, started from hidden=true, paused=true, Quiet Behavior off, clickThrough=false and (1260,140). Cancel after reaction activity restored those flags, home, no scheduled deadline, and the cancellation message. The pet was then shown and recentered to (1308,92) for a separate paused/quiet-off GPU capture."
+    }
+  ],
+  "limitations": [
+    "Single connected display; no real display disconnect/reconnect, resolution change or reboot was tested.",
+    "Keyboard traversal/VoiceOver, physical cross-app focus and input, alpha/shadow routing, scroll momentum, Spaces, Stage Manager and actual sleep/wake remain separate manual gates.",
+    "No GPU, energy, battery, or production memory budget is established by these UI observations."
+  ],
+  "finalState": {
+    "build": "Release",
+    "hidden": false,
+    "paused": false,
+    "autonomousBehavior": true,
+    "clickThrough": false,
+    "allSpaces": true,
+    "originPoints": [
+      1308,
+      92
+    ],
+    "controlsOpen": true,
+    "hasScheduledBehavior": true,
+    "observedSceneUpdatesAfterActiveControl": 288
+  }
+}

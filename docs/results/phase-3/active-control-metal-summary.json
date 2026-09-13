@@ -1,0 +1,101 @@
+{
+  "comparison": {
+    "app_level_capture_validated": true,
+    "paused_summary": "paused-metal-summary.json",
+    "paused_target_gpu_interval_rows": 0,
+    "paused_target_pid": 92756,
+    "paused_target_submission_rows": 0
+  },
+  "data_quality": {
+    "dangling_xml_references": 0,
+    "generic_compositor_event_rows": 0,
+    "gpu_intervals_without_process_owner": 80,
+    "gpu_performance_counters_disabled": true,
+    "non_target_gpu_activity_present": true,
+    "recorder_log_reports_completed_and_saved": true,
+    "recorder_log_warning_error_or_loss_indicators": 0,
+    "row_column_count_mismatches": 0,
+    "shader_timeline_disabled": true,
+    "submission_rows_without_process_owner": 0,
+    "system_compositor_gpu_activity_present": true,
+    "unowned_gpu_interval_states": {
+      "Active": 80
+    },
+    "unowned_interval_mapping_candidates": {
+      "ambiguous": 0,
+      "no_mapping": 80,
+      "other_only": 0,
+      "target_only": 0
+    },
+    "xml_id_ref_resolution": "References resolved within each exported XML document before reading process/PID"
+  },
+  "environment_summary": "environment.json",
+  "exports": [
+    "process-info",
+    "metal-application-command-buffer-submissions",
+    "metal-known-compositor-process",
+    "metal-gpu-submission-to-command-buffer-id",
+    "metal-gpu-intervals",
+    "display-compositor-events-interval"
+  ],
+  "limits": [
+    "Counts describe captured rows; intervals may overlap or nest and are not a GPU utilization or energy measurement.",
+    "Unowned Active GPU intervals have no unique submission mapping and cannot be excluded from the target with certainty.",
+    "System compositor activity is separate; these tables do not isolate the incremental cost of compositing the pet.",
+    "The short trace includes recording overhead and does not establish longer-term idle behavior.",
+    "Controls were visible and deliberate character actions occurred; this validates app-level capture, not character-only rendering cost.",
+    "A clean recorder log and resolved XML references do not prove that capture was loss-free; hardware counters and shader timeline were disabled."
+  ],
+  "recording": {
+    "duration_seconds": 11.459583,
+    "end": "2026-09-13T13:31:02.670+02:00",
+    "end_reason": "Time limit reached",
+    "instruments_version": "16.0 (17F113)",
+    "mode": "Deferred",
+    "requested_time_limit": "10 seconds",
+    "start": "2026-09-13T13:30:51.211+02:00",
+    "template": "Metal System Trace"
+  },
+  "retention": "Only this sanitized summary is tracked. Raw traces and all-process exports remain in the ignored local build directory.",
+  "schema_version": 1,
+  "state": {
+    "controls_visible": true,
+    "deliberate_actions": [
+      "lookAround",
+      "react"
+    ],
+    "paused": false,
+    "quiet_behavior_enabled": false,
+    "shown": true,
+    "source": "App controls and process identity observed before/during recording; state is not reconstructed from GPU rows."
+  },
+  "target": {
+    "attachment_verified": true,
+    "executable_sha256": "1648339f67bf64081a691a6f7b74889b53f13e37ab56519225400356a883f405",
+    "expected_release_executable_verified": true,
+    "name": "Spriglet",
+    "path_resolution_base": "/Users/ali/W/personal/spriglet",
+    "pid": 93035,
+    "process_name_verified": true,
+    "recorded_executable_path": ".build/xcode/Build/Products/Release/Spriglet.app/Contents/MacOS/Spriglet",
+    "resolved_executable_path": "/Users/ali/W/personal/spriglet/.build/xcode/Build/Products/Release/Spriglet.app/Contents/MacOS/Spriglet"
+  },
+  "target_activity": {
+    "command_buffer_submission_rows": 197,
+    "gpu_interval_channels": {
+      "Fragment": 201,
+      "Vertex": 191
+    },
+    "gpu_interval_rows_with_resolved_target_process": 392,
+    "gpu_interval_states": {
+      "Active": 392
+    },
+    "submission_event_types": {
+      "CommandBufferSubmission": 197
+    },
+    "submission_mapping_rows_with_target_pid": 396,
+    "unique_gpu_command_buffer_ids": 198,
+    "unique_gpu_submission_ids": 392,
+    "unique_submitted_command_buffer_ids": 197
+  }
+}
