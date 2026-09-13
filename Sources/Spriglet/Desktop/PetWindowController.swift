@@ -1,6 +1,5 @@
 import AppKit
 import ColorSync
-import QuartzCore
 import SprigletCore
 
 /// The desktop host owns placement and input; it is independent of the renderer.
@@ -17,36 +16,49 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     var onScreenChanged: (@MainActor () -> Void)?
     /// Fires only after a completed drag or an explicit placement command.
     var onPlacementSettled: (@MainActor (PetSavedPlacement) -> Void)?
+    var onMovementInterrupted: (@MainActor () -> Void)?
+    var onWalkRequested: (@MainActor () -> Void)?
+    /// AppKit may round the panel origin; the renderer applies the remainder
+    /// to its image layer before committing the corresponding authored image.
+    var onImageOffsetChanged: (@MainActor (CGPoint) -> Void)? {
+        didSet { onImageOffsetChanged?(imageOffset) }
+    }
     private(set) var isMoving = false
     private(set) var movementTickCount: UInt64 = 0
     private(set) var savedPlacement: PetSavedPlacement?
+    private(set) var appliedRootOffset = SamplePoint.zero
+    private(set) var appliedFrameIndex: Int?
+    private(set) var imageOffset = CGPoint.zero
+
+    /// The image's precise desktop origin, including the retained subpoint part.
+    var effectiveOrigin: CGPoint {
+        CGPoint(x: panel.frame.minX + imageOffset.x, y: panel.frame.minY + imageOffset.y)
+    }
 
     /// A nonmutating snapshot of the actual position, which may differ after a walk.
     var currentPlacement: PetSavedPlacement? {
         guard let screen = currentScreen, let displayUUID = stableDisplayUUID(for: screen) else { return nil }
         return PetSavedPlacement.capture(
             displayUUID: displayUUID,
-            origin: panel.frame.origin,
+            origin: effectiveOrigin,
             windowSize: panel.frame.size,
             visibleFrame: screen.visibleFrame
         )
     }
 
-    var movementFrameRate: Int = 60 {
-        didSet { updateMovementFrameRate() }
-    }
-
     private let interactionView: PetInteractionView
     private var joinsAllSpaces = true
     private var screenObservation: NotificationCenter.ObservationToken?
-    private var movementDisplayLink: CADisplayLink?
-    private var movementTarget: MovementDisplayLinkTarget?
-    private var walk: Walk?
+    private var authoredStart: NSPoint?
+    private var authoredScreenID: CGDirectDisplayID?
+    private var authoredGeneration: UInt64 = 0
+    private var positionGeneration: UInt64 = 0
+    private var dragImageOffset: CGPoint?
 
     /// `hitTest` receives a point in `contentView` coordinates, respecting flipped views.
     init(
         contentView: NSView,
-        size: NSSize = NSSize(width: 192, height: 192),
+        size: NSSize = NSSize(width: 224, height: 224),
         hitTest: @escaping @MainActor (NSPoint) -> Bool = { _ in true }
     ) {
         interactionView = PetInteractionView(contentView: contentView, hitTest: hitTest)
@@ -77,7 +89,11 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         updateCollectionBehavior()
 
         interactionView.onUserInteractionChanged = { [weak self] interacting in
-            self?.onUserInteractionChanged?(interacting)
+            guard let self else { return }
+            // The input view reports a delta from the original panel origin.
+            // Capture this once so successive drag events cannot add it twice.
+            dragImageOffset = interacting ? imageOffset : nil
+            onUserInteractionChanged?(interacting)
         }
         interactionView.onPressed = { [weak self] in
             self?.stopMovement()
@@ -108,7 +124,6 @@ final class PetWindowController: NSObject, NSWindowDelegate {
             } else {
                 constrainToVisibleArea()
             }
-            updateMovementFrameRate()
             onScreenChanged?()
         }
 
@@ -116,7 +131,6 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     }
 
     isolated deinit {
-        movementDisplayLink?.invalidate()
         if let screenObservation {
             NotificationCenter.default.removeObserver(screenObservation)
         }
@@ -162,7 +176,7 @@ final class PetWindowController: NSObject, NSWindowDelegate {
 
     private func placeAtRestingPosition() {
         guard let screen = currentScreen else { return }
-        panel.setFrameOrigin(PetPlacement.restingOrigin(
+        positionWindow(at: PetPlacement.restingOrigin(
             windowSize: panel.frame.size,
             visibleFrame: screen.visibleFrame
         ))
@@ -175,7 +189,7 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         guard !screens.isEmpty else { return }
         let index = currentScreen.flatMap { screenIndex(matching: $0, in: screens) } ?? -1
         let nextScreen = screens[(index + 1) % screens.count]
-        panel.setFrameOrigin(PetPlacement.restingOrigin(
+        positionWindow(at: PetPlacement.restingOrigin(
             windowSize: panel.frame.size,
             visibleFrame: nextScreen.visibleFrame
         ))
@@ -187,8 +201,8 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         guard dx.isFinite, dy.isFinite, let screen = currentScreen else { return }
         stopMovement()
         interactionView.cancelInteraction()
-        panel.setFrameOrigin(PetPlacement.clampedOrigin(
-            NSPoint(x: panel.frame.minX + dx, y: panel.frame.minY + dy),
+        positionWindow(at: PetPlacement.clampedOrigin(
+            NSPoint(x: effectiveOrigin.x + dx, y: effectiveOrigin.y + dy),
             windowSize: panel.frame.size,
             visibleFrame: screen.visibleFrame
         ))
@@ -206,47 +220,61 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         updateCollectionBehavior()
     }
 
-    /// Runs one bounded movement probe. No display link remains when it finishes.
+    /// Compatibility entry point for diagnostics; timing belongs to the authored
+    /// clip, and this host never starts a separate movement clock.
     func beginWalk(duration: TimeInterval = 3) {
-        stopMovement()
-        interactionView.cancelInteraction()
-        guard duration.isFinite, duration > 0, panel.isVisible,
-              let screen = currentScreen else { return }
+        guard duration.isFinite, duration > 0 else { return }
+        onWalkRequested?()
+    }
 
-        let start = PetPlacement.clampedOrigin(
-            panel.frame.origin,
-            windowSize: panel.frame.size,
-            visibleFrame: screen.visibleFrame
-        )
-        panel.setFrameOrigin(start)
-        let distance = min(240, screen.visibleFrame.width * 0.25)
-        let direction: CGFloat = panel.frame.midX < screen.visibleFrame.midX ? 1 : -1
-        let end = PetPlacement.clampedOrigin(
-            NSPoint(x: start.x + direction * distance, y: start.y),
-            windowSize: panel.frame.size,
-            visibleFrame: screen.visibleFrame
-        )
-        guard abs(end.x - start.x) > 1 else { return }
+    func canFitRootMotion(_ offsets: [SamplePoint]) -> Bool {
+        guard let screen = currentScreen,
+              let start = SampleMotionPlacement.fittingStartOrigin(
+                preferredOrigin: effectiveOrigin, windowSize: panel.frame.size,
+                visibleFrame: screen.visibleFrame, offsets: offsets
+              ) else { return false }
+        return abs(start.x - effectiveOrigin.x) < 0.001 && abs(start.y - effectiveOrigin.y) < 0.001
+    }
 
-        walk = Walk(start: start, end: end, startedAt: CACurrentMediaTime(), duration: duration)
-        let target = MovementDisplayLinkTarget(owner: self)
-        let displayLink = interactionView.displayLink(
-            target: target,
-            selector: #selector(MovementDisplayLinkTarget.tick(_:))
-        )
-        movementTarget = target
-        movementDisplayLink = displayLink
-        updateMovementFrameRate()
-        setMoving(true)
-        displayLink.add(to: .main, forMode: .common)
+    func beginAuthoredMotion(_ offsets: [SamplePoint]) -> Bool {
+        guard panel.isVisible, canFitRootMotion(offsets), let screen = currentScreen else { return false }
+        authoredGeneration &+= 1
+        authoredStart = effectiveOrigin
+        authoredScreenID = screen.cgDirectDisplayID
+        appliedRootOffset = .zero
+        appliedFrameIndex = nil
+        return true
+    }
+
+    /// Only called with the renderer's newly selected authored frame. A held
+    /// image never calls this function, so its planted position also stays fixed.
+    func applyAuthoredFrame(_ snapshot: SampleTimelineSnapshot) -> Bool {
+        guard let start = authoredStart, panel.isVisible, let screen = currentScreen,
+              screen.cgDirectDisplayID == authoredScreenID else { return false }
+        let desired = NSPoint(x: start.x + snapshot.rootOffsetPoints.x, y: start.y + snapshot.rootOffsetPoints.y)
+        let bounded = PetPlacement.clampedOrigin(desired, windowSize: panel.frame.size, visibleFrame: screen.visibleFrame)
+        guard abs(bounded.x - desired.x) < 0.001, abs(bounded.y - desired.y) < 0.001 else { return false }
+        let expectedGeneration = authoredGeneration
+        guard positionWindow(at: desired), authoredGeneration == expectedGeneration else { return false }
+        appliedRootOffset = snapshot.rootOffsetPoints
+        appliedFrameIndex = snapshot.timelineFrameIndex
+        let moving = snapshot.clip == .walkLeft || snapshot.clip == .walkRight
+        if moving { movementTickCount &+= 1 }
+        setMoving(moving)
+        return true
+    }
+
+    func finishAuthoredMotion() {
+        authoredGeneration &+= 1
+        authoredStart = nil
+        authoredScreenID = nil
+        setMoving(false)
     }
 
     func stopMovement() {
-        movementDisplayLink?.invalidate()
-        movementDisplayLink = nil
-        movementTarget = nil
-        walk = nil
-        setMoving(false)
+        let interrupted = authoredStart != nil
+        finishAuthoredMotion()
+        if interrupted { onMovementInterrupted?() }
     }
 
     func windowDidChangeOcclusionState(_ notification: Notification) {
@@ -259,27 +287,8 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowDidChangeScreen(_ notification: Notification) {
-        // AppKit's view display link follows the new display. Refresh its rate
-        // hint, but do not clamp partway through a user's cross-display drag.
-        updateMovementFrameRate()
+        // Do not clamp partway through a user's cross-display drag.
         onScreenChanged?()
-    }
-
-    fileprivate func advanceMovement(_ displayLink: CADisplayLink) {
-        movementTickCount &+= 1
-        guard let walk, panel.isVisible else {
-            stopMovement()
-            return
-        }
-        let progress = min(1, max(0, (displayLink.targetTimestamp - walk.startedAt) / walk.duration))
-        let easedProgress = progress * progress * (3 - 2 * progress)
-        panel.setFrameOrigin(NSPoint(
-            x: walk.start.x + (walk.end.x - walk.start.x) * easedProgress,
-            y: walk.start.y + (walk.end.y - walk.start.y) * easedProgress
-        ))
-        if progress >= 1 {
-            stopMovement()
-        }
     }
 
     private var currentScreen: NSScreen? {
@@ -314,7 +323,7 @@ final class PetWindowController: NSObject, NSWindowDelegate {
             return
         }
         // Falling back never overwrites the user's preferred display identity.
-        panel.setFrameOrigin(origin)
+        positionWindow(at: origin)
     }
 
     private func screenIndex(matching screen: NSScreen, in screens: [NSScreen]) -> Int? {
@@ -351,20 +360,12 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         panel.collectionBehavior = behavior
     }
 
-    private func updateMovementFrameRate() {
-        let rate = Float(max(1, min(movementFrameRate, currentScreen?.maximumFramesPerSecond ?? 60)))
-        movementDisplayLink?.preferredFrameRateRange = CAFrameRateRange(
-            minimum: min(30, rate),
-            maximum: rate,
-            preferred: rate
-        )
-    }
-
     private func move(to origin: NSPoint, following pointer: NSPoint) {
         guard let screen = NSScreen.screens.first(where: { $0.frame.contains(pointer) })
             ?? nearestScreen(to: pointer) else { return }
-        panel.setFrameOrigin(PetPlacement.clampedOrigin(
-            origin,
+        let offset = dragImageOffset ?? imageOffset
+        positionWindow(at: PetPlacement.clampedOrigin(
+            CGPoint(x: origin.x + offset.x, y: origin.y + offset.y),
             windowSize: panel.frame.size,
             visibleFrame: screen.visibleFrame
         ))
@@ -372,11 +373,24 @@ final class PetWindowController: NSObject, NSWindowDelegate {
 
     private func constrainToVisibleArea() {
         guard let screen = currentScreen else { return }
-        panel.setFrameOrigin(PetPlacement.clampedOrigin(
-            panel.frame.origin,
+        positionWindow(at: PetPlacement.clampedOrigin(
+            effectiveOrigin,
             windowSize: panel.frame.size,
             visibleFrame: screen.visibleFrame
         ))
+    }
+
+    @discardableResult
+    private func positionWindow(at desired: CGPoint) -> Bool {
+        guard desired.x.isFinite, desired.y.isFinite else { return false }
+        positionGeneration &+= 1
+        let expectedGeneration = positionGeneration
+        panel.setFrameOrigin(desired)
+        // A screen-change callback can synchronously perform a newer placement.
+        guard positionGeneration == expectedGeneration else { return false }
+        imageOffset = CGPoint(x: desired.x - panel.frame.minX, y: desired.y - panel.frame.minY)
+        onImageOffsetChanged?(imageOffset)
+        return positionGeneration == expectedGeneration
     }
 
     private func nearestScreen(to point: NSPoint) -> NSScreen? {
@@ -398,36 +412,12 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         onMovementChanged?(moving)
     }
 
-    private struct Walk {
-        let start: NSPoint
-        let end: NSPoint
-        let startedAt: CFTimeInterval
-        let duration: TimeInterval
-    }
 }
 
 @MainActor
 private final class PetPanel: NSPanel {
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
-}
-
-/// CADisplayLink retains its target; this proxy does not retain the controller.
-@MainActor
-private final class MovementDisplayLinkTarget: NSObject {
-    private weak var owner: PetWindowController?
-
-    init(owner: PetWindowController) {
-        self.owner = owner
-    }
-
-    @objc func tick(_ displayLink: CADisplayLink) {
-        guard let owner else {
-            displayLink.invalidate()
-            return
-        }
-        owner.advanceMovement(displayLink)
-    }
 }
 
 /// Bridge the stable AppKit notification into Foundation's macOS 26 typed API.

@@ -1,0 +1,65 @@
+{
+  "kind": "sprout-native-appearance-observations",
+  "recordedAtUTC": "2026-09-13T18:45:36.320551+00:00",
+  "observer": "Codex visual inspection through CUA of the live native review app; not a record of user approval.",
+  "manifestSHA256": "93f2099530e66a91bdbb7b32a9ec88587c731448853bd09ac2382f8f9e58fd79",
+  "fixtureExecutableSHA256": "848febb8a0adcfb9e25e421ab67d8b89b14c7343c124e4a128f733c2481418be",
+  "modelSHA256": "0f8db1da1428c0fbc6e0f89604ec5fda0f5dcb4d3175d10820192b1845dd1002",
+  "nativeReviewReport": "native-review.json",
+  "nativeReviewReportSHA256": "a3352ec9884007beb89afe742b4d54fd8e2301117575275c669cf0593573c35b",
+  "presentation": {
+    "mode": "Live PetRenderView embedded in an AppKit review window for single-window capture.",
+    "canvasPoints": [
+      224,
+      224
+    ],
+    "sourcePixels": [
+      448,
+      448
+    ],
+    "backingScale": 2,
+    "lightBackgroundSRGB": [
+      0.96,
+      0.95,
+      0.91
+    ],
+    "darkBackgroundSRGB": [
+      0.08,
+      0.11,
+      0.15
+    ]
+  },
+  "observations": [
+    {
+      "subject": "Native scale and readability",
+      "result": "accepted for this sample",
+      "detail": "CUA showed the live 224-point character on both backgrounds. The leaf silhouette, warm ivory face, dark eyes, cheeks and tucked paws remain readable at desktop size."
+    },
+    {
+      "subject": "Transparent edges",
+      "result": "accepted for this sample",
+      "detail": "No opaque rectangle or light fringe was visible around the native light/dark presentations. The independent 244-frame perimeter-alpha check separately passed."
+    },
+    {
+      "subject": "Contact shadow",
+      "result": "accepted for this sample",
+      "detail": "The shadow is localized and soft at 224 points on both backgrounds. Raw-alpha grain is visible in enlarged 448-pixel review frames; native-size inspection did not make further rendering necessary."
+    },
+    {
+      "subject": "Motion and expression assets",
+      "result": "accepted for this sample",
+      "detail": "Idle, directional walking poses, the closed-eye pet response and neutral endpoints were visually inspected from actual rendered frames. Both 5.633-second comparison movies encode all 169 authored frames, using the runtime root offsets."
+    },
+    {
+      "subject": "Live finite playback",
+      "result": "passed",
+      "detail": "The embedded native run traversed idle, the selected walk, pet and settle on each background and passed 14 checks. Replay controls were exercised. Separate real-panel lifecycle validation passed 22 checks, including compensated placement and request-boundary continuity."
+    }
+  ],
+  "limitations": [
+    "CUA captures the board window independently of its separate floating panel. The appearance evidence therefore uses the live native renderer embedded at the same 224-point size; it is not a screenshot of cross-window compositing.",
+    "Separate native lifecycle evidence measures actual panel origin plus actual image-layer offset. These geometry checks do not prove atomic physical WindowServer/GPU presentation.",
+    "Offline comparison movies may be scaled by a viewer. Their JSON records source and intended display sizes.",
+    "Physical cross-app input, Spaces, display changes, system sleep/wake and battery behavior remain broader acceptance work."
+  ]
+}

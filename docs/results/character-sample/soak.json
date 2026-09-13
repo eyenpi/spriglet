@@ -1,0 +1,3223 @@
+{
+  "buildIdentity" : {
+    "appVersion" : "0.1.0",
+    "buildVersion" : "1",
+    "bundleIdentifier" : "dev.spriglet.prototype",
+    "configuration" : "Release",
+    "executablePath" : "\/Users\/ali\/W\/personal\/spriglet\/.build\/xcode\/Build\/Products\/Release\/Spriglet.app\/Contents\/MacOS\/Spriglet",
+    "processID" : 12039,
+    "sdkBuild" : "25F70",
+    "xcodeBuild" : "17F113"
+  },
+  "completedCycles" : 100,
+  "configuration" : {
+    "baselineSeconds" : 3,
+    "checkpointEveryCycles" : 10,
+    "checkpointSeconds" : 0.75,
+    "cycleCount" : 100,
+    "finalRestIntervalSeconds" : 15,
+    "finalRestIntervals" : 3,
+    "hiddenSeconds" : 0.25,
+    "reactionSettlingSeconds" : 2.716666666666667,
+    "showSettlingSeconds" : 0.25,
+    "warmUpSeconds" : 2
+  },
+  "cycles" : [
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 1,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 2,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 3,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 4,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 59
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 60
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 5,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 6,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 7,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 8,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 9,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 10,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 11,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 12,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 13,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 59
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 60
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 14,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 15,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 16,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 17,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 18,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 59
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 60
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 19,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 20,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 21,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 22,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 61,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 61,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 23,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 24,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 25,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 26,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 59
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 60
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 27,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 28,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 29,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 61,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 61,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 30,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 31,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 32,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 59
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 60
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 33,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 34,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 35,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 36,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 37,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 59
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 60
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 38,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 39,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 40,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 41,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 42,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 43,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 44,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 45,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 46,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 61,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 61,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 47,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 48,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 49,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 50,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 51,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 52,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 53,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 59
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 60
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 54,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 55,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 56,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 57,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 58,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 59,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 60,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 59
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 60
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 61,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 62,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 63,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 64,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 65,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 66,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 67,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 61,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 61,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 68,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 69,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 70,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 71,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 72,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 59
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 60
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 73,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 74,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 75,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 76,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 77,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 61,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 61,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 78,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 79,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 80,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 81,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 82,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 83,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 84,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 85,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 86,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 87,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 88,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 89,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 90,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 91,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 92,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 93,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 94,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 95,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 96,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 97,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 57
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 98,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 99,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    },
+    {
+      "hasScheduledBehaviorAtEnd" : false,
+      "hiddenAnimationStopped" : true,
+      "hiddenCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 0,
+        "movementFrames" : 0,
+        "submittedFrames" : 0
+      },
+      "hiddenWindowWasHidden" : true,
+      "index" : 100,
+      "reactionCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 55
+      },
+      "reactionSettled" : true,
+      "reactionStarted" : true,
+      "wholeCycleCounters" : {
+        "automaticActions" : 0,
+        "displayLinkCallbacks" : 60,
+        "movementFrames" : 0,
+        "submittedFrames" : 56
+      }
+    }
+  ],
+  "elapsedSeconds" : 390.3570969166467,
+  "footprintSamples" : [
+    {
+      "completedCycles" : 0,
+      "elapsedSeconds" : 4.788184333359823,
+      "footprintMiB" : 18.266494750976562,
+      "phase" : "warm-up-reaction"
+    },
+    {
+      "completedCycles" : 0,
+      "elapsedSeconds" : 7.8091199999907985,
+      "footprintMiB" : 18.219619750976562,
+      "phase" : "baseline-settled"
+    },
+    {
+      "completedCycles" : 9,
+      "elapsedSeconds" : 37.91782804171089,
+      "footprintMiB" : 18.532142639160156,
+      "phase" : "cycle-10-hidden"
+    },
+    {
+      "completedCycles" : 9,
+      "elapsedSeconds" : 38.21783470839728,
+      "footprintMiB" : 17.766517639160156,
+      "phase" : "cycle-10-shown"
+    },
+    {
+      "completedCycles" : 10,
+      "elapsedSeconds" : 40.94335533340927,
+      "footprintMiB" : 18.532142639160156,
+      "phase" : "cycle-10-reaction-settled"
+    },
+    {
+      "completedCycles" : 10,
+      "elapsedSeconds" : 41.722815041663125,
+      "footprintMiB" : 18.532142639160156,
+      "phase" : "settled-after-10-cycles"
+    },
+    {
+      "completedCycles" : 19,
+      "elapsedSeconds" : 71.60117425001226,
+      "footprintMiB" : 18.500892639160156,
+      "phase" : "cycle-20-hidden"
+    },
+    {
+      "completedCycles" : 19,
+      "elapsedSeconds" : 71.89448995830026,
+      "footprintMiB" : 17.735267639160156,
+      "phase" : "cycle-20-shown"
+    },
+    {
+      "completedCycles" : 20,
+      "elapsedSeconds" : 74.61746570840478,
+      "footprintMiB" : 18.500892639160156,
+      "phase" : "cycle-20-reaction-settled"
+    },
+    {
+      "completedCycles" : 20,
+      "elapsedSeconds" : 75.39210004173219,
+      "footprintMiB" : 18.500892639160156,
+      "phase" : "settled-after-20-cycles"
+    },
+    {
+      "completedCycles" : 29,
+      "elapsedSeconds" : 105.3662563333055,
+      "footprintMiB" : 18.594642639160156,
+      "phase" : "cycle-30-hidden"
+    },
+    {
+      "completedCycles" : 29,
+      "elapsedSeconds" : 105.62913150002714,
+      "footprintMiB" : 17.829017639160156,
+      "phase" : "cycle-30-shown"
+    },
+    {
+      "completedCycles" : 30,
+      "elapsedSeconds" : 108.37452325003687,
+      "footprintMiB" : 18.594642639160156,
+      "phase" : "cycle-30-reaction-settled"
+    },
+    {
+      "completedCycles" : 30,
+      "elapsedSeconds" : 109.17445195838809,
+      "footprintMiB" : 18.594642639160156,
+      "phase" : "settled-after-30-cycles"
+    },
+    {
+      "completedCycles" : 39,
+      "elapsedSeconds" : 139.13337516668253,
+      "footprintMiB" : 18.516517639160156,
+      "phase" : "cycle-40-hidden"
+    },
+    {
+      "completedCycles" : 39,
+      "elapsedSeconds" : 139.43438291666098,
+      "footprintMiB" : 17.750892639160156,
+      "phase" : "cycle-40-shown"
+    },
+    {
+      "completedCycles" : 40,
+      "elapsedSeconds" : 142.17288879165426,
+      "footprintMiB" : 18.516517639160156,
+      "phase" : "cycle-40-reaction-settled"
+    },
+    {
+      "completedCycles" : 40,
+      "elapsedSeconds" : 142.934676749981,
+      "footprintMiB" : 18.516517639160156,
+      "phase" : "settled-after-40-cycles"
+    },
+    {
+      "completedCycles" : 49,
+      "elapsedSeconds" : 172.89985904167406,
+      "footprintMiB" : 18.375892639160156,
+      "phase" : "cycle-50-hidden"
+    },
+    {
+      "completedCycles" : 49,
+      "elapsedSeconds" : 173.15819945838302,
+      "footprintMiB" : 17.610267639160156,
+      "phase" : "cycle-50-shown"
+    },
+    {
+      "completedCycles" : 50,
+      "elapsedSeconds" : 175.89663179172203,
+      "footprintMiB" : 18.375892639160156,
+      "phase" : "cycle-50-reaction-settled"
+    },
+    {
+      "completedCycles" : 50,
+      "elapsedSeconds" : 176.69150504167192,
+      "footprintMiB" : 18.375892639160156,
+      "phase" : "settled-after-50-cycles"
+    },
+    {
+      "completedCycles" : 59,
+      "elapsedSeconds" : 206.5653459583409,
+      "footprintMiB" : 18.375892639160156,
+      "phase" : "cycle-60-hidden"
+    },
+    {
+      "completedCycles" : 59,
+      "elapsedSeconds" : 206.8163139167009,
+      "footprintMiB" : 17.610267639160156,
+      "phase" : "cycle-60-shown"
+    },
+    {
+      "completedCycles" : 60,
+      "elapsedSeconds" : 209.58375300001353,
+      "footprintMiB" : 18.375892639160156,
+      "phase" : "cycle-60-reaction-settled"
+    },
+    {
+      "completedCycles" : 60,
+      "elapsedSeconds" : 210.3745969583979,
+      "footprintMiB" : 18.375892639160156,
+      "phase" : "settled-after-60-cycles"
+    },
+    {
+      "completedCycles" : 69,
+      "elapsedSeconds" : 240.28476725006476,
+      "footprintMiB" : 18.391517639160156,
+      "phase" : "cycle-70-hidden"
+    },
+    {
+      "completedCycles" : 69,
+      "elapsedSeconds" : 240.56422087503597,
+      "footprintMiB" : 17.625892639160156,
+      "phase" : "cycle-70-shown"
+    },
+    {
+      "completedCycles" : 70,
+      "elapsedSeconds" : 243.30759462504648,
+      "footprintMiB" : 18.391517639160156,
+      "phase" : "cycle-70-reaction-settled"
+    },
+    {
+      "completedCycles" : 70,
+      "elapsedSeconds" : 244.0607130000135,
+      "footprintMiB" : 18.391517639160156,
+      "phase" : "settled-after-70-cycles"
+    },
+    {
+      "completedCycles" : 79,
+      "elapsedSeconds" : 274.01547245832626,
+      "footprintMiB" : 18.438392639160156,
+      "phase" : "cycle-80-hidden"
+    },
+    {
+      "completedCycles" : 79,
+      "elapsedSeconds" : 274.29891725000925,
+      "footprintMiB" : 17.672767639160156,
+      "phase" : "cycle-80-shown"
+    },
+    {
+      "completedCycles" : 80,
+      "elapsedSeconds" : 277.04651137499604,
+      "footprintMiB" : 18.438392639160156,
+      "phase" : "cycle-80-reaction-settled"
+    },
+    {
+      "completedCycles" : 80,
+      "elapsedSeconds" : 277.821354374988,
+      "footprintMiB" : 18.438392639160156,
+      "phase" : "settled-after-80-cycles"
+    },
+    {
+      "completedCycles" : 89,
+      "elapsedSeconds" : 307.87265741673764,
+      "footprintMiB" : 18.469642639160156,
+      "phase" : "cycle-90-hidden"
+    },
+    {
+      "completedCycles" : 89,
+      "elapsedSeconds" : 308.1725782083813,
+      "footprintMiB" : 17.704017639160156,
+      "phase" : "cycle-90-shown"
+    },
+    {
+      "completedCycles" : 90,
+      "elapsedSeconds" : 310.90242104174104,
+      "footprintMiB" : 18.469642639160156,
+      "phase" : "cycle-90-reaction-settled"
+    },
+    {
+      "completedCycles" : 90,
+      "elapsedSeconds" : 311.69117279164493,
+      "footprintMiB" : 18.469642639160156,
+      "phase" : "settled-after-90-cycles"
+    },
+    {
+      "completedCycles" : 99,
+      "elapsedSeconds" : 341.449045708403,
+      "footprintMiB" : 18.485267639160156,
+      "phase" : "cycle-100-hidden"
+    },
+    {
+      "completedCycles" : 99,
+      "elapsedSeconds" : 341.74860141670797,
+      "footprintMiB" : 17.719642639160156,
+      "phase" : "cycle-100-shown"
+    },
+    {
+      "completedCycles" : 100,
+      "elapsedSeconds" : 344.4704528750153,
+      "footprintMiB" : 18.485267639160156,
+      "phase" : "cycle-100-reaction-settled"
+    },
+    {
+      "completedCycles" : 100,
+      "elapsedSeconds" : 345.270489583374,
+      "footprintMiB" : 18.485267639160156,
+      "phase" : "settled-after-100-cycles"
+    },
+    {
+      "completedCycles" : 100,
+      "elapsedSeconds" : 360.2972424583277,
+      "footprintMiB" : 18.454017639160156,
+      "phase" : "final-rest-1"
+    },
+    {
+      "completedCycles" : 100,
+      "elapsedSeconds" : 375.33996291668154,
+      "footprintMiB" : 18.454017639160156,
+      "phase" : "final-rest-2"
+    },
+    {
+      "completedCycles" : 100,
+      "elapsedSeconds" : 390.3570798750734,
+      "footprintMiB" : 18.219642639160156,
+      "phase" : "final-rest-3"
+    }
+  ],
+  "functionalChecks" : [
+    {
+      "detail" : "The initial pose completed a layer content assignment before any quiet interval could pass.",
+      "name" : "initial-frame-submitted",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "A finite reaction warms rendering resources before the settled baseline.",
+      "name" : "warm-up-reaction-settles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "The warmed baseline has no frame, display-link, movement, or autonomous callbacks, or pending deadline.",
+      "name" : "baseline-stays-settled",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no frame, display-link, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-10-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no frame, display-link, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-20-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no frame, display-link, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-30-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no frame, display-link, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-40-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no frame, display-link, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-50-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no frame, display-link, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-60-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no frame, display-link, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-70-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no frame, display-link, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-80-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no frame, display-link, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-90-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "This finite checkpoint has no frame, display-link, movement, or autonomous work after the reaction settles.",
+      "name" : "settled-after-100-cycles",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "All 100 requested show\/hide\/reaction cycles completed.",
+      "name" : "all-requested-cycles-completed",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "A fifteen-second final interval remains stopped; footprint and CPU are observations only.",
+      "name" : "final-rest-1-stays-settled",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "A fifteen-second final interval remains stopped; footprint and CPU are observations only.",
+      "name" : "final-rest-2-stays-settled",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "A fifteen-second final interval remains stopped; footprint and CPU are observations only.",
+      "name" : "final-rest-3-stays-settled",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "All 100 completed cycles hid the window and stopped frame, display-link, movement, and autonomous callbacks while hidden.",
+      "name" : "observed-hidden-phases-stop",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "Every completed cycle started a reaction, completed layer content assignments, and settled awake.",
+      "name" : "observed-reactions-run-and-settle",
+      "outcome" : "passed"
+    },
+    {
+      "detail" : "Completed cycles had no autonomous actions, movement ticks, or remaining behavior deadline.",
+      "name" : "cycles-have-no-unsolicited-work",
+      "outcome" : "passed"
+    }
+  ],
+  "kind" : "desktop-soak",
+  "limitations" : [
+    "This is a bounded repeated-interaction workload, not a natural-behavior or multi-hour soak.",
+    "Functional outcomes cover observed counters and app\/window state. Resource values are observations without pass\/fail budgets.",
+    "Layer assignments and display-link callbacks are not GPU submissions. CPU values cover this process only, not WindowServer or GPU work.",
+    "Footprint is sampled at finite checkpoints; peaks and policy\/activity changes between samples may be missed.",
+    "Each cycle checks motion eligibility after showing and after its reaction. Temporary system changes that clear between boundaries may be missed.",
+    "The run temporarily uses shown, unpaused, click-through, manual-only choices; normal scheduling and preference writes are suppressed by the diagnostic lifecycle.",
+    "Settings and placement are restored by diagnostic cleanup; this report does not independently prove persistence or cancellation behavior.",
+    "Physical click routing, cross-app focus, desktop transparency, Spaces, full-screen, display transitions, actual sleep\/wake, GPU energy, and battery life need separate validation.",
+    "Measurements cover the bundled Sprout sample, not the future complete character library."
+  ],
+  "measurements" : [
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 10.372256333592839,
+      "displayLinkCallbackDelta" : 60,
+      "footprintMiB" : 18.266494750976562,
+      "movementFrameDelta" : 0,
+      "seconds" : 2.766572583350353,
+      "startedAt" : "2026-09-13T18:44:13Z",
+      "state" : "warm-up-reaction",
+      "submittedFrameDelta" : 55
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.013638322716002772,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.219619750976562,
+      "movementFrameDelta" : 0,
+      "seconds" : 3.0208993332926184,
+      "startedAt" : "2026-09-13T18:44:16Z",
+      "state" : "baseline-settled",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.02270917337884629,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.532142639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 0.7794207083061337,
+      "startedAt" : "2026-09-13T18:44:52Z",
+      "state" : "settled-after-10-cycles",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.03214590021786673,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.500892639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 0.774593333248049,
+      "startedAt" : "2026-09-13T18:45:26Z",
+      "state" : "settled-after-20-cycles",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.023502975822210517,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.594642639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 0.7998987082391977,
+      "startedAt" : "2026-09-13T18:46:00Z",
+      "state" : "settled-after-30-cycles",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.032688894603588994,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.516517639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 0.7617265833541751,
+      "startedAt" : "2026-09-13T18:46:33Z",
+      "state" : "settled-after-40-cycles",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.019626462910375564,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.375892639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 0.794845208292827,
+      "startedAt" : "2026-09-13T18:47:07Z",
+      "state" : "settled-after-50-cycles",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.020359050614666176,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.375892639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 0.7908030833350495,
+      "startedAt" : "2026-09-13T18:47:41Z",
+      "state" : "settled-after-60-cycles",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.022839370892861723,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.391517639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 0.7530855416553095,
+      "startedAt" : "2026-09-13T18:48:15Z",
+      "state" : "settled-after-70-cycles",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.030846552328980908,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.438392639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 0.7748029583599418,
+      "startedAt" : "2026-09-13T18:48:48Z",
+      "state" : "settled-after-80-cycles",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.01787695047739544,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.469642639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 0.7887251250213012,
+      "startedAt" : "2026-09-13T18:49:22Z",
+      "state" : "settled-after-90-cycles",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.0193751937522177,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.485267639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 0.7999919999856502,
+      "startedAt" : "2026-09-13T18:49:56Z",
+      "state" : "settled-after-100-cycles",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.003966278733727668,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.454017639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 15.026679666596465,
+      "startedAt" : "2026-09-13T18:49:56Z",
+      "state" : "final-rest-1",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.002147222921434347,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.454017639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 15.042685916647315,
+      "startedAt" : "2026-09-13T18:50:12Z",
+      "state" : "final-rest-2",
+      "submittedFrameDelta" : 0
+    },
+    {
+      "appActiveAtEnd" : false,
+      "appActiveAtStart" : false,
+      "automaticActionDelta" : 0,
+      "cpuPercentOfOneCore" : 0.0024305657764099237,
+      "displayLinkCallbackDelta" : 0,
+      "footprintMiB" : 18.219642639160156,
+      "movementFrameDelta" : 0,
+      "seconds" : 15.017079708282836,
+      "startedAt" : "2026-09-13T18:50:27Z",
+      "state" : "final-rest-3",
+      "submittedFrameDelta" : 0
+    }
+  ],
+  "os" : "Version 26.6.2 (Build 25G83)",
+  "outcome" : "passed",
+  "recordedAt" : "2026-09-13T18:50:42Z",
+  "resourceObservations" : {
+    "baselineSettledFootprintMiB" : 18.219619750976562,
+    "finalMinusBaselineMiB" : 2.288818359375e-05,
+    "finalSettledFootprintMiB" : 18.219642639160156,
+    "interpretation" : "Measurements only: no memory, CPU, GPU, or battery budget is asserted. The maximum is the largest sampled footprint, not the process high-water mark. Compare the final rest with the warmed baseline and investigate retained differences with Allocations.",
+    "maximumObservedSampleMiB" : 18.594642639160156,
+    "sampleCount" : 45
+  },
+  "startedAt" : "2026-09-13T18:44:11Z"
+}

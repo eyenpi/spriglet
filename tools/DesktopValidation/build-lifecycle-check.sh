@@ -2,24 +2,13 @@
 set -euo pipefail
 
 fixture_dir="$(cd -- "$(dirname -- "$0")" && pwd)"
-fixture_root="$(cd -- "$fixture_dir/../.." && pwd)"
-fixture_output="$fixture_dir/.build/lifecycle"
-fixture_sdk="$(xcrun --sdk macosx --show-sdk-path)"
-fixture_arch="$(uname -m)"
-fixture_flags=(-swift-version 6 -strict-concurrency=complete -warnings-as-errors -O
-    -sdk "$fixture_sdk" -target "$fixture_arch-apple-macos26.0")
+if (( $# != 0 )); then
+    printf '%s\n' 'This build command accepts no arguments. See tools/CharacterSampleValidation/README.md for current run options.' >&2
+    exit 64
+fi
 
-mkdir -p "$fixture_output"
-# A private local core build keeps this retained check independent of Xcode's
-# products and avoids changing any application build target or SwiftPM cache.
-xcrun swiftc "${fixture_flags[@]}" -parse-as-library -emit-library -static -emit-module \
-    -module-name SprigletCore -emit-module-path "$fixture_output/SprigletCore.swiftmodule" \
-    "$fixture_root"/Packages/SprigletCore/Sources/SprigletCore/*.swift \
-    -o "$fixture_output/libSprigletCore.a"
-xcrun swiftc "${fixture_flags[@]}" -parse-as-library -framework AppKit -framework SpriteKit \
-    -I "$fixture_output" -L "$fixture_output" -lSprigletCore \
-    "$fixture_root/Sources/Spriglet/Rendering/PetRenderView.swift" \
-    "$fixture_root/Sources/Spriglet/Rendering/PrototypePetScene.swift" \
-    "$fixture_root/Sources/Spriglet/Desktop/PetInteractionView.swift" \
-    "$fixture_dir/RendererLifecycleCheck.swift" -o "$fixture_output/RendererLifecycleCheck"
-printf 'Built lifecycle check only; not launched: %s\n' "$fixture_output/RendererLifecycleCheck"
+printf '%s\n' \
+    'Renderer lifecycle validation moved to tools/CharacterSampleValidation.' \
+    'Building NativeSampleCheck only; no application will be launched.' \
+    'The historical .build/lifecycle/RendererLifecycleCheck binary is not refreshed and does not validate the current rendered character.' >&2
+exec "$fixture_dir/../CharacterSampleValidation/build-native-check.sh"

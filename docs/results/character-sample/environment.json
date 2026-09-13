@@ -1,0 +1,78 @@
+{
+  "kind": "sprout-character-sample-environment",
+  "recordedAtUTC": "2026-09-13T18:56:05.701174+00:00",
+  "baseCommitBeforeMilestone": "858b28f743442ea2260483003cbff9c88a88d0a3",
+  "branch": "codex/desktop-prototype",
+  "machine": {
+    "xcode": "Xcode 26.6\nBuild version 17F113",
+    "swift": "Apple Swift version 6.3.3 (swiftlang-6.3.3.1.3 clang-2100.1.1.101)\nTarget: arm64-apple-macosx26.0",
+    "macOSSDK": "26.5",
+    "macOS": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.2\nBuildVersion:\t\t25G83",
+    "architecture": "arm64",
+    "chip": "Apple M3 Pro",
+    "memoryBytes": "19327352832"
+  },
+  "blender": {
+    "version": "5.2.1 LTS",
+    "buildHash": "9e2066aef7ef",
+    "modelSHA256": "0f8db1da1428c0fbc6e0f89604ec5fda0f5dcb4d3175d10820192b1845dd1002"
+  },
+  "manifestSHA256": "93f2099530e66a91bdbb7b32a9ec88587c731448853bd09ac2382f8f9e58fd79",
+  "runtimePNGCount": 244,
+  "runtimeResourceBytes": 29073025,
+  "builds": {
+    "Debug": {
+      "status": "passed",
+      "executable": ".build/xcode/Build/Products/Debug/Spriglet.app/Contents/MacOS/Spriglet",
+      "executableSHA256": "6de04209d81b5a3a1d50b0139f291bd22b0602c18919c0a64e9520bb8cf5a2ae",
+      "resourceFileCount": 245,
+      "resourceHashesMatchSource": true,
+      "buildLogSHA256": "be4083ce68e1f9e7c23b3fb8c913d57df348ed22c2fb78aaa7a723ccc3a183d1"
+    },
+    "Release": {
+      "status": "passed",
+      "executable": ".build/xcode/Build/Products/Release/Spriglet.app/Contents/MacOS/Spriglet",
+      "executableSHA256": "b7cee4ea3b0e862afb8cc8660b66ded64e5d1570c52f4ad2679c1499f4b07eef",
+      "resourceFileCount": 245,
+      "resourceHashesMatchSource": true,
+      "buildLogSHA256": "5b511a029a55722b57c153054b091b52764c46b97d6d9738eaaa9b062e016dd2"
+    }
+  },
+  "applicationSourceSHA256": {
+    "Packages/SprigletCore/Package.swift": "7d3ac3e22e0b7e78f8eaae29ff29a56ca7b74698929d5f272ec708379000356c",
+    "Packages/SprigletCore/Sources/SprigletCore/ActivityPolicy.swift": "7a08e2f70626353845270c0c88c461c558b55fa6bf494f025b6e06a9603cab06",
+    "Packages/SprigletCore/Sources/SprigletCore/PetAction.swift": "2355055236d6e78efb1043b6ef96db3d675164435e34e3c66156c3ff6de8cf0c",
+    "Packages/SprigletCore/Sources/SprigletCore/PetBehaviorPlanner.swift": "9322d760845bcb82e3aaf01c535f43b453daa80aceb71ce783596024690c1ee2",
+    "Packages/SprigletCore/Sources/SprigletCore/PetPlacement.swift": "671127b47efa305346b39d12be012a5d2a88b7178bf69145ba052865436d3610",
+    "Packages/SprigletCore/Sources/SprigletCore/PetPreferences.swift": "9251c02d129f0abfddf5bf0490340b637860f8accb0b6079ca34301e5fee9501",
+    "Packages/SprigletCore/Sources/SprigletCore/PetSavedPlacement.swift": "e11d01f36ad5784f3e5959a5cc8d32542b9541b8eb0476470270caebf3e1d195",
+    "Packages/SprigletCore/Sources/SprigletCore/SampleTimeline.swift": "5af03dd7d5ffdeed1b819275dcc2a34457c23323a6e1c84f900e9005d26b28b9",
+    "Packages/SprigletCore/Sources/SprigletCore/SproutSampleManifest.swift": "cdb99c2e5992c592adef49c7006c73cb3c8e5d7ecb7ab006d3634def4aa0b66e",
+    "Sources/Spriglet/App/PetRuntime.swift": "25b25337114cfb0f2b1b7a2f09faf8d6eb0768b10c562692422e7646956831bd",
+    "Sources/Spriglet/App/PrototypeView.swift": "c9506cd5c8a87f682833690d2ae0ae3c3e50f95c432f1dbc38d1a55e676e8aff",
+    "Sources/Spriglet/App/SprigletApp.swift": "7aa1a89f5caffa68056e496b8f981e8048e1aa5e5bf0a30e678f9dfe8350238d",
+    "Sources/Spriglet/Desktop/PetInteractionView.swift": "0d9a5b4508b6a01447f87f77c442e9055570b1ca25bdabcecf0b1337307072ba",
+    "Sources/Spriglet/Desktop/PetWindowController.swift": "acd8639cd6af46ff729bf13edd674859c23bb4caf752a8d99a875dfe1cf4cdd6",
+    "Sources/Spriglet/Diagnostics/ProcessSample.swift": "5c8558f86d05b4423e2ab5bcf1b5c8f017482a86aa9af699a5c59c89fda86cbf",
+    "Sources/Spriglet/Diagnostics/RuntimeProbe.swift": "331594f9c8abb524c4dab5a0655296f75fc2760f7271e399969921a901795643",
+    "Sources/Spriglet/Diagnostics/SoakProbe.swift": "15401e05ee7cab7e7b27e8306fab7e61ff8190b43c4ce24981bcc118fe19e01d",
+    "Sources/Spriglet/PrivacyInfo.xcprivacy": "7902c140e39ab84b36edb680a6da4dc677136b1ace6d65c99fce3b85af779fdb",
+    "Sources/Spriglet/Rendering/PetRenderView.swift": "d26fbdd934d0c73e015d1e6a777dd8dc5edd8195138c09a87bfe4d0f4234d305",
+    "Sources/Spriglet/Rendering/SampleImageDecoder.swift": "3505105790618e5b0d15dc1638e4a185b3013f43f70230f4591e1a537f96aceb",
+    "Spriglet.xcodeproj/project.pbxproj": "09ecb53d934cbe6bc01c3d849c6ed945c3d614eae99142e095b2443c9130c6fc",
+    "scripts/build.sh": "51ce8f3fdf0eeff07590cbc23d6c9515d3e645fd3468cd63c93df3adccf0360a",
+    "scripts/probe.sh": "818aea5199490b696fb3e457ab93c211653cddecb6196b772b41636a8fd01b53",
+    "scripts/soak.sh": "0cb86b554dbbaaa98cec51f7215780b90460e0feec5e8694e9363c135d66ae95",
+    "scripts/test.sh": "8a211abbb11fbad061597bc1282851aa48964c4a3c5d0bf913e8c64e23fa91c7"
+  },
+  "completedEvidenceSHA256": {
+    "assets.json": "d231bdadf3d763a2af3a8ba870e2ff5997a8589fa84bb30a7f46c30f1f00374d",
+    "tests.json": "200fa3bff0bd1b4ebe0e171b36ca148effd2bbd70325f8ebb0ebafb5c3bfa691",
+    "native-lifecycle.json": "2dae68d56a29a9072a4fbf00b15799905d5a13f414dceaba08fb8d9e02256dc7",
+    "native-review.json": "a3352ec9884007beb89afe742b4d54fd8e2301117575275c669cf0593573c35b",
+    "runtime-probe.json": "5311523ec1724bd1af8134a4ae72baa98b6ddb273cdf22b070e5eecacda0457a",
+    "ui-observations.json": "6110cd76aa3762a9e8777a8a4c5118f0ad000996978fb051aa51c6b4238561b2",
+    "soak.json": "3bc9f78327d7f69fd02b00b21046f33455a5aee4870d951d45b74af27cdc1873"
+  },
+  "interpretation": "This records the actual build/source snapshot used for the sample checks before its milestone commit. Source hashes identify uncommitted implementation; the base commit is not claimed as the implementation revision. PNG/contact, native rendering, app lifecycle, and resource observations have separate scopes."
+}

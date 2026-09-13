@@ -1,8 +1,8 @@
 # Spriglet character design: review 01
 
-Prepared 13 September 2026. **The user selected A · Sprout.** This checkpoint records the base design for the polished playable sample. The actual Blender model and animated sample still require review.
+Prepared 13 September 2026. **The user selected A · Sprout.** This is the historical concept checkpoint. The user subsequently asked to finish the playable sample with the revised face and colors; see the [current character sample](../character-sample.md) for its editable rig, finished clips, native review, and validation. The pending steps below describe the earlier checkpoint, not current implementation status.
 
-The [original researched plan](../app-plan-2026-09-13.md), [earlier style comparison](style-comparison.png), and [original prompt](style-comparison-prompt.md) were restored from this task's saved creation records and original generated image. The original plan is historical: its statement that no app has been implemented describes the initial planning session. See [current app validation](../phase-3-desktop-reliability.md) for the implemented prototype and remaining desktop gates.
+The [original researched plan](../app-plan-2026-09-13.md), [earlier style comparison](style-comparison.png), and [original prompt](style-comparison-prompt.md) were restored from this task's saved creation records and original generated image. The original plan is historical: its statement that no app has been implemented describes the initial planning session. [Phase 3 validation](../phase-3-desktop-reliability.md) records the procedural prototype that preceded the current rendered character.
 
 ## Choose a base character
 

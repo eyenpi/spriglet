@@ -1,0 +1,318 @@
+{
+  "checks" : [
+    {
+      "detail" : "The actual PetRenderView is a live 224-point child of the review board. This establishes neither separate-panel compositing nor physical input routing.",
+      "name" : "embedded native224-point view",
+      "status" : "pass"
+    },
+    {
+      "detail" : "Independent full PNG alpha selected normalized bottom-left point (0.01, 0.01); expected hit false.",
+      "name" : "alpha hit probe: transparent-corner",
+      "status" : "pass"
+    },
+    {
+      "detail" : "Independent full PNG alpha selected normalized bottom-left point (0.28236607142857145, 0.4520089285714286); expected hit true.",
+      "name" : "alpha hit probe: opaque-asymmetric-region",
+      "status" : "pass"
+    },
+    {
+      "detail" : "Independent full PNG alpha selected normalized bottom-left point (0.28236607142857145, 0.5479910714285714); expected hit false.",
+      "name" : "alpha hit probe: transparent-vertical-opposite",
+      "status" : "pass"
+    },
+    {
+      "detail" : "The displayed still image retains no display link or changing view position.",
+      "name" : "embedded warm pose stops work",
+      "status" : "pass"
+    },
+    {
+      "detail" : "The live native renderer completed the authored playlist against the review board background.",
+      "name" : "embedded finite walkRight sequence",
+      "status" : "pass"
+    },
+    {
+      "detail" : "The same frame callback moved the native view inside the board before committing its image. It did not move a desktop window.",
+      "name" : "embedded walkRight root placement",
+      "status" : "pass"
+    },
+    {
+      "detail" : "No frame-buffer underruns occurred during this measured finite playback.",
+      "name" : "embedded buffered walkRight playback",
+      "status" : "pass"
+    },
+    {
+      "detail" : "Two seconds after the sequence settled, submissions, display-link callbacks, and native view position stayed unchanged.",
+      "name" : "embedded walkRight stops after settlement",
+      "status" : "pass"
+    },
+    {
+      "detail" : "The live native renderer completed the authored playlist against the review board background.",
+      "name" : "embedded finite walkLeft sequence",
+      "status" : "pass"
+    },
+    {
+      "detail" : "The same frame callback moved the native view inside the board before committing its image. It did not move a desktop window.",
+      "name" : "embedded walkLeft root placement",
+      "status" : "pass"
+    },
+    {
+      "detail" : "No frame-buffer underruns occurred during this measured finite playback.",
+      "name" : "embedded buffered walkLeft playback",
+      "status" : "pass"
+    },
+    {
+      "detail" : "Two seconds after the sequence settled, submissions, display-link callbacks, and native view position stayed unchanged.",
+      "name" : "embedded walkLeft stops after settlement",
+      "status" : "pass"
+    },
+    {
+      "detail" : "The loaded manifest hash was captured before renderer construction and compared again at completion.",
+      "name" : "manifest unchanged during native check",
+      "status" : "pass"
+    }
+  ],
+  "embeddedInitialSnapshot" : {
+    "actualImageLayerOffset" : [
+      0,
+      0
+    ],
+    "animating" : false,
+    "bufferUnderruns" : 0,
+    "bufferedFrames" : 0,
+    "displayLinkActive" : false,
+    "displayLinkCallbacks" : 0,
+    "rendererBackingPixels" : [
+      448,
+      448
+    ],
+    "rendererSizePoints" : [
+      224,
+      224
+    ],
+    "submittedFrames" : 1,
+    "viewOriginInBoardPoints" : [
+      120,
+      72
+    ],
+    "visible" : true
+  },
+  "embeddedPlayback" : [
+    {
+      "acceptedFrameCallbacks" : 162,
+      "afterRest" : {
+        "actualImageLayerOffset" : [
+          0,
+          0
+        ],
+        "animating" : false,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 171,
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "rootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 163,
+        "timelineFrame" : 168,
+        "viewOriginInBoardPoints" : [
+          198.39999883174897,
+          72
+        ],
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0,
+          0
+        ],
+        "animating" : false,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 0,
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "submittedFrames" : 1,
+        "viewOriginInBoardPoints" : [
+          120,
+          72
+        ],
+        "visible" : true
+      },
+      "bufferUnderrunDelta" : 0,
+      "clipsSeen" : [
+        "idle",
+        "walkRight",
+        "pet",
+        "settle"
+      ],
+      "maximumEffectiveOriginErrorPoints" : 0,
+      "name" : "embedded-walkRight",
+      "rejectedFrames" : 0,
+      "settled" : {
+        "actualImageLayerOffset" : [
+          0,
+          0
+        ],
+        "animating" : false,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 171,
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "rootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 163,
+        "timelineFrame" : 168,
+        "viewOriginInBoardPoints" : [
+          198.39999883174897,
+          72
+        ],
+        "visible" : true
+      }
+    },
+    {
+      "acceptedFrameCallbacks" : 162,
+      "afterRest" : {
+        "actualImageLayerOffset" : [
+          0,
+          0
+        ],
+        "animating" : false,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 342,
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "rootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 326,
+        "timelineFrame" : 168,
+        "viewOriginInBoardPoints" : [
+          521.600001168251,
+          72
+        ],
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0,
+          0
+        ],
+        "animating" : false,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 171,
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "submittedFrames" : 164,
+        "viewOriginInBoardPoints" : [
+          600,
+          72
+        ],
+        "visible" : true
+      },
+      "bufferUnderrunDelta" : 0,
+      "clipsSeen" : [
+        "idle",
+        "walkLeft",
+        "pet",
+        "settle"
+      ],
+      "maximumEffectiveOriginErrorPoints" : 0,
+      "name" : "embedded-walkLeft",
+      "rejectedFrames" : 0,
+      "settled" : {
+        "actualImageLayerOffset" : [
+          0,
+          0
+        ],
+        "animating" : false,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 342,
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "rootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 326,
+        "timelineFrame" : 168,
+        "viewOriginInBoardPoints" : [
+          521.600001168251,
+          72
+        ],
+        "visible" : true
+      }
+    }
+  ],
+  "executableSHA256" : "848febb8a0adcfb9e25e421ab67d8b89b14c7343c124e4a128f733c2481418be",
+  "finishedAt" : "2026-09-13T18:43:59Z",
+  "kind" : "sprout-native-character-sample",
+  "limitations" : [
+    "Embedded review hosts the real PetRenderView as a child of the fixed background board so a window-specific screenshot can show native size and edges. It does not exercise separate-panel compositing, the desktop controller, saved preferences, or full PetRuntime policy.",
+    "AppKit points\/backing pixels establish native size. Human or UI screenshot review of appearance on both backgrounds must be recorded separately.",
+    "Submitted layer contents and display-link callbacks are application counters, not presented GPU frames. One callback pairs image selection with root motion; WindowServer presentation is not proven atomic.",
+    "Process CPU and physical footprint include the fixture, its background board, image decoding, and renderer. They are not the normal app baseline or measurements of WindowServer, GPU work, energy, or battery life.",
+    "No physical cross-app input, full-screen, screen topology change, long soak, or production animation approval is certified."
+  ],
+  "manifestSHA256" : "93f2099530e66a91bdbb7b32a9ec88587c731448853bd09ac2382f8f9e58fd79",
+  "mode" : "embedded-native-review-held",
+  "operatingSystem" : "Version 26.6.2 (Build 25G83)",
+  "playback" : [
+
+  ],
+  "processID" : 11941,
+  "resourceIntervals" : [
+
+  ],
+  "startedAt" : "2026-09-13T18:42:06Z"
+}

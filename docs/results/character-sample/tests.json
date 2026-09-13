@@ -1,0 +1,56 @@
+{
+  "kind": "sprout-character-sample-validation-tests",
+  "recordedAtUTC": "2026-09-13T18:39:24.882000+00:00",
+  "swift": {
+    "status": "passed",
+    "command": "./scripts/test.sh",
+    "toolchain": "Apple Swift 6.3.3",
+    "testFunctions": 61,
+    "suites": 8,
+    "expandedCases": 276,
+    "log": ".build/logs/character-sample-swift-tests.log",
+    "logSHA256": "0b027c4b1f60270eea610bbef52b6f5760f450d71efd6267e01efa72f0d43744",
+    "scope": "All SprigletCore tests; no application or rendered asset claim."
+  },
+  "python": {
+    "status": "passed",
+    "command": "python3 -m unittest discover -s tools/CharacterSampleValidation -p 'test_*.py' -v",
+    "pythonVersion": "3.12.12",
+    "tests": 11,
+    "log": ".build/character-sample-python-tests.log",
+    "logSHA256": "70cfeb9b9f860cec11e74c1cd57f7cb78a716b5f5cd6f5493cd217a57def27a1",
+    "scope": "Synthetic independent decoder/contact regression cases, including alpha orientation probes."
+  },
+  "nativeFixtureBuild": {
+    "status": "passed",
+    "command": "tools/CharacterSampleValidation/build-native-check.sh",
+    "swiftOptions": [
+      "Swift 6",
+      "complete concurrency",
+      "warnings as errors",
+      "optimized",
+      "macOS 26 minimum"
+    ],
+    "bundleIdentifier": "dev.spriglet.character-sample-validation",
+    "appBundle": "tools/CharacterSampleValidation/.build/CharacterSampleValidation.app",
+    "signatureVerification": "codesign --verify --strict passed",
+    "logSHA256": "a752c2a6b5f28369055d0b7e545446b9aa00c9c01e61bf920e63e7892c0c7513",
+    "executableSHA256": "d01bdc6a4200fbcc41f0c5d8453830ea53b6a6e774143511315134112ffd7a61",
+    "runtimeVerification": "This record verifies compilation, packaging, and signature only. Runtime evidence is retained separately in native-lifecycle.json and native-review.json.",
+    "scope": "Includes actual-layer residual placement checks, request-boundary continuity, and live embedded 224-point review mode."
+  },
+  "validationSourceSHA256": {
+    "Packages/SprigletCore/Tests/SprigletCoreTests/SampleTimelineTests.swift": "f629b48dca03094c2c33dc425034956084c07130901006646869fbee65e7e7f0",
+    "Packages/SprigletCore/Tests/SprigletCoreTests/SampleMotionPlacementTests.swift": "22b046c62183fe59fc0fe55001d108bea23f44f5b988f5f5e1b3ca64c77e9763",
+    "tools/CharacterSampleValidation/png_validation.py": "0599f734213dfe4b24c483de040c7bc96b8cd67ad06f1b1bbc6244f7e22d6ac2",
+    "tools/CharacterSampleValidation/test_contact_validation.py": "c6bb1ffe9ff7092a7adfe92d1e5a36d9864406232af575bd73b82de052830a59",
+    "tools/CharacterSampleValidation/test_png_validation.py": "f1197fc19ec8beef9e0738539c9e1d3796e7a802588d9e65065e5b909095638b",
+    "tools/CharacterSampleValidation/validate_assets.py": "880befeefc6a71a0bd124c880181a8e113ea342fb5c197fe9849b26f4450a9b0",
+    "tools/CharacterSampleValidation/NativeSampleCheck.swift": "71b626e19771116bd1910311e77548c82007ba29749f7ed0880c1cb0210170e1",
+    "tools/CharacterSampleValidation/build-native-check.sh": "513b0f40c076edd0698109cd3785df084ce8aa8ba28047b12478b2ead862f1c3"
+  },
+  "limitations": [
+    "Asset and native runtime reports are separate evidence; this record covers the listed test runs and fixture build only.",
+    "Build/test logs and compiled fixture are ignored local files; their hashes identify the runs reviewed here."
+  ]
+}

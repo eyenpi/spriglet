@@ -1,0 +1,46 @@
+{
+  "kind": "character-sample-offline-review",
+  "movie": "sprout-walkLeft-light-dark.mp4",
+  "scope": "Exact runtime PNGs and frame-held root offsets over fixed light/dark colors; not a screen recording.",
+  "manifestSHA256": "93f2099530e66a91bdbb7b32a9ec88587c731448853bd09ac2382f8f9e58fd79",
+  "movieSHA256": "f880675f5d10303cf463fa69111eceaad560044fb162d4e63663b200c257f6ad",
+  "pixelsPerPoint": 2.0,
+  "characterCanvasPoints": {
+    "width": 224,
+    "height": 224
+  },
+  "reviewCanvasPoints": {
+    "width": 702.0,
+    "height": 272.0
+  },
+  "phases": [
+    {
+      "clip": "idle",
+      "firstFrame": 0,
+      "frameCount": 37
+    },
+    {
+      "clip": "walkLeft",
+      "firstFrame": 37,
+      "frameCount": 73
+    },
+    {
+      "clip": "pet",
+      "firstFrame": 110,
+      "frameCount": 34
+    },
+    {
+      "clip": "settle",
+      "firstFrame": 144,
+      "frameCount": 25
+    }
+  ],
+  "encodedStream": {
+    "width": 1404,
+    "height": 544,
+    "avg_frame_rate": "30/1",
+    "duration": "5.633333",
+    "nb_read_frames": "169"
+  },
+  "ffmpeg": "ffmpeg version 9.0.1 Copyright (c) 2000-2026 the FFmpeg developers"
+}

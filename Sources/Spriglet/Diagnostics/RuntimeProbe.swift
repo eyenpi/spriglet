@@ -7,9 +7,9 @@ struct ProbeMeasurement: Codable {
     let state: String
     let startedAt: Date
     let seconds: Double
-    let sceneUpdateDelta: UInt64
-    let renderCallbackDelta: UInt64
-    let movementTickDelta: UInt64
+    let submittedFrameDelta: UInt64
+    let displayLinkCallbackDelta: UInt64
+    let movementFrameDelta: UInt64
     let automaticActionDelta: UInt64
     let appActiveAtStart: Bool
     let appActiveAtEnd: Bool
@@ -89,10 +89,10 @@ enum RuntimeProbe {
             return ProbeReport(recordedAt: .now, os: ProcessInfo.processInfo.operatingSystemVersionString,
                                measurements: measurements, checks: reportChecks,
                                limitations: ["Short smoke measurements, not energy/battery benchmarks or an eight-hour soak.",
-                                             "Scene updates are not actual GPU submissions; use Instruments for renderer and WindowServer costs.",
+                                             "Layer content assignments and display-link callbacks do not prove compositor presentation or GPU submissions; use Instruments for those costs.",
                                              "Motion eligibility and app activity are sampled at phase boundaries; temporary changes between samples may be missed.",
                                              "Physical mouse routing, focus during another app's typing, full-screen, Spaces, Stage Manager and multiple displays require separate validation.",
-                                             "Procedural character does not predict the footprint of production sprite atlases."])
+                                             "Measurements cover the bundled Sprout sample and bounded image decoder, not a future full animation library."])
         }
 
         runtime.setHidden(false)
@@ -104,60 +104,83 @@ enum RuntimeProbe {
             return makeReport(blockedDuring: "initial warm-up")
         }
 
-        checks.append(.init(name: "initial-scene-updated", passed: runtime.renderer.sceneUpdateCount > 0,
-                            detail: "The initial pose must complete a scene update before zero idle callbacks can pass. This is not a GPU-output assertion."))
+        checks.append(.init(name: "initial-frame-submitted", passed: runtime.renderer.submittedFrameCount > 0,
+                            detail: "The initial pose must complete a layer content assignment before zero idle callbacks can pass. This is not a GPU-output assertion."))
         let idle = try await measure("static-visible", runtime: runtime, seconds: 3)
         measurements.append(idle)
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "static-visible") }
-        checks.append(.init(name: "static-scene-stops", passed: idle.sceneUpdateDelta == 0 && idle.renderCallbackDelta == 0 && idle.movementTickDelta == 0,
-                            detail: "Scene/render callbacks and movement clock during static pose; not GPU submissions."))
+        checks.append(.init(name: "static-frame-clock-stops", passed: idle.submittedFrameDelta == 0 && idle.displayLinkCallbackDelta == 0 && idle.movementFrameDelta == 0,
+                            detail: "Layer assignments/display-link callbacks and movement clock during static pose; not GPU submissions."))
 
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "finite-reaction") }
+        let reactionWait = max(3, runtime.renderer.actionDuration(.react) + 0.75)
         runtime.play()
-        let active = try await measure("finite-reaction", runtime: runtime, seconds: 3)
+        let active = try await measure("finite-reaction", runtime: runtime, seconds: reactionWait)
         measurements.append(active)
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "finite-reaction") }
-        checks.append(.init(name: "reaction-runs-and-finishes", passed: active.sceneUpdateDelta > 0 && !runtime.renderer.isAnimating,
+        checks.append(.init(name: "reaction-runs-and-finishes", passed: active.submittedFrameDelta > 0 && !runtime.renderer.isAnimating,
                             detail: "Requires visible app and system motion policy permitting animation."))
 
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "settled-visible") }
         let settled = try await measure("settled-visible", runtime: runtime, seconds: 3)
         measurements.append(settled)
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "settled-visible") }
-        checks.append(.init(name: "finished-scene-stops", passed: settled.sceneUpdateDelta == 0 && settled.renderCallbackDelta == 0,
-                            detail: "A finite reaction must return to an idle scene without an update loop."))
+        checks.append(.init(name: "finished-frame-clock-stops", passed: settled.submittedFrameDelta == 0 && settled.displayLinkCallbackDelta == 0,
+                            detail: "A finite reaction must return to a static pose without a display link."))
 
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "finite-window-movement") }
         let walkStart = runtime.desktop.panel.frame.origin
         runtime.walk()
-        let walking = try await measure("finite-window-movement", runtime: runtime, seconds: 3.5)
+        let walking = try await measure("finite-window-movement", runtime: runtime,
+                                        seconds: max(4, runtime.renderer.walkDuration + 0.75))
         measurements.append(walking)
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "finite-window-movement") }
-        checks.append(.init(name: "movement-runs-and-finishes", passed: walking.movementTickDelta > 0 && runtime.desktop.panel.frame.origin != walkStart && !runtime.desktop.isMoving,
-                            detail: "A finite desktop movement changes position and releases its display link."))
+        checks.append(.init(name: "movement-runs-and-finishes", passed: walking.movementFrameDelta > 0 && runtime.desktop.panel.frame.origin != walkStart && !runtime.desktop.isMoving,
+                            detail: "A finite authored walk changes position and releases its shared pose/movement clock."))
+
+        guard runtime.permitsMotion else { return makeReport(blockedDuring: "complete-character-sample") }
+        let sampleStart = runtime.desktop.panel.frame.origin
+        runtime.characterSample()
+        let sample = try await measure("complete-character-sample", runtime: runtime,
+                                      seconds: runtime.renderer.sampleDuration + 1)
+        measurements.append(sample)
+        guard runtime.permitsMotion else { return makeReport(blockedDuring: "complete-character-sample") }
+        checks.append(.init(name: "complete-sample-runs-and-settles",
+                            passed: sample.submittedFrameDelta > 0 && sample.movementFrameDelta > 0
+                                && runtime.desktop.panel.frame.origin != sampleStart
+                                && runtime.renderer.currentSnapshot?.clip == .settle
+                                && runtime.renderer.currentSnapshot?.isComplete == true
+                                && !runtime.renderer.isAnimating && !runtime.desktop.isMoving
+                                && !runtime.renderer.hasActiveDisplayLink,
+                            detail: "The app's Play Character Sample command completes idle, walk, pet, and settle with window travel and no remaining frame clock."))
 
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "pause preparation") }
-        let updatesBeforePausePreparation = runtime.renderer.sceneUpdateCount
-        runtime.play()
+        let updatesBeforePausePreparation = runtime.renderer.submittedFrameCount
+        let pauseWalkStart = runtime.desktop.panel.frame.origin
         runtime.walk()
-        try await Task.sleep(for: .milliseconds(250))
+        let movementDeadline = ProcessInfo.processInfo.systemUptime + 2
+        while runtime.renderer.isAnimating,
+              runtime.desktop.panel.frame.origin == pauseWalkStart,
+              ProcessInfo.processInfo.systemUptime < movementDeadline {
+            try await Task.sleep(for: .milliseconds(40))
+        }
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "pause preparation") }
         let wasAnimatingBeforePause = runtime.renderer.isAnimating
-            && runtime.renderer.sceneUpdateCount > updatesBeforePausePreparation
+            && runtime.renderer.submittedFrameCount > updatesBeforePausePreparation
         let wasMovingBeforePause = runtime.desktop.isMoving
         runtime.setPaused(true)
         let pausedOrigin = runtime.desktop.panel.frame.origin
         let paused = try await measure("paused", runtime: runtime, seconds: 3)
         measurements.append(paused)
         runtime.play()
-        checks.append(.init(name: "pause-stops-work", passed: wasAnimatingBeforePause && wasMovingBeforePause && paused.sceneUpdateDelta == 0 && paused.renderCallbackDelta == 0 && paused.movementTickDelta == 0 && !runtime.desktop.isMoving && runtime.desktop.panel.frame.origin == pausedOrigin && !runtime.renderer.isAnimating,
-                            detail: "Pause must interrupt a rendering reaction and window movement, stop their callbacks, and reject new animation."))
+        checks.append(.init(name: "pause-stops-work", passed: wasAnimatingBeforePause && wasMovingBeforePause && paused.submittedFrameDelta == 0 && paused.displayLinkCallbackDelta == 0 && paused.movementFrameDelta == 0 && !runtime.desktop.isMoving && runtime.desktop.panel.frame.origin == pausedOrigin && !runtime.renderer.isAnimating,
+                            detail: "Pause must interrupt an authored walk, stop both pose and movement callbacks, and reject new animation."))
 
         runtime.setHidden(true)
         runtime.setPaused(false)
         let hidden = try await measure("hidden", runtime: runtime, seconds: 3)
         measurements.append(hidden)
-        checks.append(.init(name: "hidden-stops-work", passed: hidden.sceneUpdateDelta == 0 && hidden.renderCallbackDelta == 0 && hidden.movementTickDelta == 0 && !runtime.desktop.panel.isVisible && !runtime.renderer.isAnimating,
+        checks.append(.init(name: "hidden-stops-work", passed: hidden.submittedFrameDelta == 0 && hidden.displayLinkCallbackDelta == 0 && hidden.movementFrameDelta == 0 && !runtime.desktop.panel.isVisible && !runtime.renderer.isAnimating,
                             detail: "Clearing pause while hidden must not restart the renderer."))
 
         runtime.setHidden(false)
@@ -170,52 +193,59 @@ enum RuntimeProbe {
         try await Task.sleep(for: .milliseconds(250))
         for action in [PetAction.blink, .lookAround, .stretch] {
             guard runtime.permitsMotion else { return makeReport(blockedDuring: action.rawValue) }
+            let clipWait = max(3, runtime.renderer.actionDuration(action) + 0.75)
             runtime.preview(action)
-            let clip = try await measure(action.rawValue, runtime: runtime, seconds: 3)
+            let clip = try await measure(action.rawValue, runtime: runtime, seconds: clipWait)
             measurements.append(clip)
             guard runtime.permitsMotion else { return makeReport(blockedDuring: action.rawValue) }
             checks.append(.init(name: "\(action.rawValue)-runs-and-settles",
-                                passed: clip.sceneUpdateDelta > 0 && !runtime.renderer.isAnimating && !runtime.renderer.isSleeping,
-                                detail: "An authored awake clip runs once and returns to a settled awake pose."))
+                                passed: clip.submittedFrameDelta > 0 && !runtime.renderer.isAnimating && !runtime.renderer.isSleeping,
+                                detail: "The legacy request maps to a supported sample sequence and settles awake; these are not three additional animation assets."))
         }
 
+        let framesBeforeNap = runtime.renderer.submittedFrameCount
         runtime.preview(.fallAsleep)
-        let napEntry = try await measure("fall-asleep", runtime: runtime, seconds: 3)
+        let napPoseSubmitted = runtime.renderer.submittedFrameCount == framesBeforeNap + 1
+        let napEntry = try await measure("fall-asleep", runtime: runtime, seconds: 1)
         measurements.append(napEntry)
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "fall-asleep") }
-        checks.append(.init(name: "nap-settles-asleep", passed: napEntry.sceneUpdateDelta > 0 && runtime.renderer.isSleeping && runtime.isSleeping && !runtime.renderer.isAnimating,
-                            detail: "The nap pose stays asleep after its finite transition, with synchronized runtime state."))
+        checks.append(.init(name: "nap-settles-asleep", passed: napPoseSubmitted && napEntry.submittedFrameDelta == 0 && napEntry.displayLinkCallbackDelta == 0 && runtime.renderer.isSleeping && runtime.isSleeping && !runtime.renderer.isAnimating,
+                            detail: "Nap selects one static sleep image and synchronizes runtime state. This sample does not include a separate animated sleep transition."))
         let nap = try await measure("static-nap", runtime: runtime, seconds: 1)
         measurements.append(nap)
-        checks.append(.init(name: "nap-stops-rendering", passed: nap.sceneUpdateDelta == 0 && nap.renderCallbackDelta == 0 && !runtime.hasScheduledBehavior,
+        checks.append(.init(name: "nap-stops-rendering", passed: nap.submittedFrameDelta == 0 && nap.displayLinkCallbackDelta == 0 && !runtime.hasScheduledBehavior,
                             detail: "A nap is a static pose; ordinary autonomous deadlines remain disabled during this probe."))
 
+        let wakeWait = max(3, runtime.renderer.actionDuration(.react) + 0.75)
         runtime.play()
-        let wake = try await measure("wake-and-react", runtime: runtime, seconds: 3)
+        let wake = try await measure("wake-and-react", runtime: runtime, seconds: wakeWait)
         measurements.append(wake)
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "wake-and-react") }
-        checks.append(.init(name: "interaction-wakes-pet", passed: wake.sceneUpdateDelta > 0 && !runtime.renderer.isSleeping && !runtime.isSleeping && !runtime.renderer.isAnimating,
-                            detail: "User interaction authors a wake transition before its reaction."))
+        checks.append(.init(name: "interaction-wakes-pet", passed: wake.submittedFrameDelta > 0 && !runtime.renderer.isSleeping && !runtime.isSleeping && !runtime.renderer.isAnimating,
+                            detail: "Interaction leaves the static nap pose, plays pet and settle, and finishes awake."))
 
+        let queuedWait = max(4, runtime.renderer.actionDuration(.lookAround)
+                             + runtime.renderer.actionDuration(.react) + 0.75)
         runtime.preview(.lookAround)
         try await Task.sleep(for: .milliseconds(100))
         runtime.play()
         runtime.play()
         let preservedAction = runtime.renderer.currentAction == .lookAround
-        let queued = try await measure("queued-reaction", runtime: runtime, seconds: 4)
+        let queued = try await measure("queued-reaction", runtime: runtime, seconds: queuedWait)
         measurements.append(queued)
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "queued-reaction") }
-        checks.append(.init(name: "interaction-waits-for-clip-boundary", passed: preservedAction && queued.sceneUpdateDelta > 0 && !runtime.renderer.isAnimating,
+        checks.append(.init(name: "interaction-waits-for-clip-boundary", passed: preservedAction && queued.submittedFrameDelta > 0 && !runtime.renderer.isAnimating,
                             detail: "Repeated reactions coalesce after the current look clip instead of snapping its pose."))
 
         runtime.setAutonomousBehavior(true)
         runtime.scheduleOneBehaviorForProbe(.init(action: .lookAround, delaySeconds: 0.4))
         runtime.scheduleOneBehaviorForProbe(.init(action: .blink, delaySeconds: 0.2))
         let hadDeadline = runtime.hasScheduledBehavior
-        let scheduled = try await measure("scheduled-blink", runtime: runtime, seconds: 2)
+        let scheduled = try await measure("scheduled-blink", runtime: runtime,
+                                         seconds: max(2, runtime.renderer.actionDuration(.blink) + 0.95))
         measurements.append(scheduled)
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "scheduled-blink") }
-        checks.append(.init(name: "replacement-deadline-fires-once", passed: hadDeadline && scheduled.automaticActionDelta == 1 && scheduled.sceneUpdateDelta > 0 && !runtime.renderer.isAnimating && !runtime.hasScheduledBehavior,
+        checks.append(.init(name: "replacement-deadline-fires-once", passed: hadDeadline && scheduled.automaticActionDelta == 1 && scheduled.submittedFrameDelta > 0 && !runtime.renderer.isAnimating && !runtime.hasScheduledBehavior,
                             detail: "Replacing a pending deadline yields exactly one finite automatic action; no polling loop is installed."))
 
         runtime.scheduleOneBehaviorForProbe(.init(action: .blink, delaySeconds: 0.3))
@@ -223,7 +253,7 @@ enum RuntimeProbe {
         runtime.setPaused(true)
         let cancelled = try await measure("cancelled-by-pause", runtime: runtime, seconds: 0.7)
         measurements.append(cancelled)
-        checks.append(.init(name: "pause-cancels-pending-behavior", passed: hadPauseDeadline && cancelled.automaticActionDelta == 0 && cancelled.sceneUpdateDelta == 0 && !runtime.hasScheduledBehavior,
+        checks.append(.init(name: "pause-cancels-pending-behavior", passed: hadPauseDeadline && cancelled.automaticActionDelta == 0 && cancelled.submittedFrameDelta == 0 && !runtime.hasScheduledBehavior,
                             detail: "Pause cancels the deadline before it can start an action."))
         runtime.setPaused(false)
         try await Task.sleep(for: .milliseconds(250))
@@ -233,7 +263,7 @@ enum RuntimeProbe {
         runtime.setHidden(true)
         let hiddenDeadline = try await measure("cancelled-by-hide", runtime: runtime, seconds: 0.7)
         measurements.append(hiddenDeadline)
-        checks.append(.init(name: "hide-cancels-pending-behavior", passed: hadHiddenDeadline && hiddenDeadline.automaticActionDelta == 0 && hiddenDeadline.sceneUpdateDelta == 0 && !runtime.hasScheduledBehavior,
+        checks.append(.init(name: "hide-cancels-pending-behavior", passed: hadHiddenDeadline && hiddenDeadline.automaticActionDelta == 0 && hiddenDeadline.submittedFrameDelta == 0 && !runtime.hasScheduledBehavior,
                             detail: "Hiding the pet cancels its resting deadline."))
         runtime.setHidden(false)
         try await Task.sleep(for: .milliseconds(250))
@@ -243,12 +273,12 @@ enum RuntimeProbe {
         runtime.setAutonomousBehavior(false)
         let disabled = try await measure("cancelled-by-preference", runtime: runtime, seconds: 0.7)
         measurements.append(disabled)
-        checks.append(.init(name: "preference-cancels-pending-behavior", passed: hadDisabledDeadline && disabled.automaticActionDelta == 0 && disabled.sceneUpdateDelta == 0 && !runtime.hasScheduledBehavior,
+        checks.append(.init(name: "preference-cancels-pending-behavior", passed: hadDisabledDeadline && disabled.automaticActionDelta == 0 && disabled.submittedFrameDelta == 0 && !runtime.hasScheduledBehavior,
                             detail: "Turning quiet behavior off cancels its pending deadline."))
 
         let finalRest = try await measure("final-settled", runtime: runtime, seconds: 10)
         measurements.append(finalRest)
-        checks.append(.init(name: "completed-checks-stay-settled", passed: finalRest.sceneUpdateDelta == 0 && finalRest.renderCallbackDelta == 0 && finalRest.automaticActionDelta == 0 && !runtime.hasScheduledBehavior,
+        checks.append(.init(name: "completed-checks-stay-settled", passed: finalRest.submittedFrameDelta == 0 && finalRest.displayLinkCallbackDelta == 0 && finalRest.automaticActionDelta == 0 && !runtime.hasScheduledBehavior,
                             detail: "A longer final resting interval records footprint after the transitions and confirms no continuing work."))
 
         return makeReport()
@@ -259,8 +289,8 @@ enum RuntimeProbe {
         let appActiveAtStart = NSApp.isActive
         let interval = signposter.beginInterval("Probe Phase", id: signposter.makeSignpostID(), "\(state, privacy: .public)")
         defer { signposter.endInterval("Probe Phase", interval) }
-        let updates = runtime.renderer.sceneUpdateCount
-        let callbacks = runtime.renderer.viewRenderCallbackCount
+        let updates = runtime.renderer.submittedFrameCount
+        let callbacks = runtime.renderer.displayLinkCallbackCount
         let ticks = runtime.desktop.movementTickCount
         let automaticActions = runtime.automaticActionCount
         let before = ProcessSample.capture()
@@ -268,9 +298,9 @@ enum RuntimeProbe {
         let after = ProcessSample.capture()
         let elapsed = after.uptime - before.uptime
         return .init(state: state, startedAt: startedAt, seconds: elapsed,
-                     sceneUpdateDelta: runtime.renderer.sceneUpdateCount - updates,
-                     renderCallbackDelta: runtime.renderer.viewRenderCallbackCount - callbacks,
-                     movementTickDelta: runtime.desktop.movementTickCount - ticks,
+                     submittedFrameDelta: runtime.renderer.submittedFrameCount - updates,
+                     displayLinkCallbackDelta: runtime.renderer.displayLinkCallbackCount - callbacks,
+                     movementFrameDelta: runtime.desktop.movementTickCount - ticks,
                      automaticActionDelta: runtime.automaticActionCount - automaticActions,
                      appActiveAtStart: appActiveAtStart,
                      appActiveAtEnd: NSApp.isActive,

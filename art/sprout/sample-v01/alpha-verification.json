@@ -1,0 +1,1471 @@
+{
+  "criterion": "all four border rows/columns are exactly alpha 0",
+  "frameCount": 244,
+  "maximumBorderAlpha": 0.0,
+  "frames": {
+    "rest.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135506,
+      "opaquePixels": 52913,
+      "partialAlphaPixels": 12285
+    },
+    "sleep.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 136667,
+      "opaquePixels": 52009,
+      "partialAlphaPixels": 12028
+    },
+    "clips/idle/0000.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135506,
+      "opaquePixels": 52913,
+      "partialAlphaPixels": 12285
+    },
+    "clips/idle/0001.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135512,
+      "opaquePixels": 52906,
+      "partialAlphaPixels": 12286
+    },
+    "clips/idle/0002.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135506,
+      "opaquePixels": 52906,
+      "partialAlphaPixels": 12292
+    },
+    "clips/idle/0003.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135497,
+      "opaquePixels": 52929,
+      "partialAlphaPixels": 12278
+    },
+    "clips/idle/0004.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135458,
+      "opaquePixels": 52969,
+      "partialAlphaPixels": 12277
+    },
+    "clips/idle/0005.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135430,
+      "opaquePixels": 52956,
+      "partialAlphaPixels": 12318
+    },
+    "clips/idle/0006.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135401,
+      "opaquePixels": 52987,
+      "partialAlphaPixels": 12316
+    },
+    "clips/idle/0007.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135387,
+      "opaquePixels": 53023,
+      "partialAlphaPixels": 12294
+    },
+    "clips/idle/0008.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135354,
+      "opaquePixels": 53053,
+      "partialAlphaPixels": 12297
+    },
+    "clips/idle/0009.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135296,
+      "opaquePixels": 53099,
+      "partialAlphaPixels": 12309
+    },
+    "clips/idle/0010.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135286,
+      "opaquePixels": 53143,
+      "partialAlphaPixels": 12275
+    },
+    "clips/idle/0011.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135235,
+      "opaquePixels": 53167,
+      "partialAlphaPixels": 12302
+    },
+    "clips/idle/0012.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135184,
+      "opaquePixels": 53196,
+      "partialAlphaPixels": 12324
+    },
+    "clips/idle/0013.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135171,
+      "opaquePixels": 53192,
+      "partialAlphaPixels": 12341
+    },
+    "clips/idle/0014.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135163,
+      "opaquePixels": 53214,
+      "partialAlphaPixels": 12327
+    },
+    "clips/idle/0015.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135160,
+      "opaquePixels": 53215,
+      "partialAlphaPixels": 12329
+    },
+    "clips/idle/0016.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135151,
+      "opaquePixels": 53198,
+      "partialAlphaPixels": 12355
+    },
+    "clips/idle/0017.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135180,
+      "opaquePixels": 53215,
+      "partialAlphaPixels": 12309
+    },
+    "clips/idle/0018.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135181,
+      "opaquePixels": 53211,
+      "partialAlphaPixels": 12312
+    },
+    "clips/idle/0019.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135208,
+      "opaquePixels": 53177,
+      "partialAlphaPixels": 12319
+    },
+    "clips/idle/0020.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135222,
+      "opaquePixels": 53154,
+      "partialAlphaPixels": 12328
+    },
+    "clips/idle/0021.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135233,
+      "opaquePixels": 53144,
+      "partialAlphaPixels": 12327
+    },
+    "clips/idle/0022.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135257,
+      "opaquePixels": 53129,
+      "partialAlphaPixels": 12318
+    },
+    "clips/idle/0023.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135280,
+      "opaquePixels": 53096,
+      "partialAlphaPixels": 12328
+    },
+    "clips/idle/0024.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135307,
+      "opaquePixels": 53072,
+      "partialAlphaPixels": 12325
+    },
+    "clips/idle/0025.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135354,
+      "opaquePixels": 53052,
+      "partialAlphaPixels": 12298
+    },
+    "clips/idle/0026.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135377,
+      "opaquePixels": 53049,
+      "partialAlphaPixels": 12278
+    },
+    "clips/idle/0027.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135395,
+      "opaquePixels": 53037,
+      "partialAlphaPixels": 12272
+    },
+    "clips/idle/0028.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135415,
+      "opaquePixels": 52972,
+      "partialAlphaPixels": 12317
+    },
+    "clips/idle/0029.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135447,
+      "opaquePixels": 52996,
+      "partialAlphaPixels": 12261
+    },
+    "clips/idle/0030.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135460,
+      "opaquePixels": 52956,
+      "partialAlphaPixels": 12288
+    },
+    "clips/idle/0031.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135461,
+      "opaquePixels": 52965,
+      "partialAlphaPixels": 12278
+    },
+    "clips/idle/0032.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135499,
+      "opaquePixels": 52945,
+      "partialAlphaPixels": 12260
+    },
+    "clips/idle/0033.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135490,
+      "opaquePixels": 52913,
+      "partialAlphaPixels": 12301
+    },
+    "clips/idle/0034.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135488,
+      "opaquePixels": 52899,
+      "partialAlphaPixels": 12317
+    },
+    "clips/idle/0035.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135510,
+      "opaquePixels": 52906,
+      "partialAlphaPixels": 12288
+    },
+    "clips/idle/0036.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135505,
+      "opaquePixels": 52913,
+      "partialAlphaPixels": 12286
+    },
+    "clips/walkRight/0000.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135505,
+      "opaquePixels": 52913,
+      "partialAlphaPixels": 12286
+    },
+    "clips/walkRight/0001.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135291,
+      "opaquePixels": 52960,
+      "partialAlphaPixels": 12453
+    },
+    "clips/walkRight/0002.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 134804,
+      "opaquePixels": 53002,
+      "partialAlphaPixels": 12898
+    },
+    "clips/walkRight/0003.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 134363,
+      "opaquePixels": 53061,
+      "partialAlphaPixels": 13280
+    },
+    "clips/walkRight/0004.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 134385,
+      "opaquePixels": 53032,
+      "partialAlphaPixels": 13287
+    },
+    "clips/walkRight/0005.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 134982,
+      "opaquePixels": 52581,
+      "partialAlphaPixels": 13141
+    },
+    "clips/walkRight/0006.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 136586,
+      "opaquePixels": 51094,
+      "partialAlphaPixels": 13024
+    },
+    "clips/walkRight/0007.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 139272,
+      "opaquePixels": 48549,
+      "partialAlphaPixels": 12883
+    },
+    "clips/walkRight/0008.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 142077,
+      "opaquePixels": 45660,
+      "partialAlphaPixels": 12967
+    },
+    "clips/walkRight/0009.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 143756,
+      "opaquePixels": 43708,
+      "partialAlphaPixels": 13240
+    },
+    "clips/walkRight/0010.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145244,
+      "opaquePixels": 42572,
+      "partialAlphaPixels": 12888
+    },
+    "clips/walkRight/0011.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146239,
+      "opaquePixels": 42295,
+      "partialAlphaPixels": 12170
+    },
+    "clips/walkRight/0012.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146435,
+      "opaquePixels": 42327,
+      "partialAlphaPixels": 11942
+    },
+    "clips/walkRight/0013.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146420,
+      "opaquePixels": 42265,
+      "partialAlphaPixels": 12019
+    },
+    "clips/walkRight/0014.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146376,
+      "opaquePixels": 42238,
+      "partialAlphaPixels": 12090
+    },
+    "clips/walkRight/0015.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146295,
+      "opaquePixels": 42227,
+      "partialAlphaPixels": 12182
+    },
+    "clips/walkRight/0016.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146183,
+      "opaquePixels": 42323,
+      "partialAlphaPixels": 12198
+    },
+    "clips/walkRight/0017.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146053,
+      "opaquePixels": 42418,
+      "partialAlphaPixels": 12233
+    },
+    "clips/walkRight/0018.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145889,
+      "opaquePixels": 42538,
+      "partialAlphaPixels": 12277
+    },
+    "clips/walkRight/0019.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145740,
+      "opaquePixels": 42708,
+      "partialAlphaPixels": 12256
+    },
+    "clips/walkRight/0020.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145639,
+      "opaquePixels": 42893,
+      "partialAlphaPixels": 12172
+    },
+    "clips/walkRight/0021.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145602,
+      "opaquePixels": 43036,
+      "partialAlphaPixels": 12066
+    },
+    "clips/walkRight/0022.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145695,
+      "opaquePixels": 43083,
+      "partialAlphaPixels": 11926
+    },
+    "clips/walkRight/0023.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145830,
+      "opaquePixels": 43084,
+      "partialAlphaPixels": 11790
+    },
+    "clips/walkRight/0024.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145910,
+      "opaquePixels": 43072,
+      "partialAlphaPixels": 11722
+    },
+    "clips/walkRight/0025.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145963,
+      "opaquePixels": 42943,
+      "partialAlphaPixels": 11798
+    },
+    "clips/walkRight/0026.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145958,
+      "opaquePixels": 42706,
+      "partialAlphaPixels": 12040
+    },
+    "clips/walkRight/0027.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145880,
+      "opaquePixels": 42396,
+      "partialAlphaPixels": 12428
+    },
+    "clips/walkRight/0028.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145840,
+      "opaquePixels": 42138,
+      "partialAlphaPixels": 12726
+    },
+    "clips/walkRight/0029.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145806,
+      "opaquePixels": 41940,
+      "partialAlphaPixels": 12958
+    },
+    "clips/walkRight/0030.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145808,
+      "opaquePixels": 41791,
+      "partialAlphaPixels": 13105
+    },
+    "clips/walkRight/0031.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145777,
+      "opaquePixels": 41969,
+      "partialAlphaPixels": 12958
+    },
+    "clips/walkRight/0032.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145821,
+      "opaquePixels": 42154,
+      "partialAlphaPixels": 12729
+    },
+    "clips/walkRight/0033.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145954,
+      "opaquePixels": 42315,
+      "partialAlphaPixels": 12435
+    },
+    "clips/walkRight/0034.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146131,
+      "opaquePixels": 42436,
+      "partialAlphaPixels": 12137
+    },
+    "clips/walkRight/0035.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146338,
+      "opaquePixels": 42434,
+      "partialAlphaPixels": 11932
+    },
+    "clips/walkRight/0036.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146399,
+      "opaquePixels": 42347,
+      "partialAlphaPixels": 11958
+    },
+    "clips/walkRight/0037.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146431,
+      "opaquePixels": 42237,
+      "partialAlphaPixels": 12036
+    },
+    "clips/walkRight/0038.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146385,
+      "opaquePixels": 42134,
+      "partialAlphaPixels": 12185
+    },
+    "clips/walkRight/0039.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146284,
+      "opaquePixels": 42073,
+      "partialAlphaPixels": 12347
+    },
+    "clips/walkRight/0040.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146232,
+      "opaquePixels": 42079,
+      "partialAlphaPixels": 12393
+    },
+    "clips/walkRight/0041.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146157,
+      "opaquePixels": 42062,
+      "partialAlphaPixels": 12485
+    },
+    "clips/walkRight/0042.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146144,
+      "opaquePixels": 42040,
+      "partialAlphaPixels": 12520
+    },
+    "clips/walkRight/0043.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146163,
+      "opaquePixels": 42055,
+      "partialAlphaPixels": 12486
+    },
+    "clips/walkRight/0044.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146160,
+      "opaquePixels": 42128,
+      "partialAlphaPixels": 12416
+    },
+    "clips/walkRight/0045.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146202,
+      "opaquePixels": 42211,
+      "partialAlphaPixels": 12291
+    },
+    "clips/walkRight/0046.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146245,
+      "opaquePixels": 42330,
+      "partialAlphaPixels": 12129
+    },
+    "clips/walkRight/0047.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146324,
+      "opaquePixels": 42391,
+      "partialAlphaPixels": 11989
+    },
+    "clips/walkRight/0048.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146349,
+      "opaquePixels": 42415,
+      "partialAlphaPixels": 11940
+    },
+    "clips/walkRight/0049.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146366,
+      "opaquePixels": 42334,
+      "partialAlphaPixels": 12004
+    },
+    "clips/walkRight/0050.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146316,
+      "opaquePixels": 42133,
+      "partialAlphaPixels": 12255
+    },
+    "clips/walkRight/0051.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146226,
+      "opaquePixels": 41891,
+      "partialAlphaPixels": 12587
+    },
+    "clips/walkRight/0052.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146128,
+      "opaquePixels": 41647,
+      "partialAlphaPixels": 12929
+    },
+    "clips/walkRight/0053.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146094,
+      "opaquePixels": 41439,
+      "partialAlphaPixels": 13171
+    },
+    "clips/walkRight/0054.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146054,
+      "opaquePixels": 41346,
+      "partialAlphaPixels": 13304
+    },
+    "clips/walkRight/0055.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146075,
+      "opaquePixels": 41516,
+      "partialAlphaPixels": 13113
+    },
+    "clips/walkRight/0056.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146061,
+      "opaquePixels": 41758,
+      "partialAlphaPixels": 12885
+    },
+    "clips/walkRight/0057.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146170,
+      "opaquePixels": 42048,
+      "partialAlphaPixels": 12486
+    },
+    "clips/walkRight/0058.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146295,
+      "opaquePixels": 42212,
+      "partialAlphaPixels": 12197
+    },
+    "clips/walkRight/0059.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146415,
+      "opaquePixels": 42338,
+      "partialAlphaPixels": 11951
+    },
+    "clips/walkRight/0060.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146434,
+      "opaquePixels": 42327,
+      "partialAlphaPixels": 11943
+    },
+    "clips/walkRight/0061.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 146263,
+      "opaquePixels": 42435,
+      "partialAlphaPixels": 12006
+    },
+    "clips/walkRight/0062.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145242,
+      "opaquePixels": 43370,
+      "partialAlphaPixels": 12092
+    },
+    "clips/walkRight/0063.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 143749,
+      "opaquePixels": 44829,
+      "partialAlphaPixels": 12126
+    },
+    "clips/walkRight/0064.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 142068,
+      "opaquePixels": 46572,
+      "partialAlphaPixels": 12064
+    },
+    "clips/walkRight/0065.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 139267,
+      "opaquePixels": 49258,
+      "partialAlphaPixels": 12179
+    },
+    "clips/walkRight/0066.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 136581,
+      "opaquePixels": 51835,
+      "partialAlphaPixels": 12288
+    },
+    "clips/walkRight/0067.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 134978,
+      "opaquePixels": 53151,
+      "partialAlphaPixels": 12575
+    },
+    "clips/walkRight/0068.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 134383,
+      "opaquePixels": 53135,
+      "partialAlphaPixels": 13186
+    },
+    "clips/walkRight/0069.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 134361,
+      "opaquePixels": 53013,
+      "partialAlphaPixels": 13330
+    },
+    "clips/walkRight/0070.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 134809,
+      "opaquePixels": 52930,
+      "partialAlphaPixels": 12965
+    },
+    "clips/walkRight/0071.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135298,
+      "opaquePixels": 52883,
+      "partialAlphaPixels": 12523
+    },
+    "clips/walkRight/0072.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135505,
+      "opaquePixels": 52913,
+      "partialAlphaPixels": 12286
+    },
+    "clips/walkLeft/0000.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135505,
+      "opaquePixels": 52913,
+      "partialAlphaPixels": 12286
+    },
+    "clips/walkLeft/0001.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135651,
+      "opaquePixels": 52652,
+      "partialAlphaPixels": 12401
+    },
+    "clips/walkLeft/0002.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 136140,
+      "opaquePixels": 51964,
+      "partialAlphaPixels": 12600
+    },
+    "clips/walkLeft/0003.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 136955,
+      "opaquePixels": 50977,
+      "partialAlphaPixels": 12772
+    },
+    "clips/walkLeft/0004.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 137966,
+      "opaquePixels": 50231,
+      "partialAlphaPixels": 12507
+    },
+    "clips/walkLeft/0005.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 139042,
+      "opaquePixels": 49538,
+      "partialAlphaPixels": 12124
+    },
+    "clips/walkLeft/0006.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 140280,
+      "opaquePixels": 48413,
+      "partialAlphaPixels": 12011
+    },
+    "clips/walkLeft/0007.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 141571,
+      "opaquePixels": 47120,
+      "partialAlphaPixels": 12013
+    },
+    "clips/walkLeft/0008.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 142761,
+      "opaquePixels": 45827,
+      "partialAlphaPixels": 12116
+    },
+    "clips/walkLeft/0009.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 143934,
+      "opaquePixels": 44563,
+      "partialAlphaPixels": 12207
+    },
+    "clips/walkLeft/0010.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 144911,
+      "opaquePixels": 43607,
+      "partialAlphaPixels": 12186
+    },
+    "clips/walkLeft/0011.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145522,
+      "opaquePixels": 43196,
+      "partialAlphaPixels": 11986
+    },
+    "clips/walkLeft/0012.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145685,
+      "opaquePixels": 43173,
+      "partialAlphaPixels": 11846
+    },
+    "clips/walkLeft/0013.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145667,
+      "opaquePixels": 43112,
+      "partialAlphaPixels": 11925
+    },
+    "clips/walkLeft/0014.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145594,
+      "opaquePixels": 42942,
+      "partialAlphaPixels": 12168
+    },
+    "clips/walkLeft/0015.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145498,
+      "opaquePixels": 42723,
+      "partialAlphaPixels": 12483
+    },
+    "clips/walkLeft/0016.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145411,
+      "opaquePixels": 42443,
+      "partialAlphaPixels": 12850
+    },
+    "clips/walkLeft/0017.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145358,
+      "opaquePixels": 42286,
+      "partialAlphaPixels": 13060
+    },
+    "clips/walkLeft/0018.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145353,
+      "opaquePixels": 42169,
+      "partialAlphaPixels": 13182
+    },
+    "clips/walkLeft/0019.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145267,
+      "opaquePixels": 42408,
+      "partialAlphaPixels": 13029
+    },
+    "clips/walkLeft/0020.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145269,
+      "opaquePixels": 42628,
+      "partialAlphaPixels": 12807
+    },
+    "clips/walkLeft/0021.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145408,
+      "opaquePixels": 42843,
+      "partialAlphaPixels": 12453
+    },
+    "clips/walkLeft/0022.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145598,
+      "opaquePixels": 42990,
+      "partialAlphaPixels": 12116
+    },
+    "clips/walkLeft/0023.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145796,
+      "opaquePixels": 43031,
+      "partialAlphaPixels": 11877
+    },
+    "clips/walkLeft/0024.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145927,
+      "opaquePixels": 42963,
+      "partialAlphaPixels": 11814
+    },
+    "clips/walkLeft/0025.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145915,
+      "opaquePixels": 42866,
+      "partialAlphaPixels": 11923
+    },
+    "clips/walkLeft/0026.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145822,
+      "opaquePixels": 42789,
+      "partialAlphaPixels": 12093
+    },
+    "clips/walkLeft/0027.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145715,
+      "opaquePixels": 42752,
+      "partialAlphaPixels": 12237
+    },
+    "clips/walkLeft/0028.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145582,
+      "opaquePixels": 42799,
+      "partialAlphaPixels": 12323
+    },
+    "clips/walkLeft/0029.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145460,
+      "opaquePixels": 42891,
+      "partialAlphaPixels": 12353
+    },
+    "clips/walkLeft/0030.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145370,
+      "opaquePixels": 42950,
+      "partialAlphaPixels": 12384
+    },
+    "clips/walkLeft/0031.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145280,
+      "opaquePixels": 43034,
+      "partialAlphaPixels": 12390
+    },
+    "clips/walkLeft/0032.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145238,
+      "opaquePixels": 43128,
+      "partialAlphaPixels": 12338
+    },
+    "clips/walkLeft/0033.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145265,
+      "opaquePixels": 43237,
+      "partialAlphaPixels": 12202
+    },
+    "clips/walkLeft/0034.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145362,
+      "opaquePixels": 43254,
+      "partialAlphaPixels": 12088
+    },
+    "clips/walkLeft/0035.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145546,
+      "opaquePixels": 43248,
+      "partialAlphaPixels": 11910
+    },
+    "clips/walkLeft/0036.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145678,
+      "opaquePixels": 43187,
+      "partialAlphaPixels": 11839
+    },
+    "clips/walkLeft/0037.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145681,
+      "opaquePixels": 43052,
+      "partialAlphaPixels": 11971
+    },
+    "clips/walkLeft/0038.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145681,
+      "opaquePixels": 42757,
+      "partialAlphaPixels": 12266
+    },
+    "clips/walkLeft/0039.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145599,
+      "opaquePixels": 42459,
+      "partialAlphaPixels": 12646
+    },
+    "clips/walkLeft/0040.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145527,
+      "opaquePixels": 42158,
+      "partialAlphaPixels": 13019
+    },
+    "clips/walkLeft/0041.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145481,
+      "opaquePixels": 41963,
+      "partialAlphaPixels": 13260
+    },
+    "clips/walkLeft/0042.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145492,
+      "opaquePixels": 41831,
+      "partialAlphaPixels": 13381
+    },
+    "clips/walkLeft/0043.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145483,
+      "opaquePixels": 41960,
+      "partialAlphaPixels": 13261
+    },
+    "clips/walkLeft/0044.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145564,
+      "opaquePixels": 42149,
+      "partialAlphaPixels": 12991
+    },
+    "clips/walkLeft/0045.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145658,
+      "opaquePixels": 42381,
+      "partialAlphaPixels": 12665
+    },
+    "clips/walkLeft/0046.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145797,
+      "opaquePixels": 42571,
+      "partialAlphaPixels": 12336
+    },
+    "clips/walkLeft/0047.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145908,
+      "opaquePixels": 42632,
+      "partialAlphaPixels": 12164
+    },
+    "clips/walkLeft/0048.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145959,
+      "opaquePixels": 42616,
+      "partialAlphaPixels": 12129
+    },
+    "clips/walkLeft/0049.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145952,
+      "opaquePixels": 42548,
+      "partialAlphaPixels": 12204
+    },
+    "clips/walkLeft/0050.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145874,
+      "opaquePixels": 42473,
+      "partialAlphaPixels": 12357
+    },
+    "clips/walkLeft/0051.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145751,
+      "opaquePixels": 42430,
+      "partialAlphaPixels": 12523
+    },
+    "clips/walkLeft/0052.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145677,
+      "opaquePixels": 42467,
+      "partialAlphaPixels": 12560
+    },
+    "clips/walkLeft/0053.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145623,
+      "opaquePixels": 42469,
+      "partialAlphaPixels": 12612
+    },
+    "clips/walkLeft/0054.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145596,
+      "opaquePixels": 42465,
+      "partialAlphaPixels": 12643
+    },
+    "clips/walkLeft/0055.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145607,
+      "opaquePixels": 42491,
+      "partialAlphaPixels": 12606
+    },
+    "clips/walkLeft/0056.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145610,
+      "opaquePixels": 42617,
+      "partialAlphaPixels": 12477
+    },
+    "clips/walkLeft/0057.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145588,
+      "opaquePixels": 42825,
+      "partialAlphaPixels": 12291
+    },
+    "clips/walkLeft/0058.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145576,
+      "opaquePixels": 42984,
+      "partialAlphaPixels": 12144
+    },
+    "clips/walkLeft/0059.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145630,
+      "opaquePixels": 43120,
+      "partialAlphaPixels": 11954
+    },
+    "clips/walkLeft/0060.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145684,
+      "opaquePixels": 43173,
+      "partialAlphaPixels": 11847
+    },
+    "clips/walkLeft/0061.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 145575,
+      "opaquePixels": 43121,
+      "partialAlphaPixels": 12008
+    },
+    "clips/walkLeft/0062.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 144973,
+      "opaquePixels": 43355,
+      "partialAlphaPixels": 12376
+    },
+    "clips/walkLeft/0063.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 143944,
+      "opaquePixels": 44194,
+      "partialAlphaPixels": 12566
+    },
+    "clips/walkLeft/0064.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 142661,
+      "opaquePixels": 45506,
+      "partialAlphaPixels": 12537
+    },
+    "clips/walkLeft/0065.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 141375,
+      "opaquePixels": 46987,
+      "partialAlphaPixels": 12342
+    },
+    "clips/walkLeft/0066.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 140058,
+      "opaquePixels": 48423,
+      "partialAlphaPixels": 12223
+    },
+    "clips/walkLeft/0067.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 138853,
+      "opaquePixels": 49498,
+      "partialAlphaPixels": 12353
+    },
+    "clips/walkLeft/0068.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 137773,
+      "opaquePixels": 50255,
+      "partialAlphaPixels": 12676
+    },
+    "clips/walkLeft/0069.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 136795,
+      "opaquePixels": 51032,
+      "partialAlphaPixels": 12877
+    },
+    "clips/walkLeft/0070.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 136042,
+      "opaquePixels": 51953,
+      "partialAlphaPixels": 12709
+    },
+    "clips/walkLeft/0071.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135622,
+      "opaquePixels": 52599,
+      "partialAlphaPixels": 12483
+    },
+    "clips/walkLeft/0072.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135505,
+      "opaquePixels": 52913,
+      "partialAlphaPixels": 12286
+    },
+    "clips/pet/0000.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135505,
+      "opaquePixels": 52913,
+      "partialAlphaPixels": 12286
+    },
+    "clips/pet/0001.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135533,
+      "opaquePixels": 52897,
+      "partialAlphaPixels": 12274
+    },
+    "clips/pet/0002.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135540,
+      "opaquePixels": 52899,
+      "partialAlphaPixels": 12265
+    },
+    "clips/pet/0003.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135561,
+      "opaquePixels": 52872,
+      "partialAlphaPixels": 12271
+    },
+    "clips/pet/0004.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135572,
+      "opaquePixels": 52843,
+      "partialAlphaPixels": 12289
+    },
+    "clips/pet/0005.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135613,
+      "opaquePixels": 52840,
+      "partialAlphaPixels": 12251
+    },
+    "clips/pet/0006.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135627,
+      "opaquePixels": 52822,
+      "partialAlphaPixels": 12255
+    },
+    "clips/pet/0007.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135655,
+      "opaquePixels": 52752,
+      "partialAlphaPixels": 12297
+    },
+    "clips/pet/0008.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135718,
+      "opaquePixels": 52733,
+      "partialAlphaPixels": 12253
+    },
+    "clips/pet/0009.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135748,
+      "opaquePixels": 52702,
+      "partialAlphaPixels": 12254
+    },
+    "clips/pet/0010.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135793,
+      "opaquePixels": 52649,
+      "partialAlphaPixels": 12262
+    },
+    "clips/pet/0011.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135838,
+      "opaquePixels": 52628,
+      "partialAlphaPixels": 12238
+    },
+    "clips/pet/0012.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135839,
+      "opaquePixels": 52597,
+      "partialAlphaPixels": 12268
+    },
+    "clips/pet/0013.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135843,
+      "opaquePixels": 52577,
+      "partialAlphaPixels": 12284
+    },
+    "clips/pet/0014.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135829,
+      "opaquePixels": 52593,
+      "partialAlphaPixels": 12282
+    },
+    "clips/pet/0015.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135825,
+      "opaquePixels": 52585,
+      "partialAlphaPixels": 12294
+    },
+    "clips/pet/0016.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135827,
+      "opaquePixels": 52584,
+      "partialAlphaPixels": 12293
+    },
+    "clips/pet/0017.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135837,
+      "opaquePixels": 52574,
+      "partialAlphaPixels": 12293
+    },
+    "clips/pet/0018.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135893,
+      "opaquePixels": 52573,
+      "partialAlphaPixels": 12238
+    },
+    "clips/pet/0019.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135930,
+      "opaquePixels": 52545,
+      "partialAlphaPixels": 12229
+    },
+    "clips/pet/0020.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135929,
+      "opaquePixels": 52549,
+      "partialAlphaPixels": 12226
+    },
+    "clips/pet/0021.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135879,
+      "opaquePixels": 52581,
+      "partialAlphaPixels": 12244
+    },
+    "clips/pet/0022.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135844,
+      "opaquePixels": 52589,
+      "partialAlphaPixels": 12271
+    },
+    "clips/pet/0023.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135811,
+      "opaquePixels": 52592,
+      "partialAlphaPixels": 12301
+    },
+    "clips/pet/0024.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135811,
+      "opaquePixels": 52577,
+      "partialAlphaPixels": 12316
+    },
+    "clips/pet/0025.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135827,
+      "opaquePixels": 52577,
+      "partialAlphaPixels": 12300
+    },
+    "clips/pet/0026.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135840,
+      "opaquePixels": 52579,
+      "partialAlphaPixels": 12285
+    },
+    "clips/pet/0027.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135876,
+      "opaquePixels": 52578,
+      "partialAlphaPixels": 12250
+    },
+    "clips/pet/0028.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135871,
+      "opaquePixels": 52564,
+      "partialAlphaPixels": 12269
+    },
+    "clips/pet/0029.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135870,
+      "opaquePixels": 52568,
+      "partialAlphaPixels": 12266
+    },
+    "clips/pet/0030.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135881,
+      "opaquePixels": 52579,
+      "partialAlphaPixels": 12244
+    },
+    "clips/pet/0031.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135884,
+      "opaquePixels": 52575,
+      "partialAlphaPixels": 12245
+    },
+    "clips/pet/0032.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135877,
+      "opaquePixels": 52572,
+      "partialAlphaPixels": 12255
+    },
+    "clips/pet/0033.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135878,
+      "opaquePixels": 52574,
+      "partialAlphaPixels": 12252
+    },
+    "clips/settle/0000.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135878,
+      "opaquePixels": 52574,
+      "partialAlphaPixels": 12252
+    },
+    "clips/settle/0001.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135877,
+      "opaquePixels": 52558,
+      "partialAlphaPixels": 12269
+    },
+    "clips/settle/0002.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135887,
+      "opaquePixels": 52587,
+      "partialAlphaPixels": 12230
+    },
+    "clips/settle/0003.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135858,
+      "opaquePixels": 52584,
+      "partialAlphaPixels": 12262
+    },
+    "clips/settle/0004.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135823,
+      "opaquePixels": 52616,
+      "partialAlphaPixels": 12265
+    },
+    "clips/settle/0005.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135829,
+      "opaquePixels": 52637,
+      "partialAlphaPixels": 12238
+    },
+    "clips/settle/0006.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135808,
+      "opaquePixels": 52638,
+      "partialAlphaPixels": 12258
+    },
+    "clips/settle/0007.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135779,
+      "opaquePixels": 52669,
+      "partialAlphaPixels": 12256
+    },
+    "clips/settle/0008.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135777,
+      "opaquePixels": 52687,
+      "partialAlphaPixels": 12240
+    },
+    "clips/settle/0009.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135748,
+      "opaquePixels": 52724,
+      "partialAlphaPixels": 12232
+    },
+    "clips/settle/0010.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135714,
+      "opaquePixels": 52736,
+      "partialAlphaPixels": 12254
+    },
+    "clips/settle/0011.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135673,
+      "opaquePixels": 52765,
+      "partialAlphaPixels": 12266
+    },
+    "clips/settle/0012.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135653,
+      "opaquePixels": 52776,
+      "partialAlphaPixels": 12275
+    },
+    "clips/settle/0013.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135652,
+      "opaquePixels": 52788,
+      "partialAlphaPixels": 12264
+    },
+    "clips/settle/0014.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135600,
+      "opaquePixels": 52812,
+      "partialAlphaPixels": 12292
+    },
+    "clips/settle/0015.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135621,
+      "opaquePixels": 52835,
+      "partialAlphaPixels": 12248
+    },
+    "clips/settle/0016.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135582,
+      "opaquePixels": 52832,
+      "partialAlphaPixels": 12290
+    },
+    "clips/settle/0017.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135581,
+      "opaquePixels": 52838,
+      "partialAlphaPixels": 12285
+    },
+    "clips/settle/0018.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135530,
+      "opaquePixels": 52856,
+      "partialAlphaPixels": 12318
+    },
+    "clips/settle/0019.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135542,
+      "opaquePixels": 52889,
+      "partialAlphaPixels": 12273
+    },
+    "clips/settle/0020.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135538,
+      "opaquePixels": 52887,
+      "partialAlphaPixels": 12279
+    },
+    "clips/settle/0021.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135509,
+      "opaquePixels": 52893,
+      "partialAlphaPixels": 12302
+    },
+    "clips/settle/0022.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135520,
+      "opaquePixels": 52882,
+      "partialAlphaPixels": 12302
+    },
+    "clips/settle/0023.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135535,
+      "opaquePixels": 52895,
+      "partialAlphaPixels": 12274
+    },
+    "clips/settle/0024.png": {
+      "maximumBorderAlpha": 0.0,
+      "transparentPixels": 135505,
+      "opaquePixels": 52913,
+      "partialAlphaPixels": 12286
+    }
+  }
+}

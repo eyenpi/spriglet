@@ -1,8 +1,8 @@
 # Spriglet
 
-A local macOS desktop companion. The **phase 3 desktop reliability prototype** remembers where you place it and occasionally blinks, looks around, stretches, or naps, with finite animations and quiet intervals between them. Your settings stay on this Mac. Some desktop and performance acceptance checks from phase 1 remain open.
+A local macOS desktop companion. **Sprout's first playable character sample** uses a soft, pre-rendered 3D character: idle → short walk → petting reaction → settle. It remembers where you place it, supports quiet activity and static naps, and keeps your settings on this Mac.
 
-The green character in the app is procedural placeholder artwork. The user selected **A · Sprout** in the [character design review](docs/concepts/character-design-review-01.md). Its [first editable Blender model and four rendered views](art/sprout/README.md) are ready for feedback; the model is unrigged and unanimated. The [original researched plan](docs/app-plan-2026-09-13.md) is retained as historical planning context.
+The app displays rendered frames from the [editable Sprout model and rig](art/sprout/README.md). The [sample and asset pipeline](docs/character-sample.md) document its animation, grounded walking, light/dark review, and validation. The [character study](docs/concepts/character-design-review-01.md) and [original researched plan](docs/app-plan-2026-09-13.md) remain historical context. The full animation library and broader desktop/distribution acceptance are later work.
 
 ## Run it
 
@@ -16,10 +16,11 @@ From the repository root:
 
 This builds Debug and opens Spriglet. Look for the **leaf in the menu bar**; the app has no Dock icon. Choose **Prototype Controls…** to open the control window.
 
-- Leave **Quiet Behavior** enabled for occasional activity, or turn it off for manual interaction only.
-- Click the pet or use **Pet Spriglet** for a reaction. A sleeping pet wakes first; input during another clip waits for its boundary and repeated requests coalesce.
-- Use **Take a Nap / Wake Spriglet**, or preview individual clips in Prototype Controls.
-- Drag the body to move it. The settled position is remembered across launches and adapted to the display's current usable area. **Try a Short Walk** remains a manual movement experiment and does not change that saved position; autonomous roaming is not implemented.
+- Choose **Play Character Sample** for the complete 5.63-second sequence. The app chooses a walking direction with enough room.
+- Click the pet or use **Pet Spriglet** for the happy reaction and settle. Input during another sequence waits for its boundary; repeated requests coalesce.
+- Use **Idle**, **Walk Left**, and **Walk Right** in Prototype Controls to inspect the authored clips. A direction without enough room is rejected before movement begins.
+- Leave **Quiet Behavior** enabled for occasional idle moments and naps, or turn it off for manual interaction only. **Take a Nap / Wake Spriglet** selects a static pose; this sample has no separate animated sleep/wake clips.
+- Drag the body to move it. The settled position is remembered across launches and adapted to the display's current usable area. Authored walks do not change that saved home; autonomous roaming is not implemented.
 - Use **Pause**, **Hide Pet**, and **Bring Pet Home** to control it.
 - **Pass Clicks Through** makes the entire pet window ignore mouse events; the menu remains available.
 - The controls window also exposes **Show on All Spaces**, **Next Display**, directional placement buttons, and diagnostics. Each arrow moves the pet by 48 points within the display's usable area.
@@ -54,6 +55,12 @@ For a fresh launch directly into the native controls, quit any existing instance
 .build/xcode/Build/Products/Debug/Spriglet.app/Contents/MacOS/Spriglet --controls
 ```
 
+For an isolated design review, launch with `--sample-review`. It opens controls, plays the complete sample, disables automatic behavior, and uses temporary preferences without changing your saved choices:
+
+```sh
+.build/xcode/Build/Products/Debug/Spriglet.app/Contents/MacOS/Spriglet --sample-review
+```
+
 ## Test and measure
 
 Run the local package's Swift Testing suite:
@@ -62,7 +69,7 @@ Run the local package's Swift Testing suite:
 ./scripts/test.sh
 ```
 
-There are 40 test functions expanding to 240 cases. They cover deterministic behavior and cooldowns, settings migration and invalid payloads, independent suspension causes, display selection, and screen-relative placement. The app scheme builds the application; the package test command runs these unit tests.
+The Swift Testing suite covers behavior and cooldowns, settings migration, suspension causes, display placement, asset-manifest validation, frame boundaries, cumulative root motion, and whole-trajectory fitting. The app scheme builds the application; the package test command runs these unit tests.
 
 Quit any existing Spriglet instance before running the finite Release probe in an unlocked desktop session:
 
@@ -70,7 +77,7 @@ Quit any existing Spriglet instance before running the finite Release probe in a
 ./scripts/probe.sh > /tmp/spriglet-probe.json
 ```
 
-The script refuses to start if Spriglet is already running. Otherwise it builds Release, launches a temporary app instance for about one minute, writes JSON to stdout, and exits after the check. It checks clips, static naps, queued input, window movement, scheduler replacement/cancellation, and idle states. The command-line probe starts with default flags and does not save temporary preferences; normal autonomous planning is disabled except for its explicit short scheduler checks. Build output goes to stderr. Exit status is **0 passed**, **1 failed**, or **2 blocked by a running instance, visibility, or system policy**. It respects Reduce Motion and system suspension. Avoid interacting with the desktop during measurement; profiling and other applications can affect the results.
+The script refuses to start if Spriglet is already running. Otherwise it builds Release, launches a temporary app instance for about one minute, writes JSON to stdout, and exits after the check. It checks the full character sample, petting, static naps, queued input, authored window movement, scheduler cancellation, and quiet rest. It does not save temporary preferences; ordinary automatic behavior is disabled except for explicit scheduler checks. Build output goes to stderr. Exit status is **0 passed**, **1 failed**, or **2 blocked by a running instance, visibility, or system policy**. It respects Reduce Motion and system suspension. Avoid interacting with the desktop during measurement.
 
 The same finite check is available through **Run Automatic Check** in Prototype Controls, with **Cancel Check** and **Copy Report**. Checks restore the starting position and saved choices on completion or cancellation. Diagnostics refresh on demand; they do not create a permanent sampling timer.
 
@@ -80,15 +87,11 @@ For a longer, opt-in check, quit Spriglet and run:
 ./scripts/soak.sh > /tmp/spriglet-soak.json
 ```
 
-This runs 100 show/hide/reaction cycles and a final resting interval in about four minutes. **Run 100-Cycle Check** in Prototype Controls uses the same check and supports cancellation. Its JSON separates functional checks from CPU and memory observations; it does not establish a production memory budget or battery life.
+This runs 100 show/hide/reaction cycles and a final resting interval in about 6–7 minutes. **Run 100-Cycle Check** in Prototype Controls uses the same check and supports cancellation. Its JSON separates functional checks from CPU and memory observations; it does not establish a production memory budget or battery life.
 
-See [phase 3 behavior and validation](docs/phase-3-desktop-reliability.md) for current results and the [disposable desktop fixture](tools/DesktopValidation/README.md) for repeatable input and renderer lifecycle checks. A pet launched with a saved pause now receives one initial still frame when shown; hidden and settled paused views keep their renderer stopped.
+Use the [character sample validation tools](tools/CharacterSampleValidation/README.md) for native playback and exported PNG/contact checks. [Current sample evidence](docs/character-sample.md) identifies the tested assets and app source. A paused launch has a static image; hidden, paused, and settled states keep the frame clock stopped.
 
-The current [Release probe](docs/results/phase-3/probe.json) passed all 21 checks. The [100-cycle run](docs/results/phase-3/soak.json) passed all 20 functional checks in 251.24 seconds. Its largest sampled footprint was 114.34 MiB, returning to 22.14 MiB after the final rest versus a 22.03 MiB warmed baseline. All final resting counters stayed unchanged. The allocation cause, production resource budget, and battery behavior remain unproven. [Native lifecycle checks](docs/results/phase-3/renderer-lifecycle.json) passed 12/12, and [UI observations](docs/results/phase-3/ui-observations.json) cover paused startup, saved positions, and diagnostic restoration.
-
-Separate [paused](docs/results/phase-3/paused-metal-summary.json) and [active-control](docs/results/phase-3/active-control-metal-summary.json) Metal traces verified the Release process identity. The 5.91-second paused capture had no directly attributed submissions or GPU intervals; deliberate activity produced 197 submission rows and 392 GPU interval rows. Unattributed activity remains in both traces, so this does not establish zero GPU work or energy cost.
-
-The [current environment and source/binary hashes](docs/results/phase-3/environment.json) identify these runs. [Phase 2 behavior contracts and results](docs/phase-2-behavior.md) remain historical evidence for their recorded source. [Phase 1 validation](docs/phase-1-validation.md) retains historical results and the pending physical desktop matrix. Instruments captures must attach to the verified Release process ID, following the [discarded profiling attempt](docs/results/profiling-attempt.json).
+[Phase 3 results](docs/phase-3-desktop-reliability.md), including the old 21-check probe, 100-cycle run, and Metal traces, measured the previous procedural renderer. They do not establish the new asset renderer's memory, GPU, or battery cost. [Phase 2](docs/phase-2-behavior.md) and [phase 1](docs/phase-1-validation.md) also remain historical. The broader physical desktop matrix and sustained performance work remain open.
 
 ## Implementation
 
@@ -97,16 +100,17 @@ The [current environment and source/binary hashes](docs/results/phase-3/environm
 | Menu and controls | SwiftUI `MenuBarExtra`, native window scenes, Observation |
 | Concurrency | Swift 6 language mode with the Swift 6.3.3 compiler, MainActor isolation, complete concurrency checking, warnings treated as errors |
 | Desktop host | Transparent nonactivating AppKit `NSPanel`; local view hit testing and dragging |
-| Character | SpriteKit in an `NSView` wrapper; six finite authored clips, one coalesced pending request, static awake/nap poses |
+| Character | A child `CALayer` displays 448 × 448 transparent PNGs at 224 × 224 points; editable Blender source, five finite clips and static awake/nap poses |
+| Image decoding | ImageIO with immediate decoding on `@concurrent` work; at most 12 buffered animation frames plus static/current images |
 | Calm behavior | Seeded pure planner; one cancellable `Task.sleep(for:tolerance:)` deadline with a generation guard |
-| Window movement | `NSView.displayLink(target:selector:)` with `CADisplayLink`, invalidated when movement finishes or is suspended |
+| Pose and window movement | One `NSView.displayLink(target:selector:)` selects the same authored frame and root offset; both hold on a decoder underrun; no independent movement easing |
 | System state | macOS 26 typed notifications for screen/system sleep, session, accessibility, power, and thermal changes |
 | Policy, planning, settings | Sendable `SprigletCore` values, versioned settings in `UserDefaults`, Swift Testing |
-| Diagnostics | Completed scene updates, render callback and movement tick counters; own-process CPU and physical footprint sampling; `OSSignposter` phase markers |
+| Diagnostics | Layer assignments, display-link callbacks, applied movement frames, buffer underruns; own-process CPU/footprint sampling and `OSSignposter` markers |
 
-The language-mode setting `SWIFT_VERSION = 6.0` selects Swift 6 semantics; the installed compiler is Swift **6.3.3**. AppKit, SpriteKit, and the display-link APIs are checked against the installed SDK. [Apple's view display-link API](https://developer.apple.com/documentation/appkit/nsview/displaylink(target:selector:)), [Swift Testing](https://developer.apple.com/documentation/testing)
+The language-mode setting `SWIFT_VERSION = 6.0` selects Swift 6 semantics; the installed compiler is Swift **6.3.3**. Current official documentation and the installed SDK support the [view display link](https://developer.apple.com/documentation/appkit/nsview/displaylink(target:selector:)), [child layer image contents](https://developer.apple.com/documentation/quartzcore/calayer/contents), [ImageIO eager decoding](https://developer.apple.com/documentation/imageio/kcgimagesourceshouldcacheimmediately), and [explicit concurrent work](https://www.swift.org/blog/swift-6.2-released/). New code builds with warnings treated as errors and uses no deprecated display-link or animation APIs.
 
-The source is split into `App`, `Desktop`, `Rendering`, and `Diagnostics` under `Sources/Spriglet`, with policy, geometry, behavior planning, and preferences in `Packages/SprigletCore`. Timing contracts are in [phase 2 behavior](docs/phase-2-behavior.md); current placement, lifecycle, and diagnostic references are in [phase 3 reliability](docs/phase-3-desktop-reliability.md).
+The source is split into `App`, `Desktop`, `Rendering`, and `Diagnostics` under `Sources/Spriglet`, with policy, geometry, behavior planning, preferences, manifest validation, and sample timing in `Packages/SprigletCore`. The current asset/timing contract is in [character sample](docs/character-sample.md).
 
 ## Local development and distribution
 
@@ -118,4 +122,4 @@ A Release build here is still a local prototype. Public distribution needs the c
 
 The prototype has no accounts, social features, network calls, or analytics. It reads its own window input and process counters; it does not capture desktop images or inspect other apps' contents. It requests no Screen Recording, Accessibility, Input Monitoring, or Automation permission. **Copy Report** writes only when selected and includes diagnostic timing, counts, OS version, and process measurements. The longer check also includes the executable path, process ID, and build identity.
 
-Five user settings and the chosen display-relative position are stored locally; the current pose, random sequence, and animation progress are not persisted. The display UUID is used only to restore this app's window and is never sent anywhere. The optional macOS privacy manifest records access to the app's own settings with reason `CA92.1`; it is not a submission-readiness claim. Production artwork, richer personality, sound, login-item support, and distribution are later work. Remaining acceptance checks include desktop transparency over known backgrounds, physical cross-application input/focus, transparent-pixel routing, Spaces/full-screen/Stage Manager, display changes, actual sleep/wake, accessibility settings, sustained GPU/compositor profiling, and longer performance/battery runs.
+Five user settings and the chosen display-relative position are stored locally; the current pose, random sequence, and animation progress are not persisted. The display UUID is used only to restore this app's window and is never sent anywhere. The optional macOS privacy manifest records access to the app's own settings with reason `CA92.1`; it is not a submission-readiness claim. The full animation library, richer personality, sound, login-item support, and distribution are later work. Remaining acceptance includes physical cross-application input/focus, transparent-pixel routing, Spaces/full-screen/Stage Manager, display changes, actual sleep/wake, accessibility settings, sustained compositor profiling, and longer performance/battery runs. The sample's light/dark review has the specific scope recorded in its evidence.

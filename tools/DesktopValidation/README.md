@@ -16,7 +16,7 @@ This only builds and ad-hoc signs `.build/DesktopValidation.app` within this dir
 tools/DesktopValidation/.build/DesktopValidation.app/Contents/MacOS/DesktopValidation
 ```
 
-Close its window or use **Quit Desktop Validation** to end the test. It never opens a document. The build was checked with Xcode 26.6 (17F113), Swift 6.3.3, and macOS SDK 26.5 on Apple silicon. Both build scripts use complete concurrency checking and warnings as errors.
+Close its window or use **Quit Desktop Validation** to end the test. It never opens a document. The build was checked with Xcode 26.6 (17F113), Swift 6.3.3, and macOS SDK 26.5 on Apple silicon. The build uses complete concurrency checking and warnings as errors.
 
 ## What the fixture measures
 
@@ -32,7 +32,7 @@ The numerical prediction supplements received-event counts. A predicted fixture 
 ## Suggested controlled checks
 
 1. Click each target and button without the pet above them, and perform a fresh scroll gesture. Establish that every counter changes as intended. Record focus totals as the baseline.
-2. Disable Spriglet's Quiet Behavior during boundary checks so the painted outline remains stationary. Keep the pet shown and unpaused; test saved paused launch separately with the lifecycle check below.
+2. Disable Spriglet's Quiet Behavior during boundary checks so the painted outline remains stationary. Keep the pet shown and unpaused; test paused presentation separately with the character validation harness linked below.
 3. Move the pet over the light target and then the dark target. Inspect clear corners, the sprout outline, and the ground shadow. A scene-texture PNG is not evidence of window compositing; observe the actual desktop host.
 4. Click a blank target to mark a point, then move the pet so a clear corner covers the crosshair. Use **Inspect marked point** and record both window numbers. Click the marked screen point once and check the received mouse-down count. Repeat for all corners, immediately outside the outline, and the translucent shadow.
 5. Position a transparent margin over a native button and click once. Repeat with a fresh scroll gesture over a blank target. Finish any previous momentum before changing the test position, because macOS can keep momentum events attached to their initial receiver.
@@ -41,27 +41,24 @@ The numerical prediction supplements received-event counts. A predicted fixture 
 
 Record OS, build, display/scale, input method, and whether a person or app-targeted automation performed the actions. Automation may activate its target application; compare the focus-change totals and limit the conclusion accordingly. These checks do not cover another macOS release, another display, real sleep/lock, Spaces, Stage Manager, full-screen behavior, energy, or all physical input devices.
 
-## Renderer lifecycle regression check
+## Current character lifecycle check
 
-The retained check compiles the real renderer and interaction view with a private local copy of SprigletCore. It does not change Xcode or SwiftPM build products:
+Renderer validation moved to [CharacterSampleValidation](../CharacterSampleValidation/README.md) when the procedural character was replaced by the authored Sprout sample. That harness compiles the current renderer and desktop controller, checks image/offset synchronization and interruption, and measures stopped callbacks. Follow its asset-report and native-run instructions; a finished sample export is required.
+
+The old build command remains a migration wrapper:
 
 ```sh
 tools/DesktopValidation/build-lifecycle-check.sh
-tools/DesktopValidation/.build/lifecycle/RendererLifecycleCheck --headless
 ```
 
-`--headless` uses a prohibited activation policy, creates only hidden own-app windows, and never orders one onscreen. It checks hidden paused callback quiescence and directly invokes constructed-event press/drag cancellation paths. It posts no event to the operating system. **Four of four checks passed** on 13 September 2026; the [retained headless results](../../docs/results/phase-3/renderer-headless.json) do not include visible rendering.
+It prints a migration notice and invokes the new **build-only** script. It creates `tools/CharacterSampleValidation/.build/native/NativeSampleCheck` and launches nothing. It does not rebuild the old `.build/lifecycle/RendererLifecycleCheck` executable; any retained binary at that path is historical. The old `--headless` interface and scene-update assertions do not apply to the current renderer. The independent `DesktopValidation.app` background/input fixture above is unchanged.
 
-The default mode deliberately shows disposable, nonactivating, whole-window click-through panels for roughly eight seconds:
+## Historical phase 3 lifecycle evidence
 
-```sh
-tools/DesktopValidation/.build/lifecycle/RendererLifecycleCheck
-```
+The retired procedural SpriteKit check passed **4 of 4 hidden/handler checks** on 13 September 2026. It created hidden own-app windows and directly invoked constructed-event press/drag cancellation paths, without posting events to the operating system. The [retained headless results](../../docs/results/phase-3/renderer-headless.json) do not include visible rendering.
 
-It adds checks for a cold paused first presentation, a previously hidden paused first show, settled callbacks, a real reaction interrupted by pause, and a neutral static resume. It writes JSON to standard output and exits nonzero on failure. The pause checks require a nonzero initial scene update; zero callbacks cannot hide a renderer that never began. A scene update is still not proof of a GPU presentation, so inspect the initial visible pet separately.
+The historical visible run passed **12 of 12 checks**, including those four cases. Its [retained results](../../docs/results/phase-3/renderer-lifecycle.json) show one initial scene update for a visible paused host and unchanged callbacks after settling. It also covered a previously hidden paused first show, an active reaction interrupted by pause, and neutral static resume. These scene/delegate counters describe the retired renderer, not the current CALayer frame submissions or GPU presentations.
 
-The native visible run passed **12 of 12 checks**, including the four hidden/handler cases, on 13 September 2026. The [retained results](../../docs/results/phase-3/renderer-lifecycle.json) show one initial scene update for a visible paused host and unchanged callbacks after settling. Separate [app UI observations](../../docs/results/phase-3/ui-observations.json) confirmed the actual still pet image on a fresh paused launch. Disposable fixture calibration confirmed a received blank mouse-down, but subsequent app-targeted window inspection was inconclusive for cross-app focus/routing. Physical drag, transparency boundaries, and focus checks remain open.
+Separate [phase 3 app UI observations](../../docs/results/phase-3/ui-observations.json) confirmed the actual procedural still pet on a fresh paused launch. Disposable fixture calibration confirmed a received blank mouse-down, but subsequent app-targeted window inspection was inconclusive for cross-app focus/routing. The constructed-event cancellation cases verified handler cleanup, not operating-system cancellation delivery or physical input routing. Physical drag, transparency boundaries, and focus checks remain independent review items for the rendered character.
 
-The direct cancellation cases pass a constructed `NSEvent` to `mouseDown`, `mouseDragged`, `mouseCancelled`, and `mouseUp`. They verify Spriglet's handler cleanup, not when macOS delivers cancellation or how WindowServer routes physical input.
-
-See [the source-backed desktop review](research.md) for API guarantees, open boundary risks, and the paused-startup fix.
+See [the source-backed desktop review](research.md) for API guarantees, renderer migration, and the preserved historical paused-startup findings.

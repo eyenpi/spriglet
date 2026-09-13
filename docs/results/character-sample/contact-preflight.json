@@ -1,0 +1,255 @@
+{
+  "kind": "sprout-authored-contact-preflight",
+  "verifiedAtUTC": "2026-09-13T18:09:20.354356+00:00",
+  "source": "art/sprout/sample-v01/contact-samples.json",
+  "sourceSHA256": "76e9a72b89aec18a68669582f01b97482c13e492e600e494df3c336534d2209b",
+  "checks": [
+    {
+      "name": "reported-contact-height-matches-marker",
+      "status": "pass",
+      "evidence": "Exported groundHeight equals the independent worldPosition.z field; errors below use the declared worldGroundZ plane."
+    },
+    {
+      "name": "both-walks-have-measured-stance",
+      "status": "pass",
+      "evidence": "Each foot has at least one contiguous planted interval with two or more samples in both directions."
+    },
+    {
+      "name": "planted-screen-stance",
+      "status": "pass",
+      "evidence": {
+        "maximumDisplacementPixels": 3.308726339963289e-05,
+        "authoredTolerancePixels": 0.05,
+        "pixelToPointScale": [
+          2.0,
+          2.0
+        ],
+        "method": "Projected sole center plus cumulative window travel; maximum displacement from each planted interval's first sample."
+      }
+    },
+    {
+      "name": "planted-ground-height",
+      "status": "pass",
+      "evidence": {
+        "maximumAbsoluteErrorAuthoringUnits": 7.450580596923828e-09,
+        "authoredToleranceAuthoringUnits": 1e-05
+      }
+    },
+    {
+      "name": "authored-endpoint-pose-signatures",
+      "status": "pass",
+      "evidence": {
+        "authoredMatrixElementTolerance": 1e-05,
+        "coordinateContract": "Armature-space bone matrices with cumulative travel subtracted; export compensation excluded.",
+        "endpoints": [
+          {
+            "clip": "idle",
+            "boundary": "entry",
+            "pose": "neutral",
+            "expectedPose": "neutral",
+            "boneCount": 13,
+            "sameBoneInventory": true,
+            "finiteSixteenValueMatrices": true,
+            "maximumMatrixElementDifference": 0.0,
+            "passed": true
+          },
+          {
+            "clip": "idle",
+            "boundary": "exit",
+            "pose": "neutral",
+            "expectedPose": "neutral",
+            "boneCount": 13,
+            "sameBoneInventory": true,
+            "finiteSixteenValueMatrices": true,
+            "maximumMatrixElementDifference": 0.0,
+            "passed": true
+          },
+          {
+            "clip": "walkRight",
+            "boundary": "entry",
+            "pose": "neutral",
+            "expectedPose": "neutral",
+            "boneCount": 13,
+            "sameBoneInventory": true,
+            "finiteSixteenValueMatrices": true,
+            "maximumMatrixElementDifference": 0.0,
+            "passed": true
+          },
+          {
+            "clip": "walkRight",
+            "boundary": "exit",
+            "pose": "neutral",
+            "expectedPose": "neutral",
+            "boneCount": 13,
+            "sameBoneInventory": true,
+            "finiteSixteenValueMatrices": true,
+            "maximumMatrixElementDifference": 2.0000000000575113e-07,
+            "passed": true
+          },
+          {
+            "clip": "walkLeft",
+            "boundary": "entry",
+            "pose": "neutral",
+            "expectedPose": "neutral",
+            "boneCount": 13,
+            "sameBoneInventory": true,
+            "finiteSixteenValueMatrices": true,
+            "maximumMatrixElementDifference": 0.0,
+            "passed": true
+          },
+          {
+            "clip": "walkLeft",
+            "boundary": "exit",
+            "pose": "neutral",
+            "expectedPose": "neutral",
+            "boneCount": 13,
+            "sameBoneInventory": true,
+            "finiteSixteenValueMatrices": true,
+            "maximumMatrixElementDifference": 2.0000000000575113e-07,
+            "passed": true
+          },
+          {
+            "clip": "pet",
+            "boundary": "entry",
+            "pose": "neutral",
+            "expectedPose": "neutral",
+            "boneCount": 13,
+            "sameBoneInventory": true,
+            "finiteSixteenValueMatrices": true,
+            "maximumMatrixElementDifference": 0.0,
+            "passed": true
+          },
+          {
+            "clip": "pet",
+            "boundary": "exit",
+            "pose": "petted",
+            "expectedPose": "petted",
+            "boneCount": 13,
+            "sameBoneInventory": true,
+            "finiteSixteenValueMatrices": true,
+            "maximumMatrixElementDifference": 0.0,
+            "passed": true
+          },
+          {
+            "clip": "settle",
+            "boundary": "entry",
+            "pose": "petted",
+            "expectedPose": "petted",
+            "boneCount": 13,
+            "sameBoneInventory": true,
+            "finiteSixteenValueMatrices": true,
+            "maximumMatrixElementDifference": 0.0,
+            "passed": true
+          },
+          {
+            "clip": "settle",
+            "boundary": "exit",
+            "pose": "neutral",
+            "expectedPose": "neutral",
+            "boneCount": 13,
+            "sameBoneInventory": true,
+            "finiteSixteenValueMatrices": true,
+            "maximumMatrixElementDifference": 0.0,
+            "passed": true
+          }
+        ]
+      }
+    }
+  ],
+  "summary": [
+    {
+      "clip": "idle",
+      "foot": "left",
+      "plantedFrames": 37,
+      "measurablePlantedIntervals": 1,
+      "maximumScreenDisplacementFromFirstPixels": 0.0,
+      "maximumWorldDisplacementFromFirst": 0.0,
+      "maximumGroundHeightError": 7.450580596923828e-09
+    },
+    {
+      "clip": "idle",
+      "foot": "right",
+      "plantedFrames": 37,
+      "measurablePlantedIntervals": 1,
+      "maximumScreenDisplacementFromFirstPixels": 0.0,
+      "maximumWorldDisplacementFromFirst": 0.0,
+      "maximumGroundHeightError": 7.450580596923828e-09
+    },
+    {
+      "clip": "walkRight",
+      "foot": "left",
+      "plantedFrames": 41,
+      "measurablePlantedIntervals": 4,
+      "maximumScreenDisplacementFromFirstPixels": 2.526618123965818e-05,
+      "maximumWorldDisplacementFromFirst": 1.1920928955078125e-07,
+      "maximumGroundHeightError": 7.450580596923828e-09
+    },
+    {
+      "clip": "walkRight",
+      "foot": "right",
+      "plantedFrames": 41,
+      "measurablePlantedIntervals": 4,
+      "maximumScreenDisplacementFromFirstPixels": 3.308726339963289e-05,
+      "maximumWorldDisplacementFromFirst": 0.0,
+      "maximumGroundHeightError": 7.450580596923828e-09
+    },
+    {
+      "clip": "walkLeft",
+      "foot": "left",
+      "plantedFrames": 41,
+      "measurablePlantedIntervals": 4,
+      "maximumScreenDisplacementFromFirstPixels": 2.1345219509734543e-05,
+      "maximumWorldDisplacementFromFirst": 2.9802322387695312e-08,
+      "maximumGroundHeightError": 7.450580596923828e-09
+    },
+    {
+      "clip": "walkLeft",
+      "foot": "right",
+      "plantedFrames": 41,
+      "measurablePlantedIntervals": 4,
+      "maximumScreenDisplacementFromFirstPixels": 3.0123839396140614e-05,
+      "maximumWorldDisplacementFromFirst": 5.960464477539063e-08,
+      "maximumGroundHeightError": 7.450580596923828e-09
+    },
+    {
+      "clip": "pet",
+      "foot": "left",
+      "plantedFrames": 34,
+      "measurablePlantedIntervals": 1,
+      "maximumScreenDisplacementFromFirstPixels": 0.0,
+      "maximumWorldDisplacementFromFirst": 0.0,
+      "maximumGroundHeightError": 7.450580596923828e-09
+    },
+    {
+      "clip": "pet",
+      "foot": "right",
+      "plantedFrames": 34,
+      "measurablePlantedIntervals": 1,
+      "maximumScreenDisplacementFromFirstPixels": 0.0,
+      "maximumWorldDisplacementFromFirst": 0.0,
+      "maximumGroundHeightError": 7.450580596923828e-09
+    },
+    {
+      "clip": "settle",
+      "foot": "left",
+      "plantedFrames": 25,
+      "measurablePlantedIntervals": 1,
+      "maximumScreenDisplacementFromFirstPixels": 0.0,
+      "maximumWorldDisplacementFromFirst": 0.0,
+      "maximumGroundHeightError": 7.450580596923828e-09
+    },
+    {
+      "clip": "settle",
+      "foot": "right",
+      "plantedFrames": 25,
+      "measurablePlantedIntervals": 1,
+      "maximumScreenDisplacementFromFirstPixels": 0.0,
+      "maximumWorldDisplacementFromFirst": 0.0,
+      "maximumGroundHeightError": 7.450580596923828e-09
+    }
+  ],
+  "limitations": [
+    "This preflight reads authored rig projection/endpoint metadata. Runtime manifest and PNG exports are not yet available, so cross-checking playback root offsets and rendered frames remains pending.",
+    "Sole-center markers and armature-space matrices do not prove whole-foot mesh contact or artistic continuity."
+  ]
+}

@@ -1,0 +1,2485 @@
+{
+  "checks" : [
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedRootOffset" : {
+          "x" : 0,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 0,
+        "effectiveOrigin" : [
+          396,
+          370
+        ],
+        "movementApplications" : 0,
+        "panelOrigin" : [
+          396,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0,
+          0
+        ],
+        "submittedFrames" : 1,
+        "visible" : true
+      },
+      "detail" : "Own native panel geometry and submitted layer contents; inspect actual appearance separately.",
+      "name" : "native224-point host",
+      "status" : "pass"
+    },
+    {
+      "detail" : "Independent full PNG alpha selected normalized bottom-left point (0.01, 0.01); expected hit false.",
+      "name" : "alpha hit probe: transparent-corner",
+      "status" : "pass"
+    },
+    {
+      "detail" : "Independent full PNG alpha selected normalized bottom-left point (0.28236607142857145, 0.4520089285714286); expected hit true.",
+      "name" : "alpha hit probe: opaque-asymmetric-region",
+      "status" : "pass"
+    },
+    {
+      "detail" : "Independent full PNG alpha selected normalized bottom-left point (0.28236607142857145, 0.5479910714285714); expected hit false.",
+      "name" : "alpha hit probe: transparent-vertical-opposite",
+      "status" : "pass"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedRootOffset" : {
+          "x" : 0,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 0,
+        "effectiveOrigin" : [
+          396,
+          370
+        ],
+        "movementApplications" : 0,
+        "panelOrigin" : [
+          396,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0,
+          0
+        ],
+        "submittedFrames" : 1,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedRootOffset" : {
+          "x" : 0,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 0,
+        "effectiveOrigin" : [
+          396,
+          370
+        ],
+        "movementApplications" : 0,
+        "panelOrigin" : [
+          396,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0,
+          0
+        ],
+        "submittedFrames" : 1,
+        "visible" : true
+      },
+      "detail" : "No submitted image, display-link callback, or movement application during the measured interval.",
+      "name" : "warm rest stops work",
+      "status" : "pass"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 168,
+        "appliedRootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 171,
+        "effectiveOrigin" : [
+          474.399998831749,
+          370
+        ],
+        "movementApplications" : 68,
+        "panelOrigin" : [
+          474,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "rootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 163,
+        "timelineFrame" : 168,
+        "visible" : true
+      },
+      "detail" : "Real renderer and desktop host traversed the finite authored playlist.",
+      "name" : "finite walkRight sequence",
+      "status" : "pass"
+    },
+    {
+      "detail" : "Every accepted callback applied the same snapshot and root offset before image commit. Actual panel origin plus actual image-layer geometry matched the authored target within 0.001 point. Raw window rounding is recorded separately; compositor presentation is not measured.",
+      "name" : "paired walkRight pose and travel",
+      "status" : "pass"
+    },
+    {
+      "detail" : "A buffer underrun holds pose and travel; zero underruns are required for this finite observation.",
+      "name" : "buffered walkRight playback",
+      "status" : "pass"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 168,
+        "appliedRootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 171,
+        "effectiveOrigin" : [
+          474.399998831749,
+          370
+        ],
+        "movementApplications" : 68,
+        "panelOrigin" : [
+          474,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "rootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 163,
+        "timelineFrame" : 168,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 168,
+        "appliedRootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 171,
+        "effectiveOrigin" : [
+          474.399998831749,
+          370
+        ],
+        "movementApplications" : 68,
+        "panelOrigin" : [
+          474,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "rootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 163,
+        "timelineFrame" : 168,
+        "visible" : true
+      },
+      "detail" : "The settled image does not retain a running display link.",
+      "name" : "walkRight stops after settlement",
+      "status" : "pass"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 168,
+        "appliedRootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 342,
+        "effectiveOrigin" : [
+          797.9999999999999,
+          370
+        ],
+        "movementApplications" : 136,
+        "panelOrigin" : [
+          798,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "rootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 326,
+        "timelineFrame" : 168,
+        "visible" : true
+      },
+      "detail" : "Real renderer and desktop host traversed the finite authored playlist.",
+      "name" : "finite walkLeft sequence",
+      "status" : "pass"
+    },
+    {
+      "detail" : "Every accepted callback applied the same snapshot and root offset before image commit. Actual panel origin plus actual image-layer geometry matched the authored target within 0.001 point. Raw window rounding is recorded separately; compositor presentation is not measured.",
+      "name" : "paired walkLeft pose and travel",
+      "status" : "pass"
+    },
+    {
+      "detail" : "A buffer underrun holds pose and travel; zero underruns are required for this finite observation.",
+      "name" : "buffered walkLeft playback",
+      "status" : "pass"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 168,
+        "appliedRootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 342,
+        "effectiveOrigin" : [
+          797.9999999999999,
+          370
+        ],
+        "movementApplications" : 136,
+        "panelOrigin" : [
+          798,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "rootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 326,
+        "timelineFrame" : 168,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 168,
+        "appliedRootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 342,
+        "effectiveOrigin" : [
+          797.9999999999999,
+          370
+        ],
+        "movementApplications" : 136,
+        "panelOrigin" : [
+          798,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "rootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 326,
+        "timelineFrame" : 168,
+        "visible" : true
+      },
+      "detail" : "The settled image does not retain a running display link.",
+      "name" : "walkLeft stops after settlement",
+      "status" : "pass"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 28,
+        "appliedRootOffset" : {
+          "x" : 20.325925623046032,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 371,
+        "effectiveOrigin" : [
+          416.3259256230459,
+          370
+        ],
+        "movementApplications" : 163,
+        "panelOrigin" : [
+          416,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "submittedFrames" : 354,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "animating" : true,
+        "appActive" : false,
+        "appliedFrame" : 28,
+        "appliedRootOffset" : {
+          "x" : 20.325925623046032,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 11,
+        "clip" : "walkRight",
+        "desktopImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "displayLinkActive" : true,
+        "displayLinkCallbacks" : 371,
+        "effectiveOrigin" : [
+          416.3259256230459,
+          370
+        ],
+        "movementApplications" : 163,
+        "panelOrigin" : [
+          416,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "rootOffset" : {
+          "x" : 20.325925623046032,
+          "y" : 0
+        },
+        "submittedFrames" : 354,
+        "timelineFrame" : 28,
+        "visible" : true
+      },
+      "detail" : "Pause interrupted an actual authored frame, rejects a reaction, and leaves no display link.",
+      "name" : "pause cancels active and queued work",
+      "status" : "pass"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 28,
+        "appliedRootOffset" : {
+          "x" : 20.325925623046032,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 371,
+        "effectiveOrigin" : [
+          416.3259256230459,
+          370
+        ],
+        "movementApplications" : 163,
+        "panelOrigin" : [
+          416,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "submittedFrames" : 355,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 28,
+        "appliedRootOffset" : {
+          "x" : 20.325925623046032,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 371,
+        "effectiveOrigin" : [
+          416.3259256230459,
+          370
+        ],
+        "movementApplications" : 163,
+        "panelOrigin" : [
+          416,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "submittedFrames" : 355,
+        "visible" : true
+      },
+      "detail" : "Resume restores a still image; no implicit continuation of the cancelled sample.",
+      "name" : "resume does not restart cancelled work",
+      "status" : "pass"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 28,
+        "appliedRootOffset" : {
+          "x" : -20.325925623046032,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 400,
+        "effectiveOrigin" : [
+          855.9999999999999,
+          370
+        ],
+        "movementApplications" : 190,
+        "panelOrigin" : [
+          856,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "submittedFrames" : 383,
+        "visible" : false
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "animating" : true,
+        "appActive" : false,
+        "appliedFrame" : 28,
+        "appliedRootOffset" : {
+          "x" : -20.325925623046032,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 11,
+        "clip" : "walkLeft",
+        "desktopImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "displayLinkActive" : true,
+        "displayLinkCallbacks" : 400,
+        "effectiveOrigin" : [
+          855.9999999999999,
+          370
+        ],
+        "movementApplications" : 190,
+        "panelOrigin" : [
+          856,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "rootOffset" : {
+          "x" : -20.325925623046032,
+          "y" : 0
+        },
+        "submittedFrames" : 382,
+        "timelineFrame" : 28,
+        "visible" : true
+      },
+      "detail" : "Native host interruption\/occlusion callbacks cancel the renderer; no app preferences are involved.",
+      "name" : "hide interrupts authored playback",
+      "status" : "pass"
+    },
+    {
+      "detail" : "Two identical requests during the walk produce one pet→settle request after it completes.",
+      "name" : "queued input coalesces at a clip boundary",
+      "status" : "pass"
+    },
+    {
+      "detail" : "A separate walk→queued pet\/settle→second walk retains its image-layer residual across request boundaries and ends at the sum of the authored travel.",
+      "name" : "new walk preserves settled subpoint origin",
+      "status" : "pass"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.4842303913641217,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 19,
+        "appliedRootOffset" : {
+          "x" : -4.515769608635717,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.4842303913641217,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 630,
+        "effectiveOrigin" : [
+          871.4842303913641,
+          370
+        ],
+        "movementApplications" : 345,
+        "panelOrigin" : [
+          871,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.4842303913641217,
+          0
+        ],
+        "submittedFrames" : 596,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0.4842303913641217,
+          0
+        ],
+        "animating" : true,
+        "appActive" : false,
+        "appliedFrame" : 19,
+        "appliedRootOffset" : {
+          "x" : -4.515769608635717,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 11,
+        "clip" : "walkLeft",
+        "desktopImageOffset" : [
+          0.4842303913641217,
+          0
+        ],
+        "displayLinkActive" : true,
+        "displayLinkCallbacks" : 629,
+        "effectiveOrigin" : [
+          871.4842303913641,
+          370
+        ],
+        "movementApplications" : 345,
+        "panelOrigin" : [
+          871,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.4842303913641217,
+          0
+        ],
+        "rootOffset" : {
+          "x" : -4.515769608635717,
+          "y" : 0
+        },
+        "submittedFrames" : 595,
+        "timelineFrame" : 19,
+        "visible" : true
+      },
+      "detail" : "A controlled onFrame rejection exercises the no-room\/interrupted-host contract; it does not simulate a physical display change.",
+      "name" : "unapplied movement cancels its image sequence",
+      "status" : "pass"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 17,
+        "appliedRootOffset" : {
+          "x" : -2.374855288685973,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 650,
+        "effectiveOrigin" : [
+          874.1093751026782,
+          370
+        ],
+        "movementApplications" : 362,
+        "panelOrigin" : [
+          874,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "submittedFrames" : 613,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "animating" : true,
+        "appActive" : false,
+        "appliedFrame" : 17,
+        "appliedRootOffset" : {
+          "x" : -2.374855288685973,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 12,
+        "clip" : "walkLeft",
+        "desktopImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "displayLinkActive" : true,
+        "displayLinkCallbacks" : 649,
+        "effectiveOrigin" : [
+          874.1093751026782,
+          370
+        ],
+        "movementApplications" : 362,
+        "panelOrigin" : [
+          874,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "rootOffset" : {
+          "x" : -2.374855288685973,
+          "y" : 0
+        },
+        "submittedFrames" : 613,
+        "timelineFrame" : 17,
+        "visible" : true
+      },
+      "detail" : "onFrame returned true after synchronously pausing. Generation validation must reject its pending image commit.",
+      "name" : "callback cancellation prevents stale image commit",
+      "status" : "pass"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 17,
+        "appliedRootOffset" : {
+          "x" : -2.374855288685973,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 650,
+        "effectiveOrigin" : [
+          874.1093751026782,
+          370
+        ],
+        "movementApplications" : 362,
+        "panelOrigin" : [
+          874,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "submittedFrames" : 614,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 17,
+        "appliedRootOffset" : {
+          "x" : -2.374855288685973,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 650,
+        "effectiveOrigin" : [
+          874.1093751026782,
+          370
+        ],
+        "movementApplications" : 362,
+        "panelOrigin" : [
+          874,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "submittedFrames" : 614,
+        "visible" : true
+      },
+      "detail" : "Ten-second resource observation after all finite actions; no battery or GPU budget asserted.",
+      "name" : "final rest remains stopped",
+      "status" : "pass"
+    },
+    {
+      "detail" : "The loaded manifest hash was captured before renderer construction and compared again at completion.",
+      "name" : "manifest unchanged during native check",
+      "status" : "pass"
+    }
+  ],
+  "embeddedPlayback" : [
+
+  ],
+  "executableSHA256" : "d01bdc6a4200fbcc41f0c5d8453830ea53b6a6e774143511315134112ffd7a61",
+  "finishedAt" : "2026-09-13T18:41:21Z",
+  "kind" : "sprout-native-character-sample",
+  "limitations" : [
+    "This executable hosts the real renderer and desktop controller in disposable own-app windows; it does not exercise saved user preferences or the full PetRuntime policy.",
+    "AppKit points\/backing pixels establish native size. Human or UI screenshot review of appearance on both backgrounds must be recorded separately.",
+    "Submitted layer contents and display-link callbacks are application counters, not presented GPU frames. One callback pairs image selection with root motion; WindowServer presentation is not proven atomic.",
+    "Process CPU and physical footprint include the fixture, its background board, image decoding, and renderer. They are not the normal app baseline or measurements of WindowServer, GPU work, energy, or battery life.",
+    "No physical cross-app input, full-screen, screen topology change, long soak, or production animation approval is certified."
+  ],
+  "manifestSHA256" : "93f2099530e66a91bdbb7b32a9ec88587c731448853bd09ac2382f8f9e58fd79",
+  "mode" : "visible-lifecycle",
+  "operatingSystem" : "Version 26.6.2 (Build 25G83)",
+  "playback" : [
+    {
+      "acceptedFrameCallbacks" : 162,
+      "bufferUnderrunDelta" : 0,
+      "clipsSeen" : [
+        "idle",
+        "walkRight",
+        "pet",
+        "settle"
+      ],
+      "finalSnapshot" : {
+        "actualImageLayerOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 168,
+        "appliedRootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 171,
+        "effectiveOrigin" : [
+          474.399998831749,
+          370
+        ],
+        "movementApplications" : 68,
+        "panelOrigin" : [
+          474,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "rootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 163,
+        "timelineFrame" : 168,
+        "visible" : true
+      },
+      "maximumEffectiveOriginErrorPoints" : 0,
+      "maximumLayerOffsetMismatchPoints" : 0,
+      "maximumRequestBoundaryDiscontinuityPoints" : 0,
+      "maximumWindowQuantizationErrorPoints" : 0.8636855101588026,
+      "mismatchedFrameOffsetPairs" : 0,
+      "name" : "sample-walkRight",
+      "rejectedFrames" : 0
+    },
+    {
+      "acceptedFrameCallbacks" : 162,
+      "bufferUnderrunDelta" : 0,
+      "clipsSeen" : [
+        "idle",
+        "walkLeft",
+        "pet",
+        "settle"
+      ],
+      "finalSnapshot" : {
+        "actualImageLayerOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 168,
+        "appliedRootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 342,
+        "effectiveOrigin" : [
+          797.9999999999999,
+          370
+        ],
+        "movementApplications" : 136,
+        "panelOrigin" : [
+          798,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "rootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 326,
+        "timelineFrame" : 168,
+        "visible" : true
+      },
+      "maximumEffectiveOriginErrorPoints" : 0,
+      "maximumLayerOffsetMismatchPoints" : 0,
+      "maximumRequestBoundaryDiscontinuityPoints" : 0,
+      "maximumWindowQuantizationErrorPoints" : 0.8636855101588026,
+      "mismatchedFrameOffsetPairs" : 0,
+      "name" : "sample-walkLeft",
+      "rejectedFrames" : 0
+    },
+    {
+      "acceptedFrameCallbacks" : 123,
+      "bufferUnderrunDelta" : 0,
+      "clipsSeen" : [
+        "walkRight",
+        "pet",
+        "settle"
+      ],
+      "finalSnapshot" : {
+        "actualImageLayerOffset" : [
+          0.3999988317488601,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 58,
+        "appliedRootOffset" : {
+          "x" : 0,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          0.3999988317488601,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 534,
+        "effectiveOrigin" : [
+          474.39999883174886,
+          370
+        ],
+        "movementApplications" : 258,
+        "panelOrigin" : [
+          474,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.3999988317488601,
+          0
+        ],
+        "rootOffset" : {
+          "x" : 0,
+          "y" : 0
+        },
+        "submittedFrames" : 506,
+        "timelineFrame" : 58,
+        "visible" : true
+      },
+      "maximumEffectiveOriginErrorPoints" : 0,
+      "maximumLayerOffsetMismatchPoints" : 0,
+      "maximumRequestBoundaryDiscontinuityPoints" : 0,
+      "maximumWindowQuantizationErrorPoints" : 0.8636855101586889,
+      "mismatchedFrameOffsetPairs" : 0,
+      "name" : "queued-pet-after-walk",
+      "rejectedFrames" : 0
+    },
+    {
+      "acceptedFrameCallbacks" : 192,
+      "bufferUnderrunDelta" : 0,
+      "clipsSeen" : [
+        "walkRight",
+        "pet",
+        "settle",
+        "walkLeft"
+      ],
+      "finalSnapshot" : {
+        "actualImageLayerOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 72,
+        "appliedRootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "walkLeft",
+        "desktopImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 609,
+        "effectiveOrigin" : [
+          395.9999999999999,
+          370
+        ],
+        "movementApplications" : 327,
+        "panelOrigin" : [
+          396,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "rootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 576,
+        "timelineFrame" : 72,
+        "visible" : true
+      },
+      "maximumEffectiveOriginErrorPoints" : 0,
+      "maximumLayerOffsetMismatchPoints" : 0,
+      "maximumRequestBoundaryDiscontinuityPoints" : 0,
+      "maximumWindowQuantizationErrorPoints" : 0.8636855101586889,
+      "mismatchedFrameOffsetPairs" : 0,
+      "name" : "walk-pet-second-walk",
+      "rejectedFrames" : 0
+    }
+  ],
+  "processID" : 11868,
+  "resourceIntervals" : [
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedRootOffset" : {
+          "x" : 0,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 0,
+        "effectiveOrigin" : [
+          396,
+          370
+        ],
+        "movementApplications" : 0,
+        "panelOrigin" : [
+          396,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0,
+          0
+        ],
+        "submittedFrames" : 1,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedRootOffset" : {
+          "x" : 0,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 0,
+        "effectiveOrigin" : [
+          396,
+          370
+        ],
+        "movementApplications" : 0,
+        "panelOrigin" : [
+          396,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0,
+          0
+        ],
+        "submittedFrames" : 1,
+        "visible" : true
+      },
+      "elapsedSeconds" : 3.1626365416450426,
+      "name" : "Warm static pose",
+      "physicalFootprintMiBAfter" : 34.62586975097656,
+      "physicalFootprintMiBBefore" : 30.20392608642578,
+      "processCPUPercentOfOneCore" : 0.7583229904605246,
+      "startedAt" : "2026-09-13T18:40:21Z"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 168,
+        "appliedRootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 171,
+        "effectiveOrigin" : [
+          474.399998831749,
+          370
+        ],
+        "movementApplications" : 68,
+        "panelOrigin" : [
+          474,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "rootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 163,
+        "timelineFrame" : 168,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 168,
+        "appliedRootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 171,
+        "effectiveOrigin" : [
+          474.399998831749,
+          370
+        ],
+        "movementApplications" : 68,
+        "panelOrigin" : [
+          474,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.39999883174897377,
+          0
+        ],
+        "rootOffset" : {
+          "x" : 78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 163,
+        "timelineFrame" : 168,
+        "visible" : true
+      },
+      "elapsedSeconds" : 2.1114965833257884,
+      "name" : "walkRight settled",
+      "physicalFootprintMiBAfter" : 36.422767639160156,
+      "physicalFootprintMiBBefore" : 36.391517639160156,
+      "processCPUPercentOfOneCore" : 0.45394342930465625,
+      "startedAt" : "2026-09-13T18:40:33Z"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 168,
+        "appliedRootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 342,
+        "effectiveOrigin" : [
+          797.9999999999999,
+          370
+        ],
+        "movementApplications" : 136,
+        "panelOrigin" : [
+          798,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "rootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 326,
+        "timelineFrame" : 168,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 168,
+        "appliedRootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "clip" : "settle",
+        "desktopImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 342,
+        "effectiveOrigin" : [
+          797.9999999999999,
+          370
+        ],
+        "movementApplications" : 136,
+        "panelOrigin" : [
+          798,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "rootOffset" : {
+          "x" : -78.39999883174899,
+          "y" : 0
+        },
+        "submittedFrames" : 326,
+        "timelineFrame" : 168,
+        "visible" : true
+      },
+      "elapsedSeconds" : 2.0298707083566114,
+      "name" : "walkLeft settled",
+      "physicalFootprintMiBAfter" : 36.23522186279297,
+      "physicalFootprintMiBBefore" : 36.20397186279297,
+      "processCPUPercentOfOneCore" : 0.35371710968788306,
+      "startedAt" : "2026-09-13T18:40:43Z"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 28,
+        "appliedRootOffset" : {
+          "x" : 20.325925623046032,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 371,
+        "effectiveOrigin" : [
+          416.3259256230459,
+          370
+        ],
+        "movementApplications" : 163,
+        "panelOrigin" : [
+          416,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "submittedFrames" : 354,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 28,
+        "appliedRootOffset" : {
+          "x" : 20.325925623046032,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 371,
+        "effectiveOrigin" : [
+          416.3259256230459,
+          370
+        ],
+        "movementApplications" : 163,
+        "panelOrigin" : [
+          416,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "submittedFrames" : 354,
+        "visible" : true
+      },
+      "elapsedSeconds" : 2.029254208318889,
+      "name" : "Paused during actual movement",
+      "physicalFootprintMiBAfter" : 36.32899475097656,
+      "physicalFootprintMiBBefore" : 128.76649475097656,
+      "processCPUPercentOfOneCore" : 0.16395185908010473,
+      "startedAt" : "2026-09-13T18:40:46Z"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 28,
+        "appliedRootOffset" : {
+          "x" : 20.325925623046032,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 371,
+        "effectiveOrigin" : [
+          416.3259256230459,
+          370
+        ],
+        "movementApplications" : 163,
+        "panelOrigin" : [
+          416,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "submittedFrames" : 355,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 28,
+        "appliedRootOffset" : {
+          "x" : 20.325925623046032,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 371,
+        "effectiveOrigin" : [
+          416.3259256230459,
+          370
+        ],
+        "movementApplications" : 163,
+        "panelOrigin" : [
+          416,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.32592562304591866,
+          0
+        ],
+        "submittedFrames" : 355,
+        "visible" : true
+      },
+      "elapsedSeconds" : 2.0662645833799616,
+      "name" : "Resumed static pose",
+      "physicalFootprintMiBAfter" : 35.59461975097656,
+      "physicalFootprintMiBBefore" : 35.56336975097656,
+      "processCPUPercentOfOneCore" : 0.37110445882281917,
+      "startedAt" : "2026-09-13T18:40:48Z"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 28,
+        "appliedRootOffset" : {
+          "x" : -20.325925623046032,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 400,
+        "effectiveOrigin" : [
+          855.9999999999999,
+          370
+        ],
+        "movementApplications" : 190,
+        "panelOrigin" : [
+          856,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "submittedFrames" : 383,
+        "visible" : false
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 28,
+        "appliedRootOffset" : {
+          "x" : -20.325925623046032,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 400,
+        "effectiveOrigin" : [
+          855.9999999999999,
+          370
+        ],
+        "movementApplications" : 190,
+        "panelOrigin" : [
+          856,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          -1.1368683772161603e-13,
+          0
+        ],
+        "submittedFrames" : 383,
+        "visible" : false
+      },
+      "elapsedSeconds" : 2.068986124941148,
+      "name" : "Hidden during actual movement",
+      "physicalFootprintMiBAfter" : 35.53209686279297,
+      "physicalFootprintMiBBefore" : 35.78209686279297,
+      "processCPUPercentOfOneCore" : 0.29371874111397184,
+      "startedAt" : "2026-09-13T18:40:51Z"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.4842303913641217,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 19,
+        "appliedRootOffset" : {
+          "x" : -4.515769608635717,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.4842303913641217,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 630,
+        "effectiveOrigin" : [
+          871.4842303913641,
+          370
+        ],
+        "movementApplications" : 345,
+        "panelOrigin" : [
+          871,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.4842303913641217,
+          0
+        ],
+        "submittedFrames" : 596,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0.4842303913641217,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 19,
+        "appliedRootOffset" : {
+          "x" : -4.515769608635717,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.4842303913641217,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 630,
+        "effectiveOrigin" : [
+          871.4842303913641,
+          370
+        ],
+        "movementApplications" : 345,
+        "panelOrigin" : [
+          871,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.4842303913641217,
+          0
+        ],
+        "submittedFrames" : 596,
+        "visible" : true
+      },
+      "elapsedSeconds" : 2.091196791618131,
+      "name" : "Rejected host movement",
+      "physicalFootprintMiBAfter" : 35.61022186279297,
+      "physicalFootprintMiBBefore" : 35.57897186279297,
+      "processCPUPercentOfOneCore" : 0.26348548458400156,
+      "startedAt" : "2026-09-13T18:41:05Z"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 17,
+        "appliedRootOffset" : {
+          "x" : -2.374855288685973,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 650,
+        "effectiveOrigin" : [
+          874.1093751026782,
+          370
+        ],
+        "movementApplications" : 362,
+        "panelOrigin" : [
+          874,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "submittedFrames" : 613,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 17,
+        "appliedRootOffset" : {
+          "x" : -2.374855288685973,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 650,
+        "effectiveOrigin" : [
+          874.1093751026782,
+          370
+        ],
+        "movementApplications" : 362,
+        "panelOrigin" : [
+          874,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "submittedFrames" : 613,
+        "visible" : true
+      },
+      "elapsedSeconds" : 2.0469057499431074,
+      "name" : "Pause inside frame callback",
+      "physicalFootprintMiBAfter" : 36.36022186279297,
+      "physicalFootprintMiBBefore" : 128.86022186279297,
+      "processCPUPercentOfOneCore" : 0.12413859309694793,
+      "startedAt" : "2026-09-13T18:41:09Z"
+    },
+    {
+      "after" : {
+        "actualImageLayerOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 17,
+        "appliedRootOffset" : {
+          "x" : -2.374855288685973,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 650,
+        "effectiveOrigin" : [
+          874.1093751026782,
+          370
+        ],
+        "movementApplications" : 362,
+        "panelOrigin" : [
+          874,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "submittedFrames" : 614,
+        "visible" : true
+      },
+      "before" : {
+        "actualImageLayerOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "animating" : false,
+        "appActive" : false,
+        "appliedFrame" : 17,
+        "appliedRootOffset" : {
+          "x" : -2.374855288685973,
+          "y" : 0
+        },
+        "backingScale" : 2,
+        "bufferUnderruns" : 0,
+        "bufferedFrames" : 0,
+        "desktopImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "displayLinkActive" : false,
+        "displayLinkCallbacks" : 650,
+        "effectiveOrigin" : [
+          874.1093751026782,
+          370
+        ],
+        "movementApplications" : 362,
+        "panelOrigin" : [
+          874,
+          370
+        ],
+        "panelSizePoints" : [
+          224,
+          224
+        ],
+        "rendererBackingPixels" : [
+          448,
+          448
+        ],
+        "rendererSizePoints" : [
+          224,
+          224
+        ],
+        "requestedImageOffset" : [
+          0.10937510267820016,
+          0
+        ],
+        "submittedFrames" : 614,
+        "visible" : true
+      },
+      "elapsedSeconds" : 10.438382541644387,
+      "name" : "Final settled pose",
+      "physicalFootprintMiBAfter" : 35.51647186279297,
+      "physicalFootprintMiBBefore" : 35.59459686279297,
+      "processCPUPercentOfOneCore" : 0.0725112340901792,
+      "startedAt" : "2026-09-13T18:41:11Z"
+    }
+  ],
+  "startedAt" : "2026-09-13T18:40:20Z"
+}

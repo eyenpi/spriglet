@@ -1,8 +1,21 @@
-# A · Sprout — editable model review 01
+# A · Sprout — editable character source
+
+The current sample is [sprout-sample-v01.blend](sample-v01/sprout-sample-v01.blend). It contains a named armature, editable Actions, surface-bound native hair, and a complete idle → walk → pet → settle sequence. The app displays transparent frames rendered from that rig under a fixed camera and lighting setup.
+
+- [Sample pipeline, playback, and validation](../../docs/character-sample.md)
+- [Runtime frames and manifest](../../Sources/Spriglet/Resources/SproutSample)
+- [Build provenance](sample-v01/sample-build.json), [grounded foot samples](sample-v01/contact-samples.json), [groom binding verification](sample-v01/groom-binding-verification.json)
+- [Blender builder/exporter](scripts/build_sample.py), [editable motion baking](scripts/sample_motion.py), [surface-bound groom](scripts/sample_groom.py)
+
+Open the sample in Blender, select **Sprout Rig**, and enter Pose Mode. The file opens with the complete travelling Action and an overview camera. Individual clip Actions and the locked runtime camera remain available. The **START HERE · Sprout sample** text block describes the controls. The Stage bone compensates for exported window travel; keep it neutral when editing the normal travelling Action. Topology changes require regenerating the attachment data and groom.
+
+The user chose A · Sprout and requested warmer concept colors and face markings, then asked to finish this playable sample. The rig carries those revisions forward. The static draft below is retained as its source and comparison record.
+
+## Historical static design review 01
 
 Prepared 13 September 2026 with Blender **5.2.1 LTS**, build `9e2066aef7ef`.
 
-The user selected **A · Sprout** from the [concept comparison](../../docs/concepts/character-study-01.png), then asked for the first Blender draft's face and colors to be brought closer to that concept. This revision has a tapered olive forehead, separate cream eye patches, fuller cheeks, visible peach blush, smaller eyes, and warmer olive/ivory materials. **The revision awaits user review. It is unrigged and unanimated.**
+The user selected **A · Sprout** from the [concept comparison](../../docs/concepts/character-study-01.png), then asked for the first Blender draft's face and colors to be brought closer to that concept. This revision has a tapered olive forehead, separate cream eye patches, fuller cheeks, visible peach blush, smaller eyes, and warmer olive/ivory materials. The retained `review-01` file is unrigged and unanimated; `sample-v01` is the later playable character.
 
 ![Sprout, rendered from the editable Blender model](review-01/sprout-v01-hero.png)
 
@@ -35,23 +48,12 @@ The script requires an isolated background process and verified Blender 5.2 APIs
 
 The short coat uses Blender's native `CURVES` data and the Huang Principled Hair shader, which is [Cycles-only](https://docs.blender.org/manual/id/5.2/render/shader_nodes/shader/hair_principled.html). Its white first-reflection weight is deliberately reduced to 0.18 for the intended velvet color; this is an artistic adjustment from the physically correct default of 1. The undercoat sheen is 0.10. Five native material experiments informed this choice. The final pigment values are olive `63662E`, ivory `F1DBAB`, and leaf green `536730`, converted from sRGB to linear values for shading. AgX with Look None and exposure 0 is set explicitly.
 
-The current groom follows rigid parent transforms. It is **not bound to a deforming surface**: body edits require regenerating it, and rigging must add an appropriate [surface-deformation binding](https://docs.blender.org/manual/en/5.2/modeling/geometry_nodes/curve/operations/deform_curves_on_surface.html). New material and world node trees are used directly; the deprecated `use_nodes` switch and legacy particle hair are not used. The body subdivision is applied before painting the face so sparse construction rings do not smear the markings. Eyes, brows, nose, and smile are positioned against the evaluated body surface.
+The historical draft's groom follows rigid parent transforms. It is **not bound to a deforming surface**; the new sample adds native [surface-deformation binding](https://docs.blender.org/manual/en/5.2/modeling/geometry_nodes/curve/operations/deform_curves_on_surface.html). New material and world node trees are used directly; the deprecated `use_nodes` switch and legacy particle hair are not used. The body subdivision is applied before painting the face so sparse construction rings do not smear the markings. Eyes, brows, nose, and smile are positioned against the evaluated body surface.
 
-## Next design decisions
+This model is an offline authoring asset. Its Blender rendering cost does not predict the native app's runtime cost. Use the current sample evidence for the new native renderer; earlier procedural app checks remain historical.
 
-Review the body width, ear length, eye proportions, forehead markings, olive color, and velvet texture against the selected concept. The current draft has simpler paws and a rounded tail. Those details remain adjustable; the user's request to refine the face and colors does not constitute approval of the rest of the model.
-
-After the shape and face are accepted:
-
-1. Review a turntable and calibrated small renders over light and dark backgrounds, including transparent edges.
-2. Add body and limb controls, ear/crown motion, gaze, eyelids, and a deforming groom binding.
-3. Review an idle → short walk → petting reaction → settle sample, with grounded feet and clean transitions.
-4. Export frames with timing and anchor metadata, integrate the accepted sample, and measure the app with its real assets.
-
-This model is an offline authoring asset. Its Blender rendering cost does not predict the native app's runtime cost. The app still displays procedural placeholder artwork; its existing checks do not validate this model or future animation assets.
-
-## Verification
+## Historical draft verification
 
 The retained model passed 14 checks in a fresh background Blender process covering editable geometry, the named cameras, groom data, rendering settings, hashes, and external dependencies. All four saved views were visually inspected. The [verification record](review-01/verification.json) identifies the results and saved model hash. Both foot meshes meet the studio floor at Z = 0. A few sole fibers extend below that plane and are hidden by the floor; the sole groom needs cleanup before transparent production exports.
 
-These checks establish that the review artifact opens and renders; artistic approval, deformation quality, alpha edges, animation, and in-app performance remain pending.
+These historical checks established that the static review artifact opened and rendered. The later sample has separate deformation, animation, alpha, contact, and app validation records.
