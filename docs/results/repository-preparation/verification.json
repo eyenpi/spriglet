@@ -1,0 +1,60 @@
+{
+  "kind": "original-repository-main-preparation",
+  "recordedAtUTC": "2026-09-13T22:58:40.986813+00:00",
+  "repository": "https://github.com/eyenpi/spriglet",
+  "branch": "main",
+  "visibilityChangeBy": "repository owner",
+  "mergedFeatureCommit": "fc30fdc",
+  "consolidationCommit": "c7c48572821f13977b056d481f7f581db3343444",
+  "historyPreserved": true,
+  "historyRewritten": false,
+  "checks": [
+    {
+      "name": "Swift Testing",
+      "result": "passed",
+      "testFunctions": 61,
+      "suites": 8
+    },
+    {
+      "name": "Python regression tests",
+      "result": "passed",
+      "tests": 38
+    },
+    {
+      "name": "PNG and grounded-contact checks",
+      "result": "passed",
+      "frames": 244,
+      "numericalChecks": 10
+    },
+    {
+      "name": "Saved model and updated provenance",
+      "result": "passed",
+      "report": "art/sprout/sample-v01/verification.json",
+      "sha256": "53a64eb7c20474c7e5c5e6994f813bbd6140d78b1ca66ab115578ffe6654e11a"
+    },
+    {
+      "name": "Saved icon and asset catalog",
+      "result": "passed",
+      "report": "art/sprout/public-preview/icon-verification.json",
+      "sha256": "c3de34243e0337fa546f3e435f746d512a99431533401db9fc7306df178e4ef2"
+    },
+    {
+      "name": "App and native-fixture inputs match previously tested snapshot",
+      "result": "passed",
+      "filesCompared": 297,
+      "reference": "docs/results/public-preview/public-validation.json"
+    }
+  ],
+  "currentFilesPrivacyAudit": {
+    "passed": true,
+    "findings": [],
+    "scope": "Known local identifiers, personal commit emails, and bounded high-confidence credential patterns; not a guarantee against every possible secret.",
+    "fileSelection": "Git tracked files and unignored candidate files. Ignored build products and Xcode xcuserdata are excluded."
+  },
+  "historyScope": "The file audit excludes .git. The original repository history is preserved and still includes older author emails and local paths.",
+  "assetAdoption": "docs/results/repository-preparation/asset-adoption.json",
+  "assetReport": "docs/results/repository-preparation/assets.json",
+  "appCodeChanged": false,
+  "newRenderPerformed": false,
+  "validationScope": "Fresh local tests and model/icon/PNG verification after retaining the cleaned asset set. Existing native checks are reused only for their byte-identical recorded inputs. Main-branch hosted builds run through GitHub Actions after the push."
+}
