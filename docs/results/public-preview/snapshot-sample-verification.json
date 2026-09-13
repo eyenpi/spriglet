@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "verifierSHA256": "3faee166336e54f83ff5af86aa0da4af14f02acbb0d2d5130a9bf4e855895f52",
+  "blender": "5.2.1 LTS",
+  "blenderBuildHash": "9e2066aef7ef",
+  "modelSHA256": "20320df491632fb1245b14912cd9077f0128c2a40697f0bb9dd74463c99baf03",
+  "sampleBuildSHA256": "3c94a8e1d6a8359b097b3cfeb59d73e043a1da626a8a3cde7e15d76e71c5dd88",
+  "openingAction": "Sprout \u00b7 COMPLETE SAMPLE \u00b7 idle walk pet settle",
+  "openingCamera": "Camera \u00b7 editable sequence overview",
+  "savedResolution": 448,
+  "savedSamples": 48,
+  "controlBoneCount": 14,
+  "nativeGroomObjects": 11,
+  "nativeStrandCount": 72985,
+  "groomProbeCount": 352,
+  "groomPoseSamples": [
+    {
+      "clip": "idle",
+      "frameIndex": 14
+    },
+    {
+      "clip": "walkRight",
+      "frameIndex": 30
+    },
+    {
+      "clip": "walkLeft",
+      "frameIndex": 42
+    },
+    {
+      "clip": "pet",
+      "frameIndex": 25
+    }
+  ],
+  "maximumReadbackGroomRootError": 4.805480091749757e-07,
+  "groomRootErrorTolerance": 0.0005,
+  "nativePlantedFootMeshChecks": 164,
+  "maximumPlantedFootMeshGroundError": 7.450580596923828e-09,
+  "groundHeightTolerance": 1e-05,
+  "minimumPlantedSoleFiberHeight": 0.031107855960726738,
+  "rawAlphaCompositorVerified": true,
+  "boundedShadowCatcherVerified": true,
+  "recordedInputHashesVerified": true,
+  "checkedInputsUnchanged": true,
+  "changedModelProvenanceRefusalVerified": true,
+  "rendered": false,
+  "savedBlend": false,
+  "scope": "Saved model readback; first 8 strand roots per groom at 4 poses; full evaluated foot meshes/fibers at every declared walk stance frame. Distances are world/model units. PNG pixels and projected contact drift are checked by the independent asset validator."
+}

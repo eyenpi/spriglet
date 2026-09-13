@@ -4,7 +4,7 @@ Generated on 13 September 2026 with the built-in image-generation tool, using th
 
 - Input: [original style comparison](style-comparison.png), whose [prompt and provenance](style-comparison-prompt.md) are retained.
 - Output: [character study 01](character-study-01.png).
-- Original output file: `/Users/ali/.codex/generated_images/01a09a0c-f7b7-7463-8d73-efba768cb397/exec-97a4b67b-71d9-4f4d-894c-cfeffb59e028.png`.
+- Original output file: `<local-home>/generated-concept-source.png`.
 - The small light/dark tiles are illustrative previews. They are not calibrated desktop-size screenshots or tests of app transparency.
 - Selection status: the user selected A · Sprout; details are recorded in the [design review](character-design-review-01.md).
 

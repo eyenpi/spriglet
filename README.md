@@ -13,8 +13,8 @@ Meet Sprout: a soft, leaf-eared desktop companion that rests, takes a few steps,
 You need an **Apple silicon Mac**, **macOS 26 or later**, and **full Xcode** selected as your developer toolchain. This release is a source preview; a signed, notarized app download is not available yet.
 
 ```sh
-git clone https://github.com/eyenpi/spriglet-public.git
-cd spriglet-public
+git clone https://github.com/eyenpi/spriglet.git
+cd spriglet
 ./scripts/run.sh
 ```
 
@@ -44,7 +44,7 @@ Development is verified with **Xcode 26.6, Swift 6.3.3, and macOS SDK 26.5**. Th
 - [Editable character source](art/sprout/README.md)
 - [Distribution preparation](docs/distribution.md)
 - [Contributing](CONTRIBUTING.md)
-- [Report a bug or suggest an idea](https://github.com/eyenpi/spriglet-public/issues)
+- [Report a bug or suggest an idea](https://github.com/eyenpi/spriglet/issues)
 
 Spriglet was developed with AI assistance. GitHub Copilot CLI contributed the public preview's welcome and everyday controls; [the contribution record](docs/copilot-contribution.md) describes the scope. The underlying app and Blender pipeline predate that contribution.
 

@@ -1,9 +1,9 @@
 {
   "kind": "sprout-character-sample-assets",
   "verifiedAtUTC": "2026-09-13T18:21:17.370801+00:00",
-  "manifest": "/Users/ali/W/personal/spriglet/Sources/Spriglet/Resources/SproutSample/manifest.json",
+  "manifest": "<local-checkout>/Sources/Spriglet/Resources/SproutSample/manifest.json",
   "manifestSHA256": "93f2099530e66a91bdbb7b32a9ec88587c731448853bd09ac2382f8f9e58fd79",
-  "contactSamples": "/Users/ali/W/personal/spriglet/art/sprout/sample-v01/contact-samples.json",
+  "contactSamples": "<local-checkout>/art/sprout/sample-v01/contact-samples.json",
   "contactSamplesSHA256": "76e9a72b89aec18a68669582f01b97482c13e492e600e494df3c336534d2209b",
   "checks": [
     {

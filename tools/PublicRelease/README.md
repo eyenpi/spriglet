@@ -1,19 +1,19 @@
-# Preparing a clean public snapshot
+# Optional metadata-cleaned file exports
 
-`prepare-public.py` exports one specified Git commit into a **new directory**. It never edits the private checkout or index, changes Git history, runs an app, creates a remote repository, or publishes anything. An in-checkout destination is allowed only under ignored `.build`; a separate sibling directory is also supported. Existing destinations are refused.
+`prepare-public.py` exports one specified Git commit into a **new directory**. It never edits the source checkout or index, changes Git history, runs an app, creates a remote repository, or publishes anything. An in-checkout destination is allowed only under ignored `.build`; a separate sibling directory is also supported. Existing destinations are refused.
 
-The private development repository and its history remain private. Initialize the resulting public snapshot as a new Git root with an intentional public author identity. Do not later merge or push private development refs into that repository: a clean working tree does not remove old objects from reachable history. See [GitHub's explanation of history exposure](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository).
+Spriglet is maintained in [eyenpi/spriglet](https://github.com/eyenpi/spriglet), on `main`, with its original history. This utility is optional for preparing and inspecting a file archive; ordinary development and releases do not require another GitHub repository. It excludes Git history from that archive but does not rewrite or hide history in the source repository. See [GitHub’s explanation of history exposure](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository).
 
 ## Run
 
 Use Python 3.12+, Git, `zstd` on PATH, and the verified Blender 5.2 installation. Xcode is also needed when the snapshot contains the icon catalog verifier. The app itself gains no runtime dependency from these publication tools.
 
-After committing the intended app, artwork, license, and documentation, run from the private repository root:
+After committing the intended app, artwork, license, and documentation, run from the repository root:
 
 ```sh
 python3 tools/PublicRelease/prepare-public.py \
   --commit HEAD \
-  --output ../spriglet-public-export
+  --output .build/metadata-review
 ```
 
 `--commit` accepts a commit or local ref and resolves it once. Uncommitted changes and untracked files are excluded. Optional `--repo`, `--blender`, and `--zstd` arguments select the source repository and installed offline tools. The exporter does not include `.git`, `.build`, raw Copilot sessions, traces, compiled products, or Python caches. It rejects archive links and traversal paths.
@@ -30,7 +30,7 @@ The narrow model transformation is verified against installed Blender 5.2 RNA. T
 
 ## Provenance and evidence
 
-`PUBLICATION.json` records the source commit without including its history, original/exported SHA-256 for every changed file, the reason for each transformation, PNG identity proofs, model byte-identity proofs, exclusions, and the final audit. The source commit remains a reference to the private development checkpoint, not a public ancestor.
+`PUBLICATION.json` records the source commit without including its history, original/exported SHA-256 for every changed file, the reason for each transformation, PNG identity proofs, model byte-identity proofs, exclusions, and the final audit. The source commit identifies the original checkpoint used to create that file archive. `historyIncluded: false` describes the archive, not the Git history retained by the original repository.
 
 Original authoring hashes are checked **before** transformations. A pre-existing mismatch blocks export; the tool never repairs a stale chain by merely claiming its current files are original. It refreshes only the mechanical input chains used by `build_sample.py --reuse-model`, `verify_sample.py`, and the icon verifier:
 

@@ -1,13 +1,13 @@
-# Public launch handoff
+# Launch from the original repository
 
-[Spriglet’s public source](https://github.com/eyenpi/spriglet-public) and [0.1.0 preview release](https://github.com/eyenpi/spriglet-public/releases/tag/v0.1.0-preview.1) are live. Code, documentation, editable Blender artwork, rendered frames, icon, and demo media use MIT.
+Use [eyenpi/spriglet](https://github.com/eyenpi/spriglet), with `main` as the default and release branch. The desktop-prototype work, MIT license for code and artwork, editable character, demo media, welcome, controls, and release tooling are all brought together there. The repository owner will change its visibility manually.
 
-The public repository is a clean one-commit snapshot on `codex/public-preview`, at `65b5bc0fd0d1aa76fb52dedb0d26e987e18f9318`. Its [macOS CI run](https://github.com/eyenpi/spriglet-public/actions/runs/34783864560) passed. Fresh exported-source checks also passed 61 Swift test functions, 38 Python tests, all 244 PNGs/contact checks, 22 app-probe checks, and 22 native lifecycle checks. The [receipt](publication-receipt.json) retains release assets, hashes, CI status, and publication scope.
+The [source preview release](https://github.com/eyenpi/spriglet/releases/tag/v0.1.0-preview.1) contains the demo MP4 and GIF, alongside GitHub’s source archives. The local unsigned app ZIP is not a normal download. A notarized Mac download still requires Developer ID signing and the [distribution acceptance checks](../distribution.md).
 
-The working public checkout is `../spriglet-public-export`. Keep private development history separate: never merge, mirror-push, or force-push private refs to the public repository. Future public updates should pass through the [clean snapshot workflow](../../tools/PublicRelease/README.md), followed by fresh validation of the resulting assets and builds.
+[Repository preparation evidence](../results/repository-preparation/verification.json) records the asset/provenance import and relevant local checks. The [macOS workflow](https://github.com/eyenpi/spriglet/actions/workflows/validate.yml) checks the original repository. Development and future releases continue on this repository; the optional metadata export utility is not a requirement to create another repository.
 
-This is a source preview for Apple silicon/macOS 26. A normal Mac download still needs a valid Developer ID identity, Apple notarization, and the distribution acceptance checks. The local unsigned ZIP was not uploaded. The leaf-menu Show Welcome action remains the small manual UI follow-up recorded in the launch review; broader desktop/battery acceptance remains future work.
+Original Git history is retained, including older author emails and local path references. Cleaning the current files does not remove earlier versions from that history. The repository remains private until its owner changes visibility.
 
-## Contest handoff
+## Contest materials
 
-No entry has been submitted. Manually publish the [prepared caption](contest-post.txt) with [the MP4](../media/spriglet-demo.mp4) once on a public X, Instagram, or LinkedIn account before **September 14, 2026 at 08:59 in Berlin**. The [official rules](https://github.com/katiejliu/github-copilot-day-sweepstakes/blob/main/README.md) prohibit automated participation; do not submit another entry if already entered. Read the [entry notes](contest-entry.md) for eligibility and attribution details.
+The [prepared caption](contest-post.txt) now points to `eyenpi/spriglet`. Publish it with [the MP4](../media/spriglet-demo.mp4) once on a public X, Instagram, or LinkedIn account, after the source repository is public and before **September 14, 2026 at 08:59 in Berlin**. The [official rules](https://github.com/katiejliu/github-copilot-day-sweepstakes/blob/main/README.md) prohibit automated participation. Repository tooling does not submit an entry; do not enter again if you already posted one. See the [entry notes](contest-entry.md) for the full handoff.

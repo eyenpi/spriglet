@@ -4,9 +4,9 @@ Created on 13 September 2026 using the built-in image-generation tool.
 
 Purpose: help choose a visual direction for the desktop pet. This is exploratory concept art, not a final character design or production animation asset. Both visual styles can be produced through authored 2D playback; the image does not compare measured renderer performance.
 
-Original generated output: `/Users/ali/.codex/generated_images/01a09a0c-f7b7-7463-8d73-efba768cb397/exec-d8a282c5-2b06-4c9c-b07b-69ccb953c15c.png`.
+Original generated output: `<local-home>/generated-concept-source.png`.
 
-Project copy: [style-comparison.png](/Users/ali/W/personal/spriglet/docs/concepts/style-comparison.png).
+Project copy: [style-comparison.png](style-comparison.png).
 
 Final prompt:
 

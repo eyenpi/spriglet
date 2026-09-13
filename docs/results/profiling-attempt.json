@@ -6,7 +6,7 @@
     {
       "name": "Spriglet",
       "pid": "86462",
-      "path": "/Users/ali/W/personal/spriglet/.build/xcode/Build/Products/Debug/Spriglet.app"
+      "path": "<local-checkout>/.build/xcode/Build/Products/Debug/Spriglet.app"
     }
   ],
   "durationSeconds": "22.717978",

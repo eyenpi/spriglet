@@ -74,11 +74,11 @@
     "executable_sha256": "1648339f67bf64081a691a6f7b74889b53f13e37ab56519225400356a883f405",
     "expected_release_executable_verified": true,
     "name": "Spriglet",
-    "path_resolution_base": "/Users/ali/W/personal/spriglet",
+    "path_resolution_base": "<local-checkout>",
     "pid": 93035,
     "process_name_verified": true,
     "recorded_executable_path": ".build/xcode/Build/Products/Release/Spriglet.app/Contents/MacOS/Spriglet",
-    "resolved_executable_path": "/Users/ali/W/personal/spriglet/.build/xcode/Build/Products/Release/Spriglet.app/Contents/MacOS/Spriglet"
+    "resolved_executable_path": "<local-checkout>/.build/xcode/Build/Products/Release/Spriglet.app/Contents/MacOS/Spriglet"
   },
   "target_activity": {
     "command_buffer_submission_rows": 197,

@@ -1,6 +1,6 @@
 # GitHub Copilot Day entry materials
 
-The prepared post is in [contest-post.txt](contest-post.txt). Attach [spriglet-demo.mp4](../media/spriglet-demo.mp4), then publish the post yourself from one public X, Instagram, or LinkedIn account. The app source is at [eyenpi/spriglet-public](https://github.com/eyenpi/spriglet-public). This document is preparation, not a submitted entry.
+The prepared post is in [contest-post.txt](contest-post.txt). Attach [spriglet-demo.mp4](../media/spriglet-demo.mp4), then publish the post yourself from one public X, Instagram, or LinkedIn account. The app source is at [eyenpi/spriglet](https://github.com/eyenpi/spriglet). This document is preparation, not a submitted entry.
 
 ## Deadline and entry
 

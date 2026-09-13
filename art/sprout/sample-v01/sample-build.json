@@ -3,22 +3,22 @@
   "blender": "5.2.1 LTS",
   "blenderBuildHash": "9e2066aef7ef",
   "sourceReview": "art/sprout/review-01/sprout-design-v01.blend",
-  "sourceReviewSHA256": "90aba50314aa702de827b8fa2e2e0bf353c2744b3d655773150bc2437b3c2597",
+  "sourceReviewSHA256": "e4ed71a8391441cd432d6624af9ca4040034ae884abb7dc9fcd5c62d1ad26b49",
   "model": "sprout-sample-v01.blend",
-  "modelSHA256": "0f8db1da1428c0fbc6e0f89604ec5fda0f5dcb4d3175d10820192b1845dd1002",
+  "modelSHA256": "20320df491632fb1245b14912cd9077f0128c2a40697f0bb9dd74463c99baf03",
   "rigBoneCount": 14,
   "contactSamplesSHA256": "76e9a72b89aec18a68669582f01b97482c13e492e600e494df3c336534d2209b",
   "groomBindingVerificationSHA256": "c9959c5a98ee893a5450cb802347e7b873eac7513c0467506dffa6a4b10cabcd",
   "strandCount": 72985,
   "groomBinding": "Native Deform Curves on Surface with attachment UV atlas and rest_position",
   "rigActionNames": {
-    "idle": "Sprout \u00b7 idle",
-    "walkRight": "Sprout \u00b7 walkRight",
-    "walkLeft": "Sprout \u00b7 walkLeft",
-    "pet": "Sprout \u00b7 pet",
-    "settle": "Sprout \u00b7 settle",
-    "demo": "Sprout \u00b7 COMPLETE SAMPLE \u00b7 idle walk pet settle",
-    "sleep": "Sprout \u00b7 sleep pose"
+    "idle": "Sprout · idle",
+    "walkRight": "Sprout · walkRight",
+    "walkLeft": "Sprout · walkLeft",
+    "pet": "Sprout · pet",
+    "settle": "Sprout · settle",
+    "demo": "Sprout · COMPLETE SAMPLE · idle walk pet settle",
+    "sleep": "Sprout · sleep pose"
   },
   "clipFrameCounts": {
     "idle": 37,
@@ -68,5 +68,12 @@
   "renderDevice": "METAL",
   "runtimeManifestSHA256": "93f2099530e66a91bdbb7b32a9ec88587c731448853bd09ac2382f8f9e58fd79",
   "alphaVerificationSHA256": "79f9193c3bbc6dcf3d3fe749bead9b942301fe7f458bf9698ab6d1b74560a662",
-  "runtimeFrameCount": 244
+  "runtimeFrameCount": 244,
+  "publicationTransformation": {
+    "kind": "mechanical metadata/provenance update; not a render",
+    "previousMetadataSHA256": "a058aa3f1d075ed01d789ac8e2cf2b25a011c338a24531c7edbe061cb4092126",
+    "previousModelSHA256": "0f8db1da1428c0fbc6e0f89604ec5fda0f5dcb4d3175d10820192b1845dd1002",
+    "pixelAndModelIdentityEvidence": "docs/results/public-preview/snapshot-provenance.json",
+    "freshReadbackRequired": true
+  }
 }
