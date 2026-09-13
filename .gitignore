@@ -1,0 +1,39 @@
+# Local notes, agent instructions, and private project records
+/docs/
+/AGENTS.md
+/.codex/
+/.claude/
+/.local/
+/notes/
+/private/
+/.env
+/.env.*
+*.pem
+*.p12
+*.mobileprovision
+
+# Build products and personal IDE state
+.build/
+.swiftpm/
+DerivedData/
+xcuserdata/
+.DS_Store
+*.hmap
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# Authoring caches, review exports, and generated verification reports
+__pycache__/
+*.py[cod]
+*.blend[0-9]*
+/art/sprout/review-01/*
+!/art/sprout/review-01/sprout-design-v01.blend
+/art/sprout/sample-v01/review/
+/art/**/verification*.json
+/art/**/icon-verification*.json
+
+# Local publication and retired review utilities
+/tools/PublicRelease/
+/tools/DesktopValidation/
+/tools/CharacterSampleReview/
