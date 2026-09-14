@@ -2,7 +2,7 @@
 set -euo pipefail
 task_root="${0:A:h:h}"
 if pgrep -x Spriglet >/dev/null; then
-    print -u2 'Quit the running Spriglet prototype before starting an isolated probe.'
+    print -u2 'Quit Spriglet before starting an isolated probe.'
     exit 2
 fi
 "$task_root/scripts/build.sh" Release >&2

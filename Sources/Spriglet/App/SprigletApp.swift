@@ -3,50 +3,53 @@ import SwiftUI
 @main
 struct SprigletApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
-    @AppStorage("dev.spriglet.welcomeCompleted") private var welcomeCompleted = false
-    @State private var presentingWelcome: Bool
-
-    init() {
-        let arguments = CommandLine.arguments
-        let suppressed = arguments.contains("--probe") || arguments.contains("--soak")
-        let forcedWelcome = arguments.contains("--welcome-review")
-        let forcedControls = arguments.contains("--controls") || arguments.contains("--sample-review")
-        _presentingWelcome = State(initialValue: !suppressed && (forcedWelcome || (!forcedControls && !UserDefaults.standard.bool(forKey: "dev.spriglet.welcomeCompleted"))))
-    }
 
     var body: some Scene {
-        MenuBarExtra("Spriglet", systemImage: "leaf.fill") {
-            PetMenu(runtime: delegate.runtime, presentingWelcome: $presentingWelcome)
+        MenuBarExtra {
+            PetMenu(runtime: delegate.runtime, presentation: delegate.presentation)
+        } label: {
+            SprigletMenuLabel(runtime: delegate.runtime, presentation: delegate.presentation)
         }
-        Window("Spriglet Controls", id: "prototype") {
-            PrototypeView(runtime: delegate.runtime, presentingWelcome: $presentingWelcome)
+        Settings {
+            SprigletSettingsView(runtime: delegate.runtime, login: delegate.login)
         }
-        .defaultSize(width: 480, height: 740)
         .windowResizability(.contentSize)
-        .defaultLaunchBehavior(shouldPresentWindow ? .presented : .suppressed)
-    }
-
-    private var shouldPresentWindow: Bool {
-        let arguments = CommandLine.arguments
-        if arguments.contains("--probe") || arguments.contains("--soak") {
-            return false
+        .commands { CompanionCommands(runtime: delegate.runtime, presentation: delegate.presentation) }
+        Window("Welcome to Spriglet", id: "welcome") {
+            WelcomeView(runtime: delegate.runtime)
         }
-        if arguments.contains("--controls") || arguments.contains("--sample-review") || arguments.contains("--welcome-review") {
-            return true
+        .windowResizability(.contentSize)
+        .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
+        Window("Developer Diagnostics", id: "diagnostics") {
+            if delegate.presentation.developerToolsAvailable {
+                DiagnosticsView(runtime: delegate.runtime)
+            }
         }
-        return !welcomeCompleted
+        .windowResizability(.contentSize)
+        .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
+        .commandsRemoved()
     }
 }
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let runtime = PetRuntime()
+    let login = LoginItemService()
+    let presentation = AppPresentation()
+    private var acceptanceRecorder: DesktopAcceptanceRecorder?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         runtime.start()
+        if let output = DesktopAcceptanceRecorder.outputURL {
+            acceptanceRecorder = DesktopAcceptanceRecorder(runtime: runtime, output: output)
+            acceptanceRecorder?.start()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        acceptanceRecorder?.stop()
         runtime.stop()
     }
 }

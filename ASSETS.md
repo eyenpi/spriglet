@@ -1,8 +1,10 @@
 # Code and artwork license
 
-The [MIT license](LICENSE) applies to the Spriglet code, public usage instructions, editable Blender models and rigs, generated animation frames, app icon, and the demo media attached to this project's releases.
+The [MIT license](LICENSE) applies to the Spriglet code, documentation, original character concepts, editable Blender models and rigs, generated animation frames, app icon, original sound cues, and demo media included in this repository.
 
 Sprout is an original character developed for this project. Its initial concept exploration used AI-generated imagery; the editable geometry, groom, materials, rig, and animation pipeline were built in Blender. The source `.blend` files have no external texture or add-on dependencies. The demo uses the same rendered frames and motion metadata as the app.
+
+The optional `greeting.wav` and `play.wav` chimes in `Sources/Spriglet/Resources/PetSounds/` are original synthesized tones created for Spriglet. They use deterministic sine partials and finite attack/decay envelopes, with no sampled recording or third-party sound asset. Their [generator](tools/EverydayServicesValidation/generate_chimes.py) and [provenance](tools/EverydayServicesValidation/chime-provenance.json) reproduce and identify the bundled files.
 
 Blender, Xcode, Swift, GitHub Copilot, FFmpeg, and other authoring tools are not included in or relicensed by this repository. System fonts and SF Symbols are supplied by macOS at runtime; their source assets are not bundled here.
 

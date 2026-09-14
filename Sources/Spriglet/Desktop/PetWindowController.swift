@@ -8,6 +8,10 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     let panel: NSPanel
 
     var onPetClicked: (@MainActor () -> Void)?
+    var onAccessibilityPress: (@MainActor () -> Bool)? {
+        didSet { interactionView.onAccessibilityPress = onAccessibilityPress }
+    }
+    var onInputEvent: (@MainActor (String) -> Void)?
     /// Covers the entire click hold or drag, as well as accessibility presses.
     var onUserInteractionChanged: (@MainActor (Bool) -> Void)?
     var onMovementChanged: (@MainActor (Bool) -> Void)?
@@ -54,6 +58,7 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     private var authoredGeneration: UInt64 = 0
     private var positionGeneration: UInt64 = 0
     private var dragImageOffset: CGPoint?
+    private var isChangingDisplaySize = false
 
     /// `hitTest` receives a point in `contentView` coordinates, respecting flipped views.
     init(
@@ -94,6 +99,9 @@ final class PetWindowController: NSObject, NSWindowDelegate {
             // Capture this once so successive drag events cannot add it twice.
             dragImageOffset = interacting ? imageOffset : nil
             onUserInteractionChanged?(interacting)
+        }
+        interactionView.onInputEvent = { [weak self] event in
+            self?.onInputEvent?(event)
         }
         interactionView.onPressed = { [weak self] in
             self?.stopMovement()
@@ -146,6 +154,32 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         stopMovement()
         interactionView.cancelInteraction()
         panel.orderOut(nil)
+    }
+
+    /// Sleep, session loss, and other suspension causes may omit mouse-up.
+    /// Discard any held press or drag so a later release cannot revive it.
+    func cancelInteraction() {
+        interactionView.cancelInteraction()
+    }
+
+    /// Retains the effective canvas bottom-center on the current display,
+    /// clamping only when its new dimensions need room. The baked foot/shadow
+    /// baseline scales within the canvas. Saved home intent stays verbatim,
+    /// including a preferred display that is currently disconnected.
+    func setDisplaySize(_ choice: PetDisplaySize) {
+        guard panel.frame.size != choice.size, !isChangingDisplaySize else { return }
+        isChangingDisplaySize = true
+        defer { isChangingDisplaySize = false }
+        stopMovement()
+        interactionView.cancelInteraction()
+        let oldFrame = CGRect(origin: effectiveOrigin, size: panel.frame.size)
+        let desired: CGPoint
+        if let screen = currentScreen {
+            desired = choice.bottomCenterOrigin(resizing: oldFrame, within: screen.visibleFrame)
+        } else {
+            desired = CGPoint(x: oldFrame.midX - choice.size.width / 2, y: oldFrame.minY)
+        }
+        positionWindow(at: desired, size: choice.size)
     }
 
     /// Restores silently; the runtime remains responsible for persistence.
@@ -215,6 +249,10 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         panel.ignoresMouseEvents = enabled
     }
 
+    func updateAccessibility(name: String, status: String, canPress: Bool, actions: [NSAccessibilityCustomAction]) {
+        interactionView.updateAccessibility(name: name, status: status, canPress: canPress, actions: actions)
+    }
+
     func setAllSpaces(_ enabled: Bool) {
         joinsAllSpaces = enabled
         updateCollectionBehavior()
@@ -228,7 +266,7 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     }
 
     func canFitRootMotion(_ offsets: [SamplePoint]) -> Bool {
-        guard let screen = currentScreen,
+        guard !isChangingDisplaySize, let screen = currentScreen,
               let start = SampleMotionPlacement.fittingStartOrigin(
                 preferredOrigin: effectiveOrigin, windowSize: panel.frame.size,
                 visibleFrame: screen.visibleFrame, offsets: offsets
@@ -346,6 +384,9 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         // joining other apps' full-screen Spaces. It is exclusive with
         // fullScreenAuxiliary/fullScreenNone, not with canJoinAllApplications.
         // https://developer.apple.com/documentation/appkit/nswindow/collectionbehavior-swift.struct/canjoinallapplications
+        // Hardware acceptance nevertheless observed this complete combination
+        // over another app's full-screen Space. Exclusion is not a guarantee;
+        // explicit Hide / Pass Clicks Through define the supported behavior.
         // transient hides during Mission Control; do not combine with stationary.
         var behavior: NSWindow.CollectionBehavior = [
             .canJoinAllApplications,
@@ -361,14 +402,13 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     }
 
     private func move(to origin: NSPoint, following pointer: NSPoint) {
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(pointer) })
-            ?? nearestScreen(to: pointer) else { return }
+        guard pointer.x.isFinite, pointer.y.isFinite, !NSScreen.screens.isEmpty else { return }
         let offset = dragImageOffset ?? imageOffset
-        positionWindow(at: PetPlacement.clampedOrigin(
-            CGPoint(x: origin.x + offset.x, y: origin.y + offset.y),
-            windowSize: panel.frame.size,
-            visibleFrame: screen.visibleFrame
-        ))
+        // Keep the grabbed point under the pointer while crossing display
+        // boundaries. Clamping each event sticks at an edge and then jumps by
+        // a window width when the pointer enters the next display. The existing
+        // drag-end path confines the final placement to one usable display.
+        positionWindow(at: CGPoint(x: origin.x + offset.x, y: origin.y + offset.y))
     }
 
     private func constrainToVisibleArea() {
@@ -381,11 +421,15 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     }
 
     @discardableResult
-    private func positionWindow(at desired: CGPoint) -> Bool {
+    private func positionWindow(at desired: CGPoint, size: NSSize? = nil) -> Bool {
         guard desired.x.isFinite, desired.y.isFinite else { return false }
         positionGeneration &+= 1
         let expectedGeneration = positionGeneration
-        panel.setFrameOrigin(desired)
+        if let size {
+            panel.setFrame(NSRect(origin: desired, size: size), display: true)
+        } else {
+            panel.setFrameOrigin(desired)
+        }
         // A screen-change callback can synchronously perform a newer placement.
         guard positionGeneration == expectedGeneration else { return false }
         imageOffset = CGPoint(x: desired.x - panel.frame.minX, y: desired.y - panel.frame.minY)

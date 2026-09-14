@@ -34,6 +34,7 @@ jobs:
         run: |
           python3 -m unittest discover -s tools/CharacterSampleValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseValidation -p 'test_*.py'
+          python3 -m unittest discover -s tools/EverydayServicesValidation -p 'test_*.py'
       - name: Character assets and grounded motion
         run: |
           mkdir -p .build
@@ -43,3 +44,11 @@ jobs:
           for configuration in Debug Release; do
             xcodebuild -project Spriglet.xcodeproj -scheme Spriglet -configuration "$configuration" -derivedDataPath .build/ci-xcode -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO build
           done
+      - name: Native personality harness (build only)
+        run: bash tools/PersonalityValidation/build.sh
+      - name: Everyday native harness (build only)
+        run: bash tools/EverydayExperienceValidation/build.sh
+      - name: Silent sound and login adapter checks
+        run: |
+          bash tools/EverydayServicesValidation/build.sh
+          tools/EverydayServicesValidation/.build/EverydayServicesCheck --resources Sources/Spriglet/Resources/PetSounds --output .build/everyday-services.json

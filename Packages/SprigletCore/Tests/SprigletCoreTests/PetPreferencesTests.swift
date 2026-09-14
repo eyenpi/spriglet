@@ -15,11 +15,15 @@ struct PetPreferencesTests {
             #expect(preferences.allSpaces)
             #expect(preferences.autonomousBehavior)
             #expect(preferences.placement == nil)
+            #expect(preferences.isParked)
+            #expect(preferences.profile == PetProfile())
+            #expect(preferences.interactionMemory == PetInteractionMemory())
             #expect(defaults.object(forKey: PetPreferencesStore.storageKey) == nil)
+            #expect(defaults.object(forKey: PetPreferencesStore.backupStorageKey) == nil)
         }
     }
 
-    @Test("All user choices survive a new store instance", arguments: 0..<32)
+    @Test("All user choices survive a new store instance", arguments: 0..<64)
     func roundTrip(mask: Int) throws {
         try withIsolatedDefaults { defaults in
             let preferences = PetPreferences(
@@ -27,7 +31,9 @@ struct PetPreferencesTests {
                 isPaused: mask & 2 != 0,
                 clickThrough: mask & 4 != 0,
                 allSpaces: mask & 8 != 0,
-                autonomousBehavior: mask & 16 != 0
+                autonomousBehavior: mask & 16 != 0,
+                profile: PetProfile(name: "Lumi", traits: PetTraits(curiosity: 0.2, sociability: 0.4, playfulness: 0.8)),
+                isParked: mask & 32 != 0
             )
             PetPreferencesStore(defaults: defaults).save(preferences)
             let restored = PetPreferencesStore(defaults: defaults).load()
@@ -48,7 +54,7 @@ struct PetPreferencesTests {
         }
     }
 
-    @Test("An unsupported version is left intact for a future app version", arguments: [0, 3, 999])
+    @Test("An unsupported version is left intact for a future app version", arguments: [0, 5, 999])
     func unknownVersion(version: Int) throws {
         try withIsolatedDefaults { defaults in
             let original = Data("""
@@ -118,7 +124,7 @@ struct PetPreferencesTests {
             store.save(migrated)
             let savedData = try #require(defaults.data(forKey: PetPreferencesStore.storageKey))
             let envelope = try #require(JSONSerialization.jsonObject(with: savedData) as? [String: Any])
-            #expect(envelope["version"] as? Int == 2)
+            #expect(envelope["version"] as? Int == 4)
             #expect(store.load() == migrated)
         }
     }
@@ -137,7 +143,7 @@ struct PetPreferencesTests {
         }
     }
 
-    @Test("Version 2 restores the preferred display and normalized placement")
+    @Test("Current settings restore the preferred display and normalized placement")
     func placementRoundTrip() throws {
         try withIsolatedDefaults { defaults in
             let placement = try #require(PetSavedPlacement(displayUUID: UUID(), normalizedX: 0.125, normalizedY: 0.75))
@@ -181,6 +187,167 @@ struct PetPreferencesTests {
                 isHidden: true, isPaused: true, clickThrough: true, allSpaces: false, autonomousBehavior: false
             ))
             #expect(defaults.data(forKey: PetPreferencesStore.storageKey) == original)
+        }
+    }
+
+    @Test("Version 2 keeps flags and placement while new identity starts parked")
+    func versionTwoMigration() throws {
+        try withIsolatedDefaults { defaults in
+            let original = Data("""
+            {"version":2,"preferences":{"isHidden":true,"isPaused":true,"clickThrough":true,"allSpaces":false,"autonomousBehavior":false,"placement":{"displayUUID":"493A8F4C-85D4-4146-A77F-21B7A3408153","normalizedX":0.25,"normalizedY":0.75},"profile":{"name":"Injected"},"isParked":false}}
+            """.utf8)
+            defaults.set(original, forKey: PetPreferencesStore.storageKey)
+            let store = PetPreferencesStore(defaults: defaults)
+            let migrated = store.load()
+            #expect(migrated.isPaused && migrated.isHidden && migrated.clickThrough)
+            #expect(!migrated.allSpaces && !migrated.autonomousBehavior)
+            #expect(migrated.placement?.normalizedX == 0.25 && migrated.placement?.normalizedY == 0.75)
+            #expect(migrated.profile == PetProfile() && migrated.interactionMemory == PetInteractionMemory())
+            #expect(migrated.isParked)
+            #expect(defaults.data(forKey: PetPreferencesStore.storageKey) == original)
+            store.save(migrated)
+            #expect(store.load() == migrated)
+        }
+    }
+
+    @Test("Malformed optional personality state cannot erase pause or home", arguments: [
+        (#""profile""#, #""unexpected""#),
+        (#""interactionMemory""#, #"[1,2,3]"#),
+        (#""isParked""#, #""no""#)
+    ])
+    func corruptOptionalPersonality(field: (String, String)) throws {
+        try withIsolatedDefaults { defaults in
+            let original = Data("""
+            {"version":3,"preferences":{"isHidden":true,"isPaused":true,"clickThrough":true,"allSpaces":false,"autonomousBehavior":false,"placement":{"displayUUID":"493A8F4C-85D4-4146-A77F-21B7A3408153","normalizedX":0.25,"normalizedY":0.75},\(field.0):\(field.1)}}
+            """.utf8)
+            defaults.set(original, forKey: PetPreferencesStore.storageKey)
+            let value = PetPreferencesStore(defaults: defaults).load()
+            #expect(value.isHidden && value.isPaused && value.clickThrough)
+            #expect(!value.allSpaces && !value.autonomousBehavior)
+            #expect(value.placement?.normalizedX == 0.25 && value.placement?.normalizedY == 0.75)
+            #expect(value.profile == PetProfile() && value.interactionMemory == PetInteractionMemory())
+            #expect(value.isParked)
+            #expect(defaults.data(forKey: PetPreferencesStore.storageKey) == original)
+        }
+    }
+
+    @Test("Current settings round-trip identity, interaction memory, and parked preference")
+    func completeVersionThree() throws {
+        try withIsolatedDefaults { defaults in
+            var memory = PetInteractionMemory()
+            memory.record(.played, at: Date(timeIntervalSinceReferenceDate: 800_000_000))
+            let original = PetPreferences(isPaused: true, profile: PetProfile(name: "Little Sprout"), interactionMemory: memory, isParked: false)
+            let store = PetPreferencesStore(defaults: defaults)
+            store.save(original)
+            #expect(store.load() == original)
+            let data = try #require(defaults.data(forKey: PetPreferencesStore.storageKey))
+            #expect(data.count < 2_048)
+            let envelope = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+            #expect(envelope["version"] as? Int == 4)
+        }
+    }
+
+    @Test("Corrupted current data recovers the previous last-good state without writing")
+    func backupRecovery() throws {
+        try withIsolatedDefaults { defaults in
+            let first = PetPreferences(isPaused: true, profile: PetProfile(name: "Lumi"))
+            let second = PetPreferences(clickThrough: true, allSpaces: false, isParked: false)
+            let store = PetPreferencesStore(defaults: defaults)
+            store.save(first)
+            store.save(second)
+            #expect(store.load() == second)
+            let backup = try #require(defaults.data(forKey: PetPreferencesStore.backupStorageKey))
+            let corruption = Data("incomplete write".utf8)
+            defaults.set(corruption, forKey: PetPreferencesStore.storageKey)
+            #expect(store.load() == first)
+            #expect(defaults.data(forKey: PetPreferencesStore.storageKey) == corruption)
+            #expect(defaults.data(forKey: PetPreferencesStore.backupStorageKey) == backup)
+            store.save(second)
+            #expect(store.load() == second)
+            #expect(defaults.data(forKey: PetPreferencesStore.backupStorageKey) == backup)
+        }
+    }
+
+    @Test("The initial save is recoverable and unrelated defaults remain intact")
+    func firstSaveBackup() throws {
+        try withIsolatedDefaults { defaults in
+            defaults.set("keep", forKey: "unrelated")
+            let preferences = PetPreferences(isPaused: true, clickThrough: true)
+            let store = PetPreferencesStore(defaults: defaults)
+            store.save(preferences)
+            defaults.removeObject(forKey: PetPreferencesStore.storageKey)
+            #expect(store.load() == preferences)
+            #expect(defaults.object(forKey: PetPreferencesStore.storageKey) == nil)
+            #expect(defaults.string(forKey: "unrelated") == "keep")
+        }
+    }
+
+    @Test("Clearing recent memory survives corrupt-primary recovery without resetting identity or settings")
+    func clearMemoryRecoveryCheckpoint() throws {
+        try withIsolatedDefaults { defaults in
+            var memory = PetInteractionMemory()
+            let now = Date(timeIntervalSinceReferenceDate: 800_000_000)
+            for kind in PetInteractionKind.allCases { memory.record(kind, at: now) }
+            let placement = try #require(PetSavedPlacement(displayUUID: UUID(), normalizedX: 0.25, normalizedY: 0.75))
+            let original = PetPreferences(isPaused: true, placement: placement,
+                                          profile: PetProfile(name: "Lumi"), interactionMemory: memory)
+            var current = original
+            current.isPaused = false
+            current.clickThrough = true
+            current.allSpaces = false
+            current.autonomousBehavior = false
+            current.isParked = false
+            current.profile = PetProfile(name: "Little Lumi", traits: PetTraits(curiosity: 0.2, sociability: 0.8, playfulness: 0.4))
+            defaults.set("keep", forKey: "unrelated")
+            let store = PetPreferencesStore(defaults: defaults)
+            store.save(original)
+            store.save(current)
+
+            // Even a caller that passes traces must not retain them in either copy.
+            store.saveClearingRecentMemory(current)
+            var cleared = current
+            cleared.interactionMemory = PetInteractionMemory()
+            #expect(store.load() == cleared)
+            let primary = try #require(defaults.data(forKey: PetPreferencesStore.storageKey))
+            let backup = try #require(defaults.data(forKey: PetPreferencesStore.backupStorageKey))
+            #expect(primary == backup)
+            let corruption = Data("damaged after forgetting".utf8)
+            defaults.set(corruption, forKey: PetPreferencesStore.storageKey)
+            #expect(store.load() == cleared)
+            #expect(store.load().interactionMemory.values(at: now) == PetInteractionMemory().values(at: now))
+            #expect(defaults.data(forKey: PetPreferencesStore.storageKey) == corruption)
+            #expect(defaults.data(forKey: PetPreferencesStore.backupStorageKey) == backup)
+            #expect(defaults.string(forKey: "unrelated") == "keep")
+        }
+    }
+
+    @Test("A future schema never silently downgrades to the backup", arguments: [
+        #"{"version":5,"preferences":{"unfamiliar":"schema"}}"#,
+        #"{"version":999,"completelyDifferentBody":true}"#,
+        #"{"version":0,"preferences":null}"#
+    ])
+    func unsupportedVersionDoesNotUseBackup(json: String) throws {
+        try withIsolatedDefaults { defaults in
+            let store = PetPreferencesStore(defaults: defaults)
+            store.save(PetPreferences(isPaused: true, profile: PetProfile(name: "Lumi")))
+            let backup = defaults.data(forKey: PetPreferencesStore.backupStorageKey)
+            let future = Data(json.utf8)
+            defaults.set(future, forKey: PetPreferencesStore.storageKey)
+            #expect(store.load() == PetPreferences())
+            #expect(defaults.data(forKey: PetPreferencesStore.storageKey) == future)
+            #expect(defaults.data(forKey: PetPreferencesStore.backupStorageKey) == backup)
+        }
+    }
+
+    @Test("An oversized envelope is preserved without guessing a schema downgrade")
+    func oversizedEnvelope() throws {
+        try withIsolatedDefaults { defaults in
+            let store = PetPreferencesStore(defaults: defaults)
+            store.save(PetPreferences(isPaused: true))
+            let oversized = Data((#"{"version":4,"padding":""# + String(repeating: "x", count: 70_000) + #""}"#).utf8)
+            defaults.set(oversized, forKey: PetPreferencesStore.storageKey)
+            #expect(store.load() == PetPreferences())
+            #expect(defaults.data(forKey: PetPreferencesStore.storageKey) == oversized)
         }
     }
 
