@@ -6,14 +6,16 @@ Meet Sprout: a soft, leaf-eared desktop companion that rests, takes a few steps,
 
 ![Sprout walking and reacting on light and dark backgrounds](https://github.com/eyenpi/spriglet/releases/download/v0.1.0-preview.1/spriglet-demo.gif)
 
-[Watch the demo](https://github.com/eyenpi/spriglet/releases/download/v0.1.0-preview.1/spriglet-demo.mp4) · [Preview release](https://github.com/eyenpi/spriglet/releases/tag/v0.1.0-preview.1) · [Editable character](art/sprout/README.md) · [Privacy](PRIVACY.md)
+[Watch the animation demo](https://github.com/eyenpi/spriglet/releases/download/v0.1.0-preview.1/spriglet-demo.mp4) · [Latest preview](https://github.com/eyenpi/spriglet/releases/tag/v0.2.0-preview.1) · [Changelog](CHANGELOG.md) · [Privacy](PRIVACY.md)
 
 ## Try the public preview
 
-You need an **Apple silicon Mac**, **macOS 26 or later**, and **full Xcode** selected as your developer toolchain. This release is a source preview; a signed, notarized app download is not available yet.
+The current release is **0.2.0 Preview 1 — Everyday companion** (app version 0.2.0, build 3). It brings native Settings, personality and return-home strolls, firefly play, accessibility actions, and optional sound and launch at login. [Read every change](CHANGELOG.md).
+
+You need an **Apple silicon Mac**, **macOS 26 or later**, and **full Xcode** selected as your developer toolchain. This is a source preview; a signed, notarized app download is not available yet.
 
 ```sh
-git clone https://github.com/eyenpi/spriglet.git
+git clone --branch v0.2.0-preview.1 --depth 1 https://github.com/eyenpi/spriglet.git
 cd spriglet
 ./scripts/run.sh
 ```
@@ -34,19 +36,22 @@ No account, server, analytics, desktop capture, or access to other apps' content
 
 ## What is included
 
-This source tree includes one finished character sample, both walking directions, static awake/nap poses, native Settings and a quick guide, and the editable model/rig. Current source adds purposeful movement, personality, and everyday controls; the older public preview tag predates these additions. The source-to-render-to-playback pipeline includes checks for transparency, foot contact, frame timing, cancellation, and quiet rest. The original idle → walk → pet → settle sample and technical checks remain available in the separate Developer Diagnostics window in Debug builds or with `--diagnostics`.
+This release includes one finished character sample, both walking directions, static awake/nap poses, native Settings and a quick guide, purposeful movement, personality, and the editable model/rig. The source-to-render-to-playback pipeline includes checks for transparency, foot contact, frame timing, cancellation, and quiet rest. The original idle → walk → pet → settle sample and technical checks remain available in the separate Developer Diagnostics window in Debug builds or with `--diagnostics`.
 
-It is an early public preview. The larger animation library, broader desktop coverage, sustained battery profiling, and signed distribution are still ahead. Transparent margins of the floating window can affect clicks; **Pass Clicks Through** is the supported fallback. Sprout may remain visible over full-screen apps; use **Hide Pet** or **Pass Clicks Through** when needed. The comparison demo is composed from the app's actual assets and motion metadata; it is not a desktop screen recording.
+It is an early public preview. The larger animation library, broader desktop coverage, sustained battery profiling, and signed distribution are still ahead. Transparent margins of the floating window can affect clicks; **Pass Clicks Through** is the supported fallback. Sprout may remain visible over full-screen apps; use **Hide Pet** or **Pass Clicks Through** when needed. The comparison demo shows the original character animation using the app's actual assets and motion metadata; it does not show the new Settings or firefly controls and is not a desktop screen recording.
 
 ## Build, contribute, and create
 
 Development is verified with **Xcode 26.6, Swift 6.3.3, and macOS SDK 26.5**. The app has no third-party runtime dependencies or remote Swift packages. New platform choices are checked against current official Apple/Swift documentation and the installed SDK.
+
+Use a full checkout of `main` for development. The command above checks out the tagged preview for trying that release.
 
 - [Character and motion checks](tools/CharacterSampleValidation/README.md)
 - [Native size and accessibility checks](tools/EverydayExperienceValidation/README.md)
 - [Sound and login service checks](tools/EverydayServicesValidation/README.md)
 - [Editable character source](art/sprout/README.md)
 - [Release packaging](tools/ReleaseValidation/README.md)
+- [Changelog and tag publishing](tools/ReleaseNotes/README.md)
 - [Contributing](CONTRIBUTING.md)
 - [Report a bug or suggest an idea](https://github.com/eyenpi/spriglet/issues)
 

@@ -6,14 +6,14 @@ For a local development package:
 
 ```sh
 scripts/package-release.sh --mode local-preview \
-  --version 0.1.0 --build 2 --bundle-id dev.spriglet.app
+  --version 0.2.0 --build 3 --bundle-id dev.spriglet.app
 ```
 
 This uses an ad hoc signature and labels the ZIP `LOCAL-UNSIGNED`. A public app download requires a valid Developer ID Application identity and notarization credentials stored in Keychain. With those configured, replace `CERTIFICATE_SHA1` and the profile name:
 
 ```sh
 scripts/package-release.sh --mode developer-id \
-  --version 0.1.0 --build 2 --bundle-id dev.spriglet.app \
+  --version 0.2.0 --build 3 --bundle-id dev.spriglet.app \
   --identity CERTIFICATE_SHA1 --notary-profile spriglet-notary
 ```
 
@@ -27,7 +27,7 @@ Run the focused checks without building, signing, or contacting Apple:
 bash -n scripts/package-release.sh
 xcrun python3 -m unittest discover -s tools/ReleaseValidation -p 'test_*.py' -v
 scripts/package-release.sh --mode local-preview \
-  --version 0.1.0 --build 2 --bundle-id dev.spriglet.app --check
+  --version 0.2.0 --build 3 --bundle-id dev.spriglet.app --check
 ```
 
 The tests cover metadata overrides/mismatches, missing or modified resources, unsafe paths, sandbox/debug entitlements, hardened-runtime/certificate/timestamp requirements, local ad hoc labeling, and non-accepted/sanitized notarization responses. They use temporary fixtures and mocked subprocesses for notarization. They do not duplicate the animation/alpha/contact/native lifecycle tests under `CharacterSampleValidation`.

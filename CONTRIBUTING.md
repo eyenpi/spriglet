@@ -11,3 +11,5 @@ Commit app source, tests, reusable tools, required artwork, and public usage ins
 Use current supported Swift and Apple APIs and verify new choices against official documentation and the installed SDK. Keep the companion local and quiet. Avoid introducing third-party services or permanent polling for work that can be event-driven.
 
 Code and artwork contributions are provided under the repository's MIT license. Keep third-party material out of a contribution unless its license and attribution are compatible and documented.
+
+Before a release, record all user-visible changes, fixes, and relevant release tooling changes in `Sources/Spriglet/Resources/Changelog.json`. Run `python3 tools/ReleaseNotes/release_notes.py render` to update `CHANGELOG.md`; CI checks that the two agree. Keep published entries as historical records. Follow the [version and tag workflow](tools/ReleaseNotes/README.md) for new releases.

@@ -1,0 +1,87 @@
+# Changelog
+
+User-visible changes and release engineering changes for every published version. Newest first.
+
+Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
+
+## 0.2.0-preview.1 — Everyday companion
+
+2026-09-14 · App 0.2.0 · Build 3
+
+Native Settings, personal touches, purposeful strolls, firefly play, and optional sound and launch at login.
+
+Source preview for Apple silicon and macOS 26 or later. Build with full Xcode; a signed, notarized app download is not included.
+
+### Added
+
+- Native Settings with Companion, Desktop, and General tabs, plus a compact leaf menu and a first-run Quick Guide.
+- A saved companion name with bounded, normalized input, and a readable description of its stable curiosity, sociability, and playfulness traits.
+- Small, Standard, and Large display sizes, with animation travel, firefly placement, dragging, and hit testing scaled with the character.
+- Quiet, Balanced, and Lively activity levels, an Automatic Moments control, and Parked Mode enabled by default.
+- Finite observe, greet, explore, nap, wake, and firefly routines. Optional excursions stay on one display and return to their starting position.
+- Interactive firefly play: Sprout watches and catches a glow, settles, and walks home when strolling is allowed. Parked play stays in place.
+- Bounded local interaction memory that gently influences routine selection and retains recent preferences without recording desktop activity.
+- Optional short petting and play chimes, an explicit Preview Sound action, and original generated audio under the MIT license. Sound starts off.
+- An opt-in Launch at Login control using macOS registration status, including pending-approval and unavailable states and a link to Login Items settings.
+- App-scoped keyboard commands for petting, firefly play, parking, pause, visibility, short walks, home, and directional placement.
+- Native accessibility labels, state values, a primary petting action, and custom actions for play, pause, parking, placement, and Settings.
+- A separate Developer Diagnostics window, available in Debug builds or through the --diagnostics launch option.
+- Versioned release notes shared by the public changelog, GitHub releases, and a bundled JSON resource for a future in-app What's New view.
+- Tag-triggered release publishing after CI, with checks for matching versions, build numbers, changelog content, and bundled release notes.
+
+### Changed
+
+- Everyday controls now focus on the companion; the earlier prototype controls and technical measurements have moved out of the normal Settings flow.
+- The Quick Guide opens Settings after Get Started, remembers completion, and can be reopened from the menu.
+- Behavior planning now combines stable traits, recent interactions, activity level, parking, Low Power Mode, and Reduce Motion while keeping routines finite.
+- Sound is limited to deliberate interactions or preview requests. Diagnostic and temporary review copies cannot change login registration.
+- The public repository now contains app code, required artwork, reusable validators, and public instructions. Local notes, review exports, and machine reports remain ignored.
+- Expanded validation covers personality routines, native size and accessibility providers, display placement, sound resources, and silent login/sound adapters; CI also checks public Git history.
+
+### Removed
+
+- The legacy PrototypeView and everyday diagnostic rows, replaced by native Settings and the dedicated diagnostics window.
+
+### Fixed
+
+- Grounded outward and return walks preserve fractional desktop placement and keep each displayed pose paired with its corresponding window movement.
+- Changing pet size preserves its grounded placement and cancels active motion or dragging before applying the new dimensions.
+- Pause, hide, parking, drag, display changes, and system unavailability cancel or replace incompatible routine work and clear the firefly when appropriate.
+- Desktop interaction handling better distinguishes opaque pet areas from transparent margins, preserves focus during ordinary pet interaction, and releases cancelled drag state.
+- Display placement fallback keeps saved home information when a display is unavailable instead of treating a temporary fallback as a new home.
+- Preference decoding handles missing or malformed values, preserves existing choices, and keeps temporary review and validation settings isolated from normal use.
+
+### Known limitations
+
+- This remains a source preview with one character and a finite animation library; signed distribution and sustained battery profiling are still ahead.
+- Transparent window margins can affect underlying clicks. Pass Clicks Through is available, and Hide Pet can be used over full-screen apps.
+- Broader desktop configurations, spoken VoiceOver/rotor review, real login registration and the next-login launch, and actual Mac sleep/wake still need manual acceptance testing.
+
+## 0.1.0-preview.1 — First public character preview
+
+2026-09-13 · App 0.1.0 · Build 2
+
+Meet Sprout: one playable, editable desktop companion and its Swift-to-Blender asset pipeline.
+
+Source preview for Apple silicon and macOS 26 or later. Build with full Xcode; a signed, notarized app download is not included.
+
+### Added
+
+- A local macOS companion built with SwiftUI and AppKit, hosted in a transparent, nonactivating desktop panel with a menu-bar entry and no Dock icon.
+- One soft pre-rendered 3D character, with idle, short walks in both directions, a petting reaction, settling, and static awake and sleeping poses.
+- Coordinated animation poses and desktop displacement, grounded foot-contact data, bounded frame decoding, and stopped animation work after finite playback.
+- Click-to-pet interaction, dragging, remembered home placement, accessible placement controls, pause, hide, and whole-window click-through.
+- Quiet automatic idle moments and naps, plus Reduce Motion and Low Power policy handling.
+- A native first-run welcome and compact controls, with a GitHub Copilot CLI contribution to that welcome and everyday controls.
+- Editable Blender geometry, materials, surface-bound groom, rig, animation Actions, locked render lighting, an app icon scene, and reproducible export tools.
+- Transparent runtime PNGs, motion manifests, and checks for alpha edges, contact, frame timing, interruption, resource integrity, and native playback.
+- MP4 and GIF animation demos over light and dark backgrounds, published as release media.
+- An app sandbox and privacy manifest, local-only preferences, and no account, server, analytics, desktop capture, or global input permissions.
+- Swift and Python tests, Debug and Release build validation, native review tools, and packaging support for local previews and future Developer ID distribution.
+- MIT licensing for app code, original artwork, editable assets, and demo media.
+
+### Known limitations
+
+- One character sample rather than a complete personality or animation library.
+- Transparent margins, Spaces/full-screen/display behavior, long-running resource use, and real system lifecycle events require broader acceptance testing.
+- Demo media is assembled from the runtime animation assets and motion data; it is not a desktop screen recording.

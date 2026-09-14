@@ -28,6 +28,12 @@ jobs:
           xcrun --show-sdk-version
       - name: Public repository contents
         run: python3 scripts/check-public-files.py --history
+      - name: Changelog and app version
+        run: |
+          python3 tools/ReleaseNotes/release_notes.py check
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            python3 tools/ReleaseNotes/release_notes.py check --tag "$GITHUB_REF_NAME"
+          fi
       - name: Swift Testing
         run: ./scripts/test.sh
       - name: Validator regression tests
@@ -35,6 +41,7 @@ jobs:
           python3 -m unittest discover -s tools/CharacterSampleValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/EverydayServicesValidation -p 'test_*.py'
+          python3 -m unittest discover -s tools/ReleaseNotes -p 'test_*.py'
       - name: Character assets and grounded motion
         run: |
           mkdir -p .build
@@ -43,6 +50,7 @@ jobs:
         run: |
           for configuration in Debug Release; do
             xcodebuild -project Spriglet.xcodeproj -scheme Spriglet -configuration "$configuration" -derivedDataPath .build/ci-xcode -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO build
+            python3 tools/ReleaseNotes/release_notes.py bundle ".build/ci-xcode/Build/Products/$configuration/Spriglet.app"
           done
       - name: Native personality harness (build only)
         run: bash tools/PersonalityValidation/build.sh
@@ -52,3 +60,20 @@ jobs:
         run: |
           bash tools/EverydayServicesValidation/build.sh
           tools/EverydayServicesValidation/.build/EverydayServicesCheck --resources Sources/Spriglet/Resources/PetSounds --output .build/everyday-services.json
+
+  publish:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: macos
+    runs-on: macos-26
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Publish the validated tag using the changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/ReleaseNotes/release_notes.py publish "$GITHUB_REF_NAME"
