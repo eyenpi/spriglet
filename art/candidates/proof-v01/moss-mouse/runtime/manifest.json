@@ -1,0 +1,397 @@
+{
+  "schemaVersion": 1,
+  "canvasPixels": {
+    "width": 448,
+    "height": 448
+  },
+  "displaySizePoints": {
+    "width": 224,
+    "height": 224
+  },
+  "framesPerSecond": 30,
+  "groundAnchorPixels": {
+    "x": 193.9002456665039,
+    "y": 62.474687576293945
+  },
+  "restFrame": "rest.png",
+  "sleepFrame": "rest.png",
+  "clips": {
+    "walkRight": {
+      "frames": [
+        {
+          "file": "clips/walkRight/0000.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0005.png",
+          "rootOffsetPoints": {
+            "x": 8.888888808469922,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0006.png",
+          "rootOffsetPoints": {
+            "x": 31.11110978656343,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0007.png",
+          "rootOffsetPoints": {
+            "x": 60.00000102179393,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0008.png",
+          "rootOffsetPoints": {
+            "x": 88.8888898728386,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0009.png",
+          "rootOffsetPoints": {
+            "x": 111.11110161221201,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0010.png",
+          "rootOffsetPoints": {
+            "x": 120.00000204358786,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0011.png",
+          "rootOffsetPoints": {
+            "x": 128.88889055403456,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0012.png",
+          "rootOffsetPoints": {
+            "x": 151.11110944596544,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0013.png",
+          "rootOffsetPoints": {
+            "x": 179.99999352863847,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0014.png",
+          "rootOffsetPoints": {
+            "x": 208.88888714805478,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0015.png",
+          "rootOffsetPoints": {
+            "x": 231.11111557672902,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0016.png",
+          "rootOffsetPoints": {
+            "x": 240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0017.png",
+          "rootOffsetPoints": {
+            "x": 240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0018.png",
+          "rootOffsetPoints": {
+            "x": 240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0019.png",
+          "rootOffsetPoints": {
+            "x": 240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0020.png",
+          "rootOffsetPoints": {
+            "x": 240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0021.png",
+          "rootOffsetPoints": {
+            "x": 240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0022.png",
+          "rootOffsetPoints": {
+            "x": 240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0023.png",
+          "rootOffsetPoints": {
+            "x": 240.0000040871757,
+            "y": 0.0
+          }
+        }
+      ]
+    },
+    "walkLeft": {
+      "frames": [
+        {
+          "file": "clips/walkLeft/0000.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0005.png",
+          "rootOffsetPoints": {
+            "x": -8.888888808469922,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0006.png",
+          "rootOffsetPoints": {
+            "x": -31.11110978656343,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0007.png",
+          "rootOffsetPoints": {
+            "x": -60.00000102179393,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0008.png",
+          "rootOffsetPoints": {
+            "x": -88.8888898728386,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0009.png",
+          "rootOffsetPoints": {
+            "x": -111.11110161221201,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0010.png",
+          "rootOffsetPoints": {
+            "x": -120.00000204358786,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0011.png",
+          "rootOffsetPoints": {
+            "x": -128.88889055403456,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0012.png",
+          "rootOffsetPoints": {
+            "x": -151.11110944596544,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0013.png",
+          "rootOffsetPoints": {
+            "x": -179.99999352863847,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0014.png",
+          "rootOffsetPoints": {
+            "x": -208.88888714805478,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0015.png",
+          "rootOffsetPoints": {
+            "x": -231.11111557672902,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0016.png",
+          "rootOffsetPoints": {
+            "x": -240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0017.png",
+          "rootOffsetPoints": {
+            "x": -240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0018.png",
+          "rootOffsetPoints": {
+            "x": -240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0019.png",
+          "rootOffsetPoints": {
+            "x": -240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0020.png",
+          "rootOffsetPoints": {
+            "x": -240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0021.png",
+          "rootOffsetPoints": {
+            "x": -240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0022.png",
+          "rootOffsetPoints": {
+            "x": -240.0000040871757,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0023.png",
+          "rootOffsetPoints": {
+            "x": -240.0000040871757,
+            "y": 0.0
+          }
+        }
+      ]
+    },
+    "idle": {
+      "frames": [
+        {
+          "file": "rest.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ]
+    },
+    "pet": {
+      "frames": [
+        {
+          "file": "rest.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ]
+    },
+    "settle": {
+      "frames": [
+        {
+          "file": "rest.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ]
+    }
+  }
+}

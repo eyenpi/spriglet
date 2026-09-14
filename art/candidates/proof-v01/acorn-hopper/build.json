@@ -1,0 +1,21 @@
+{
+  "candidate": "acorn-hopper",
+  "blenderVersion": "5.2.1 LTS",
+  "meshObjects": 17,
+  "controlBones": 9,
+  "vertices": 64754,
+  "framesPerClip": 24,
+  "framesPerSecond": 30,
+  "reviewCanvasPoints": 96,
+  "runtimeCameraScale": 3.0,
+  "travelAtReviewSizePoints": 102.40000000000002,
+  "externalTextures": 0,
+  "hairObjects": 0,
+  "builderSHA256": "8e2d27eb530ba7e9eabbc51d9e3345afe70286d586a9d7b56baea53bed31b9eb",
+  "samples": 40,
+  "renderDevice": "GPU",
+  "helperSHA256": {
+    "build_design.py": "49886ea794f7385825d04d893a330a85f3dded8db6f31916a82d950381ba1133",
+    "sample_motion.py": "c8529a74571f85f2b47bd696f456cb140820754d81fa7d7877f0c7557db81d1b"
+  }
+}

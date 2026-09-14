@@ -46,6 +46,7 @@ jobs:
         run: |
           mkdir -p .build
           python3 tools/CharacterSampleValidation/validate_assets.py Sources/Spriglet/Resources/SproutSample/manifest.json --contacts art/sprout/sample-v01/contact-samples.json --output .build/ci-assets.json
+          python3 tools/CandidateReview/verify_assets.py --output .build/ci-candidate-assets.json
       - name: Debug and Release builds
         run: |
           for configuration in Debug Release; do
@@ -54,6 +55,8 @@ jobs:
           done
       - name: Native personality harness (build only)
         run: bash tools/PersonalityValidation/build.sh
+      - name: Native candidate comparison (build only)
+        run: bash tools/CandidateReview/build.sh
       - name: Everyday native harness (build only)
         run: bash tools/EverydayExperienceValidation/build.sh
       - name: Silent sound and login adapter checks
