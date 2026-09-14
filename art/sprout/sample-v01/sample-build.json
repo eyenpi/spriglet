@@ -60,7 +60,7 @@
     "art/sprout/scripts/build_sample.py": "dfd701d4b5322c2fc520ffb0368f2cf29ad86d5380d9e1ef1beddcc33fab0aca",
     "art/sprout/scripts/sample_motion.py": "c8529a74571f85f2b47bd696f456cb140820754d81fa7d7877f0c7557db81d1b",
     "art/sprout/scripts/sample_groom.py": "dfb03b0c9cf610c476b0c8f499b149e88badf61f4b6dd71d88495599644658ed",
-    "art/sprout/scripts/build_design.py": "f3d8859bc86fada87b95eec3bd7e2bcf62724bbd381e882088910e551547bbd9",
+    "art/sprout/scripts/build_design.py": "49886ea794f7385825d04d893a330a85f3dded8db6f31916a82d950381ba1133",
     "art/sprout/scripts/coat_fibers.py": "497fc75c5302a298935bab4746142e6964b19063519e2cecbef7b0d046b60f38"
   },
   "phase": "exported",

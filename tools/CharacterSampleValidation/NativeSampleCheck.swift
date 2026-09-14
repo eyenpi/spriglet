@@ -24,7 +24,7 @@ enum NativeSampleCheck {
         app.setActivationPolicy(.accessory)
         let runner = NativeRunner(resources: URL(fileURLWithPath: resourcePath),
                                   assetReport: value(after: "--asset-report").map { URL(fileURLWithPath: $0) }
-                                    ?? checkout?.appendingPathComponent("docs/results/character-sample/assets.json"),
+                                    ?? checkout?.appendingPathComponent(".build/character-validation/assets.json"),
                                   output: value(after: "--output").map { URL(fileURLWithPath: $0) }
                                     ?? checkout?.appendingPathComponent(".build/character-sample-native-default.json"),
                                   reviewOnly: arguments.contains("--review-only"),

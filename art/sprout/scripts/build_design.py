@@ -398,7 +398,7 @@ def build(args):
     scene.render.image_settings.color_depth = "8"
     scene.render.film_transparent = False
     scene["design_status"] = "A · Sprout selected; first 3D model awaiting user review. Unrigged."
-    scene["source_concept"] = "docs/concepts/character-study-01.png · column A"
+    scene["source_concept"] = "Sprout original character"
     scene["authoring_version"] = bpy.app.version_string
     scene["ground_anchor"] = "z = 0; front is -Y; distances in authoring units, not app points."
     scene["palette_srgb"] = json.dumps({"moss": GREEN_HEX, "cream": CREAM_HEX, "leaf": LEAF_HEX})
@@ -432,7 +432,7 @@ def build(args):
                 "resolution": args.resolution, "samples": args.samples,
                 "fur": args.fur, "fur_density": args.fur_density,
                 "rigged": False, "animated": False, "engine": scene.render.engine,
-                "concept": "A · Sprout", "source": "docs/concepts/character-study-01.png",
+                "concept": "A · Sprout", "source": "Sprout original character",
                 "palette_srgb": {"moss": GREEN_HEX, "cream": CREAM_HEX, "leaf": LEAF_HEX},
                 "groom_binding": "rigid parenting; not bound for surface deformation",
                 "strand_count": sum(obj.get("strand_count", 0) for obj in groom.objects),

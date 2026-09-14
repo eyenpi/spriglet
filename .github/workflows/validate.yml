@@ -20,18 +20,20 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Show the selected stable toolchain
         run: |
           xcodebuild -version
           xcrun swift --version
           xcrun --show-sdk-version
+      - name: Public repository contents
+        run: python3 scripts/check-public-files.py --history
       - name: Swift Testing
         run: ./scripts/test.sh
       - name: Validator regression tests
         run: |
           python3 -m unittest discover -s tools/CharacterSampleValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseValidation -p 'test_*.py'
-          python3 -m unittest discover -s tools/PublicRelease -p 'test_*.py'
       - name: Character assets and grounded motion
         run: |
           mkdir -p .build
