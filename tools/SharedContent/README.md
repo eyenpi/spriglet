@@ -28,6 +28,7 @@ The icon exporter at `art/sprout/public-preview/export_icon_catalog.sh` builds a
 - **Website deployment script:** `./scripts/deploy-website.sh` regenerates before Wrangler reads the custom domain. `--dry-run` checks the deployment without publishing.
 - **Wrangler dev/deploy:** its custom build regenerates shared files before preparing static assets. Run it inside the Git checkout; the command locates the worktree root. Preview watches shared text, icon, license, and renderer inputs.
 - **CI:** verifies generated files, runs propagation tests, and checks the final app/archive resources.
+- **Standalone native validation tools:** verify shared content before compiling and include `SharedContent.generated.swift` whenever they compile `PetRuntime.swift`. The personality and everyday harnesses also record that file in their hashed source snapshots. CI builds all three runtime harnesses, including the desktop interaction check.
 
 To refresh everything without building an app:
 

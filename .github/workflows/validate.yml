@@ -71,6 +71,8 @@ jobs:
         run: bash tools/CandidateReview/build.sh
       - name: Everyday native harness (build only)
         run: bash tools/EverydayExperienceValidation/build.sh
+      - name: Desktop interaction harness (build only)
+        run: bash tools/DesktopAcceptanceValidation/build-interaction-check.sh
       - name: Silent sound and login adapter checks
         run: |
           bash tools/EverydayServicesValidation/build.sh

@@ -19,7 +19,8 @@
           "One shared source for app and website branding, contact details, privacy, help, and control labels; automatic synchronization during app builds, icon export, and Cloudflare builds; offline Help & Support in the app."
         ],
         "fixed": [
-          "Declared elapsed-time diagnostics in the privacy manifest and added the Mac App Store category and encryption metadata."
+          "Declared elapsed-time diagnostics in the privacy manifest and added the Mac App Store category and encryption metadata.",
+          "Included shared app labels in all standalone runtime validation builds and source snapshots; CI now also compiles the desktop interaction harness."
         ]
       },
       "knownLimitations": [

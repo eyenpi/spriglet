@@ -23,6 +23,7 @@ Development source for Apple silicon and macOS 26 or later. App Store submission
 ### Fixed
 
 - Declared elapsed-time diagnostics in the privacy manifest and added the Mac App Store category and encryption metadata.
+- Included shared app labels in all standalone runtime validation builds and source snapshots; CI now also compiles the desktop interaction harness.
 
 ### Known limitations
 
