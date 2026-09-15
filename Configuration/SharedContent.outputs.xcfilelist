@@ -1,0 +1,15 @@
+$(SRCROOT)/PRIVACY.md
+$(SRCROOT)/tools/AppStore/support-page.md
+$(SRCROOT)/tools/AppStore/product-page.md
+$(SRCROOT)/tools/AppStore/metadata/en-US.json
+$(SRCROOT)/Sources/Spriglet/Resources/PrivacyPolicy.md
+$(SRCROOT)/Sources/Spriglet/Resources/Support.md
+$(SRCROOT)/Sources/Spriglet/Resources/License.txt
+$(SRCROOT)/Configuration/Info.plist
+$(SRCROOT)/Sources/Spriglet/App/SharedContent.generated.swift
+$(SRCROOT)/tools/AppStore/website/public/support.html
+$(SRCROOT)/tools/AppStore/website/public/privacy.html
+$(SRCROOT)/tools/AppStore/website/public/index.html
+$(SRCROOT)/tools/AppStore/website/public/404.html
+$(SRCROOT)/tools/AppStore/website/public/spriglet.png
+$(SRCROOT)/tools/AppStore/website/wrangler.jsonc

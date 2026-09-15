@@ -12,15 +12,15 @@ struct PetMenu: View {
         PetCommandActions(runtime: runtime, compact: true)
         Divider()
         SettingsLink { Text("Settings…") }
-        Button("Quick Guide…") { openWindow(id: "welcome"); NSApp.activate() }
-        Button("Privacy Policy…") { openWindow(id: "privacy"); NSApp.activate() }
-        Link("Get Support", destination: AppLinks.support)
+        Button(AppText.quickGuide + "…") { openWindow(id: "welcome"); NSApp.activate() }
+        Button(AppText.privacyTitle + "…") { openWindow(id: "privacy"); NSApp.activate() }
+        Button(AppText.supportTitle + "…") { openWindow(id: "support"); NSApp.activate() }
         if presentation.developerToolsAvailable {
             Button("Developer Diagnostics…") { openWindow(id: "diagnostics"); NSApp.activate() }
         }
         if runtime.sampling { Button("Cancel Development Check") { runtime.cancelProbe() } }
         Divider()
-        Button("Quit Spriglet") { NSApp.terminate(nil) }.keyboardShortcut("q")
+        Button(AppText.quitApp) { NSApp.terminate(nil) }.keyboardShortcut("q")
     }
 }
 
@@ -33,13 +33,13 @@ struct PetCommandActions: View {
         Group {
             Button("Pet \(runtime.petName)") { runtime.play() }
                 .keyboardShortcut("p", modifiers: [.command, .option]).disabled(!runtime.canInteract)
-            Button("Play with Firefly") { runtime.playWithFirefly() }
+            Button(AppText.playWithFirefly) { runtime.playWithFirefly() }
                 .keyboardShortcut("f", modifiers: [.command, .option]).disabled(!runtime.canPlayWithFirefly)
-            Toggle("Parked Mode", isOn: Binding(get: { runtime.isParked }, set: { runtime.setParked($0) }))
+            Toggle(AppText.parkedMode, isOn: Binding(get: { runtime.isParked }, set: { runtime.setParked($0) }))
                 .keyboardShortcut("k", modifiers: [.command, .option])
-            Button(runtime.isPaused ? "Resume" : "Pause") { runtime.setPaused(!runtime.isPaused) }
+            Button(runtime.isPaused ? AppText.resume : AppText.pause) { runtime.setPaused(!runtime.isPaused) }
                 .keyboardShortcut(".", modifiers: [.command, .option])
-            Button(runtime.isHidden ? "Show Pet" : "Hide Pet") { runtime.setHidden(!runtime.isHidden) }
+            Button(runtime.isHidden ? AppText.showPet : AppText.hidePet) { runtime.setHidden(!runtime.isHidden) }
                 .keyboardShortcut("h", modifiers: [.command, .shift])
             if !compact {
                 Divider()
@@ -48,7 +48,7 @@ struct PetCommandActions: View {
                 }.disabled(!runtime.canInteract)
                 Button("Short Walk") { runtime.walk() }
                     .keyboardShortcut("w", modifiers: [.command, .option]).disabled(!runtime.canInteract)
-                Button("Bring Pet Home") { runtime.recenter() }
+                Button(AppText.bringPetHome) { runtime.recenter() }
                     .keyboardShortcut("r", modifiers: [.command, .option])
                 Menu("Move Pet") {
                     Button("Left") { runtime.nudge(dx: -48) }
@@ -59,7 +59,7 @@ struct PetCommandActions: View {
                         .keyboardShortcut(.upArrow, modifiers: [.command, .option])
                     Button("Down") { runtime.nudge(dy: -48) }
                         .keyboardShortcut(.downArrow, modifiers: [.command, .option])
-                    Button("Next Display") { runtime.moveToNextDisplay() }
+                    Button(AppText.nextDisplay) { runtime.moveToNextDisplay() }
                 }
             }
         }.disabled(runtime.sampling)
@@ -74,7 +74,7 @@ struct CompanionCommands: Commands {
     var body: some Commands {
         CommandMenu("Companion") { PetCommandActions(runtime: runtime) }
         CommandGroup(after: .help) {
-            Button("Spriglet Quick Guide") { openWindow(id: "welcome"); NSApp.activate() }
+            Button("\(AppText.appName) \(AppText.quickGuide)") { openWindow(id: "welcome"); NSApp.activate() }
         }
         if presentation.developerToolsAvailable {
             CommandMenu("Developer") {

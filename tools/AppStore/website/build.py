@@ -11,7 +11,7 @@ import sys
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 OUTPUT = HERE / "public"
-ORIGIN = "https://meetspriglet.com"
+
 
 
 def inline(text):
@@ -49,7 +49,11 @@ def document(source):
     return "\n".join(result)
 
 
-def page(title, description, route, body):
+def page(context, title, description, route, body):
+    name = html.escape(context["appName"])
+    origin = html.escape(context["websiteURL"], quote=True)
+    email = html.escape(context["supportEmail"], quote=True)
+    copyright = html.escape(context["copyright"])
     navigation = "".join(f'<a href="/{path}"' + (' aria-current="page"' if path == route else '')
                          + f'>{label}</a>' for path, label in (("support", "Support"), ("privacy", "Privacy")))
     return f'''<!doctype html>
@@ -58,39 +62,37 @@ def page(title, description, route, body):
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>{html.escape(title)} — Spriglet</title>
+  <title>{html.escape(title)} — {name}</title>
   <meta name="description" content="{html.escape(description, quote=True)}">
-  <link rel="canonical" href="{ORIGIN}/{route}">
+  <link rel="canonical" href="{origin}/{route}">
   <link rel="icon" type="image/png" href="/spriglet.png">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <a class="skip" href="#content">Skip to content</a>
   <header>
-    <a class="brand" href="/" aria-label="Spriglet home"><img src="/spriglet.png" alt="" width="44" height="44"><span>Spriglet</span></a>
+    <a class="brand" href="/" aria-label="{name} home"><img src="/spriglet.png" alt="" width="44" height="44"><span>{name}</span></a>
     <nav aria-label="Main navigation">{navigation}</nav>
   </header>
   <main id="content">
-    <div class="eyebrow">Spriglet for Mac</div>
+    <div class="eyebrow">{name} for Mac</div>
     <h1>{html.escape(title)}</h1>
     <article>{body}</article>
   </main>
-  <footer><span>© 2026 Ali Nabipour</span><a href="mailto:support@meetspriglet.com">support@meetspriglet.com</a></footer>
+  <footer><span>© {copyright}</span><a href="mailto:{email}">{email}</a></footer>
 </body>
 </html>
 '''
 
 
-def outputs():
-    support = (ROOT / "tools/AppStore/support-page.md").read_text()
-    # Shared footer/navigation are supplied by the template.
-    support = support.split("\n[Back to Spriglet]")[0]
-    privacy = (ROOT / "PRIVACY.md").read_text()
+def outputs(context, documents):
+    support = documents["support"].split("\n[Back to ")[0]
+    name = context["appName"]
     return {
-        "support.html": page("How can we help?", "Help with Spriglet, your local desktop companion for Mac. Contact support and find answers to common questions.", "support", document(support)),
-        "privacy.html": page("Privacy policy", "How Spriglet handles local preferences, optional diagnostics, support requests, and website visits.", "privacy", document(privacy)),
-        "index.html": page("Spriglet support", "Support and privacy information for Spriglet for Mac.", "support", '<p><a href="/support">Visit Spriglet support</a> or read our <a href="/privacy">privacy policy</a>.</p>'),
-        "404.html": page("Page not found", "Find support and privacy information for Spriglet.", "404", '<p>This page could not be found. <a href="/support">Visit support</a> or read the <a href="/privacy">privacy policy</a>.</p>'),
+        "support.html": page(context, context["supportTitle"], f"Help with {name}, your local desktop companion for Mac. Contact support and find answers to common questions.", "support", document(support)),
+        "privacy.html": page(context, context["privacyTitle"], f"How {name} handles local preferences, optional diagnostics, support requests, and website visits.", "privacy", document(documents["privacy"])),
+        "index.html": page(context, f"{name} support", f"Support and privacy information for {name} for Mac.", "support", '<p><a href="/support">Visit support</a> or read our <a href="/privacy">privacy policy</a>.</p>'),
+        "404.html": page(context, "Page not found", f"Find support and privacy information for {name}.", "404", '<p>This page could not be found. <a href="/support">Visit support</a> or read the <a href="/privacy">privacy policy</a>.</p>'),
     }
 
 
@@ -111,20 +113,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    expected = outputs()
-    icon = ROOT / "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_128x128@1x.png"
+    import subprocess
+    subprocess.run([sys.executable, str(ROOT / "tools/SharedContent/sync.py"), *(["--check"] if args.check else [])], check=True)
     try:
-        OUTPUT.mkdir(parents=True, exist_ok=True)
-        for name, content in expected.items():
-            target = OUTPUT / name
-            if args.check:
-                if not target.exists() or target.read_text() != content: raise ValueError(f"Stale website page: {name}; run build.py.")
-            else: target.write_text(content)
-        if args.check:
-            if (OUTPUT / "spriglet.png").read_bytes() != icon.read_bytes(): raise ValueError("Website icon differs from app artwork.")
-        else: (OUTPUT / "spriglet.png").write_bytes(icon.read_bytes())
-        for content in expected.values(): LinkCheck().feed(content)
-        print("Support and privacy pages match their source; local routes and assets are valid.")
+        for path in OUTPUT.glob("*.html"): LinkCheck().feed(path.read_text())
+        print("Shared content, website routes, and assets are valid.")
     except (OSError, ValueError) as error:
         print(str(error), file=sys.stderr)
         return 1

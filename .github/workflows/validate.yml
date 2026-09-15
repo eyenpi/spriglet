@@ -30,6 +30,7 @@ jobs:
         run: python3 scripts/check-public-files.py --history
       - name: Changelog and app version
         run: |
+          python3 tools/SharedContent/sync.py --check
           python3 tools/ReleaseNotes/release_notes.py check
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             python3 tools/ReleaseNotes/release_notes.py check --tag "$GITHUB_REF_NAME"
@@ -43,9 +44,11 @@ jobs:
           python3 -m unittest discover -s tools/EverydayServicesValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseNotes -p 'test_*.py'
           python3 -m unittest discover -s tools/AppStore -p 'test_*.py'
+          python3 -m unittest discover -s tools/SharedContent -p 'test_*.py'
       - name: App Store source and metadata checks
         run: |
           bash -n scripts/archive-app-store.sh
+          sh -n scripts/deploy-website.sh
           scripts/archive-app-store.sh --unsigned --check
           python3 tools/AppStore/website/build.py --check
       - name: Character assets and grounded motion

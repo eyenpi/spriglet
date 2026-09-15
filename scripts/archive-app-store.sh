@@ -56,6 +56,7 @@ fi
 [[ "$(xcodebuild -version | awk '/^Xcode / {print int($2); exit}')" -ge 26 ]] || die "Select full Xcode 26 or later."
 [[ "$(xcrun --sdk macosx --show-sdk-version | cut -d. -f1)" -ge 26 ]] || die "macOS SDK 26 or later is required for this project."
 task_python="$(xcrun --find python3)"
+"$task_python" "$task_root/tools/SharedContent/sync.py"
 "$task_python" "$task_root/tools/AppStore/validate.py"
 task_output="${task_output:-$task_root/.build/app-store/Spriglet}"
 [[ ! -e "$task_output" && ! -L "$task_output" ]] || die "Output already exists; choose a new directory."

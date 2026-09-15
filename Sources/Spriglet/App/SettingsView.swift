@@ -41,13 +41,13 @@ struct SprigletSettingsView: View {
             }
 
             Section("Activity") {
-                Toggle("Automatic Moments", isOn: Binding(get: { runtime.autonomousBehavior }, set: { runtime.setAutonomousBehavior($0) }))
+                Toggle(AppText.automaticMoments, isOn: Binding(get: { runtime.autonomousBehavior }, set: { runtime.setAutonomousBehavior($0) }))
                     .help("Allow occasional greetings, pauses, and naps. Turning this off keeps only the interactions you request.")
                 Picker("Frequency", selection: Binding(get: { runtime.activityLevel }, set: { runtime.setActivityLevel($0) })) {
                     ForEach(PetActivityLevel.allCases, id: \.self) { level in Text(level.title).tag(level) }
                 }.pickerStyle(.segmented).disabled(!runtime.autonomousBehavior)
                 detail(runtime.autonomousBehavior ? runtime.activityLevel.summary : "Only the moments you ask for. Petting and play are still available.")
-                Toggle("Parked Mode", isOn: Binding(get: { runtime.isParked }, set: { runtime.setParked($0) }))
+                Toggle(AppText.parkedMode, isOn: Binding(get: { runtime.isParked }, set: { runtime.setParked($0) }))
                     .help("Keep automatic moments and firefly play in one place. You can still drag or ask for a walk.")
                 detail(runtime.isParked
                     ? "Staying put. You can still drag or ask for a walk."
@@ -58,7 +58,7 @@ struct SprigletSettingsView: View {
                 HStack {
                     Button("Pet \(runtime.petName)", systemImage: "hand.tap") { runtime.play() }
                         .disabled(!runtime.canInteract)
-                    Button("Play with Firefly", systemImage: "sparkle") { runtime.playWithFirefly() }
+                    Button(AppText.playWithFirefly, systemImage: "sparkle") { runtime.playWithFirefly() }
                         .disabled(!runtime.canPlayWithFirefly)
                 }
                 if !runtime.permitsMotion { detail(motionUnavailableMessage) }
@@ -67,7 +67,7 @@ struct SprigletSettingsView: View {
 
             Section("Recent preferences") {
                 detail(runtime.recentPreferenceDescription)
-                Button("Clear Recent Preferences") { runtime.resetRecentPreferences() }
+                Button(AppText.clearRecentPreferences) { runtime.resetRecentPreferences() }
                     .help("Forget recent petting, games, and placement preferences. Keep the name, stable traits, and settings.")
             }
         }
@@ -76,18 +76,18 @@ struct SprigletSettingsView: View {
     private var desktop: some View {
         settingsPage {
             Section("Availability") {
-                Toggle("Pause", isOn: Binding(get: { runtime.isPaused }, set: { runtime.setPaused($0) }))
+                Toggle(AppText.pause, isOn: Binding(get: { runtime.isPaused }, set: { runtime.setPaused($0) }))
                     .help("Stop animation and movement until you resume.")
-                Toggle("Hide Pet", isOn: Binding(get: { runtime.isHidden }, set: { runtime.setHidden($0) }))
-                Toggle("Pass Clicks Through", isOn: Binding(get: { runtime.clickThrough }, set: { runtime.setClickThrough($0) }))
+                Toggle(AppText.hidePet, isOn: Binding(get: { runtime.isHidden }, set: { runtime.setHidden($0) }))
+                Toggle(AppText.passClicksThrough, isOn: Binding(get: { runtime.clickThrough }, set: { runtime.setClickThrough($0) }))
                 detail("Send clicks through the entire pet window to the app underneath. The Spriglet menu and Settings remain available.")
                 Toggle("Show on All Spaces", isOn: Binding(get: { runtime.allSpaces }, set: { runtime.setAllSpaces($0) }))
-                detail("The pet may remain visible over full-screen apps. Use Hide Pet or Pass Clicks Through when needed.")
+                detail("The pet may remain visible over full-screen apps. Use \(AppText.hidePet) or \(AppText.passClicksThrough) when needed.")
             }
             Section("Placement") {
                 HStack {
-                    Button("Bring Pet Home") { runtime.recenter() }
-                    Button("Next Display") { runtime.moveToNextDisplay() }
+                    Button(AppText.bringPetHome) { runtime.recenter() }
+                    Button(AppText.nextDisplay) { runtime.moveToNextDisplay() }
                 }
                 HStack {
                     Text("Move pet")
@@ -107,7 +107,7 @@ struct SprigletSettingsView: View {
                 detail("Use the Companion menu for keyboard commands. VoiceOver offers petting, play, parking, pause, and placement actions on the pet itself.")
                 shortcut("Pet", keys: "⌥⌘P", spoken: "Option Command P")
                 shortcut("Firefly", keys: "⌥⌘F", spoken: "Option Command F")
-                shortcut("Parked Mode", keys: "⌥⌘K", spoken: "Option Command K")
+                shortcut(AppText.parkedMode, keys: "⌥⌘K", spoken: "Option Command K")
                 detail("These shortcuts work while using Spriglet. Keyboard navigation follows your Mac’s settings.")
             }
         }
@@ -118,29 +118,29 @@ struct SprigletSettingsView: View {
             Section("Sound") {
                 Toggle("Soft Interaction Sounds", isOn: Binding(get: { runtime.soundEnabled }, set: { runtime.setSoundEnabled($0) }))
                 detail("A brief, quiet chime when you pet or play. Automatic activity stays silent.")
-                Button("Preview Sound") { runtime.previewSound() }.disabled(!runtime.canPreviewSound)
+                Button(AppText.previewSound) { runtime.previewSound() }.disabled(!runtime.canPreviewSound)
                 if runtime.soundEnabled && !runtime.canPreviewSound {
                     detail(AppPresentation.isTemporary ? "Sound previews are silent in temporary review mode." : "Show and resume the pet to preview its sound.")
                 }
             }
             Section("Startup") {
-                Toggle("Launch at Login", isOn: Binding(get: { login.status.isRegistered }, set: { login.setEnabled($0) }))
+                Toggle(AppText.launchAtLogin, isOn: Binding(get: { login.status.isRegistered }, set: { login.setEnabled($0) }))
                     .disabled(!login.allowsChanges)
                 detail(loginDescription)
                 if login.status == .requiresApproval || login.lastError != nil {
-                    Button("Open Login Items…") { login.openSettings() }.disabled(!login.allowsChanges)
+                    Button(AppText.openLoginItems + "…") { login.openSettings() }.disabled(!login.allowsChanges)
                 }
                 if let error = login.lastError {
                     Text(error).font(.callout).foregroundStyle(.red).fixedSize(horizontal: false, vertical: true)
                 }
             }
-            Section("About Spriglet") {
+            Section("About \(AppText.appName)") {
                 LabeledContent("Version", value: AppLinks.versionDescription)
-                detail("A little quiet company, with no account, tracking, or access to other apps. Your companion and its preferences stay on this Mac.")
-                Button("Show Quick Guide") { openWindow(id: "welcome") }
-                Button("Privacy Policy…") { openWindow(id: "privacy") }
-                Link("Get Support", destination: AppLinks.support)
-                Button("License…") { openWindow(id: "license") }
+                detail(AppText.aboutText)
+                Button(AppText.showQuickGuide) { openWindow(id: "welcome") }
+                Button(AppText.privacyTitle + "…") { openWindow(id: "privacy") }
+                Button(AppText.supportTitle + "…") { openWindow(id: "support") }
+                Button(AppText.licenseTitle + "…") { openWindow(id: "license") }
             }
         }
     }

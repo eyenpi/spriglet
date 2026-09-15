@@ -617,7 +617,7 @@ final class PetRuntime {
         }
         if !sampling {
             if canPlayWithFirefly {
-                command("Play with Firefly") { $0.canPlayWithFirefly && $0.playWithFirefly() }
+                command(AppText.playWithFirefly) { $0.canPlayWithFirefly && $0.playWithFirefly() }
             }
             if canInteract {
                 let wasSleeping = isSleeping
@@ -633,7 +633,7 @@ final class PetRuntime {
                 return true
             }
             let targetPaused = !isPaused
-            command(targetPaused ? "Pause" : "Resume") {
+            command(targetPaused ? AppText.pause : AppText.resume) {
                 guard $0.isPaused != targetPaused else { return false }
                 $0.setPaused(targetPaused)
                 return true

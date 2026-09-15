@@ -17,7 +17,7 @@ struct DiagnosticsView: View {
                 stat("Reduce Motion", value: runtime.reduceMotion ? "On" : "Off")
                 HStack {
                     Button("Refresh") { runtime.refreshMeasurements() }
-                    Button("Copy Report") { runtime.copyReport() }.disabled(runtime.reportJSON == nil)
+                    Button(AppText.copyReport) { runtime.copyReport() }.disabled(runtime.reportJSON == nil)
                 }
                 Section("Character sample") {
                     Button("Play Character Sample") { runtime.characterSample() }.disabled(!runtime.canInteract)

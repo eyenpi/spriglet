@@ -1,20 +1,8 @@
 import SwiftUI
 
-enum AppLinks {
-    static let privacy = URL(string: "https://meetspriglet.com/privacy")!
-    static let support = URL(string: "https://meetspriglet.com/support")!
-    static let email = URL(string: "mailto:support@meetspriglet.com")!
-
-    static var versionDescription: String {
-        let info = Bundle.main.infoDictionary ?? [:]
-        let version = info["CFBundleShortVersionString"] as? String ?? "Unknown"
-        let build = info["CFBundleVersion"] as? String ?? "Unknown"
-        return "\(version) (\(build))"
-    }
-}
-
 /// Bundled documents remain readable without an internet connection.
 struct AppDocumentView: View {
+    @Environment(\.openWindow) private var openWindow
     let title: String
     let resource: String
     let fileExtension: String
@@ -30,23 +18,46 @@ struct AppDocumentView: View {
             Text(title).font(.title2.bold()).accessibilityAddTraits(.isHeader)
             ScrollView {
                 if let document {
-                    Text(document.replacingOccurrences(of: "# Privacy\n\n", with: ""))
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.trailing, 12)
+                    VStack(alignment: .leading, spacing: 16) {
+                        ForEach(Array(document.components(separatedBy: "\n\n").enumerated()), id: \.offset) { _, block in
+                            if !block.hasPrefix("# ") {
+                                documentBlock(block)
+                            }
+                        }
+                    }
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.trailing, 12)
                 } else {
-                    Text("This document could not be opened. Please contact support.")
+                    Text(AppText.documentUnavailable)
                 }
             }
             Divider()
             HStack {
-                if let onlineURL { Link("Read Online", destination: onlineURL) }
+                if let onlineURL { Link(AppText.readOnline, destination: onlineURL) }
                 Spacer()
-                Link("Get Support", destination: AppLinks.support)
-                Link("Email Support", destination: AppLinks.email)
+                if resource != "Support" {
+                    Button(AppText.supportTitle) { openWindow(id: "support") }
+                }
+                if onlineURL != AppLinks.support {
+                    Link(AppText.getSupport, destination: AppLinks.support)
+                }
+                Link(AppText.emailSupport, destination: AppLinks.email)
             }
         }
         .padding(24)
-        .frame(minWidth: 400, minHeight: 320)
+        .frame(minWidth: 580, minHeight: 320)
     }
+
+    @ViewBuilder
+    private func documentBlock(_ block: String) -> some View {
+        if fileExtension == "md", block.hasPrefix("## ") {
+            Text(String(block.dropFirst(3))).font(.headline).accessibilityAddTraits(.isHeader)
+        } else if fileExtension == "md" {
+            Text((try? AttributedString(markdown: block, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(block))
+        } else {
+            Text(block)
+        }
+    }
+
 }

@@ -6,6 +6,8 @@ For a bug, include your macOS version, Mac model, what you did, what you expecte
 
 Build with full Xcode selected, then run `./scripts/test.sh` and the checks relevant to your change. App changes should build in Debug and Release. Animation changes should preserve the manifest timing, contact, transparency, and resource validation described in [the character checks](tools/CharacterSampleValidation/README.md).
 
+App/website branding, privacy, help, and shared control labels have one source in `Configuration/Shared`. Follow the [shared content guide](tools/SharedContent/README.md); edit those sources, run `python3 tools/SharedContent/sync.py`, and commit the generated outputs too. Xcode, icon export, and Cloudflare builds also synchronize them automatically. Do not independently edit generated website pages, bundled documents, `SharedContent.generated.swift`, or the rendered App Store metadata.
+
 Commit app source, tests, reusable tools, required artwork, and public usage instructions. Keep planning notes, personal files, agent instructions, machine reports, and review exports local. The `docs/` directory is reserved for ignored local material. Generated diagnostics belong under `.build/`. Run `python3 scripts/check-public-files.py` before pushing; CI runs the same check.
 
 Use current supported Swift and Apple APIs and verify new choices against official documentation and the installed SDK. Keep the companion local and quiet. Avoid introducing third-party services or permanent polling for work that can be event-driven.

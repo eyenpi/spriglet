@@ -53,6 +53,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A10000000000000000000013 /* Build configuration list for PBXNativeTarget "Spriglet" */;
 			buildPhases = (
+				A10000000000000000000030 /* Synchronize shared content */,
 				A10000000000000000000007 /* Sources */,
 				A10000000000000000000008 /* Frameworks */,
 				A10000000000000000000009 /* Resources */,
@@ -118,6 +119,21 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A10000000000000000000030 /* Synchronize shared content */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = ();
+			inputFileListPaths = ("$(SRCROOT)/Configuration/SharedContent.inputs.xcfilelist", );
+			name = "Synchronize shared content";
+			outputFileListPaths = ("$(SRCROOT)/Configuration/SharedContent.outputs.xcfilelist", );
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PYTHONDONTWRITEBYTECODE=1\n/usr/bin/xcrun python3 \"$SRCROOT/tools/SharedContent/sync.py\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A10000000000000000000007 /* Sources */ = {

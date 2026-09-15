@@ -56,6 +56,7 @@ Use a full checkout of `main` for development. The command above checks out the 
 - [Release packaging](tools/ReleaseValidation/README.md)
 - [Mac App Store preparation and submission](tools/AppStore/README.md)
 - [Changelog and tag publishing](tools/ReleaseNotes/README.md)
+- [Shared app/website assets and content](tools/SharedContent/README.md)
 - [Contributing](CONTRIBUTING.md)
 - [Report a bug or suggest an idea](https://github.com/eyenpi/spriglet/issues)
 

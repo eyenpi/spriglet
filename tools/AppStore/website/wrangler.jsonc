@@ -1,15 +1,31 @@
+// Generated from Configuration/Shared/brand.json by tools/SharedContent/sync.py.
 {
   "name": "meetspriglet-support",
   "compatibility_date": "2026-09-15",
   "send_metrics": false,
   "workers_dev": false,
   "routes": [
-    { "pattern": "meetspriglet.com", "custom_domain": true }
+    {
+      "pattern": "meetspriglet.com",
+      "custom_domain": true
+    }
   ],
+  "build": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 \"$(git rev-parse --show-toplevel)/tools/SharedContent/sync.py\"",
+    "watch_dir": [
+      "../../../Configuration/Shared",
+      "../../../Sources/Spriglet/Assets.xcassets/AppIcon.appiconset",
+      "../../../LICENSE",
+      "../../SharedContent/sync.py",
+      "./build.py"
+    ]
+  },
   "assets": {
     "directory": "./public",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page"
   },
-  "observability": { "enabled": false }
+  "observability": {
+    "enabled": false
+  }
 }

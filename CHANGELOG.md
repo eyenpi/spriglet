@@ -18,6 +18,7 @@ Development source for Apple silicon and macOS 26 or later. App Store submission
 - Editable small character proofs and a native candidate comparison tool.
 - Mac App Store listing copy, submission instructions, unsigned and team-signed Xcode archive preparation, local archive and screenshot validation, and CI coverage for unsigned archive rehearsal.
 - Support and privacy pages for meetspriglet.com, a reproducible Cloudflare deployment, public HTTP checks, and support@meetspriglet.com for support and privacy requests. Product page design and mailbox activation remain pending.
+- One shared source for app and website branding, contact details, privacy, help, and control labels; automatic synchronization during app builds, icon export, and Cloudflare builds; offline Help & Support in the app.
 
 ### Fixed
 

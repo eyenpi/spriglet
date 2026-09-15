@@ -90,7 +90,7 @@ Only elapsed durations are included in optional copied reports; absolute system 
 
 - [ ] Publish the final privacy policy at a public HTTPS URL that works without sign-in. Its content must match the build's behavior and bundled copy.
 - [ ] Publish a public support page with actual contact information. Apple's [Support URL requirements](https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information) call for contact details; an issue tracker alone is not the completed plan.
-- [ ] After any policy change, copy `PRIVACY.md` to `Sources/Spriglet/Resources/PrivacyPolicy.md`; the validator rejects mismatches.
+- [ ] Edit policy text in `Configuration/Shared/privacy.md` and run `python3 tools/SharedContent/sync.py`. The app, root policy, and website are generated together; the validator rejects stale output. See the [shared content guide](../SharedContent/README.md).
 - [ ] Complete the App Store Connect privacy answers after auditing the final binary and all dependencies.
 
 ### Age rating, content rights, encryption, and accessibility

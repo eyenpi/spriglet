@@ -4,6 +4,7 @@ from pathlib import Path
 import plistlib
 import struct
 import subprocess
+import sys
 import tempfile
 import unittest
 import zlib
@@ -15,6 +16,10 @@ import validate as store
 class StoreValidationTests(unittest.TestCase):
     def setUp(self):
         self.metadata = json.loads((store.ROOT / "tools/AppStore/metadata/en-US.json").read_text())
+
+    def test_preflight_stdout_remains_machine_readable_json(self):
+        result = subprocess.run([sys.executable, str(store.ROOT / "tools/AppStore/validate.py")], capture_output=True, text=True, check=True)
+        self.assertEqual(json.loads(result.stdout)["metadataLocale"], "en-US")
 
     def test_metadata_rejects_unfinished_and_overlong_listing(self):
         for key, text in (("name", "x" * 31), ("keywords", "x" * 101),
@@ -55,7 +60,7 @@ class StoreValidationTests(unittest.TestCase):
             root = Path(temporary)
             files = ["Configuration/Info.plist", "Configuration/Spriglet.entitlements",
                      "Sources/Spriglet/PrivacyInfo.xcprivacy", "tools/AppStore/metadata/en-US.json",
-                     "Sources/Spriglet/App/AppDocumentView.swift", "PRIVACY.md", "Sources/Spriglet/Resources/PrivacyPolicy.md"]
+                     "Sources/Spriglet/App/SharedContent.generated.swift", "PRIVACY.md", "Sources/Spriglet/Resources/PrivacyPolicy.md"]
             for name in files:
                 target = root / name
                 target.parent.mkdir(parents=True, exist_ok=True)

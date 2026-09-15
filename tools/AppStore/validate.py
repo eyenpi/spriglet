@@ -100,13 +100,14 @@ def check_source(root):
     validate_privacy(release.read_plist(root / "Sources/Spriglet/PrivacyInfo.xcprivacy"))
     metadata = json.loads((root / "tools/AppStore/metadata/en-US.json").read_text())
     validate_metadata(metadata)
-    links = (root / "Sources/Spriglet/App/AppDocumentView.swift").read_text()
+    links = (root / "Sources/Spriglet/App/SharedContent.generated.swift").read_text()
     require(f'"{metadata["privacyPolicyURL"]}"' in links and f'"{metadata["supportURL"]}"' in links,
             "In-app links and store URLs disagree.")
     require(f'"mailto:{metadata["supportEmail"]}"' in links, "In-app email and support contact disagree.")
     for source, bundled in (("PRIVACY.md", "PrivacyPolicy.md"), ("LICENSE", "License.txt")):
         require((root / source).read_bytes() == (root / "Sources/Spriglet/Resources" / bundled).read_bytes(),
                 f"Bundled document differs from {source}.")
+    subprocess.run([sys.executable, str(ROOT / "tools/SharedContent/sync.py"), "--source-root", str(root), "--check"], check=True, stdout=sys.stderr)
     icon_root = root / "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset"
     icons = json.loads((icon_root / "Contents.json").read_text())["images"]
     expected = {(size, scale) for size in (16, 32, 128, 256, 512) for scale in (1, 2)}
@@ -136,7 +137,7 @@ def check_app(app, root, archive=None, signed=False):
     architectures = release.verify_code_inventory(app)
     attributes = release.run(["/usr/bin/xattr", "-r", str(app)])
     require(b"com.apple.quarantine" not in attributes, "Quarantine attribute in app bundle; rebuild from trusted local sources.")
-    for filename in ("PrivacyPolicy.md", "License.txt", "Changelog.json"):
+    for filename in ("PrivacyPolicy.md", "Support.md", "License.txt", "Changelog.json"):
         require((app / "Contents/Resources" / filename).read_bytes()
                 == (root / "Sources/Spriglet/Resources" / filename).read_bytes(), f"Missing or stale bundled {filename}.")
     if archive:
