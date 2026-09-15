@@ -4,6 +4,33 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
+## 0.2.0-preview.2 — Submission preparation
+
+2026-09-15 · App 0.2.0 · Build 4
+
+Accessible privacy and support, bundled licensing, and Mac App Store preparation.
+
+Development source for Apple silicon and macOS 26 or later. App Store submission and signed distribution are pending.
+
+### Added
+
+- Privacy Policy and support entries in the menu and Settings, an offline privacy policy, bundled MIT license, and visible app version and build.
+- Editable small character proofs and a native candidate comparison tool.
+- Mac App Store listing copy, submission instructions, unsigned and team-signed Xcode archive preparation, local archive and screenshot validation, and CI coverage for unsigned archive rehearsal.
+- Support and privacy pages for meetspriglet.com, a reproducible Cloudflare deployment, public HTTP checks, and support@meetspriglet.com for support and privacy requests. Product page design and mailbox activation remain pending.
+- One shared source for app and website branding, contact details, privacy, help, and control labels; automatic synchronization during app builds, icon export, and Cloudflare builds; offline Help & Support in the app.
+- Private security reporting, credential-file guards, checksum-pinned history and workflow scanning, CodeQL analysis, and dependency update automation for the public repository.
+- Isolated Cloudflare PR previews, protected production deployment, artifact safety checks, preview cleanup, retained-build rollback, and public website availability checks.
+
+### Fixed
+
+- Declared elapsed-time diagnostics in the privacy manifest and added the Mac App Store category and encryption metadata.
+- Included shared app labels in all standalone runtime validation builds and source snapshots; CI now also compiles the desktop interaction harness.
+
+### Known limitations
+
+- App Store signing, store metadata, screenshots, and final device acceptance remain required before submission.
+
 ## 0.2.0-preview.1 — Everyday companion
 
 2026-09-14 · App 0.2.0 · Build 3

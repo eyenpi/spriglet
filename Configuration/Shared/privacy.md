@@ -1,0 +1,29 @@
+# Privacy
+
+Effective September 15, 2026. Developed by {{publisher}}.
+
+{{appName}} is a local desktop companion. The app contains no accounts, analytics, advertising, server connection, or network client.
+
+It responds to clicks and dragging in its own window and keyboard commands while using {{appName}}. It does not capture your screen, monitor global keystrokes, read other apps' contents, or request Screen Recording, Accessibility, Input Monitoring, or Automation permission. It exposes its own name, status, and actions to macOS accessibility clients without using accessibility access to control another app.
+
+Your choices stay in this app's local preferences: the pet's name and stable traits, size, activity frequency, parked mode, automatic moments, pause, visibility, click-through, Spaces behavior, sound preference, a display-relative home position, and whether you completed the welcome. A display identifier helps restore the pet to the same display. The app does not transmit it. One bounded last-good preference payload provides recovery if the current copy is damaged.
+
+Recent petting, firefly games, and completed placement changes contribute three small, capped values with their last update times. Their influence decays and expires after 24 hours. {{appName}} keeps no interaction event history or information about other apps. {{clearRecentPreferences}} removes these values from both the current preferences and their single recovery copy; it keeps the name, traits, and other choices.
+
+Optional sounds are short original files bundled with the app. Sound starts off, uses no microphone, and contacts no service. Automatic activity remains silent. Disabling sound or suspending the companion stops playback.
+
+Launch at login is an explicit Settings choice managed by macOS through `SMAppService`. {{appName}} reads the system registration status; it does not register itself merely because it launches or opens Settings. The OS may require your approval in Login Items. No login choice is sent to a server or duplicated in app preferences as a replacement for that system state.
+
+Developer Diagnostics is separate from everyday Settings and is available in Debug builds or with the explicit `--diagnostics` launch flag. Checks run only when requested and measure this process and its rendering callbacks. {{copyReport}} writes the report to your clipboard only when you select it. Reports can include the macOS version, executable path, process ID, timing, and memory measurements; review a report before sharing it in a public issue. Temporary review runs, including launches with `--diagnostics`, suppress preference learning, saved-choice changes, sound output, and login registration changes.
+
+Local preferences remain until you change them or remove the app's local preference storage. {{clearRecentPreferences}} in Settings > Companion removes recent interaction values and their recovery copy immediately. Removing the app alone may leave macOS's sandbox preferences behind. For help removing remaining local settings, open {{supportTitle}} in the app. There is no account or server-side data for us to delete, and we cannot access or remotely remove your local preferences. macOS manages the separate {{launchAtLogin}} choice; turn it off in Settings > General or System Settings > General > Login Items & Extensions.
+
+The privacy manifest declares access to this app's own preferences and use of system uptime to measure elapsed time within the app. Absolute system uptime is not exported in reports. No data is collected or uploaded by {{appName}}, and the app shares no data with third-party SDKs or services. No advertising or tracking consent is needed. Optional sound and launch at login can be disabled at any time in Settings.
+
+{{privacyTitle}} is available from the leaf menu and Settings > General, including a bundled copy that works offline. {{readOnline}} and {{getSupport}} open your default browser only when selected. The online policy is {{privacyPolicyURL}} and the support page is {{supportURL}}. {{emailSupport}} opens your email app only when selected; {{appName}} does not send a message or attach a report automatically.
+
+For support, privacy questions, or help deleting local settings, contact {{publisher}} at {{supportEmail}}. If you choose to email us, your email provider and ours process the message. We use the address, message, and attachments you supply to respond to your request. Support correspondence is kept only as long as needed to handle the request and meet applicable obligations. You can request deletion of support correspondence at the same address. Please send only the information needed for your request; diagnostic reports are optional.
+
+The support and privacy website at {{websiteDomain}} is hosted by Cloudflare. Visiting it sends normal web request information, including your IP address and browser information, to Cloudflare to deliver and protect the pages. The pages include no advertising, analytics scripts, contact forms, or embedded third-party media. Cloudflare may process network and security information and use necessary security cookies as described in its [privacy policy](https://www.cloudflare.com/privacypolicy/) and [cookie documentation](https://developers.cloudflare.com/fundamentals/reference/policies-compliances/cloudflare-cookies/). Website visits are separate from using the local app; {{appName}} does not open a website until you choose a link.
+
+GitHub separately handles visits to the source repository and any information you choose to submit in a public issue. Do not include private information in a public issue.

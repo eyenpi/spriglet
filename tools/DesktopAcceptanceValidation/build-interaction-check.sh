@@ -10,6 +10,7 @@ check_arch="$(uname -m)"
 check_flags=(-swift-version 6 -strict-concurrency=complete -warnings-as-errors -O
     -sdk "$check_sdk" -target "$check_arch-apple-macos26.0")
 
+python3 "$check_root/tools/SharedContent/sync.py" --check
 mkdir -p "$check_output" "$check_bundle/Contents/MacOS" "$check_bundle/Contents/Resources"
 xcrun swiftc "${check_flags[@]}" -parse-as-library -emit-library -static -emit-module \
     -module-name SprigletCore -emit-module-path "$check_output/SprigletCore.swiftmodule" \
@@ -23,6 +24,7 @@ xcrun swiftc "${check_flags[@]}" -parse-as-library -framework AppKit -framework 
     "$check_root/Sources/Spriglet/Desktop/PetWindowController.swift" \
     "$check_root/Sources/Spriglet/Desktop/PetInteractionView.swift" \
     "$check_root/Sources/Spriglet/App/PetRuntime.swift" \
+    "$check_root/Sources/Spriglet/App/SharedContent.generated.swift" \
     "$check_root/Sources/Spriglet/Services/PetSoundService.swift" \
     "$check_root/Sources/Spriglet/Diagnostics/ProcessSample.swift" \
     "$check_root/Sources/Spriglet/Diagnostics/RuntimeProbe.swift" \

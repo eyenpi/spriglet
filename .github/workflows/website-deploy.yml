@@ -1,0 +1,95 @@
+name: Deploy website
+
+on:
+  workflow_run:
+    workflows: [Validate Spriglet]
+    types: [completed]
+  # Closure only. This workflow always uses protected main, never PR code.
+  pull_request_target:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Optional successful main validation run to restore; blank deploys current main'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+jobs:
+  resolve:
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      deploy: ${{ steps.resolve.outputs.deploy }}
+      action: ${{ steps.resolve.outputs.action }}
+      target: ${{ steps.resolve.outputs.target }}
+      environment: ${{ steps.resolve.outputs.environment }}
+      pr: ${{ steps.resolve.outputs.pr }}
+      run: ${{ steps.resolve.outputs.run }}
+      rollback: ${{ steps.resolve.outputs.rollback }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/WebsiteDeployment/deploy.py resolve
+
+  publish:
+    needs: resolve
+    if: needs.resolve.outputs.deploy == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    concurrency:
+      group: website-${{ needs.resolve.outputs.target }}
+      cancel-in-progress: false
+    environment:
+      name: ${{ needs.resolve.outputs.environment }}
+      url: ${{ steps.publish.outputs.url }}
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+      checks: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        if: needs.resolve.outputs.action == 'deploy'
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked deployment tools without lifecycle scripts
+        if: needs.resolve.outputs.action == 'deploy'
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix tools/WebsiteDeployment
+      - name: Deploy or clean up the validated target
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: 'false'
+          DEPLOY_ACTION: ${{ needs.resolve.outputs.action }}
+          DEPLOY_RUN: ${{ needs.resolve.outputs.run }}
+          DEPLOY_TARGET: ${{ needs.resolve.outputs.target }}
+          DEPLOY_PR: ${{ needs.resolve.outputs.pr }}
+          DEPLOY_ROLLBACK: ${{ needs.resolve.outputs.rollback }}
+        run: |
+          if [[ "$DEPLOY_ACTION" == cleanup ]]; then
+            python3 tools/WebsiteDeployment/deploy.py cleanup --pr "$DEPLOY_PR"
+          elif [[ "$DEPLOY_ROLLBACK" == true ]]; then
+            python3 tools/WebsiteDeployment/deploy.py deploy --run "$DEPLOY_RUN" --target "$DEPLOY_TARGET" --rollback
+          else
+            python3 tools/WebsiteDeployment/deploy.py deploy --run "$DEPLOY_RUN" --target "$DEPLOY_TARGET"
+          fi

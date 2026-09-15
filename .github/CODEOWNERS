@@ -1,0 +1,10 @@
+# Review ownership. Enforced approval needs a second maintainer; self-approval is not possible.
+/.github/ @eyenpi
+/scripts/ @eyenpi
+/tools/Security/ @eyenpi
+/tools/WebsiteDeployment/ @eyenpi
+/tools/SharedContent/ @eyenpi
+/tools/AppStore/ @eyenpi
+/Configuration/ @eyenpi
+/SECURITY.md @eyenpi
+/Spriglet.xcodeproj/ @eyenpi

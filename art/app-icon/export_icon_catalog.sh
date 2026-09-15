@@ -42,3 +42,4 @@ cat > "$icon_dir/Contents.json" <<'JSON'
 JSON
 
 printf 'Exported all 10 macOS app icon slots to %s\n' "$icon_dir"
+python3 "$repo_root/tools/SharedContent/sync.py"

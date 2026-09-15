@@ -8,13 +8,13 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-ROOT_FILES = {".gitignore", "README.md", "CHANGELOG.md", "LICENSE", "ASSETS.md", "PRIVACY.md", "CONTRIBUTING.md"}
+ROOT_FILES = {".gitignore", "README.md", "CHANGELOG.md", "LICENSE", "ASSETS.md", "PRIVACY.md", "CONTRIBUTING.md", "SECURITY.md"}
 ROOT_DIRECTORIES = {".github", "Configuration", "Packages", "Sources", "Spriglet.xcodeproj", "art", "scripts", "tools"}
 LOCAL_PREFIXES = ("tools/PublicRelease/", "tools/DesktopValidation/", "tools/CharacterSampleReview/", "art/sprout/sample-v01/review/")
 LOCAL_NAMES = {"AGENTS.md", ".DS_Store", "verification.json", "verification-before-publication.json", "icon-verification.json", "icon-verification-before-publication.json"}
-LOCAL_PARTS = {".build", ".swiftpm", "xcuserdata", "__pycache__", ".codex", ".claude"}
+LOCAL_PARTS = {".build", ".swiftpm", ".wrangler", "node_modules", "xcuserdata", "__pycache__", ".codex", ".claude"}
 HOME_PATH = re.compile(rb"/Users/[A-Za-z0-9_.-]+/")
-KEY_HEADER = b"-----BEGIN " + b"PRIVATE KEY-----"
+KEY_HEADER = re.compile(rb"-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----")
 TOKEN = re.compile(rb"(?:gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{60,})")
 
 
@@ -32,7 +32,8 @@ def public_path(name):
         return False
     if name.startswith("art/sprout/review-01/"):
         return name == "art/sprout/review-01/sprout-design-v01.blend"
-    return not (path.name.startswith(".env") or path.suffix in {".p12", ".pem", ".mobileprovision", ".pyc"} or re.search(r"\.blend[0-9]+$", path.name))
+    return not (path.name.startswith((".env", ".dev.vars")) or path.suffix in {".p12", ".pem", ".p8", ".key", ".mobileprovision", ".provisionprofile", ".pkg", ".pyc"}
+                or any(part.endswith(".xcarchive") for part in path.parts) or re.search(r"\.blend[0-9]+$", path.name))
 
 
 def main():
@@ -62,7 +63,7 @@ def main():
             continue
         checked_blobs.add(object_id)
         data = git("cat-file", "blob", object_id)
-        if b"\0" not in data and (HOME_PATH.search(data) or KEY_HEADER in data or TOKEN.search(data)):
+        if b"\0" not in data and (HOME_PATH.search(data) or KEY_HEADER.search(data) or TOKEN.search(data)):
             failures.add(f"Personal path or credential candidate in: {name}")
     if failures:
         print("\n".join(sorted(failures)), file=sys.stderr)

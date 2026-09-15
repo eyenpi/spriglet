@@ -10,11 +10,18 @@
 /.env.*
 *.pem
 *.p12
+*.p8
+*.key
+.dev.vars
+.dev.vars.*
 *.mobileprovision
+*.provisionprofile
 
 # Build products and personal IDE state
 .build/
 .swiftpm/
+.wrangler/
+node_modules/
 DerivedData/
 xcuserdata/
 .DS_Store
@@ -22,6 +29,8 @@ xcuserdata/
 *.ipa
 *.dSYM
 *.dSYM.zip
+*.xcarchive/
+*.pkg
 
 # Authoring caches, review exports, and generated verification reports
 __pycache__/

@@ -10,6 +10,7 @@ check_sdk="$(xcrun --sdk macosx --show-sdk-path)"
 check_arch="$(uname -m)"
 check_flags=(-swift-version 6 -strict-concurrency=complete -warnings-as-errors -O
     -sdk "$check_sdk" -target "$check_arch-apple-macos26.0")
+python3 "$check_root/tools/SharedContent/sync.py" --check
 mkdir -p "$check_output" "$check_bundle/Contents/MacOS" "$check_bundle/Contents/Resources"
 
 python3 - "$check_root" "$check_snapshot" "$check_bundle/Contents/Resources" <<'PY'
@@ -22,6 +23,7 @@ paths += [root / path for path in [
     "Sources/Spriglet/Desktop/PetWindowController.swift",
     "Sources/Spriglet/Desktop/PetInteractionView.swift",
     "Sources/Spriglet/App/PetRuntime.swift",
+    "Sources/Spriglet/App/SharedContent.generated.swift",
     "Sources/Spriglet/Services/PetSoundService.swift",
     "Sources/Spriglet/Diagnostics/ProcessSample.swift",
     "Sources/Spriglet/Diagnostics/RuntimeProbe.swift",
@@ -86,6 +88,7 @@ xcrun swiftc "${check_flags[@]}" -parse-as-library -framework AppKit -framework 
     "$check_snapshot/Sources/Spriglet/Desktop/PetWindowController.swift" \
     "$check_snapshot/Sources/Spriglet/Desktop/PetInteractionView.swift" \
     "$check_snapshot/Sources/Spriglet/App/PetRuntime.swift" \
+    "$check_snapshot/Sources/Spriglet/App/SharedContent.generated.swift" \
     "$check_snapshot/Sources/Spriglet/Services/PetSoundService.swift" \
     "$check_snapshot/Sources/Spriglet/Diagnostics/ProcessSample.swift" \
     "$check_snapshot/Sources/Spriglet/Diagnostics/RuntimeProbe.swift" \
