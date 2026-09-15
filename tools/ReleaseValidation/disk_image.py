@@ -2,6 +2,7 @@
 """Create a drag-to-Applications DMG and verify its mounted app before shipping."""
 
 import argparse
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -30,11 +31,13 @@ def create(args):
     stage.mkdir()
     command("/usr/bin/ditto", args.app, stage / "Spriglet.app")
     (stage / "Applications").symlink_to("/Applications")
+    brand = json.loads((args.source_root / "Configuration/Shared/brand.json").read_text())
+    website = brand["websiteURL"].rstrip("/")
     notice = ("UNSIGNED PREVIEW: This build is ad hoc signed, without Developer ID "
               "or Apple notarization. macOS Gatekeeper may block the download.\n\n"
               if args.mode == "local-preview" else "")
     (stage / "README.txt").write_text(
-        f"Spriglet {args.version} (build {args.build})\n\n" + notice
+        f"{brand['appName']} {args.version} (build {args.build})\n\n" + notice
         + "Requires an Apple silicon Mac and macOS 26 or later.\n\n"
         "1. Drag Spriglet.app to Applications.\n"
         "2. Eject this disk image.\n"
@@ -42,8 +45,8 @@ def create(args):
         "Spriglet does not show a Dock icon.\n\n"
         "Use the leaf menu to show the pet, open Settings, or quit.\n"
         "Downloads and source: https://github.com/eyenpi/spriglet/releases\n"
-        "Help: https://meetspriglet.com/support\n"
-        "Privacy: https://meetspriglet.com/privacy\n")
+        f"Help: {website}/support\n"
+        f"Privacy: {website}/privacy\n")
     # Current macOS disk-image API. UDZO is Apple's distribution container format.
     command("/usr/sbin/diskutil", "image", "create", "from", "--format", "UDZO",
             "--volumeName", f"Spriglet {args.version}", stage, args.output)
