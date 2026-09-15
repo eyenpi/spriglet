@@ -128,6 +128,29 @@ class ProvenanceTests(unittest.TestCase):
         with patch.object(deploy, 'github', side_effect=self.fake_github):
             self.assertFalse(deploy.resolve_run(20)['deploy'])
 
+    def test_main_requires_current_commit_but_rollback_accepts_a_prior_main_run(self):
+        self.run.update(event='push', head_branch='main', head_repository={'id': 1, 'full_name': deploy.REPOSITORY})
+        def newer_main(path, **kwargs):
+            if path == 'branches/main':
+                return {'commit': {'sha': 'c' * 40}}
+            return self.fake_github(path, **kwargs)
+        with patch.object(deploy, 'github', side_effect=newer_main):
+            self.assertFalse(deploy.resolve_run(20)['deploy'])
+            restored = deploy.resolve_run(20, rollback=True)
+        self.assertEqual(restored['target'], 'production')
+        self.assertEqual(restored['environment'], 'website-production')
+
+    def test_fork_push_named_main_cannot_become_production(self):
+        self.run.update(event='push', head_branch='main')
+        with patch.object(deploy, 'github', side_effect=self.fake_github), self.assertRaises(ValueError):
+            deploy.resolve_run(20, rollback=True)
+
+    def test_failed_required_production_check_blocks_upload(self):
+        check = {'id': 1, 'app': {'id': 15368}, 'name': 'security-checks', 'status': 'completed', 'conclusion': 'failure'}
+        with patch.object(deploy, 'github', return_value={'check_runs': [check]}), patch.object(deploy.time, 'sleep') as sleep, self.assertRaises(ValueError):
+            deploy.wait_production_checks('a' * 40)
+        sleep.assert_not_called()
+
     def test_missing_digest_expired_and_oversize_artifacts_fail_closed(self):
         for changes in ({'digest': ''}, {'expired': True}, {'size_in_bytes': deploy.MAX_ARCHIVE + 1}):
             previous = self.artifact.copy(); self.artifact.update(changes)

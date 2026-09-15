@@ -43,7 +43,10 @@ def api(path, method='GET', data=None, cloudflare=False):
     # Never forward a credential to a redirect destination.
     with build_opener(NoRedirect()).open(request, timeout=30) as response:
         body = response.read()
-    return json.loads(body) if body else {}
+    result = json.loads(body) if body else {}
+    if cloudflare and result.get('success') is not True:
+        raise ValueError('Cloudflare API did not confirm success')
+    return result
 
 
 def github(path, **kwargs):
@@ -217,7 +220,8 @@ def unpack_static(data, destination, preview):
 
 
 def wait_production_checks(sha):
-    for _ in range(40):
+    # Swift extraction can outlast the app validation that triggers this workflow.
+    for _ in range(100):
         checks = github(f'commits/{sha}/check-runs?per_page=100')['check_runs']
         latest = {}
         for check in sorted(checks, key=lambda c: c['id']):
@@ -229,7 +233,7 @@ def wait_production_checks(sha):
         if any(check and check['status'] == 'completed' and check['conclusion'] != 'success' for check in relevant):
             raise ValueError('A required production check failed')
         time.sleep(15)
-    raise ValueError('Required production checks did not finish successfully within ten minutes')
+    raise ValueError('Required production checks did not finish successfully within twenty-five minutes')
 
 
 def worker_name(target):

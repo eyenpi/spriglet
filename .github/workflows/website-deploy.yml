@@ -47,7 +47,7 @@ jobs:
     needs: resolve
     if: needs.resolve.outputs.deploy == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 35
     concurrency:
       group: website-${{ needs.resolve.outputs.target }}
       cancel-in-progress: false

@@ -22,6 +22,8 @@ Use separate account-scoped API tokens. Preview needs Workers Scripts edit and A
 
 Keep Apple signing/upload secrets in the separate `app-store` environment, with owner approval. They are not used by website workflows. Do not put deployment secrets at repository scope or add them to PR build jobs. Review workflow/deployment changes as privileged code.
 
+Set a 90-day token expiry and record its renewal date privately. Rotate each environment independently before expiry, verify a deployment using the replacement, then revoke the old token. Never commit tokens, paste them into issues, or use a personal Wrangler OAuth token as a CI credential.
+
 The deployment tools use Node 24 in CI, pinned Wrangler, and `npm ci --ignore-scripts` from the lockfile. Dependency installation occurs before the step that receives the Cloudflare secret. Update dependencies through reviewed Dependabot PRs.
 
 ## Checks
