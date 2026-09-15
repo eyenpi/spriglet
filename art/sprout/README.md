@@ -11,6 +11,6 @@ Select **Sprout Rig**, enter Pose Mode, and play the timeline for idle → walk 
 
 The [base geometry](review-01/sprout-design-v01.blend) is an input to the sample builder. `sample-build.json`, contact samples, alpha data, and groom data are the machine-readable inputs used to verify and reproduce the export. Verification output and review renders stay local and ignored.
 
-The [icon scene](public-preview/spriglet-icon.blend) uses the same character. Its [renderer](public-preview/render_icon.py), [catalog exporter](public-preview/export_icon_catalog.sh), and [verifier](public-preview/verify_icon.py) reproduce the macOS app icon. Run them in a disposable Blender background process from the repository root.
+The [current app icon](../app-icon/README.md) gives Sprout a playful clay-like treatment, with its own master artwork, catalog exporter, and verifier. The original [Blender icon scene](public-preview/spriglet-icon.blend) and [renderer](public-preview/render_icon.py) remain as historical artwork from the first preview; they do not export the current app icon catalog.
 
 Code and artwork use the repository's [MIT license](../../LICENSE).

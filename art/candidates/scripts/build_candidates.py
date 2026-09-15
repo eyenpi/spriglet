@@ -1,4 +1,4 @@
-"""Editable Acorn Hopper / Moss Mouse proof, built in a disposable Blender 5.2.
+"""Editable Acorn Hopper / Moss Mouse, built in a disposable Blender 5.2.
 
 No generated 3D mesh, hair, external textures, or add-ons. Every pose is a real
 armature Action with separate export compensation. Review renders stay in .build.
@@ -27,9 +27,15 @@ from build_design import (aim, area, blend, camera, collection, ellipsoid,
 from sample_motion import apply_pose, around, linear_keys, new_action, rotation, translation
 
 FPS, COUNT, PIXELS, POINTS, REVIEW_POINTS = 30, 24, 448, 224, 96
+COUNTS = {'idle': 42, 'walkRight': COUNT, 'walkLeft': COUNT, 'pet': 30, 'settle': 18,
+          'fallAsleep': 30, 'wakeUp': 24, 'sleep': 1}
+BOUNDARIES = {'idle': ('ready', 'ready'), 'walkRight': ('ready', 'ready'),
+              'walkLeft': ('ready', 'ready'), 'pet': ('ready', 'happy'),
+              'settle': ('happy', 'ready'), 'fallAsleep': ('ready', 'asleep'),
+              'wakeUp': ('asleep', 'ready'), 'sleep': ('asleep', 'asleep')}
 NAMES = {"acorn-hopper": "Acorn Hopper", "moss-mouse": "Moss Mouse"}
 TRAVEL = {'acorn-hopper': 3.2, 'moss-mouse': 3.0}
-GREEN, CREAM, LEAF, BLUSH = map(linear, ("8C9351", "F4DDB1", "737F3E", "DD947A"))
+GREEN, CREAM, LEAF, BLUSH = map(linear, ("90995B", "F8E5BF", "768C48", "E6A18D"))
 
 
 def json_file(path, value):
@@ -77,7 +83,7 @@ def face_color(point, mouse=False):
     mask *= front
     color = blend(GREEN, CREAM, mask)
     blush = math.exp(-((abs(x) - (eye_x + .08)) / .115) ** 2 - ((z - eye_z + .13) / .075) ** 2)
-    return blend(color, BLUSH, blush * mask * .67)
+    return blend(color, BLUSH, blush * mask * .77)
 
 
 def profile_mesh(name, profile, depth, bucket, mat):
@@ -110,14 +116,15 @@ class Character:
         self.candidate = candidate
         self.mouse = candidate == 'moss-mouse'
         self.bucket = collection(NAMES[candidate] + " · editable character")
-        self.parts, self.specs, self.feet, self.eyes = [], [], {}, []
+        self.parts, self.specs, self.feet, self.expressions = [], [], {}, []
         self.body_pivot = Vector((0, 0, .11))
         self.head_pivot = Vector((0, -.28, .57)) if self.mouse else self.body_pivot
-        self.coat = material("Moss and cream · vertex paint", GREEN, .80, .07, attribute=True)
-        self.green = material("Moss · soft matte", GREEN, .80, .07)
-        self.leaf_mat = material("Leaves · olive", LEAF, .77, .05)
+        self.coat = material("Moss and cream · soft velvet vertex paint", GREEN, .84, .24, attribute=True)
+        self.green = material("Moss · soft velvet", GREEN, .84, .24)
+        self.leaf_mat = material("Leaves · folded satin", LEAF, .65, .13)
+        self.vein_mat = material("Leaves · quiet midrib", linear('94A65D'), .72, .08)
         self.ink = material("Face · warm dark brown", linear("382D21"), .56)
-        self.eye_mat = material("Eyes · dark glass", linear("181710"), .24)
+        self.eye_mat = material("Eyes · dark glass", linear("211B15"), .20)
         self.eye_mat.node_tree.nodes.get('Principled BSDF').inputs['Specular IOR Level'].default_value = .40
         self.spec('Stage', (0, 0, 0), None)
         self.spec('Root', (0, 0, 0), 'Stage')
@@ -145,13 +152,49 @@ class Character:
     def curve(self, name, points, radius, mat, bone):
         return self.part(line(name, points, radius, self.bucket, mat), bone)
 
-    def foliage(self, name, base, tip, width, bone, thickness=.05):
-        obj = leaf(name, base, tip, width, thickness, self.bucket, self.leaf_mat, LEAF, bend=.055)
+    def foliage(self, name, base, tip, width, bone, thickness=.07):
+        # A closed, softly folded volume, not an infinitely thin leaf plane.
+        obj = leaf(name, base, tip, width, thickness, self.bucket, self.leaf_mat, LEAF, bend=.095)
         self.part(obj, bone)
-        # One shallow ridge, never hundreds of modeled veins or cap scales.
         a, b = Vector(base), Vector(tip)
-        points = [a.lerp(b, t) + Vector((0, -.055 * math.sin(math.pi * t), .012)) for t in (.10, .45, .82)]
-        self.curve(name + " · midrib", points, .009, self.leaf_mat, bone)
+        # The midrib is deliberately subtle: silhouette carries at desktop size.
+        points = [a.lerp(b, t) + Vector((0, -thickness * math.sin(math.pi * t), .035 * math.sin(math.pi * t)))
+                  for t in (.10, .40, .72, .91)]
+        self.curve(name + " · midrib", points, .007, self.vein_mat, bone)
+
+    def cap(self, mat):
+        """One editable domed shell with shallow staggered scallop relief.
+
+        Relief is actual geometry and survives material overrides. No generated
+        texture, displacement dependency or hundreds of separate scale objects.
+        """
+        segments, rows = 128, 48
+        vertices, faces = [], []
+        for row in range(rows + 1):
+            t = row / rows
+            angle = t * math.pi / 2
+            radius = .738 * math.cos(angle)
+            for j in range(segments):
+                theta = 2 * math.pi * j / segments
+                band = t * 4.2
+                phase = theta * 24 + math.floor(band) * math.pi
+                scallop = math.sin(math.pi * (band % 1)) ** 2 * (.5 + .5 * math.cos(phase)) ** 2
+                relief = .010 * scallop * math.sin(math.pi * t) ** .55
+                r = radius + relief * math.cos(angle)
+                vertices.append((r * math.cos(theta), r * .80 * math.sin(theta),
+                                 1.305 + .425 * math.sin(angle) + relief * math.sin(angle)))
+        for row in range(rows):
+            for j in range(segments):
+                k = (j + 1) % segments
+                faces.append((row * segments + j, row * segments + k,
+                              (row + 1) * segments + k, (row + 1) * segments + j))
+        faces.append(tuple(reversed(range(segments))))
+        obj = self.part(mesh_object('Cap · scalloped single shell', vertices, faces, self.bucket, mat), 'Cap')
+        subdivide(obj, 1)
+        # Rounded rolled edge makes the cap read as an acorn cup, not a helmet.
+        rim = [(math.cos(t * 2 * math.pi / 64) * .730, math.sin(t * 2 * math.pi / 64) * .584, 1.305)
+               for t in range(65)]
+        self.curve('Cap · rolled lip', rim, .025, mat, 'Cap')
 
     def face(self, surface):
         mouse = self.mouse
@@ -159,17 +202,60 @@ class Character:
         eye_x, eye_z = (.205, .62) if mouse else (.235, .95)
         for side, label in ((-1, 'L'), (1, 'R')):
             pos = face_point(surface, side * eye_x, eye_z, .008)
-            eye = self.ball("Eye." + label, pos, (.103, .061, .114) if mouse else (.111, .064, .126), self.eye_mat, control)
+            radius = (.111, .064, .123) if mouse else (.120, .066, .131)
+            eye = self.ball("Eye." + label, pos, radius, self.eye_mat, control)
             eye.shape_key_add(name='Basis')
             blink = eye.shape_key_add(name='Blink')
             for v in blink.data:
-                v.co.z = pos.z + (v.co.z - pos.z) * .085
-            self.eyes.append(eye)
-            brow_z = eye_z + (.183 if mouse else .219)
+                depth = v.co.y - pos.y
+                v.co.z = pos.z + (v.co.z - pos.z) * .10
+                v.co.y = face_point(surface, v.co.x, v.co.z, .032).y + depth * .12
+            happy = eye.shape_key_add(name='Happy')
+            for v in happy.data:
+                dx, dz = v.co.x - pos.x, v.co.z - pos.z
+                depth = v.co.y - pos.y
+                v.co.z = pos.z + .041 * (1 - (dx / radius[0]) ** 2) + dz * .13
+                v.co.y = face_point(surface, v.co.x, v.co.z, .032).y + depth * .12
+            self.expressions.append(eye)
+            brow_z = eye_z + (.186 if mouse else .220)
             points = [face_point(surface, side * x, z, .014) for x, z in (
-                (eye_x - .054, brow_z), (eye_x, brow_z + (.027 if side < 0 else -.012)),
-                (eye_x + .058, brow_z - .007))]
-            self.curve('Brow.' + label, points, .009, self.ink, control)
+                (eye_x - .042, brow_z - .009), (eye_x, brow_z + .009),
+                (eye_x + .046, brow_z - .011))]
+            self.curve('Brow.' + label, points, .007, self.ink, control)
+            # A matte crease keeps a closed eye legible at 96 points. It lives
+            # inside the face when open; the same two shape controls reveal it.
+            closed = [face_point(surface, side * eye_x + dx,
+                                 eye_z + .041 * (1 - (dx / radius[0]) ** 2), .038)
+                      for dx in (-radius[0] * .86, 0., radius[0] * .86)]
+            lid = self.curve('Eye.Lid.' + label, closed, .0105, self.ink, control)
+            visible = [v.co.copy() for v in lid.data.vertices]
+            basis = lid.shape_key_add(name='Basis')
+            for v in basis.data:
+                v.co.y += .12
+            happy_lid = lid.shape_key_add(name='Happy', from_mix=False)
+            blink_lid = lid.shape_key_add(name='Blink', from_mix=False)
+            for i, point in enumerate(visible):
+                happy_lid.data[i].co = point
+                dx = point.x - side * eye_x
+                straight = point.copy()
+                straight.z -= .041 * (1 - (dx / radius[0]) ** 2)
+                straight.y = face_point(surface, straight.x, straight.z, .038).y
+                blink_lid.data[i].co = straight
+            self.expressions.append(lid)
+        # Closed eyes should read as dark soft arcs, not reflective little lids.
+        # One shared material follows the synchronized eye expression controls.
+        shader = self.eye_mat.node_tree.nodes.get('Principled BSDF')
+        for socket, expression in (('Roughness', '.20 + .65 * max(blink, happy)'),
+                                   ('Specular IOR Level', '.40 * (1 - max(blink, happy))')):
+            driver = shader.inputs[socket].driver_add('default_value').driver
+            for variable_name, key_name in (('blink', 'Blink'), ('happy', 'Happy')):
+                variable = driver.variables.new()
+                variable.name = variable_name
+                variable.type = 'SINGLE_PROP'
+                variable.targets[0].id_type = 'KEY'
+                variable.targets[0].id = self.expressions[0].data.shape_keys
+                variable.targets[0].data_path = f'key_blocks["{key_name}"].value'
+            driver.expression = expression
         nose_z = .501 if mouse else .804
         pos = face_point(surface, 0, nose_z, .017)
         self.ball('Nose', pos, (.035, .029, .023), self.ink, control)
@@ -177,19 +263,24 @@ class Character:
         for side in (-1, 1):
             points = [face_point(surface, side * x, z, .013) for x, z in (
                 (0, nose_z - .059), (.039, nose_z - .081), (.077, nose_z - .055))]
-            self.curve('Smile.' + str(side), points, .009, self.ink, control)
+            smile = self.curve('Smile.' + str(side), points, .011, self.ink, control)
+            smile.shape_key_add(name='Basis')
+            happy = smile.shape_key_add(name='Happy')
+            for v in happy.data:
+                v.co.z += .036 * min(1, abs(v.co.x) / .077) ** 2
+            self.expressions.append(smile)
 
     def build(self):
         if self.mouse:
-            self.ball('Body · low bean', (0, .35, .43), (.49, .79, .36), self.coat, 'Body',
+            self.ball('Body · low bean', (0, .30, .43), (.51, .73, .37), self.coat, 'Body',
                       lambda p: blend(GREEN, CREAM, (1 - smoothstep(.23, .36, p.z)) * .96))
-            head = self.ball('Head · round cheeks', (0, -.40, .535), (.57, .46, .455), self.coat, 'Head',
+            head = self.ball('Head · round cheeks', (0, -.40, .535), (.59, .49, .465), self.coat, 'Head',
                              lambda p: face_color(p, True))
             for side, label in ((-1, 'L'), (1, 'R')):
                 base = (side * .28, -.31, .89)
-                tip = (side * (.56 if side < 0 else .65), -.20, 1.57 if side < 0 else 1.40)
+                tip = (side * (.55 if side < 0 else .68), -.26 if side < 0 else -.37, 1.55 if side < 0 else 1.35)
                 self.spec('Ear.' + label, base, 'Head')
-                self.foliage('Leaf ear.' + label, base, tip, .205, 'Ear.' + label, .065)
+                self.foliage('Leaf ear.' + label, base, tip, .226, 'Ear.' + label, .098)
                 for y, suffix in ((-.39, 'front'), (.65, 'back')):
                     name = 'Foot.' + label + '.' + suffix
                     center = Vector((side * .32, y, .105))
@@ -204,22 +295,12 @@ class Character:
                        (.96, .65), (1.20, .58), (1.39, .47), (1.51, .28), (1.54, .06)]
             head = self.part(profile_mesh('Body · rounded acorn', profile, .77, self.bucket, self.coat), 'Body')
             paint(head, face_color)
-            cap_mat = material('Cap · warm chestnut', linear('96643B'), .88, .04)
-            nodes = cap_mat.node_tree.nodes
-            noise = nodes.new('ShaderNodeTexVoronoi')
-            noise.inputs['Scale'].default_value = 13
-            bump = nodes.new('ShaderNodeBump')
-            bump.inputs['Strength'].default_value = .24
-            bump.inputs['Distance'].default_value = .028
-            cap_mat.node_tree.links.new(noise.outputs['Distance'], bump.inputs['Height'])
-            cap_mat.node_tree.links.new(bump.outputs['Normal'], nodes.get('Principled BSDF').inputs['Normal'])
+            cap_mat = material('Cap · warm chestnut', linear('A47449'), .80, .12)
             self.spec('Cap', (0, 0, 1.30), 'Body')
-            cap_profile = [(1.27, .59), (1.28, .69), (1.33, .725), (1.43, .71),
-                           (1.57, .60), (1.69, .43), (1.75, .22), (1.76, .025)]
-            self.part(profile_mesh('Cap · single shell', cap_profile, .80, self.bucket, cap_mat), 'Cap')
-            self.curve('Stem', [(0, .015, 1.68), (-.022, .018, 1.85), (-.075, .018, 2.00)], .052, cap_mat, 'Cap')
+            self.cap(cap_mat)
+            self.curve('Stem', [(0, .015, 1.68), (-.018, .018, 1.84), (-.088, .018, 1.94)], .050, cap_mat, 'Cap')
             self.spec('Leaf', (.01, .02, 1.80), 'Cap')
-            self.foliage('Off-center leaf', (.01, .02, 1.80), (.61, .04, 2.12), .211, 'Leaf')
+            self.foliage('Off-center leaf', (.01, .02, 1.80), (.61, -.02, 2.06), .232, 'Leaf', .083)
             for side, label in ((-1, 'L'), (1, 'R')):
                 name = 'Foot.' + label
                 center = Vector((side * .30, -.13, .104))
@@ -240,6 +321,20 @@ class Character:
             self.feet = {name: proportion @ pivot for name, pivot in self.feet.items()}
             self.body_pivot = proportion @ self.body_pivot
         self.rig = self.make_rig()
+        # Expressions belong to the same Action as the body. Changing an Action
+        # in Blender automatically changes every eye/lid/smile and its material.
+        for name in ('Blink', 'Happy'):
+            self.rig[name] = 0.
+            self.rig.id_properties_ui(name).update(min=0., max=1., description=name + ' facial expression')
+        for obj in self.expressions:
+            for key in list(obj.data.shape_keys.key_blocks)[1:]:
+                driver = key.driver_add('value').driver
+                variable = driver.variables.new()
+                variable.name = 'expression'
+                variable.type = 'SINGLE_PROP'
+                variable.targets[0].id = self.rig
+                variable.targets[0].data_path = f'["{key.name}"]'
+                driver.expression = 'expression'
 
     def make_rig(self):
         data = bpy.data.armatures.new(NAMES[self.candidate] + ' · control skeleton')
@@ -262,7 +357,7 @@ class Character:
             obj.vertex_groups.new(name=bone).add(list(range(len(obj.data.vertices))), 1, 'REPLACE')
             modifier = obj.modifiers.new('Editable character rig', 'ARMATURE')
             modifier.object = rig
-        rig['notes'] = '24-frame authored dash/hop; Stage cancels travel only for sprite export. Eye Blink shape keys remain editable.'
+        rig['notes'] = 'Finite idle, dash/hop, pet, settle and sleep Actions. Stage cancels travel only for sprite export. Blink and Happy shape keys stay editable.'
         return rig
 
 
@@ -313,7 +408,7 @@ def motion(character, index, axis, direction=1):
     yaw = 0.
     if mouse:
         heading = math.atan2(axis.x * direction, -axis.y * direction) * .62
-        yaw = heading * smooth((index - 4) / 2) * (1 - smooth((index - 13) / 3))
+        yaw = heading * smooth((index - 4) / 4) * (1 - smooth((index - 13) / 3))
     turn = around((0, .30, 0), rotation('Z', yaw)) if mouse else Matrix.Identity(4)
     body = root @ turn @ translation((0, 0, lift)) @ around(character.body_pivot, lean @ scale)
     deforms = {'Stage': Matrix.Identity(4), 'Root': root, 'Body': body}
@@ -327,13 +422,17 @@ def motion(character, index, axis, direction=1):
             continue
         amount = math.sin((index - 4) * .56) * envelope
         if name.startswith('Ear'):
-            deform = head @ around(pivot, rotation('X', .23 * envelope + .10 * amount))
+            delay = .65 if name.endswith('.R') else 0
+            flutter = math.sin((index - 5) * .62 - delay) * envelope
+            deform = head @ around(pivot, rotation('X', .23 * envelope + .16 * flutter)
+                                   @ rotation('Y', .07 * flutter))
         elif name == 'Tail':
             deform = body @ around(pivot, rotation('X', -.25 * envelope) @ rotation('Z', .14 * amount))
         elif name == 'Cap':
-            deform = body @ around(pivot, Matrix.Rotation(-direction * .08 * amount, 4, lean_axis))
+            deform = body @ around(pivot, Matrix.Rotation(-direction * .11 * amount, 4, lean_axis))
         elif name == 'Leaf':
-            deform = deforms['Cap'] @ around(pivot, rotation('Y', -.24 * amount))
+            lag = math.sin((index - 6) * .56) * envelope
+            deform = deforms['Cap'] @ around(pivot, rotation('Y', -.29 * lag))
         else:
             side = -1 if name.endswith('.L') else 1
             deform = body @ around(pivot, rotation('Y', side * .28 * envelope))
@@ -350,7 +449,90 @@ def motion(character, index, axis, direction=1):
         contacts[name] = {'planted': not airborne, 'world': list(marker)}
     matrices = {name: deform @ character.rig.data.bones[name].matrix_local for name, deform in deforms.items()}
     blink = .94 * pulse(index, 1, 3, 5) + .65 * pulse(index, 16, 17, 19)
-    return matrices, contacts, shift, blink
+    return matrices, contacts, shift, {'Blink': blink, 'Happy': 0.}
+
+
+def stationary_motion(character, clip, index):
+    """Distinct personalities, with matched pet/settle endpoints and fixed feet.
+
+    Quiet means a static image after a finite gesture; these are not perpetual
+    idle loops. Sleep is an intentionally authored held pose, not a rest alias.
+    """
+    mouse = character.mouse
+    t = index / max(1, COUNTS[clip] - 1)
+    affection = 0.
+    flourish = glance = blink = sleeping = stretch = nod = 0.
+    breath = math.sin(math.pi * t) ** 2
+    if clip == 'idle':
+        glance = pulse(index, 3, 14, 36)
+        blink = pulse(index, 21, 23, 26)
+    elif clip == 'pet':
+        affection = smooth(t / .30)
+        flourish = math.sin(4 * math.pi * t) * math.sin(math.pi * t) ** 2
+    elif clip == 'settle':
+        affection = 1 - smooth(t)
+    elif clip == 'sleep':
+        sleeping, blink = 1., 1.
+    elif clip == 'fallAsleep':
+        # A failed attempt to stay awake, then the cap/ears gently fold down.
+        sleeping = smooth((index - 6) / 23)
+        blink = max(.72 * pulse(index, 1, 5, 9), smooth((index - 9) / 13))
+        nod = pulse(index, 2, 7, 14)
+    elif clip == 'wakeUp':
+        # Begin at the exact held sleep pose. Open the eyes, stretch, then
+        # recover to the shared ready pose without moving the planted feet.
+        sleeping = 1 - smooth((index - 2) / 18)
+        blink = max(1 - smooth((index - 4) / 7), .7 * pulse(index, 16, 18, 21))
+        stretch = pulse(index, 5, 12, 21)
+        flourish = .22 * math.sin(index * .7) * pulse(index, 8, 15, 23)
+    squash = .042 * affection + .115 * sleeping - .09 * stretch + (.012 * breath if clip == 'idle' else 0.)
+    body_roll = (-.028 if mouse else -.055) * affection + (.025 if mouse else .075) * flourish
+    body_roll += (.012 if mouse else .052) * glance + (.018 if mouse else .045) * nod
+    scale = Matrix.Diagonal((1 + squash * .38, 1 + squash * .38, 1 - squash, 1))
+    body = around(character.body_pivot, rotation('Y', body_roll) @ scale)
+    deforms = {'Stage': Matrix.Identity(4), 'Root': Matrix.Identity(4), 'Body': body}
+    if mouse:
+        head = body @ around(character.head_pivot,
+                            rotation('Y', -.115 * affection + .10 * glance + .09 * sleeping)
+                            @ rotation('Z', -.105 * glance)
+                            @ rotation('X', -.07 * affection + .12 * sleeping + .075 * nod - .045 * stretch))
+        deforms['Head'] = head
+    else:
+        head = body
+    for name, pivot, parent in character.specs:
+        if name in deforms or name in character.feet:
+            continue
+        side = -1 if name.endswith('.L') else 1
+        if name.startswith('Ear'):
+            twitch = .16 * pulse(index, 7 if side < 0 else 11, 9 if side < 0 else 14, 14 if side < 0 else 20) if clip == 'idle' else 0.
+            if clip == 'wakeUp':
+                twitch = -.16 * pulse(index, 9 if side < 0 else 12, 13 if side < 0 else 16, 21 if side < 0 else 23)
+            deform = head @ around(pivot, rotation('X', .20 * affection + .08 * side * flourish + .45 * sleeping + twitch)
+                                   @ rotation('Y', side * (.10 * affection + .44 * sleeping)))
+        elif name == 'Tail':
+            deform = body @ around(pivot, rotation('Z', .32 * flourish + .10 * glance)
+                                   @ rotation('X', .12 * affection - .43 * sleeping))
+        elif name == 'Cap':
+            deform = body @ around(pivot, rotation('X', .035 * affection + .15 * sleeping + .055 * nod - .045 * stretch)
+                                   @ rotation('Y', -.065 * flourish - .025 * glance))
+        elif name == 'Leaf':
+            deform = deforms['Cap'] @ around(pivot, rotation('Y', -.12 * affection + .16 * flourish - .18 * sleeping + .10 * glance))
+        else:
+            deform = body @ around(pivot, rotation('Y', -side * (1.12 * affection + .32 * flourish - .14 * sleeping))
+                                   @ rotation('X', -.18 * affection))
+        deforms[name] = deform
+    contacts = {}
+    for name, center in character.feet.items():
+        deforms[name] = Matrix.Identity(4)
+        contacts[name] = {'planted': True, 'world': [center.x, center.y, 0.]}
+    matrices = {name: deform @ character.rig.data.bones[name].matrix_local for name, deform in deforms.items()}
+    return matrices, contacts, Vector((0, 0, 0)), {'Blink': blink, 'Happy': affection}
+
+
+def evaluate(character, clip, index, axis):
+    if clip.startswith('walk'):
+        return motion(character, index, axis, 1 if clip == 'walkRight' else -1)
+    return stationary_motion(character, clip, index)
 
 
 def stage(character, args):
@@ -364,7 +546,7 @@ def stage(character, args):
     area('Fill', (4, -2, 3.5), 95, 3.5, studio, (.88, .94, 1))
     area('Rim', (1, 4, 4.5), 190, 3., studio, (1, .94, .80))
     target = (0, .32, .98) if character.mouse else (0, 0, 1.32)
-    scale = args.camera_scale or (2.80 if character.mouse else 3.00)
+    scale = args.camera_scale or (2.86 if character.mouse else 3.00)
     hero_location = (7.5, -10, 3.15) if character.mouse else (3.0, -10, 3.1)
     cameras = {
         'hero': camera('Camera · runtime', hero_location, studio, target, scale),
@@ -418,7 +600,7 @@ def stage(character, args):
     scene.frame_start, scene.frame_end = 1, COUNT
     scene.render.filepath = '//runtime/'
     scene['candidate'] = character.candidate
-    scene['proof_status'] = 'Prototype for likeness and movement review; not the shipping pet or a complete action library.'
+    scene['proof_status'] = 'Refinement v02: real idle, locomotion, pet, settle and sleeping pose. Review-only; shipping pet unchanged.'
     scene['review_canvas_points'] = REVIEW_POINTS
     bpy.context.view_layer.update()
     return cameras
@@ -490,30 +672,31 @@ def build(args):
     output.mkdir(parents=True, exist_ok=True)
     bpy.context.view_layer.update()
     actions, contact_clips = {}, {}
-    for clip, direction in (('walkRight', 1), ('walkLeft', -1)):
-        action = new_action(rig, NAMES[candidate] + ' · ' + ('dash' if character.mouse else 'hop') + (' right' if direction == 1 else ' left'))
-        action['clip_id'], action['duration_seconds'] = clip, COUNT / FPS
+    for clip, count in COUNTS.items():
+        action = new_action(rig, NAMES[candidate] + ' · ' + clip)
+        action['clip_id'], action['duration_seconds'] = clip, count / FPS
+        action['starts_at'], action['ends_at'] = BOUNDARIES[clip]
         frames = []
-        for index in range(COUNT):
+        for index in range(count):
             scene.frame_set(index + 1)
-            matrices, contacts, shift, blink = motion(character, index, axis, direction)
+            matrices, contacts, shift, expression = evaluate(character, clip, index, axis)
             apply_pose(rig, matrices)
             for bone in rig.pose.bones:
                 if bone.name != 'Stage':
                     for channel in ('location', 'rotation_quaternion', 'scale'):
                         bone.keyframe_insert(channel, frame=index + 1, group=bone.name)
-            frames.append({'index': index, 'rootWorld': list(shift), 'feet': contacts})
-            if clip == 'walkRight':
-                for eye in character.eyes:
-                    key = eye.data.shape_keys.key_blocks['Blink']
-                    key.value = blink
-                    key.keyframe_insert('value', frame=index + 1)
+            frame = {'index': index, 'rootWorld': list(shift), 'feet': contacts, 'expression': expression}
+            if index in (0, count - 1):
+                frame['inPlacePose'] = {name: [value for row in (translation(-shift) @ matrix) for value in row]
+                                        for name, matrix in matrices.items() if name != 'Stage'}
+            frames.append(frame)
+            for name, value in expression.items():
+                # Clamp endpoints may be Python ints. Keep a float property so
+                # Blender does not flag this F-curve as discrete/rounded.
+                rig[name] = float(value)
+                rig.keyframe_insert(data_path=f'["{name}"]', frame=index + 1, group='Face')
         linear_keys(action)
         actions[clip], contact_clips[clip] = action, frames
-    for eye in character.eyes:
-        action = eye.data.shape_keys.animation_data.action
-        action.name = eye.name + ' · anticipation and landing blink'
-        linear_keys(action)
     for frame, name in ((1, 'Ready'), (4, 'Anticipation'), (8, 'Launch'), (15, 'Landing'), (18, 'Squash'), (24, 'Settle')):
         scene.timeline_markers.new(name, frame=frame)
 
@@ -528,13 +711,36 @@ def build(args):
             bone.matrix_basis = bone.bone.matrix_local.inverted() @ translation(-shift) @ bone.bone.matrix_local
         bpy.context.view_layer.update()
 
+    # Verify fractional expressions before paying for any renders. A custom
+    # property's accidental integer F-curve would otherwise make blinks snap.
+    for clip, samples in contact_clips.items():
+        for index, sample in enumerate(samples):
+            select(clip, index, True)
+            for obj in character.expressions:
+                for key in list(obj.data.shape_keys.key_blocks)[1:]:
+                    if abs(key.value - sample['expression'][key.name]) > 1e-5:
+                        raise RuntimeError(f'Facial preflight failed: {clip}/{index} {obj.name}/{key.name}')
+
+    # Every entrance and exit must match its canonical pose AND expression.
+    # This verifies the full transition graph before the expensive render pass.
+    canonical = {'ready': contact_clips['idle'][0], 'happy': contact_clips['pet'][-1],
+                 'asleep': contact_clips['sleep'][0]}
+    for clip, states in BOUNDARIES.items():
+        for index, state in zip((0, -1), states):
+            sample, expected = contact_clips[clip][index], canonical[state]
+            error = max(abs(a - b) for name in expected['inPlacePose']
+                        for a, b in zip(sample['inPlacePose'][name], expected['inPlacePose'][name]))
+            if error > 2e-5 or any(abs(sample['expression'][key] - value) > 1e-6
+                                  for key, value in expected['expression'].items()):
+                raise RuntimeError(f'Transition preflight failed: {clip}/{index} → {state}')
+
     select('walkRight', 0)
     # A separate inspection Action lets Space play the editable pose without
     # leaving the close camera. The two export Actions retain true world travel.
     inspection = new_action(rig, NAMES[candidate] + ' · IN-PLACE INSPECTION')
     for index in range(COUNT):
         scene.frame_set(index + 1)
-        matrices, _, shift, _ = motion(character, index, axis)
+        matrices, _, shift, expression = motion(character, index, axis)
         for name in matrices:
             if name != 'Stage':
                 matrices[name] = translation(-shift) @ matrices[name]
@@ -543,6 +749,9 @@ def build(args):
             if bone.name != 'Stage':
                 for channel in ('location', 'rotation_quaternion', 'scale'):
                     bone.keyframe_insert(channel, frame=index + 1, group=bone.name)
+        for name, value in expression.items():
+            rig[name] = float(value)
+            rig.keyframe_insert(data_path=f'["{name}"]', frame=index + 1, group='Face')
     linear_keys(inspection)
     scene.frame_set(1)
     bpy.context.view_layer.update()
@@ -551,10 +760,25 @@ def build(args):
         for region in screen.areas:
             if region.type == 'VIEW_3D':
                 region.spaces.active.region_3d.view_perspective = 'CAMERA'
+                region.spaces.active.shading.type = 'MATERIAL'
+                region.spaces.active.shading.use_scene_lights = True
+                region.spaces.active.shading.use_scene_world = True
     bpy.ops.object.select_all(action='DESELECT')
     rig.select_set(True)
     bpy.context.view_layer.objects.active = rig
     scene.render.filepath = '//runtime/'
+    notes = bpy.data.texts.new('START HERE · editable actions')
+    notes.write('Transitions v03 · ' + NAMES[candidate] + '\n\n'
+                'Space plays the default in-place 24-frame movement inspection.\n'
+                'Each named Action includes its face: change only the rig Action to inspect another gesture.\n'
+                'Rig custom properties Blink and Happy drive editable eye, eyelid and smile shape keys.\n'
+                'Frame ranges: idle 1–42; walkRight/Left 1–24; pet 1–30; settle 1–18; fallAsleep 1–30; wakeUp 1–24; sleep 1.\n'
+                'Pet ends in affection; settle begins in the identical pose and returns to rest.\n'
+                'FallAsleep connects ready to the held sleep pose. WakeUp connects sleep back to ready.\n'
+                'Every Action carries starts_at / ends_at state metadata; both geometry and expression endpoints match.\n'
+                'Finish an airborne action before changing states. Route happy through settle and sleep through wakeUp.\n'
+                'Travel Actions move in world space. Stage remains unkeyed and cancels root movement only during export.\n'
+                'No external images, groom, generated mesh, or add-on dependencies.\n')
     bpy.ops.wm.save_as_mainfile(filepath=str(output / (candidate + '.blend')), compress=True)
     select('walkRight', 0)
 
@@ -576,6 +800,9 @@ def build(args):
         for index, label in ((4, 'anticipation'), (9, 'airborne'), (17, 'landing')):
             select('walkRight', index, True)
             render(review / (label + '.png'), args.resolution)
+        for clip, index in (('idle', 14), ('pet', 15), ('sleep', 0), ('fallAsleep', 15), ('wakeUp', 12)):
+            select(clip, index, True)
+            render(review / (clip + '.png'), args.resolution)
         select('walkRight', 0)
 
     if args.mode in ('export', 'all'):
@@ -583,9 +810,9 @@ def build(args):
         select('walkRight', 0)
         render(runtime / 'rest.png', PIXELS)
         manifests = {}
-        for clip in ('walkRight', 'walkLeft'):
+        for clip, count in COUNTS.items():
             frames = []
-            for index in range(COUNT):
+            for index in range(count):
                 select(clip, index, True)
                 # Measure the evaluated authored rig, not only its motion
                 # function, so missed keys/parent transforms cannot self-certify.
@@ -596,29 +823,30 @@ def build(args):
                     contact_clips[clip][index]['feet'][name]['evaluatedWorld'] = list(marker + shift)
                     p = world_to_camera_view(scene, runtime_camera, marker)
                     contact_clips[clip][index]['feet'][name]['canvasPixels'] = [p.x * PIXELS, p.y * PIXELS]
-                file = f'clips/{clip}/{index:04d}.png'
+                contact_clips[clip][index]['evaluatedExpressions'] = {
+                    obj.name: {key.name: key.value for key in list(obj.data.shape_keys.key_blocks)[1:]}
+                    for obj in character.expressions}
+                file = 'sleep.png' if clip == 'sleep' else f'clips/{clip}/{index:04d}.png'
                 render(runtime / file, PIXELS)
                 root = Vector(contact_clips[clip][index]['rootWorld'])
                 frames.append({'file': file, 'rootOffsetPoints': {'x': root.dot(axis) * POINTS / runtime_camera.data.ortho_scale, 'y': 0.}})
-            manifests[clip] = {'frames': frames}
-        # The review invokes only locomotion. Static aliases satisfy the current
-        # app manifest contract, and are explicitly not additional animations.
-        for clip in ('idle', 'pet', 'settle'):
-            manifests[clip] = {'frames': [{'file': 'rest.png', 'rootOffsetPoints': {'x': 0., 'y': 0.}}]}
+            if clip != 'sleep':
+                manifests[clip] = {'frames': frames}
         ground = world_to_camera_view(scene, runtime_camera, Vector((0, 0, 0)))
-        manifest = {'schemaVersion': 1, 'canvasPixels': {'width': PIXELS, 'height': PIXELS},
+        manifest = {'schemaVersion': 2, 'canvasPixels': {'width': PIXELS, 'height': PIXELS},
                     'displaySizePoints': {'width': POINTS, 'height': POINTS}, 'framesPerSecond': FPS,
                     'groundAnchorPixels': {'x': ground.x * PIXELS, 'y': ground.y * PIXELS},
-                    'restFrame': 'rest.png', 'sleepFrame': 'rest.png', 'clips': manifests}
+                    'restFrame': 'rest.png', 'sleepFrame': 'sleep.png', 'clips': manifests}
         json_file(runtime / 'manifest.json', manifest)
         json_file(output / 'motion.json', {'schemaVersion': 1, 'framesPerSecond': FPS, 'worldGroundZ': 0.,
                   'sourceCanvasPoints': POINTS, 'reviewCanvasPoints': REVIEW_POINTS,
+                  'boundaries': BOUNDARIES,
                   'cameraScale': runtime_camera.data.ortho_scale, 'travelAxis': list(axis), 'clips': contact_clips})
     select('walkRight', 0)
     evidence = {'candidate': candidate, 'blenderVersion': bpy.app.version_string,
                 'meshObjects': len(character.parts), 'controlBones': len(character.specs),
                 'vertices': sum(len(obj.data.vertices) for obj, _ in character.parts),
-                'framesPerClip': COUNT, 'framesPerSecond': FPS, 'reviewCanvasPoints': REVIEW_POINTS,
+                'revision': 'transitions-v03', 'framesPerClip': COUNTS, 'framesPerSecond': FPS, 'reviewCanvasPoints': REVIEW_POINTS,
                 'runtimeCameraScale': runtime_camera.data.ortho_scale,
                 'travelAtReviewSizePoints': TRAVEL[candidate] * REVIEW_POINTS / runtime_camera.data.ortho_scale,
                 'externalTextures': 0, 'hairObjects': 0,
@@ -633,8 +861,8 @@ def build(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--candidate', choices=NAMES, required=True)
-    parser.add_argument('--output', default=str(ROOT / 'art/candidates/proof-v01'))
-    parser.add_argument('--review', default=str(ROOT / '.build/candidate-review'))
+    parser.add_argument('--output', default=str(ROOT / 'art/candidates/transitions-v03'))
+    parser.add_argument('--review', default=str(ROOT / '.build/candidate-transitions'))
     parser.add_argument('--mode', choices=('preview', 'export', 'all'), default='all')
     parser.add_argument('--views', default='hero,front,side,back')
     parser.add_argument('--resolution', type=int, default=768)

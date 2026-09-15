@@ -40,6 +40,7 @@ jobs:
       - name: Validator regression tests
         run: |
           python3 -m unittest discover -s tools/CharacterSampleValidation -p 'test_*.py'
+          python3 -m unittest discover -s tools/CandidateReview -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/EverydayServicesValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseNotes -p 'test_*.py'
@@ -57,6 +58,8 @@ jobs:
           mkdir -p .build
           python3 tools/CharacterSampleValidation/validate_assets.py Sources/Spriglet/Resources/SproutSample/manifest.json --contacts art/sprout/sample-v01/contact-samples.json --output .build/ci-assets.json
           python3 tools/CandidateReview/verify_assets.py --output .build/ci-candidate-assets.json
+      - name: App icon artwork and catalog
+        run: python3 art/app-icon/verify_icon.py
       - name: Debug and Release builds
         run: |
           for configuration in Debug Release; do

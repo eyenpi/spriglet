@@ -14,7 +14,10 @@ public struct SampleSize: Codable, Equatable, Sendable {
 }
 
 public enum SampleClipID: String, CaseIterable, Codable, Sendable {
-    case idle, walkRight, walkLeft, pet, settle
+    case idle, walkRight, walkLeft, pet, settle, fallAsleep, wakeUp
+
+    /// Version one remains the exact five-clip shipping Sprout format.
+    public static let versionOneCases: [Self] = [.idle, .walkRight, .walkLeft, .pet, .settle]
 }
 
 /// Local, versioned metadata for the bundled Blender renders. Paths are relative
@@ -42,6 +45,8 @@ public struct SproutSampleManifest: Codable, Sendable {
     public let sleepFrame: String
     public let clips: [String: Clip]
 
+    public var supportsAnimatedSleep: Bool { schemaVersion == 2 }
+
     public init(schemaVersion: Int, canvasPixels: SampleSize, displaySizePoints: SampleSize,
                 framesPerSecond: Double, groundAnchorPixels: SamplePoint,
                 restFrame: String, sleepFrame: String, clips: [String: Clip]) {
@@ -63,7 +68,10 @@ public struct SproutSampleManifest: Codable, Sendable {
     }
 
     public func validate() throws {
-        guard schemaVersion == 1 else { throw SampleManifestError.invalid("Unsupported character sample version.") }
+        guard schemaVersion == 1 || schemaVersion == 2 else {
+            throw SampleManifestError.invalid("Unsupported character sample version.")
+        }
+        let requiredClips = schemaVersion == 1 ? SampleClipID.versionOneCases : SampleClipID.allCases
         guard canvasPixels.width.isFinite, canvasPixels.height.isFinite,
               (64...2_048).contains(canvasPixels.width), (64...2_048).contains(canvasPixels.height),
               canvasPixels.width.rounded() == canvasPixels.width,
@@ -77,11 +85,11 @@ public struct SproutSampleManifest: Codable, Sendable {
               (0...canvasPixels.width).contains(groundAnchorPixels.x),
               (0...canvasPixels.height).contains(groundAnchorPixels.y),
               Self.isSafePNGPath(restFrame), Self.isSafePNGPath(sleepFrame),
-              clips.count == SampleClipID.allCases.count else {
+              clips.count == requiredClips.count else {
             throw SampleManifestError.invalid("Invalid character anchor, frame path, or clip list.")
         }
         var total = 0
-        for id in SampleClipID.allCases {
+        for id in requiredClips {
             guard let clip = clips[id.rawValue], (1...600).contains(clip.frames.count),
                   clip.frames.first?.rootOffsetPoints == .zero else {
                 throw SampleManifestError.invalid("Missing or invalid \(id.rawValue) clip.")

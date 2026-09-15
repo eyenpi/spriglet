@@ -173,6 +173,21 @@ final class PetRenderView: NSView {
 
     func play() { play(.react) }
 
+    /// State-aware playback for candidate assets. The current gesture reaches
+    /// its authored landing/settle, then only the latest pending intent runs.
+    /// Unlike the explicit reset/replay helpers, this never resets the pose.
+    @discardableResult
+    func transition(to intent: SampleTransitionIntent) -> Bool {
+        guard canAcceptPlayback else { return false }
+        let request = Request(clips: [], action: nil, transitionIntent: intent)
+        if isAnimating, timeline != nil {
+            guard queuedRequest?.transitionIntent != intent else { return false }
+            queuedRequest = request
+            return true
+        }
+        return begin(request)
+    }
+
     /// One pending request, replaced by the latest interaction. The current
     /// finite request reaches its resting boundary before that request begins.
     /// True means this request began or replaced the pending request; it does
@@ -280,8 +295,15 @@ final class PetRenderView: NSView {
     }
 
     @discardableResult
-    private func begin(_ request: Request) -> Bool {
+    private func begin(_ proposed: Request) -> Bool {
         guard canAcceptPlayback, let playbackManifest, assetError == nil else { return false }
+        var request = proposed
+        if let intent = request.transitionIntent {
+            let plan = SampleTransitionPlan(to: intent, isSleeping: isSleeping,
+                                            animatedSleep: playbackManifest.supportsAnimatedSleep)
+            request.clips = plan.clips
+            request.sleepsAtEnd = plan.sleepsAtEnd
+        }
         if request.clips.isEmpty {
             generation &+= 1
             let requestGeneration = generation
@@ -572,12 +594,13 @@ final class PetRenderView: NSView {
     }
 
     private struct Request {
-        let clips: [SampleClipID]
+        var clips: [SampleClipID]
         let action: PetAction?
         var sleepsAtEnd = false
         var routine: PetRoutine?
         var direction: SampleClipID = .walkLeft
         var stationary = false
+        var transitionIntent: SampleTransitionIntent?
     }
 }
 

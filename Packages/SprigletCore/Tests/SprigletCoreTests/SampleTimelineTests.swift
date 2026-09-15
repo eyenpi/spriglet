@@ -5,19 +5,21 @@ import Testing
 private func sampleManifest(
     clips: [String: SproutSampleManifest.Clip]? = nil,
     framesPerSecond: Double = 30,
-    restFrame: String = "rest.png"
+    restFrame: String = "rest.png",
+    schemaVersion: Int = 1
 ) -> SproutSampleManifest {
     let movements: [SampleClipID: [Double]] = [
         .idle: [0, 0], .walkRight: [0, 10, 24], .walkLeft: [0, -10, -24],
-        .pet: [0, 0], .settle: [0, 0]
+        .pet: [0, 0], .settle: [0, 0], .fallAsleep: [0, 0], .wakeUp: [0, 0]
     ]
-    let defaultClips = Dictionary(uniqueKeysWithValues: SampleClipID.allCases.map { id in
+    let ids = schemaVersion == 1 ? SampleClipID.versionOneCases : SampleClipID.allCases
+    let defaultClips = Dictionary(uniqueKeysWithValues: ids.map { id in
         (id.rawValue, SproutSampleManifest.Clip(frames: movements[id]!.enumerated().map { index, x in
             .init(file: "frames/\(id.rawValue)-\(index).png", rootOffsetPoints: .init(x: x, y: 0))
         }))
     })
     return SproutSampleManifest(
-        schemaVersion: 1, canvasPixels: .init(width: 448, height: 448),
+        schemaVersion: schemaVersion, canvasPixels: .init(width: 448, height: 448),
         displaySizePoints: .init(width: 224, height: 224), framesPerSecond: framesPerSecond,
         groundAnchorPixels: .init(x: 224, y: 32), restFrame: restFrame, sleepFrame: "sleep.png",
         clips: clips ?? defaultClips
@@ -188,7 +190,39 @@ struct SampleManifestTests {
         var clips = sampleManifest().clips
         clips["idle"] = .init(frames: Array(repeating: frame, count: 601))
         #expect(throws: SampleManifestError.self) { try sampleManifest(clips: clips).validate() }
-        for id in SampleClipID.allCases { clips[id.rawValue] = .init(frames: Array(repeating: frame, count: 301)) }
+        for id in SampleClipID.versionOneCases { clips[id.rawValue] = .init(frames: Array(repeating: frame, count: 301)) }
         #expect(throws: SampleManifestError.self) { try sampleManifest(clips: clips).validate() }
+    }
+
+    @Test("Both manifest versions round-trip with their exact clip inventories", arguments: [1, 2])
+    func versions(version: Int) throws {
+        let decoded = try SproutSampleManifest.decode(JSONEncoder().encode(sampleManifest(schemaVersion: version)))
+        #expect(decoded.supportsAnimatedSleep == (version == 2))
+        #expect(decoded.clips.count == (version == 2 ? 7 : 5))
+    }
+
+    @Test("A transition manifest cannot omit either side of sleep", arguments: ["fallAsleep", "wakeUp"])
+    func missingTransition(clip: String) {
+        var clips = sampleManifest(schemaVersion: 2).clips
+        clips.removeValue(forKey: clip)
+        #expect(throws: SampleManifestError.self) { try sampleManifest(clips: clips, schemaVersion: 2).validate() }
+        clips["unknown"] = .init(frames: [.init(file: "rest.png", rootOffsetPoints: .zero)])
+        #expect(throws: SampleManifestError.self) { try sampleManifest(clips: clips, schemaVersion: 2).validate() }
+    }
+
+    @Test("Version one does not silently accept version two or unknown clips")
+    func exactVersionInventory() {
+        #expect(throws: SampleManifestError.self) {
+            try sampleManifest(clips: sampleManifest(schemaVersion: 2).clips).validate()
+        }
+        #expect(throws: SampleManifestError.self) { try sampleManifest(schemaVersion: 3).validate() }
+    }
+
+    @Test("Movement remains accumulated through sleep and wake boundaries")
+    func sleepMovementTimeline() throws {
+        let timeline = try SampleTimeline(manifest: sampleManifest(schemaVersion: 2),
+                                          clips: [.walkRight, .fallAsleep, .wakeUp, .walkLeft])
+        for index in 3..<7 { #expect(timeline.snapshot(atFrame: index).rootOffsetPoints.x == 24) }
+        #expect(timeline.snapshot(at: timeline.duration).rootOffsetPoints == .zero)
     }
 }
