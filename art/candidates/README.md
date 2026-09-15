@@ -12,8 +12,10 @@ Both have softer colors, larger eyes, friendlier brows, matte closed-eye creases
 happy smiles, and delayed secondary motion. V03 retains the V02 models and adds
 authored sleep/wake transitions and state-aware playback. It covers transitions
 among the current ready, curious, moving, happy and sleeping experiences, not
-every possible gesture or a claim of a pixel-perfect concept match. The shipping
-Sprout artwork, desktop behavior and preferences are unchanged.
+every possible gesture or a claim of a pixel-perfect concept match. Current `main`
+ships Acorn Hopper alone using a [96-point normalized export](../../tools/CharacterAssets/README.md).
+Moss Mouse remains future source material. There is no character picker; existing
+saved names and settings are preserved.
 
 ## Animation library
 
@@ -52,7 +54,7 @@ gesture settles it without another idle animation. No per-frame blending or
 crossfading is used, and no claim is made of instantaneous mid-air interruption.
 
 The new manifest schema 2 requires all seven finite clips. Schema 1 still accepts
-exactly the five shipping clips. `SampleTransitionPlan` has an explicit legacy
+exactly the five original Sprout clips. `SampleTransitionPlan` has an explicit legacy
 fallback that never requests missing sleep/wake assets.
 
 ## Native review
@@ -65,8 +67,9 @@ open tools/CandidateReview/.build/CandidateReview.app
 ```
 
 The separate app uses the shipping `PetRenderView` with an additive state-aware
-`transition(to:)` entry point, and the unchanged `SampleImageDecoder`. Existing
-shipping replay/action methods retain their behavior. Enlarged animated views
+`transition(to:)` entry point, and the unchanged `SampleImageDecoder`. Production
+actions now use the same authored transition boundaries; explicit diagnostic
+replay helpers retain cancellation semantics. Enlarged animated views
 show poses in place; light/dark cards below show 96-point canvases with authored
 travel. Controls are **Curious**, **Hop / dash**, **Pet both**, **Nap**,
 **Wake / rest**, and **All states**. Movement alternates direction within the
@@ -95,7 +98,7 @@ modeled into one shell with a rounded lip. Leaves are closed volumes. A bounded
 Cycles catcher supplies contact shadows; denoising preserves raw alpha coverage.
 
 The [builder](scripts/build_candidates.py) imports geometry/action helpers from
-`art/sprout/scripts/` without loading or changing the shipping Sprout scene.
+`art/sprout/scripts/` without loading or changing the historical Sprout scene.
 
 ```sh
 blender --background --factory-startup --python-exit-code 1 \

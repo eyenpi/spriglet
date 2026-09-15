@@ -14,8 +14,16 @@
 		A10000000000000000000006 /* Spriglet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spriglet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A10000000000000000000023 /* Historical character fixture */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (Resources/SproutSample, );
+			target = A10000000000000000000002 /* Spriglet */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A10000000000000000000004 /* Sources/Spriglet */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (Resources/SproutSample, Resources/PetSounds, ); path = Sources/Spriglet; sourceTree = "<group>"; };
+		A10000000000000000000004 /* Sources/Spriglet */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A10000000000000000000023, ); explicitFileTypes = {}; explicitFolders = (Resources/AcornHopper, Resources/SproutSample, Resources/PetSounds, ); path = Sources/Spriglet; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */

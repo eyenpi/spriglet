@@ -205,12 +205,13 @@ enum RuntimeProbe {
 
         let framesBeforeNap = runtime.renderer.submittedFrameCount
         runtime.preview(.fallAsleep)
-        let napPoseSubmitted = runtime.renderer.submittedFrameCount == framesBeforeNap + 1
-        let napEntry = try await measure("fall-asleep", runtime: runtime, seconds: 1)
+        let napEntry = try await measure("fall-asleep", runtime: runtime,
+                                         seconds: max(1, runtime.renderer.actionDuration(.fallAsleep) + 0.75))
         measurements.append(napEntry)
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "fall-asleep") }
-        checks.append(.init(name: "nap-settles-asleep", passed: napPoseSubmitted && napEntry.submittedFrameDelta == 0 && napEntry.displayLinkCallbackDelta == 0 && runtime.renderer.isSleeping && runtime.isSleeping && !runtime.renderer.isAnimating,
-                            detail: "Nap selects one static sleep image and synchronizes runtime state. This sample does not include a separate animated sleep transition."))
+        checks.append(.init(name: "nap-settles-asleep", passed: runtime.renderer.submittedFrameCount > framesBeforeNap
+                            && runtime.renderer.isSleeping && runtime.isSleeping && !runtime.renderer.isAnimating,
+                            detail: "The authored nap entry finishes at the held sleep pose and synchronizes runtime state."))
         let nap = try await measure("static-nap", runtime: runtime, seconds: 1)
         measurements.append(nap)
         checks.append(.init(name: "nap-stops-rendering", passed: nap.submittedFrameDelta == 0 && nap.displayLinkCallbackDelta == 0 && !runtime.hasScheduledBehavior,
@@ -222,7 +223,7 @@ enum RuntimeProbe {
         measurements.append(wake)
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "wake-and-react") }
         checks.append(.init(name: "interaction-wakes-pet", passed: wake.submittedFrameDelta > 0 && !runtime.renderer.isSleeping && !runtime.isSleeping && !runtime.renderer.isAnimating,
-                            detail: "Interaction leaves the static nap pose, plays pet and settle, and finishes awake."))
+                            detail: "Interaction plays the authored wake-up bridge, pet and settle, and finishes awake."))
 
         let queuedWait = max(4, runtime.renderer.actionDuration(.lookAround)
                              + runtime.renderer.actionDuration(.react) + 0.75)

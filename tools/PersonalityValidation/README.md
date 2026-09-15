@@ -1,6 +1,6 @@
 # Native personality integration check
 
-This disposable app uses the production runtime, desktop host, actual Sprout sample, and native display link. The only injected values are short planned-behavior deadlines/intentions and Low Power/Reduce Motion policy booleans, through runtime hooks compiled exclusively with `SPRIGLET_BEHAVIOR_VALIDATION`.
+This disposable app uses the production runtime, desktop host, actual 96-point Acorn Hopper export, and native display link. The only injected values are short planned-behavior deadlines/intentions and Low Power/Reduce Motion policy booleans, through runtime hooks compiled exclusively with `SPRIGLET_BEHAVIOR_VALIDATION`.
 
 Build only, from the repository root:
 

@@ -6,6 +6,12 @@ Please include your macOS version, your Mac model, the Spriglet version and buil
 
 Open **Help & Support…** from the leaf menu or Settings > General to read this same help offline. Use **Read Online** to visit the website.
 
+## Install the preview
+
+Download the DMG or ZIP from [GitHub Releases](https://github.com/eyenpi/spriglet/releases). Open the DMG, drag **Spriglet.app** to **Applications**, eject the disk image, and open the installed app. You do not need Xcode for the download.
+
+The current download is an **unsigned preview** with an ad hoc signature and no Apple notarization. macOS Gatekeeper may block it; it is not yet a signed public release. Release downloads include SHA-256 checksums and a source/version report. Spriglet runs on Apple silicon Macs with macOS 26 or later; the DMG does not run on Windows.
+
 ## Where is Spriglet?
 
 Spriglet lives in the **leaf menu in your menu bar**, without a Dock icon. The first-run Quick Guide introduces the controls. Reopen it using **Quick Guide…** in the leaf menu or **Show Quick Guide** in Settings > General.

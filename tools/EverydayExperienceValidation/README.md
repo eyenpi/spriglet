@@ -1,6 +1,6 @@
 # Native everyday-experience validation
 
-This disposable executable checks the actual native accessibility provider, its exported action handlers, three display sizes, resize cancellation, scaled playback, and isolated preference reconstruction. It compiles the production renderer, desktop, runtime and sound service; it does not compile or invoke login registration.
+This disposable executable checks the actual native accessibility provider, its exported action handlers, Acorn's 72 / 96 / 120-point display sizes, resize cancellation, scaled playback, and isolated preference reconstruction. It also checks held-hop image/root continuity, queued petting after landing, wake requests during nap entry, sleeping primary activation, and wake-before-toy timing. It compiles the production renderer, desktop, runtime and sound service; it does not compile or invoke login registration.
 
 Build only, from the repository root:
 

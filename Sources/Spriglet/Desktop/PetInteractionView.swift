@@ -5,6 +5,7 @@ import AppKit
 final class PetInteractionView: NSView {
     var onUserInteractionChanged: (@MainActor (Bool) -> Void)?
     var onPressed: (@MainActor () -> Void)?
+    var onDragBegan: (@MainActor () -> Void)?
     var onClicked: (@MainActor () -> Void)?
     var onDragged: (@MainActor (NSPoint, NSPoint) -> Void)?
     var onDragEnded: (@MainActor () -> Void)?
@@ -77,6 +78,8 @@ final class PetInteractionView: NSView {
         if !drag.didMove, dx * dx + dy * dy >= 9 {
             drag.didMove = true
             onInputEvent?("dragBegan")
+            onDragBegan?()
+            guard isInteracting else { return }
         }
         self.drag = drag
         guard drag.didMove else { return }

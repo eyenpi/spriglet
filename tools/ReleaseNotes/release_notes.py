@@ -125,7 +125,43 @@ def git(*arguments):
     return subprocess.check_output(["git", "-C", str(ROOT), *arguments], text=True).strip()
 
 
-def publish(tag):
+def package_assets(directory, release, commit):
+    """Bind downloadable packages to the exact validated source and release."""
+    manifest = directory / "release.json"
+    require(manifest.is_file() and not manifest.is_symlink(), "Package manifest is missing or unsafe.")
+    data = json.loads(manifest.read_text())
+    for key, expected in {"sourceRevision": commit, "sourceWorkingTreeDirty": False,
+                          "version": release["appVersion"], "build": str(release["build"]),
+                          "bundleIdentifier": "dev.spriglet.app", "architectures": ["arm64"],
+                          "minimumMacOS": "26.0", "diskImageVerified": True}.items():
+        require(data.get(key) == expected, f"Package metadata mismatch: {key}.")
+    if data.get("signature") == "local-preview":
+        require(release["channel"] == "preview", "Unsigned packages cannot be published as stable releases.")
+        require(data.get("notarizationTicketValidated") is False and data.get("systemPolicyPassed") is False,
+                "Unsigned preview must not claim notarization.")
+        suffix = "LOCAL-UNSIGNED"
+    else:
+        require(data.get("signature") == "developer-id" and data.get("notarizationTicketValidated") is True
+                and data.get("systemPolicyPassed") is True, "Developer ID packages need accepted notarization.")
+        suffix = "DeveloperID"
+    base = f"Spriglet-{release['appVersion']}-{release['build']}-macOS-arm64-{suffix}"
+    names = [base + ".dmg", base + ".zip"]
+    require(set(data.get("artifacts", {})) == set(names), "Package inventory must contain exactly this release's DMG and ZIP.")
+    checksums = ""
+    for name in names:
+        path = directory / name
+        require(path.is_file() and not path.is_symlink(), "Downloadable package is missing or unsafe.")
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        require(data["artifacts"][name] == {"sha256": digest, "size": path.stat().st_size}, "Package checksum or size differs.")
+        checksums += f"{digest}  {name}\n"
+    sums = directory / "SHA256SUMS"
+    require(sums.is_file() and not sums.is_symlink() and sums.read_text() == checksums, "SHA256SUMS differs from the packages.")
+    require({p.name for p in directory.iterdir()} == {*names, "release.json", "SHA256SUMS"},
+            "The publication directory must contain only the four public package files.")
+    return [directory / name for name in names] + [sums, manifest]
+
+
+def publish(tag, packages=None):
     feed = check(tag=tag)
     release = select_release(feed, tag, latest=True)
     commit = git("rev-parse", "HEAD")
@@ -141,6 +177,8 @@ def publish(tag):
     body_file.write_text(body)
     # Unique names avoid replacing assets when maintainers add app packages later.
     assets = [ROOT / "CHANGELOG.md", ROOT / FEED]
+    if packages:
+        assets.extend(package_assets(packages, release, commit))
     repository = os.environ.get("GITHUB_REPOSITORY", "eyenpi/spriglet")
     title = f"Spriglet {release['version']} · {release['title']}"
     existing = subprocess.run(["gh", "release", "view", tag, "--repo", repository, "--json", "body,isDraft,isPrerelease,targetCommitish,name,assets"], text=True, capture_output=True)
@@ -167,7 +205,9 @@ def main():
     commands.add_parser("check").add_argument("--tag")
     commands.add_parser("notes").add_argument("tag")
     commands.add_parser("bundle").add_argument("app", type=Path)
-    commands.add_parser("publish").add_argument("tag")
+    publishing = commands.add_parser("publish")
+    publishing.add_argument("tag")
+    publishing.add_argument("--packages", type=Path)
     args = parser.parse_args()
     if args.command == "render":
         (ROOT / "CHANGELOG.md").write_text(changelog_markdown(read_feed()))
@@ -180,7 +220,7 @@ def main():
         check_bundle(args.app)
         print("Built app version and bundled changelog verified.")
     elif args.command == "publish":
-        publish(args.tag)
+        publish(args.tag, args.packages)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ import Foundation
 
 /// A small local identity. Traits stay fixed unless a profile is explicitly replaced.
 public struct PetProfile: Codable, Equatable, Sendable {
-    public static let defaultName = "Sprout"
+    public static let defaultName = PetAssetDefinition.acornHopper.defaultName
     public static let maximumNameLength = 32
     public let name: String
     public let traits: PetTraits

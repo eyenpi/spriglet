@@ -15,14 +15,15 @@ task_output=
 task_identity=
 task_profile=
 task_check=false
+task_existing_app=
 
 usage() {
     cat <<'USAGE'
 Usage: scripts/package-release.sh --version VERSION --build BUILD --bundle-id ID
        [--mode local-preview|developer-id] [--output NEW_DIRECTORY] [--check]
-       [--identity SHA1 --notary-profile KEYCHAIN_PROFILE]
+       [--identity SHA1 --notary-profile KEYCHAIN_PROFILE] [--app BUILT_APP]
 
-local-preview (default): local ad hoc signature; LOCAL-UNSIGNED ZIP, no upload.
+local-preview (default): ad hoc signature; LOCAL-UNSIGNED ZIP and DMG, no upload.
 developer-id: requires a valid Developer ID Application identity and a working
              Keychain profile; signs, uploads to Apple, notarizes and staples.
 --check: validate inputs/tools only; Developer ID also checks authentication
@@ -31,6 +32,7 @@ developer-id: requires a valid Developer ID Application identity and a working
 The identity is the certificate's 40-character SHA-1 identifier. Credentials
 must already be stored by notarytool in Keychain, never supplied to this script.
 Existing output directories are refused. Requires Xcode 26+ on macOS 26+.
+--app: package an existing Release build after validating its metadata/resources.
 USAGE
 }
 
@@ -40,7 +42,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --help|-h) usage; exit 0 ;;
         --check) task_check=true; shift ;;
-        --mode|--version|--build|--bundle-id|--output|--identity|--notary-profile)
+        --mode|--version|--build|--bundle-id|--output|--identity|--notary-profile|--app)
             [[ $# -ge 2 && -n "$2" ]] || die "Missing value for $1."
             case "$1" in
                 --mode) task_mode="$2" ;;
@@ -50,6 +52,7 @@ while [[ $# -gt 0 ]]; do
                 --output) task_output="$2" ;;
                 --identity) task_identity="$2" ;;
                 --notary-profile) task_profile="$2" ;;
+                --app) task_existing_app="$2" ;;
             esac
             shift 2 ;;
         *) die "Unknown option. Use --help." ;;
@@ -75,6 +78,11 @@ done
 [[ "$(xcodebuild -version | awk '/^Xcode / { print int($2); exit }')" -ge 26 ]] || die "Xcode 26 or later is required."
 [[ "$(sw_vers -productVersion | cut -d. -f1)" -ge 26 ]] || die "macOS 26 or later is required."
 "$task_python" "$task_helper" check-entitlements "$task_root/Configuration/Spriglet.entitlements"
+/usr/sbin/diskutil image create from --help >/dev/null
+if [[ -n "$task_existing_app" ]]; then
+    [[ -d "$task_existing_app" && ! -L "$task_existing_app" ]] || die "--app must name an existing app directory."
+    task_existing_app="$(cd "$task_existing_app" && pwd)"
+fi
 
 if [[ "$task_mode" == developer-id ]]; then
     for task_tool in notarytool stapler syspolicy_check; do
@@ -105,6 +113,9 @@ trap 'printf "Packaging did not finish. The output remains marked INCOMPLETE; do
     --source-root "$task_root" --output "$task_work" \
     --version "$task_version" --build "$task_build" --bundle-id "$task_bundle_id"
 
+task_app="$task_work/Spriglet.app"
+task_verify_args=(--source-root "$task_root" --version "$task_version" --build "$task_build" --bundle-id "$task_bundle_id")
+if [[ -z "$task_existing_app" ]]; then
 printf 'Archiving Release for Apple silicon. Build log: %s\n' "$task_work/build.log"
 xcodebuild -project "$task_root/Spriglet.xcodeproj" -scheme Spriglet \
     -configuration Release -destination 'generic/platform=macOS' \
@@ -116,12 +127,16 @@ xcodebuild -project "$task_root/Spriglet.xcodeproj" -scheme Spriglet \
     archive >"$task_work/build.log" 2>&1
 
 task_archive_app="$task_work/Spriglet.xcarchive/Products/Applications/Spriglet.app"
-task_app="$task_work/Spriglet.app"
-task_verify_args=(--source-root "$task_root" --version "$task_version" --build "$task_build" --bundle-id "$task_bundle_id")
 "$task_python" "$task_helper" verify --app "$task_archive_app" \
     --archive "$task_work/Spriglet.xcarchive" --signature none "${task_verify_args[@]}" \
     >"$task_work/archive-verification.json"
 /usr/bin/ditto "$task_archive_app" "$task_app"
+else
+    "$task_python" "$task_helper" verify --app "$task_existing_app" --signature none \
+        "${task_verify_args[@]}" >"$task_work/archive-verification.json"
+    /usr/bin/ditto "$task_existing_app" "$task_app"
+fi
+"$task_python" "$task_root/tools/ReleaseNotes/release_notes.py" bundle "$task_app"
 
 if [[ "$task_mode" == local-preview ]]; then
     /usr/bin/codesign --force --sign - --options runtime --timestamp=none \
@@ -129,10 +144,9 @@ if [[ "$task_mode" == local-preview ]]; then
         >"$task_work/signing.log" 2>&1
     task_suffix=LOCAL-UNSIGNED
     cat >"$task_output/LOCAL-PREVIEW.txt" <<'NOTICE'
-LOCAL PREVIEW ONLY — unsigned by a trusted Developer ID identity.
-This app has an ad hoc signature for local development, is not notarized, and
-is not a normal public download. Do not describe it as Gatekeeper-approved.
-Source code and a recorded demo can be shared independently of this artifact.
+UNSIGNED PREVIEW — no Developer ID signature or Apple notarization.
+macOS Gatekeeper may block this download. This is an early testing build,
+not a Gatekeeper-approved release. See README.txt inside the disk image.
 NOTICE
 else
     /usr/bin/codesign --force --sign "$task_identity" --options runtime --timestamp \
@@ -165,13 +179,19 @@ if [[ "$task_mode" == developer-id ]]; then
 fi
 "$task_python" "$task_helper" verify --app "$task_final_app" --signature "$task_mode" \
     "${task_verify_args[@]}" >"$task_output/verification.json"
+task_dmg="${task_zip%.zip}.dmg"
+task_dmg_args=(--app "$task_app" --output "$task_dmg" --work "$task_work/DiskImage" --mode "$task_mode")
+if [[ "$task_mode" == developer-id ]]; then
+    task_dmg_args+=(--identity "$task_identity" --notary-profile "$task_profile")
+fi
+"$task_python" "$task_root/tools/ReleaseValidation/disk_image.py" "${task_dmg_args[@]}" "${task_verify_args[@]}"
 "$task_python" "$task_helper" report --zip "$task_zip" --source-root "$task_root" \
-    --verification "$task_output/verification.json" --output "$task_output/release.json"
-(cd "$task_output" && /usr/bin/shasum -a 256 "$(basename "$task_zip")" >SHA256SUMS)
-chmod 644 "$task_zip" "$task_output/SHA256SUMS" "$task_output/verification.json" "$task_output/release.json"
+    --dmg "$task_dmg" --verification "$task_output/verification.json" --output "$task_output/release.json"
+(cd "$task_output" && /usr/bin/shasum -a 256 "$(basename "$task_dmg")" "$(basename "$task_zip")" >SHA256SUMS)
+chmod 644 "$task_dmg" "$task_zip" "$task_output/SHA256SUMS" "$task_output/verification.json" "$task_output/release.json"
 rm "$task_output/INCOMPLETE"
 trap - ERR
-printf 'Packaging and extracted-bundle verification passed: %s\n' "$task_zip"
+printf 'Packaging and extracted-bundle verification passed: %s\n%s\n' "$task_dmg" "$task_zip"
 if [[ "$task_mode" == local-preview ]]; then
     printf 'LOCAL PREVIEW ONLY: ad hoc signed, no Developer ID signature or notarization.\n'
 else

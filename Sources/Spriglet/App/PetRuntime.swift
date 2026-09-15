@@ -34,7 +34,9 @@ final class PetRuntime {
     private(set) var diagnosticProgress = ""
     private(set) var message = "Quiet company. Spriglet rests between small moments of activity."
 
-    @ObservationIgnored let renderer = PetRenderView(frame: NSRect(x: 0, y: 0, width: 224, height: 224))
+    let character: PetAssetDefinition
+    @ObservationIgnored let renderer: PetRenderView
+    @ObservationIgnored let characterResourceDirectory: URL?
     @ObservationIgnored private(set) var desktop: PetWindowController!
     @ObservationIgnored let sound = PetSoundService()
     @ObservationIgnored var onShowSettingsRequested: (@MainActor () -> Void)? {
@@ -65,8 +67,13 @@ final class PetRuntime {
         || CommandLine.arguments.contains("--everyday-review")
     @ObservationIgnored private let logger = Logger(subsystem: "dev.spriglet.app", category: "lifecycle")
 
-    init(preferencesStore: PetPreferencesStore = PetPreferencesStore()) {
+    init(preferencesStore: PetPreferencesStore = PetPreferencesStore(),
+         character: PetAssetDefinition = .acornHopper, resourceBundle: Bundle = .main) {
         self.preferencesStore = preferencesStore
+        self.character = character
+        characterResourceDirectory = character.resourceDirectory(in: resourceBundle)
+        renderer = PetRenderView(frame: NSRect(x: 0, y: 0, width: 224, height: 224),
+                                 resourceDirectory: characterResourceDirectory)
         let preferences = isCommandLineProbe || isTemporaryReview ? PetPreferences() : preferencesStore.load()
         isHidden = preferences.isHidden
         isPaused = preferences.isPaused
@@ -83,6 +90,9 @@ final class PetRuntime {
     }
 
     var petName: String { profile.name }
+    var characterPreviewURL: URL? {
+        renderer.manifest.flatMap { characterResourceDirectory?.appendingPathComponent($0.restFrame) }
+    }
     var traitDescription: String { profile.traitSummary }
     var recentPreferenceDescription: String {
         let recent = interactionMemory.values()
@@ -126,11 +136,11 @@ final class PetRuntime {
         desktop.onUserInteractionChanged = { [weak self] interacting in
             guard let self else { return }
             isInteracting = interacting
+            renderer.setInteractionHeld(interacting)
             if interacting {
                 cancelBehaviorSchedule()
                 behaviorPlanner.resetAfterInteraction()
                 sound.stop()
-                renderer.resetPose()
             } else {
                 reconcileBehaviorSchedule()
             }
@@ -242,7 +252,7 @@ final class PetRuntime {
             displaySize = value
             desktop?.cancelInteraction()
             renderer.setDisplaySize(value)
-            desktop?.setDisplaySize(value)
+            desktop?.setDisplaySize(renderer.displaySize)
             sound.stop()
             savePreferences()
             refreshMeasurements()
@@ -301,7 +311,7 @@ final class PetRuntime {
         withBehaviorTransition {
             let direction = isParked || lowPower ? nil : fittingRoutine(.firefly)
             let stationary = direction == nil
-            renderer.playRoutine(.firefly, direction: direction ?? .walkLeft, stationary: stationary)
+            renderer.transitionRoutine(.firefly, direction: direction ?? .walkLeft, stationary: stationary)
             if renderer.isAnimating, renderer.currentRoutine == .firefly {
                 accepted = true
                 if !sampling { fireflyReadyAt = interactionClock.now.advanced(by: .seconds(20)) }
@@ -325,9 +335,8 @@ final class PetRuntime {
         var accepted = false
         withBehaviorTransition {
             behaviorPlanner.resetAfterInteraction()
-            // Deliberate input interrupts an excursion/game. Ordinary manual
-            // clips retain their resting-boundary queue and coalesce repeat pets.
-            if renderer.currentRoutine != nil { renderer.resetPose() }
+            // Finish the current authored landing/settle, then honor the latest
+            // interaction. A sleeping pet wakes through its authored bridge.
             accepted = renderer.play(action)
             if action == .react, accepted {
                 recordInteraction(.petted)
@@ -347,13 +356,11 @@ final class PetRuntime {
         var accepted = false
         withBehaviorTransition {
             behaviorPlanner.resetAfterInteraction()
-            renderer.resetPose()
             guard let clip = fittingWalk(preferred: direction) else {
                 message = "There is not enough room for a planted short walk in that direction. Move Spriglet away from the edge."
                 return
             }
-            renderer.playWalk(clip)
-            accepted = renderer.isAnimating
+            accepted = renderer.transition(to: clip == .walkLeft ? .moveLeft : .moveRight)
             if accepted { message = "Taking a short walk to the \(clip == .walkLeft ? "left" : "right")." }
         }
         return accepted
@@ -736,14 +743,14 @@ final class PetRuntime {
                 // Recheck the complete route when the deadline fires. Parking,
                 // power changes and geometry may differ from planning time.
                 if !isParked, !lowPower, let direction = fittingRoutine(.explore) {
-                    renderer.playRoutine(.explore, direction: direction, stationary: false)
+                    renderer.transitionRoutine(.explore, direction: direction, stationary: false)
                     if renderer.isAnimating { prefersLeftExcursion = direction == .walkRight }
                 } else {
                     performed = .observe
-                    renderer.playRoutine(.observe)
+                    renderer.transitionRoutine(.observe)
                 }
-            case .observe: renderer.playRoutine(.observe)
-            case .greet: renderer.playRoutine(.greet)
+            case .observe: renderer.transitionRoutine(.observe)
+            case .greet: renderer.transitionRoutine(.greet)
             case .nap: renderer.play(.fallAsleep)
             case .wake: renderer.play(.wakeUp)
             }

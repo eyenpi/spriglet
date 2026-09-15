@@ -41,6 +41,7 @@ jobs:
         run: |
           python3 -m unittest discover -s tools/CharacterSampleValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/CandidateReview -p 'test_*.py'
+          python3 -m unittest discover -s tools/CharacterAssets -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/EverydayServicesValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseNotes -p 'test_*.py'
@@ -58,6 +59,7 @@ jobs:
           mkdir -p .build
           python3 tools/CharacterSampleValidation/validate_assets.py Sources/Spriglet/Resources/SproutSample/manifest.json --contacts art/sprout/sample-v01/contact-samples.json --output .build/ci-assets.json
           python3 tools/CandidateReview/verify_assets.py --output .build/ci-candidate-assets.json
+          python3 tools/CharacterAssets/export_acorn.py --check
       - name: App icon artwork and catalog
         run: python3 art/app-icon/verify_icon.py
       - name: Debug and Release builds
@@ -65,8 +67,11 @@ jobs:
           for configuration in Debug Release; do
             xcodebuild -project Spriglet.xcodeproj -scheme Spriglet -configuration "$configuration" -derivedDataPath .build/ci-xcode -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO build
             python3 tools/ReleaseNotes/release_notes.py bundle ".build/ci-xcode/Build/Products/$configuration/Spriglet.app"
+            python3 -c 'import sys; from pathlib import Path; sys.path.insert(0, "tools/ReleaseValidation"); from release_validation import verify_resources; print(verify_resources(Path(sys.argv[1]), Path(".")))' ".build/ci-xcode/Build/Products/$configuration/Spriglet.app"
           done
           python3 tools/AppStore/validate.py --app .build/ci-xcode/Build/Products/Release/Spriglet.app
+      - name: Package and mount-check the unsigned preview DMG and ZIP
+        run: python3 tools/ReleaseValidation/package_preview.py --app .build/ci-xcode/Build/Products/Release/Spriglet.app --output .build/preview-packages
       - name: App Store archive rehearsal (unsigned, no upload)
         run: scripts/archive-app-store.sh --unsigned --output .build/app-store/ci-rehearsal
       - name: Native personality harness (build only)
@@ -90,6 +95,18 @@ jobs:
           path: tools/AppStore/website/public/
           if-no-files-found: error
           retention-days: ${{ github.event_name == 'pull_request' && 7 || 90 }}
+      - name: Upload installable preview packages
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: app-packages
+          overwrite: true
+          path: |
+            .build/preview-packages/*.dmg
+            .build/preview-packages/*.zip
+            .build/preview-packages/SHA256SUMS
+            .build/preview-packages/release.json
+          if-no-files-found: error
+          retention-days: ${{ github.event_name == 'pull_request' && 7 || 90 }}
 
   publish:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
@@ -98,12 +115,17 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: write
+      actions: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
-      - name: Publish the validated tag using the changelog
+      - name: Download packages from this validated workflow run
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 tools/ReleaseNotes/release_notes.py publish "$GITHUB_REF_NAME"
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name app-packages --dir .build/downloaded-packages
+      - name: Publish the validated tag, changelog, DMG and ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/ReleaseNotes/release_notes.py publish "$GITHUB_REF_NAME" --packages .build/downloaded-packages
