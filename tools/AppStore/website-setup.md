@@ -4,21 +4,21 @@ The app and App Store listing use **meetspriglet.com**. Activate these destinati
 
 | Destination | Content or purpose |
 | --- | --- |
-| `https://meetspriglet.com` | Product page using [product-page.md](product-page.md) |
+| `https://meetspriglet.com` | Temporary redirect to support; product design is deferred |
 | `https://meetspriglet.com/support` | Public support page using [support-page.md](support-page.md) |
 | `https://meetspriglet.com/privacy` | The exact current [PRIVACY.md](../../PRIVACY.md), formatted for the website |
 | `support@meetspriglet.com` | One address for app support, privacy questions, and deletion requests |
 
 ## Domain and hosting
 
-1. Register the domain under the publisher's account and retain control of renewal and DNS.
-2. Connect the apex domain to the selected website host using that host's actual DNS instructions. Set up HTTPS with a valid certificate and redirect HTTP to HTTPS.
-3. Publish the three pages at the exact paths above, including mobile-readable layout and working navigation. Configure redirects if the host uses trailing slashes. The root product page must link to support and privacy.
+1. The publisher has selected and added the domain to Cloudflare. Retain control of renewal and DNS.
+2. Deploy the prepared [Cloudflare static website](website/README.md). Its custom-domain configuration manages DNS and certificates. Verify HTTPS and redirect HTTP to HTTPS.
+3. Publish the support and privacy pages at the exact paths above, including mobile-readable layout and working navigation. The root temporarily redirects to support. When the product page is designed, keep support and privacy linked and preserve their URLs.
 4. If `www.meetspriglet.com` is configured, redirect it to the canonical apex domain. The app does not depend on `www`.
 5. Keep support and privacy publicly readable without sign-in, a purchase, or a broken consent overlay. Match the policy to the binary being reviewed. Add applicable publisher/contact disclosures for the chosen territories before submission.
 6. Avoid adding advertising or analytics while the privacy answers describe the current local app and simple support flow. Reassess policy disclosures if website services change.
 
-No registrar, hosting provider, DNS target, or email vendor is assumed. Use the DNS values supplied by the services you actually choose. Page content is prepared here; hosting and DNS activation are not performed by this repository.
+Cloudflare is the selected website host. The static website and deployment configuration are prepared in this repository. Live publication requires authenticated access to the owning Cloudflare account. An email vendor has not been chosen here; use the DNS values supplied by the chosen mail provider.
 
 ## Mailbox
 

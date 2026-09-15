@@ -1,0 +1,43 @@
+:root {
+  color-scheme: light dark;
+  --paper: #fcfdfb;
+  --ink: #20302b;
+  --muted: #52645c;
+  --line: #dce4de;
+  --link: #24613e;
+  --soft: #eef4ee;
+  font: 106.25%/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: var(--link); text-underline-offset: .22em; overflow-wrap: anywhere; }
+a:hover { text-decoration-thickness: .12em; }
+a:focus-visible { outline: 3px solid var(--link); outline-offset: 5px; border-radius: 3px; }
+.skip { position: absolute; left: 1rem; top: -5rem; padding: .5rem 1rem; background: var(--paper); }
+.skip:focus { top: 1rem; z-index: 2; }
+header, main, footer { width: min(100% - 3rem, 47rem); margin-inline: auto; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.3rem 0; border-bottom: 1px solid var(--line); }
+.brand { display: inline-flex; align-items: center; gap: .65rem; color: var(--ink); font-size: 1.2rem; font-weight: 650; text-decoration: none; }
+.brand img { flex: none; }
+nav { display: flex; gap: 1.3rem; flex-wrap: wrap; font-size: .94rem; }
+nav a { color: var(--muted); text-decoration: none; padding: .35rem 0; }
+nav a[aria-current] { color: var(--link); text-decoration: underline; font-weight: 600; }
+main { padding-block: 3.5rem 4rem; }
+.eyebrow { color: var(--muted); font-size: .88rem; margin-bottom: .75rem; }
+h1 { font-size: clamp(2rem, 6vw, 3rem); font-weight: 650; line-height: 1.15; letter-spacing: -.03em; margin: 0 0 2rem; }
+h2 { font-size: 1.25rem; line-height: 1.35; margin: 2.25rem 0 .8rem; padding-top: 1.75rem; border-top: 1px solid var(--line); }
+p { margin: 0 0 1.3rem; }
+strong { font-weight: 650; }
+code { font-size: .9em; padding: .1em .25em; background: var(--soft); border-radius: .2rem; overflow-wrap: anywhere; }
+footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1.5rem; border-top: 1px solid var(--line); padding-block: 1.5rem 2.5rem; color: var(--muted); font-size: .85rem; }
+@media (max-width: 440px) {
+  header, main, footer { width: calc(100% - 2rem); }
+  header { align-items: flex-start; }
+  nav { gap: .8rem; }
+  main { padding-top: 2.5rem; }
+}
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #151d19; --ink: #e5eee7; --muted: #acbdb1; --line: #344339; --link: #a8d4ad; --soft: #26352b; }
+}

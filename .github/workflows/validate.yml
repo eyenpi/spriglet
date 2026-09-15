@@ -47,6 +47,7 @@ jobs:
         run: |
           bash -n scripts/archive-app-store.sh
           scripts/archive-app-store.sh --unsigned --check
+          python3 tools/AppStore/website/build.py --check
       - name: Character assets and grounded motion
         run: |
           mkdir -p .build

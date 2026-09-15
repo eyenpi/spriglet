@@ -6,7 +6,7 @@ This is the repeatable submission workflow for Spriglet, a **free macOS app for 
 
 The repository includes a sandbox entitlement, complete Mac app icon catalog, Entertainment category, encryption declaration, privacy manifest, offline Privacy Policy and MIT license, accessible support links, English listing copy, and a local archive validator. The listing in [`metadata/en-US.json`](metadata/en-US.json) is a draft for App Store Connect. The build identifier remains `dev.spriglet.app`; register and confirm that exact identifier with the intended Developer team before uploading.
 
-**Before submission:** activate **meetspriglet.com**, publish the product, support, and privacy pages, create **support@meetspriglet.com**, finish Apple Developer signing, capture screenshots, and complete the account forms and final device acceptance. The app and listing already use these final URLs; their live operation remains a release gate. Use the prepared [website and email handoff](website-setup.md) to configure them.
+**Before submission:** verify the public support and privacy pages at **meetspriglet.com**, activate **support@meetspriglet.com**, finish Apple Developer signing, capture screenshots, and complete the account forms and final device acceptance. The app and listing already use these final URLs; their live operation remains a release gate. The [Cloudflare website](website/README.md) temporarily directs the root to support; product page design is deferred. Use the [website and email handoff](website-setup.md) to finish setup.
 
 The code has no purchases, subscriptions, accounts, analytics, ads, third-party runtime SDKs, or network client. Store price is Free. A free release still requires Apple Developer Program membership.
 

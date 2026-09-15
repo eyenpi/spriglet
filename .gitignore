@@ -16,6 +16,7 @@
 # Build products and personal IDE state
 .build/
 .swiftpm/
+.wrangler/
 DerivedData/
 xcuserdata/
 .DS_Store
