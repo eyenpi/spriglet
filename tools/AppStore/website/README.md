@@ -47,7 +47,7 @@ python3 tools/AppStore/website/check_http.py https://meetspriglet.com
 
 Wrangler runs the shared generator automatically before dev/deploy; do not use `--no-bundle` to bypass the build. The deploy script also regenerates before Wrangler reads its configuration, so domain changes apply to the same deployment. The generated custom-domain configuration creates the Worker domain, its DNS record, and certificate through Cloudflare. Do not manually guess an origin IP or DNS target. `workers.dev` is disabled. Domain changes can take time to propagate; a successful deploy alone does not prove the public URLs work. Keep Cloudflare Web Analytics and optional content-injection features disabled for this script-free site.
 
-Check HTTP-to-HTTPS behavior and the public URLs after deployment. Support mailbox setup and a real send/reply check remain separate; see [website-setup.md](../website-setup.md). No automated deployment is triggered from pull requests or CI.
+Check HTTP-to-HTTPS behavior and the public URLs after deployment. Support mailbox setup and a real send/reply check remain separate; see [website-setup.md](../website-setup.md). The [deployment workflow](../../WebsiteDeployment/README.md) builds isolated PR previews and publishes validated `main` builds after its default-branch activation and protected environment setup.
 
 When the product design is ready, replace `index.html` generation and remove the temporary root redirect in `_redirects`. Preserve `/support` and `/privacy`, which are already used by the app and App Store metadata.
 

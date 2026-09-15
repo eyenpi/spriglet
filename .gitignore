@@ -21,6 +21,7 @@
 .build/
 .swiftpm/
 .wrangler/
+node_modules/
 DerivedData/
 xcuserdata/
 .DS_Store

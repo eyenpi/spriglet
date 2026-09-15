@@ -19,7 +19,10 @@ class NoRedirect(HTTPRedirectHandler):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("origin", help="For example, https://meetspriglet.com")
-    origin = parser.parse_args().origin.rstrip("/")
+    parser.add_argument("--public", type=Path, default=PUBLIC, help="Expected static files; defaults to the generated website")
+    args = parser.parse_args()
+    origin = args.origin.rstrip("/")
+    public = args.public
     parts = urlsplit(origin)
     if parts.scheme not in {"http", "https"} or not parts.netloc or parts.path or parts.query or parts.fragment or parts.username:
         parser.error("Supply an HTTP(S) origin without a path or credentials.")
@@ -37,7 +40,7 @@ def main():
             with fetch(route) as response:
                 if response.status != 200:
                     raise ValueError(f"{route}: expected 200, received {response.status}")
-                if response.read() != (PUBLIC / filename).read_bytes():
+                if response.read() != (public / filename).read_bytes():
                     raise ValueError(f"{route}: served content differs from the prepared files")
                 if response.headers.get("X-Content-Type-Options") != "nosniff":
                     raise ValueError(f"{route}: missing security headers")
@@ -49,7 +52,7 @@ def main():
                 raise ValueError("Root must temporarily redirect to /support")
         print("PASS /: temporary redirect to support")
         with fetch("/missing-spriglet-page") as response:
-            if response.status != 404 or response.read() != (PUBLIC / "404.html").read_bytes():
+            if response.status != 404 or response.read() != (public / "404.html").read_bytes():
                 raise ValueError("Unknown routes must serve the prepared 404 page with status 404")
         print("PASS unknown route: helpful 404 page")
     except (OSError, ValueError) as error:
