@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "created": "2026-09-15",
+  "generator": "Built-in image_gen tool",
+  "useCase": "logo-brand",
+  "sourceImage": {
+    "file": "spriglet-icon-source.png",
+    "sha256": "67866b89ec632517552ed03dae536bd6904ce31d60a446096d678b80836a2ef1",
+    "pixels": 1254
+  },
+  "masterImage": {
+    "file": "spriglet-app-icon-1024.png",
+    "sha256": "8fd440602a3d8e25c70f027fc16efe7d16c35fd13d75b135514263f3e33a92d5",
+    "pixels": 1024
+  },
+  "prompt": {
+    "file": "prompt.txt",
+    "sha256": "83182f28869140df78e711d52b5c175c1d9b8a40f82d4c9cf927d69cdf1e108a"
+  },
+  "packaging": "macOS sips: source resampled to a 1024x1024 sRGB master, then exported to the ten macOS AppIcon slots. Original generated source retained unchanged.",
+  "composition": "A cheerful green leaf-eared Sprout with a cream face, peach cheeks, and a raised paw; soft clay-like 2D/3D shapes on a full-bleed opaque ivory background.",
+  "catalogImages": {
+    "icon_128x128@1x.png": "d2eccefe7c8a7d0d4dc01799372ad9c818226ba88f7fc719899cf6aade4cc37c",
+    "icon_128x128@2x.png": "68983b1ecab9bd59e63f815d72b9c22cfa8148a8caedcf535b772dd509f75643",
+    "icon_16x16@1x.png": "a478e10f172b108548b265a01384cb7cb710c69175882c5e11a93f86eba8cc3f",
+    "icon_16x16@2x.png": "2aca900129939eee8f0c486e81201d043c41f08be2b9cc100e793ba2162eeba7",
+    "icon_256x256@1x.png": "68983b1ecab9bd59e63f815d72b9c22cfa8148a8caedcf535b772dd509f75643",
+    "icon_256x256@2x.png": "a27e66dfd0b2be835dd677b3ffed4534bf878a048d327e933fc6e7d12bb30d69",
+    "icon_32x32@1x.png": "2aca900129939eee8f0c486e81201d043c41f08be2b9cc100e793ba2162eeba7",
+    "icon_32x32@2x.png": "7e309326be90cefdf1ed16aef0d603e46c1fd5cbb1e2e9f8934947af7f6ec497",
+    "icon_512x512@1x.png": "a27e66dfd0b2be835dd677b3ffed4534bf878a048d327e933fc6e7d12bb30d69",
+    "icon_512x512@2x.png": "8fd440602a3d8e25c70f027fc16efe7d16c35fd13d75b135514263f3e33a92d5"
+  },
+  "license": "MIT; original artwork created for Spriglet."
+}

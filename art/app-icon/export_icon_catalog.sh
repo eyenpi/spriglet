@@ -1,9 +1,9 @@
 #!/bin/sh
-# Package the Blender-rendered master using the installed macOS image tool.
+# Package the approved icon master using the installed macOS image tool.
 set -eu
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-repo_root=$(CDPATH= cd -- "$script_dir/../../.." && pwd)
+repo_root=$(CDPATH= cd -- "$script_dir/../.." && pwd)
 master="$script_dir/spriglet-app-icon-1024.png"
 catalog="$repo_root/Sources/Spriglet/Assets.xcassets"
 icon_dir="$catalog/AppIcon.appiconset"

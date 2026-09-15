@@ -50,6 +50,7 @@ Use a full checkout of `main` for development. The command above checks out the 
 - [Native size and accessibility checks](tools/EverydayExperienceValidation/README.md)
 - [Sound and login service checks](tools/EverydayServicesValidation/README.md)
 - [Editable character source](art/sprout/README.md)
+- [App icon artwork and export](art/app-icon/README.md)
 - [Refined Acorn Hopper and Moss Mouse, animations and native comparison](art/candidates/README.md)
 - [Release packaging](tools/ReleaseValidation/README.md)
 - [Changelog and tag publishing](tools/ReleaseNotes/README.md)
