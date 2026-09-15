@@ -22,7 +22,7 @@ Apple references: [App Store Connect workflow](https://developer.apple.com/help/
 
 ## 2. Build and validate locally
 
-Use the final source checkout and the selected stable Xcode. This preparation was developed with Xcode 26.6, Swift 6.3.3, and macOS SDK 26.5. Recheck Apple's [upcoming requirements](https://developer.apple.com/news/upcoming-requirements/) on the actual upload date. The April 2026 SDK announcement explicitly lists iOS, iPadOS, tvOS, visionOS, and watchOS; do not mistake that list for a new macOS deployment minimum. This project's own minimum is macOS 26.
+Use the final source checkout and the selected stable Xcode. CI currently uses Xcode 26.6; local Debug/Release builds and an unsigned archive also passed with Xcode 27 (27A266a). Apple opened [App Store submissions for Xcode 27](https://developer.apple.com/news/?id=k1mtkt1k) on September 9, 2026. Recheck Apple's [upcoming requirements](https://developer.apple.com/news/upcoming-requirements/) on the actual upload date. SDK upload requirements and the app's minimum supported OS are separate: Spriglet remains Apple silicon only with a macOS 26 minimum.
 
 ```sh
 ./scripts/test.sh
@@ -96,6 +96,7 @@ Only elapsed durations are included in optional copied reports; absolute system 
 ### Age rating, content rights, encryption, and accessibility
 
 - [ ] Complete the **current** age-rating questionnaire. The present app has no public user-generated content, chat, advertising, unrestricted embedded web browsing, gambling, contests, mature themes, or medical advice. Naming one's local pet is not public user-generated content. Answer the actual form; Apple calculates the rating. Do not select Kids Category merely because the artwork is cute. [Set an age rating](https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating).
+- [ ] Answer the social-media capability questions now required by the current age-rating form. The audited app has no social feed, public sharing, or interaction with user-generated content. Reassess these answers if those capabilities are added. [Apple's questionnaire update](https://developer.apple.com/news/?id=tlur8uvi).
 - [ ] Confirm content rights for code, artwork, sound, icon, and screenshots using [ASSETS.md](../../ASSETS.md) and the bundled MIT license. Choose any custom store license deliberately; no custom EULA is supplied here.
 - [ ] Confirm export-compliance answers for the final implementation. `ITSAppUsesNonExemptEncryption = false` records that it does not use non-exempt encryption; it is not a blanket exemption for future features. [Encryption declaration](https://developer.apple.com/documentation/bundleresources/information-property-list/itsappusesnonexemptencryption).
 - [ ] Complete any currently requested regulatory forms from actual product facts. No medical function is present.
