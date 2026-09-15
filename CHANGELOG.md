@@ -4,6 +4,27 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
+## 0.2.0-preview.2 — Submission preparation
+
+2026-09-15 · App 0.2.0 · Build 4
+
+Accessible privacy and support, bundled licensing, and Mac App Store preparation.
+
+Development source for Apple silicon and macOS 26 or later. App Store submission and signed distribution are pending.
+
+### Added
+
+- Privacy Policy and support entries in the menu and Settings, an offline privacy policy, bundled MIT license, and visible app version and build.
+- Editable small character proofs and a native candidate comparison tool.
+
+### Fixed
+
+- Declared elapsed-time diagnostics in the privacy manifest and added the Mac App Store category and encryption metadata.
+
+### Known limitations
+
+- App Store signing, store metadata, screenshots, and final device acceptance remain required before submission.
+
 ## 0.2.0-preview.1 — Everyday companion
 
 2026-09-14 · App 0.2.0 · Build 3

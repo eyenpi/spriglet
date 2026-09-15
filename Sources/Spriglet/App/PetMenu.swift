@@ -13,6 +13,8 @@ struct PetMenu: View {
         Divider()
         SettingsLink { Text("Settings…") }
         Button("Quick Guide…") { openWindow(id: "welcome"); NSApp.activate() }
+        Button("Privacy Policy…") { openWindow(id: "privacy"); NSApp.activate() }
+        Link("Get Support", destination: AppLinks.support)
         if presentation.developerToolsAvailable {
             Button("Developer Diagnostics…") { openWindow(id: "diagnostics"); NSApp.activate() }
         }

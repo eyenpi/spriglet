@@ -2,6 +2,28 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "0.2.0-preview.2",
+      "appVersion": "0.2.0",
+      "build": 4,
+      "date": "2026-09-15",
+      "channel": "preview",
+      "title": "Submission preparation",
+      "summary": "Accessible privacy and support, bundled licensing, and Mac App Store preparation.",
+      "distribution": "Development source for Apple silicon and macOS 26 or later. App Store submission and signed distribution are pending.",
+      "changes": {
+        "added": [
+          "Privacy Policy and support entries in the menu and Settings, an offline privacy policy, bundled MIT license, and visible app version and build.",
+          "Editable small character proofs and a native candidate comparison tool."
+        ],
+        "fixed": [
+          "Declared elapsed-time diagnostics in the privacy manifest and added the Mac App Store category and encryption metadata."
+        ]
+      },
+      "knownLimitations": [
+        "App Store signing, store metadata, screenshots, and final device acceptance remain required before submission."
+      ]
+    },
+    {
       "version": "0.2.0-preview.1",
       "appVersion": "0.2.0",
       "build": 3,

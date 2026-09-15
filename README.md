@@ -44,6 +44,8 @@ It is an early public preview. The larger animation library, broader desktop cov
 
 Development is verified with **Xcode 26.6, Swift 6.3.3, and macOS SDK 26.5**. The app has no third-party runtime dependencies or remote Swift packages. New platform choices are checked against current official Apple/Swift documentation and the installed SDK.
 
+The current development build also includes an offline Privacy Policy, support links, and the MIT license in Settings > General. Privacy Policy and support are available in the leaf menu. The displayed version and build help identify support reports.
+
 Use a full checkout of `main` for development. The command above checks out the tagged preview for trying that release.
 
 - [Character and motion checks](tools/CharacterSampleValidation/README.md)

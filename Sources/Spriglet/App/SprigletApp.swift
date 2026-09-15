@@ -15,6 +15,18 @@ struct SprigletApp: App {
         }
         .windowResizability(.contentSize)
         .commands { CompanionCommands(runtime: delegate.runtime, presentation: delegate.presentation) }
+        Window("Privacy Policy", id: "privacy") {
+            AppDocumentView(title: "Privacy Policy", resource: "PrivacyPolicy", fileExtension: "md", onlineURL: AppLinks.privacy)
+        }
+        .defaultSize(width: 580, height: 600)
+        .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
+        Window("License", id: "license") {
+            AppDocumentView(title: "License", resource: "License", fileExtension: "txt", onlineURL: nil)
+        }
+        .defaultSize(width: 580, height: 500)
+        .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
         Window("Welcome to Spriglet", id: "welcome") {
             WelcomeView(runtime: delegate.runtime)
         }

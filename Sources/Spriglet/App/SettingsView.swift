@@ -135,8 +135,12 @@ struct SprigletSettingsView: View {
                 }
             }
             Section("About Spriglet") {
+                LabeledContent("Version", value: AppLinks.versionDescription)
                 detail("A little quiet company, with no account, tracking, or access to other apps. Your companion and its preferences stay on this Mac.")
                 Button("Show Quick Guide") { openWindow(id: "welcome") }
+                Button("Privacy Policy…") { openWindow(id: "privacy") }
+                Link("Get Support", destination: AppLinks.support)
+                Button("License…") { openWindow(id: "license") }
             }
         }
     }
