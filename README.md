@@ -30,10 +30,10 @@ cd spriglet
 
 The quick guide introduces Spriglet on your first launch. It lives in the **leaf menu in your menu bar**, without a Dock icon. Open **Settings…** there to choose its name, size, and behavior. Pet, play, pause, and quit from the same menu.
 
-- **Click to pet.** Sprout reacts, then gently settles.
+- **Click to pet.** Acorn reacts, then gently settles.
 - **Drag to move.** Its home position is remembered on this Mac.
 - **Stay parked or stroll.** Parked Mode starts on. Turn it off for occasional short excursions that return to their starting spot on the same display. Automatic Moments, Pause, and Hide remain easy to reach.
-- **Play with a firefly.** Watch its glow, catch it, and settle. When strolls are allowed, Sprout follows it and walks home; parked play stays in place.
+- **Play with a firefly.** Watch its glow, catch it, and settle. When strolls are allowed, Acorn follows it and walks home; parked play stays in place.
 - **Make it yours.** Choose a name, Small / Standard / Large size, and Quiet / Balanced / Lively frequency. Its stable traits and modest recent preferences give its finite routines variety.
 - **Keep sound optional.** Brief petting and play chimes start off. Launch at login is also an explicit choice in Settings.
 - **Stay in control.** Whole-window click-through, app-scoped keyboard commands, native accessibility actions, and Reduce Motion support are built in.

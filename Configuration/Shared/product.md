@@ -2,7 +2,7 @@
 
 ## A little quiet company for your Mac.
 
-Meet Sprout, a soft, leaf-eared desktop companion. Pet it, share a short game with a firefly, or let it rest nearby while you use your Mac.
+Meet Acorn Hopper, a tiny, round desktop companion. Pet it, share a short game with a firefly, or let it rest nearby while you use your Mac.
 
 {{appName}} is free and built for Apple silicon Macs running macOS 26 or later.
 
