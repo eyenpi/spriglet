@@ -28,10 +28,18 @@ The check rejects malformed data, duplicate versions/builds, incorrect ordering,
 
 Commit and push the release changes to `main`. Create a new annotated, `v`-prefixed tag at that commit and push that exact tag. Do not move an already published tag to different code.
 
-The existing validation workflow runs the tests and builds for the tag. Its publish job starts only after validation succeeds and checks that the tag matches the newest changelog entry and is part of `main`. It creates the GitHub release from that entry and attaches `CHANGELOG.md`, `Changelog.json`, the validated DMG and ZIP, `SHA256SUMS`, and `release.json`. Package bytes come from the same workflow run and must match the tag commit and clean source report. Preview entries produce GitHub prereleases. The job has write permission only for publication; validation has read permission.
+Tags no longer trigger CI. PR checks and installer artifacts require the owner's [CI approval](../CI/README.md). After merging, build and validate the exact clean tag revision locally with the [packaging tools](../ReleaseValidation/README.md). Do not relabel an earlier PR merge artifact as a release: publication requires its recorded source revision to match the tag exactly.
+
+Copy only the four public package files (DMG, ZIP, `SHA256SUMS`, and `release.json`) into a clean package directory, then publish with the authenticated local GitHub CLI:
+
+```sh
+python3 tools/ReleaseNotes/release_notes.py publish NEW_TAG --packages PACKAGE_DIRECTORY
+```
+
+Replace the placeholders with the newly created tag and validated package directory. The publisher verifies the newest changelog entry, exact tag commit, `main` ancestry, clean source report, and package checksums. It creates the release and attaches `CHANGELOG.md`, `Changelog.json`, the DMG and ZIP, `SHA256SUMS`, and `release.json`. Preview entries produce GitHub prereleases. This local command uses no GitHub runner minutes.
 
 Rerunning publication accepts an already published release only when its commit, title, notes, preview status, and changelog asset checksums agree. A conflicting release is refused. A failed build or version check leaves the tag unpublished as a GitHub release; fix the problem and use a new version and tag if the code changes.
 
-This workflow publishes source, release notes, and unsigned installable previews. Signed app packages follow the [Developer ID packaging process](../ReleaseValidation/README.md). Unsigned packages cannot be published as stable releases. Public downloads are on the versioned GitHub release; individual PR builds also provide the `app-packages` Actions artifact.
+The publisher supports source, release notes, and unsigned installable previews. Signed app packages follow the [Developer ID packaging process](../ReleaseValidation/README.md). Unsigned packages cannot be published as stable releases. Public downloads are on the versioned GitHub release; individual PR builds also provide the `app-packages` Actions artifact.
 
 Official references: [Apple app version format](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleshortversionstring), [GitHub job dependencies and permissions](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax), and [GitHub CLI release creation](https://cli.github.com/manual/gh_release_create).

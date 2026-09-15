@@ -19,7 +19,8 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 REPOSITORY = 'eyenpi/spriglet'
-WORKFLOW = '.github/workflows/validate.yml'
+WORKFLOW = '.github/workflows/pr-ci.yml'
+LEGACY_WORKFLOW = '.github/workflows/validate.yml'
 ARTIFACT = 'website-static'
 FILES = frozenset(('index.html', 'support.html', 'privacy.html', '404.html', 'style.css', 'spriglet.png', '_headers', '_redirects'))
 MAX_ARCHIVE = 8 * 1024 * 1024
@@ -74,7 +75,7 @@ def output(values):
 def validate_run(run, workflow_id):
     if (run.get('repository', {}).get('full_name') != REPOSITORY
             or run.get('workflow_id') != workflow_id
-            or run.get('path') != WORKFLOW
+            or run.get('path') != (LEGACY_WORKFLOW if run.get('event') == 'push' else WORKFLOW)
             or run.get('status') != 'completed'
             or run.get('conclusion') != 'success'
             or run.get('event') not in ('pull_request', 'push')
@@ -84,6 +85,7 @@ def validate_run(run, workflow_id):
 
 def check_pr(pr, run):
     return (pr.get('state') == 'open'
+            and pr.get('draft') is False
             and pr.get('base', {}).get('repo', {}).get('full_name') == REPOSITORY
             and pr.get('base', {}).get('ref') == 'main'
             and pr.get('head', {}).get('sha') == run['head_sha']
@@ -106,7 +108,8 @@ def select_artifact(run_id):
 def resolve_run(run_id, rollback=False):
     run_id = positive_number(run_id)
     run = github(f'actions/runs/{run_id}')
-    workflow_id = github('actions/workflows/validate.yml')['id']
+    workflow = LEGACY_WORKFLOW if run.get('event') == 'push' else WORKFLOW
+    workflow_id = github('actions/workflows/' + Path(workflow).name)['id']
     validate_run(run, workflow_id)
     if run['event'] == 'push':
         if run['head_branch'] != 'main' or run['head_repository']['full_name'] != REPOSITORY:
@@ -139,33 +142,12 @@ def resolve():
     name = os.environ['GITHUB_EVENT_NAME']
     if event.get('repository', {}).get('full_name') != REPOSITORY:
         raise ValueError('Unexpected repository')
-    if name == 'pull_request_target':
-        pr = event['pull_request']
-        if event['action'] != 'closed' or pr['base']['ref'] != 'main':
-            return output({'deploy': False, 'reason': 'Not a main PR closure'})
-        number = positive_number(pr['number'])
-        return output({'deploy': True, 'action': 'cleanup', 'target': 'pr-' + str(number),
-                       'environment': 'website-preview', 'pr': number, 'run': 0, 'rollback': False})
-    if name == 'workflow_run':
-        if event['workflow_run']['conclusion'] != 'success':
-            return output({'deploy': False, 'reason': 'Build was not successful'})
-        run_id = event['workflow_run']['id']
-        rollback = False
-    elif name == 'workflow_dispatch':
-        requested = event.get('inputs', {}).get('run_id', '')
-        rollback = bool(requested)
-        if requested:
-            run_id = positive_number(requested)
-        else:
-            runs = github('actions/workflows/validate.yml/runs?branch=main&event=push&status=success&per_page=20')['workflow_runs']
-            current = github('branches/main')['commit']['sha']
-            matches = [run for run in runs if run['head_sha'] == current]
-            if not matches:
-                raise ValueError('Current main has no successful validation run')
-            run_id = matches[0]['id']
-    else:
-        raise ValueError('Unsupported deployment trigger')
-    output(resolve_run(run_id, rollback))
+    if name != 'workflow_run':
+        raise ValueError('Automatic deployment only follows approved PR validation')
+    run = event.get('workflow_run', {})
+    if run.get('conclusion') != 'success' or run.get('event') != 'pull_request':
+        return output({'deploy': False, 'reason': 'Only successful approved PR runs deploy automatically'})
+    output(resolve_run(run['id']))
 
 
 def download_artifact(artifact_id, digest):
@@ -284,7 +266,7 @@ def deploy(run_id, expected_target, rollback):
         workers = api(f'accounts/{account}/workers/scripts', cloudflare=True)['result']
         previews = [worker for worker in workers if re.fullmatch(r'meetspriglet-pr-[0-9]+', worker['id'])]
         if len(previews) >= 20 and not any(worker['id'] == name for worker in previews):
-            raise ValueError('Preview limit reached (20). Close unused PRs before deploying another preview')
+            raise ValueError('Preview limit reached (20). Run the documented cleanup command for closed PRs before deploying another preview')
     with tempfile.TemporaryDirectory(prefix='spriglet-website-') as directory:
         work = Path(directory)
         public = work / 'public'; public.mkdir()

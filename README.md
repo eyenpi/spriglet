@@ -94,3 +94,5 @@ Spriglet was developed with AI assistance. GitHub Copilot CLI contributed the pu
 ## License
 
 **MIT for code and original artwork/audio**, including the editable character, rig, animation frames, chimes, and demo. See [LICENSE](LICENSE) and [ASSETS.md](ASSETS.md).
+
+CI waits for owner approval on each PR revision before allocating a runner. See the [approval and runner usage guide](tools/CI/README.md). Pushes and tags do not independently run CI.
