@@ -13,6 +13,11 @@ sys.path.insert(0, str(ROOT / 'tools/CharacterSampleValidation'))
 from png_validation import alpha_measurements, endpoint_difference, read_rgba_png
 
 COUNTS = {'idle': 42, 'walkRight': 24, 'walkLeft': 24, 'pet': 30, 'settle': 18, 'sleep': 1}
+TRANSITION_COUNTS = {**COUNTS, 'fallAsleep': 30, 'wakeUp': 24}
+BOUNDARIES = {'idle': ['ready', 'ready'], 'walkRight': ['ready', 'ready'],
+              'walkLeft': ['ready', 'ready'], 'pet': ['ready', 'happy'],
+              'settle': ['happy', 'ready'], 'fallAsleep': ['ready', 'asleep'],
+              'wakeUp': ['asleep', 'ready'], 'sleep': ['asleep', 'asleep']}
 
 
 def measure_contacts(samples):
@@ -46,11 +51,20 @@ def pose_distance(first, second):
     return max(values, default=math.inf) if all(math.isfinite(v) for v in values) else math.inf
 
 
+def boundary_errors(sample, expected):
+    """A matching skeleton alone cannot certify a seamless facial transition."""
+    return {'pose': pose_distance(sample['inPlacePose'], expected['inPlacePose']),
+            'expression': pose_distance({k: [v] for k, v in sample['expression'].items()},
+                                        {k: [v] for k, v in expected['expression'].items()})}
+
+
 def check_candidate(root):
     build = json.loads((root / 'build.json').read_text())
     motion = json.loads((root / 'motion.json').read_text())
     manifest = json.loads((root / 'runtime/manifest.json').read_text())
-    refined = build.get('revision') == 'refinement-v02'
+    has_transitions = build.get('revision') == 'transitions-v03'
+    refined = has_transitions or build.get('revision') == 'refinement-v02'
+    counts = TRANSITION_COUNTS if has_transitions else COUNTS
     failures, stats, images = [], {}, {}
 
     def require(condition, message):
@@ -62,11 +76,15 @@ def check_candidate(root):
     require(manifest['canvasPixels'] == {'width': 448, 'height': 448}, 'Incorrect source pixel dimensions')
     require(manifest['displaySizePoints'] == {'width': 224, 'height': 224}, 'Incorrect source point dimensions')
     require(manifest['framesPerSecond'] == motion['framesPerSecond'] == 30, 'Incorrect frame rate')
-    require(set(manifest['clips']) == {'walkRight', 'walkLeft', 'idle', 'pet', 'settle'}, 'Invalid clip set')
+    require(manifest['schemaVersion'] == (2 if has_transitions else 1), 'Invalid manifest version')
+    require(set(manifest['clips']) == set(counts) - {'sleep'}, 'Invalid clip set')
     if refined:
-        require(build['framesPerClip'] == COUNTS, 'Incorrect authored action counts')
-        require(set(motion['clips']) == set(COUNTS), 'Incorrect measured action set')
-        require(build['builderSHA256'] == hashlib.sha256((ROOT / 'art/candidates/scripts/build_candidates.py').read_bytes()).hexdigest(), 'Builder changed after rendering')
+        require(build['framesPerClip'] == counts, 'Incorrect authored action counts')
+        require(set(motion['clips']) == set(counts), 'Incorrect measured action set')
+        # Retained v02 is a historical baseline, not an export of today's builder.
+        if has_transitions:
+            require(build['builderSHA256'] == hashlib.sha256((ROOT / 'art/candidates/scripts/build_candidates.py').read_bytes()).hexdigest(), 'Builder changed after rendering')
+            require(motion.get('boundaries') == BOUNDARIES, 'Incorrect transition graph')
         for name, digest in build['helperSHA256'].items():
             require(digest == hashlib.sha256((ROOT / 'art/sprout/scripts' / name).read_bytes()).hexdigest(), f'Helper changed after rendering: {name}')
     files = {manifest['restFrame'], manifest['sleepFrame']}
@@ -93,12 +111,12 @@ def check_candidate(root):
             images[name] = image
 
     clip_reports = {}
-    for clip_name in (COUNTS if refined else ('walkRight', 'walkLeft')):
+    for clip_name in (counts if refined else ('walkRight', 'walkLeft')):
         direction = 1 if clip_name == 'walkRight' else -1 if clip_name == 'walkLeft' else 0
         frames = manifest['clips'][clip_name]['frames'] if clip_name != 'sleep' else [
             {'file': manifest['sleepFrame'], 'rootOffsetPoints': {'x': 0., 'y': 0.}}]
         samples = motion['clips'][clip_name]
-        expected_count = COUNTS[clip_name] if refined else 24
+        expected_count = counts[clip_name] if refined else 24
         require(len(frames) == len(samples) == expected_count, f'{clip_name}: wrong action length')
         require(frames[0]['rootOffsetPoints'] == {'x': 0., 'y': 0.}, f'{clip_name}: nonzero initial root')
         contact = measure_contacts(samples)
@@ -133,6 +151,7 @@ def check_candidate(root):
         }
 
     transitions = {}
+    expressions = {}
     if refined:
         resting = motion['clips']['idle'][0]['inPlacePose']
         for clip in ('idle', 'walkRight', 'walkLeft', 'settle'):
@@ -147,6 +166,19 @@ def check_candidate(root):
         for clip in ('idle', 'pet', 'settle'):
             require(len({stats[f['file']]['fileSHA256'] for f in manifest['clips'][clip]['frames']}) > 8,
                     f'{clip}: expected genuinely animated frames')
+    if has_transitions:
+        canonical = {'ready': motion['clips']['idle'][0], 'happy': motion['clips']['pet'][-1],
+                     'asleep': motion['clips']['sleep'][0]}
+        for clip, states in BOUNDARIES.items():
+            for index, state in zip((0, -1), states):
+                label = f'{clip} {"entry" if index == 0 else "exit"} ↔ {state}'
+                errors = boundary_errors(motion['clips'][clip][index], canonical[state])
+                require(errors['pose'] < 2e-5, f'{label}: pose discontinuity')
+                require(errors['expression'] < 1e-6, f'{label}: expression discontinuity')
+                transitions[label], expressions[label] = errors['pose'], errors['expression']
+        for clip in ('fallAsleep', 'wakeUp'):
+            require(len({stats[f['file']]['fileSHA256'] for f in manifest['clips'][clip]['frames']}) > 16,
+                    f'{clip}: expected genuinely animated transition')
 
     rest = images[manifest['restFrame']]
     opaque = [i for i, a in enumerate(rest.pixels[3::4]) if a > 224]
@@ -157,13 +189,14 @@ def check_candidate(root):
             'uniquePNGCount': len(files), 'neutralOpaqueSizeAt96Points': {'width': width, 'height': height},
             'maximumBorderAlpha': max(item['maximumBorderAlpha'] for item in stats.values()), 'clips': clip_reports,
             'maximumPoseElementErrorAtTransitions': transitions,
+            'maximumExpressionErrorAtTransitions': expressions,
             'limits': 'Numerical checks establish export and authored contact properties, not likeness or appeal.'}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--assets', type=Path, default=ROOT / 'art/candidates/refinement-v02')
-    parser.add_argument('--output', type=Path, default=ROOT / '.build/candidate-refinement/asset-checks.json')
+    parser.add_argument('--assets', type=Path, default=ROOT / 'art/candidates/transitions-v03')
+    parser.add_argument('--output', type=Path, default=ROOT / '.build/candidate-transitions/asset-checks.json')
     args = parser.parse_args()
     results = [check_candidate(args.assets / candidate) for candidate in ('acorn-hopper', 'moss-mouse')]
     report = {'passed': all(item['passed'] for item in results), 'candidates': results}

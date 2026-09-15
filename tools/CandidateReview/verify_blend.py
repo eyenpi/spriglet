@@ -24,6 +24,9 @@ maximum = 0.
 maximum_expression = maximum_pose = 0.
 for clip, samples in motion['clips'].items():
     action = next(action for action in bpy.data.actions if action.get('clip_id') == clip)
+    if 'boundaries' in motion:
+        assert [action['starts_at'], action['ends_at']] == motion['boundaries'][clip]
+        assert tuple(action.frame_range) == (1., float(len(samples)))
     rig.animation_data.action = action
     rig.animation_data.action_slot = action.slots[0]
     for sample in samples:

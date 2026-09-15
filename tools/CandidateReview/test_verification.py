@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from verify_assets import measure_contacts, pose_distance
+from verify_assets import boundary_errors, measure_contacts, pose_distance
 
 
 def sample(x=0., z=0., *, planted=True, intended=None):
@@ -43,6 +43,21 @@ class ContactTests(unittest.TestCase):
 
 
 class EndpointTests(unittest.TestCase):
+    def test_matching_body_cannot_hide_facial_snap(self):
+        rest = {'inPlacePose': {'Body': [0, 1]}, 'expression': {'Blink': 0., 'Happy': 0.}}
+        wrong = {**rest, 'expression': {'Blink': 1., 'Happy': 0.}}
+        result = boundary_errors(wrong, rest)
+        self.assertEqual(result['pose'], 0)
+        self.assertEqual(result['expression'], 1)
+
+    def test_missing_facial_control_is_not_a_match(self):
+        rest = {'inPlacePose': {'Body': [0, 1]}, 'expression': {'Blink': 0., 'Happy': 0.}}
+        self.assertTrue(math.isinf(boundary_errors({**rest, 'expression': {'Happy': 0.}}, rest)['expression']))
+
+    def test_nonfinite_facial_value_is_not_a_match(self):
+        rest = {'inPlacePose': {'Body': [0, 1]}, 'expression': {'Blink': 0.}}
+        self.assertTrue(math.isinf(boundary_errors({**rest, 'expression': {'Blink': math.nan}}, rest)['expression']))
+
     def test_matching_poses(self):
         self.assertEqual(pose_distance({'Body': [0, 1]}, {'Body': [0, 1]}), 0)
 

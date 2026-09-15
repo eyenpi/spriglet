@@ -1,0 +1,31 @@
+{
+  "candidate": "moss-mouse",
+  "blenderVersion": "5.2.1 LTS",
+  "meshObjects": 23,
+  "controlBones": 11,
+  "vertices": 64302,
+  "revision": "transitions-v03",
+  "framesPerClip": {
+    "idle": 42,
+    "walkRight": 24,
+    "walkLeft": 24,
+    "pet": 30,
+    "settle": 18,
+    "fallAsleep": 30,
+    "wakeUp": 24,
+    "sleep": 1
+  },
+  "framesPerSecond": 30,
+  "reviewCanvasPoints": 96,
+  "runtimeCameraScale": 2.859999895095825,
+  "travelAtReviewSizePoints": 100.69930439292918,
+  "externalTextures": 0,
+  "hairObjects": 0,
+  "builderSHA256": "b1e463381ada2541c3e4ec9b361547666862798c480c283f44caca40c9e7f488",
+  "samples": 40,
+  "renderDevice": "GPU",
+  "helperSHA256": {
+    "build_design.py": "49886ea794f7385825d04d893a330a85f3dded8db6f31916a82d950381ba1133",
+    "sample_motion.py": "c8529a74571f85f2b47bd696f456cb140820754d81fa7d7877f0c7557db81d1b"
+  }
+}

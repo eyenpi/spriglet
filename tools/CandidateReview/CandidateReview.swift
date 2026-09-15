@@ -16,9 +16,9 @@ enum CandidateReview {
         let checkout = Bundle.main.bundleURL.deletingLastPathComponent()
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         let assets = value("--assets").map { URL(fileURLWithPath: $0) }
-            ?? checkout.appendingPathComponent("art/candidates/refinement-v02")
+            ?? checkout.appendingPathComponent("art/candidates/transitions-v03")
         let report = value("--report").map { URL(fileURLWithPath: $0) }
-            ?? checkout.appendingPathComponent(".build/candidate-refinement/native-playback.json")
+            ?? checkout.appendingPathComponent(".build/candidate-transitions/native-playback.json")
         let app = NSApplication.shared
         app.setActivationPolicy(.regular)
         let runner = ReviewRunner(assets: assets, report: report, checkOnly: arguments.contains("--check"))
@@ -50,6 +50,24 @@ private struct Observation: Codable {
     }
 }
 
+private struct TransitionObservation: Codable {
+    let candidate: String
+    let background: String
+    let scenario: String
+    let expectedClips: [String]
+    let observedClips: [String]
+    let reachedTarget: Bool
+    let stopped: Bool
+    let boundaryJumpPoints: Double
+    let underruns: UInt64
+    let assetError: String?
+
+    var passed: Bool {
+        expectedClips == observedClips && reachedTarget && stopped
+            && boundaryJumpPoints < 0.001 && underruns == 0 && assetError == nil
+    }
+}
+
 @MainActor
 private final class ProofPet {
     let candidate: String
@@ -65,6 +83,12 @@ private final class ProofPet {
     private var underrunsBefore: UInt64 = 0
     private var accepted = 0
     private var maximumError = 0.0
+    private var measurementOrigin = NSPoint.zero
+    private var projectedEndX = 0.0
+    private var firstFrame = false
+    private var previousClip: SampleClipID?
+    private var clipTrace: [SampleClipID] = []
+    private var boundaryJump = 0.0
 
     init(candidate: String, background: String, resources: URL, board: NSView, origin: NSPoint,
          canvasSize: Double = 96, followsTravel: Bool = true) {
@@ -75,17 +99,36 @@ private final class ProofPet {
         self.followsTravel = followsTravel
         home = origin
         start = origin
+        projectedEndX = origin.x
         host = NSView(frame: NSRect(origin: origin, size: NSSize(width: canvasSize, height: canvasSize)))
         host.wantsLayer = true
         host.setBoundsSize(NSSize(width: 224, height: 224))
         renderer = PetRenderView(frame: NSRect(x: 0, y: 0, width: 224, height: 224), resourceDirectory: resources)
         host.addSubview(renderer)
         board.addSubview(host)
+        renderer.onPlaybackWillStart = { [weak self] sequence in
+            guard let self else { return false }
+            // Continue from the previous landed position, never from home.
+            self.start = self.host.frame.origin
+            let logicalStart = self.followsTravel ? self.start.x : self.projectedEndX
+            self.projectedEndX = logicalStart + (sequence.rootOffsets.last?.x ?? 0) * self.canvasSize / 224
+            self.firstFrame = true
+            self.previousClip = nil
+            return true
+        }
         renderer.onFrame = { [weak self] snapshot in
             guard let self, let board = self.board else { return false }
             let scale = self.followsTravel ? self.canvasSize / 224.0 : 0
             let expected = NSPoint(x: self.start.x + snapshot.rootOffsetPoints.x * scale,
                                    y: self.start.y + snapshot.rootOffsetPoints.y * scale)
+            if self.firstFrame {
+                self.boundaryJump = max(self.boundaryJump, hypot(expected.x - self.host.frame.minX, expected.y - self.host.frame.minY))
+                self.firstFrame = false
+            }
+            if self.previousClip != snapshot.clip {
+                self.clipTrace.append(snapshot.clip)
+                self.previousClip = snapshot.clip
+            }
             self.host.setFrameOrigin(expected)
             let actual = self.renderer.convert(self.renderer.bounds, to: board).origin
             self.maximumError = max(self.maximumError, hypot(actual.x - expected.x, actual.y - expected.y))
@@ -94,30 +137,41 @@ private final class ProofPet {
         }
     }
 
-    func play(_ action: String) {
-        renderer.resetPose()
-        // Replay always starts in a known position. Leftward travel begins at
-        // the right endpoint so the entire trajectory fits in its review card.
-        let sourceTravel = renderer.manifest?.clips[action]?.frames.last?.rootOffsetPoints.x ?? 0
-        start = NSPoint(x: home.x + (action == "walkLeft" && followsTravel ? -sourceTravel * canvasSize / 224 : 0), y: home.y)
-        host.setFrameOrigin(start)
-        accepted = 0
-        maximumError = 0
-        submittedBefore = renderer.submittedFrameCount
-        underrunsBefore = renderer.bufferUnderrunCount
+    func intent(for action: String) -> SampleTransitionIntent {
         switch action {
-        case "walkRight": renderer.playWalk(.walkRight)
-        case "walkLeft": renderer.playWalk(.walkLeft)
-        case "idle": renderer.play(.blink)
-        case "pet": renderer.play(.react)
-        case "sleep": renderer.play(.fallAsleep)
-        default: break
+        case "walkRight": .moveRight
+        case "walkLeft": .moveLeft
+        // Predict the current action's landing, not its airborne position.
+        case "move": projectedEndX > home.x + 0.5 ? .moveLeft : .moveRight
+        case "idle": .curious
+        case "pet": .happy
+        case "sleep", "fallAsleep": .sleep
+        default: .ready
         }
     }
 
-    func reset() {
+    @discardableResult
+    func play(_ action: String) -> SampleTransitionIntent {
+        let intent = intent(for: action)
+        renderer.transition(to: intent)
+        return intent
+    }
+
+    func beginMeasurement() {
+        accepted = 0
+        maximumError = 0
+        boundaryJump = 0
+        clipTrace = []
+        measurementOrigin = host.frame.origin
+        submittedBefore = renderer.submittedFrameCount
+        underrunsBefore = renderer.bufferUnderrunCount
+    }
+
+    /// Test-fixture setup only. Interactive controls never call this.
+    func resetFixture() {
         renderer.resetPose()
         start = home
+        projectedEndX = home.x
         host.setFrameOrigin(home)
     }
 
@@ -127,10 +181,19 @@ private final class ProofPet {
         return Observation(candidate: candidate, background: background, action: action,
                            canvasPoints: [visible.width, visible.height],
                            backingPixels: [backing.width, backing.height], acceptedFrames: accepted,
-                           completed: renderer.currentSnapshot?.isComplete == true && renderer.submittedFrameCount > submittedBefore,
+                           completed: (renderer.currentSnapshot?.isComplete == true || renderer.isSleeping)
+                               && renderer.submittedFrameCount > submittedBefore,
                            underruns: renderer.bufferUnderrunCount - underrunsBefore,
-                           movementErrorPoints: maximumError, travelPoints: host.frame.minX - start.x,
+                           movementErrorPoints: maximumError, travelPoints: host.frame.minX - measurementOrigin.x,
                            stoppedAtRest: stopped, assetError: renderer.assetError)
+    }
+
+    func transitionObservation(_ scenario: String, expected: [SampleClipID], sleeping: Bool, stopped: Bool) -> TransitionObservation {
+        TransitionObservation(candidate: candidate, background: background, scenario: scenario,
+                              expectedClips: expected.map(\.rawValue), observedClips: clipTrace.map(\.rawValue),
+                              reachedTarget: renderer.isSleeping == sleeping && !renderer.isAnimating,
+                              stopped: stopped, boundaryJumpPoints: boundaryJump,
+                              underruns: renderer.bufferUnderrunCount - underrunsBefore, assetError: renderer.assetError)
     }
 }
 
@@ -145,7 +208,10 @@ private final class ReviewRunner: NSObject, NSApplicationDelegate, NSWindowDeleg
     private let status = NSTextField(labelWithString: "Loading Blender models…")
     private var task: Task<Void, Never>?
     private var observations: [Observation] = []
+    private var transitions: [TransitionObservation] = []
     private var sleepChecksPassed = false
+    private var cancellationPassed = false
+    private var demoTask: Task<Void, Never>?
     private var checking = true
     private var buttons: [NSButton] = []
 
@@ -165,7 +231,7 @@ private final class ReviewRunner: NSObject, NSApplicationDelegate, NSWindowDeleg
         board.wantsLayer = true
         board.layer?.backgroundColor = NSColor(calibratedWhite: 0.96, alpha: 1).cgColor
         label("Two little forest troublemakers", at: NSRect(x: 30, y: 617, width: 700, height: 32), size: 26, weight: .semibold, in: board)
-        label("Refinement 02 · idle, movement, affection and sleep · real Spriglet playback", at: NSRect(x: 31, y: 590, width: 850, height: 23), size: 13, in: board)
+        label("Transitions 03 · matched poses, graceful landings, sleepy nods and waking stretches", at: NSRect(x: 31, y: 590, width: 850, height: 23), size: 13, in: board)
         for (column, candidate) in ["acorn-hopper", "moss-mouse"].enumerated() {
             let x = 26.0 + Double(column) * 458
             let title = column == 0 ? "Acorn Hopper" : "Moss Mouse"
@@ -191,7 +257,7 @@ private final class ReviewRunner: NSObject, NSApplicationDelegate, NSWindowDeleg
                 pets.append(pet)
             }
         }
-        for (i, title) in ["Curious", "Hop / dash →", "← Replay", "Pet both", "Nap", "Rest"].enumerated() {
+        for (i, title) in ["Curious", "Hop / dash", "Pet both", "Nap", "Wake / rest", "All states"].enumerated() {
             let button = NSButton(title: title, target: self, action: #selector(control(_:)))
             button.tag = i
             button.bezelStyle = .rounded
@@ -214,7 +280,15 @@ private final class ReviewRunner: NSObject, NSApplicationDelegate, NSWindowDeleg
         window.makeKeyAndOrderFront(nil)
         self.window = window
         NSApp.activate()
-        task = Task { await validate() }
+        if checkOnly {
+            task = Task { await validate() }
+        } else {
+            // Opening the comparison is immediate; exhaustive checks are an
+            // explicit command, not a minute-long interaction gate.
+            checking = false
+            buttons.forEach { $0.isEnabled = true }
+            status.stringValue = "Ready · try clicking during a hop"
+        }
     }
 
     private func label(_ title: String, at frame: NSRect, size: CGFloat, weight: NSFont.Weight = .regular,
@@ -228,45 +302,113 @@ private final class ReviewRunner: NSObject, NSApplicationDelegate, NSWindowDeleg
 
     @objc private func control(_ sender: NSButton) {
         guard !checking else { return }
+        demoTask?.cancel()
         if sender.tag == 5 {
-            (pets + enlarged).forEach { $0.reset() }
+            demoTask = Task {
+                do {
+                    for action in ["idle", "move", "pet", "sleep", "ready", "move"] {
+                        try Task.checkCancellation()
+                        status.stringValue = "\(action) · changes wait for a safe pose"
+                        (pets + enlarged).forEach { $0.play(action) }
+                        _ = try await waitForQuiet()
+                        try await Task.sleep(for: .milliseconds(action == "sleep" ? 700 : 180))
+                    }
+                    status.stringValue = "Ready · try clicking during a hop"
+                } catch { /* A new control replaces the remainder of the demo. */ }
+            }
         } else {
-            let action = ["idle", "walkRight", "walkLeft", "pet", "sleep"][sender.tag]
+            let action = ["idle", "move", "pet", "sleep", "ready"][sender.tag]
             (pets + enlarged).forEach { $0.play(action) }
+            status.stringValue = "Latest request: \(action) · no pose resets"
+        }
+    }
+
+    private func waitForQuiet() async throws -> Bool {
+        // Bounded completion wait, including decode time and queued requests.
+        for _ in 0..<160 {
+            if (pets + enlarged).allSatisfy({ !$0.renderer.isAnimating && !$0.renderer.hasActiveDisplayLink }) { return true }
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        return false
+    }
+
+    private func quietChecks() async throws -> [Bool] {
+        let counts = pets.map { ($0.renderer.submittedFrameCount, $0.renderer.displayLinkCallbackCount) }
+        try await Task.sleep(for: .milliseconds(250))
+        return pets.enumerated().map { index, pet in
+            !pet.renderer.isAnimating && !pet.renderer.hasActiveDisplayLink
+                && pet.renderer.submittedFrameCount == counts[index].0
+                && pet.renderer.displayLinkCallbackCount == counts[index].1
         }
     }
 
     private func validate() async {
         do {
             try await Task.sleep(for: .milliseconds(500))
-            for action in ["idle", "walkRight", "walkLeft", "pet"] {
+            for action in ["idle", "walkRight", "walkLeft", "pet", "fallAsleep", "wakeUp"] {
                 status.stringValue = "Checking \(action) at 96 points…"
+                pets.forEach { $0.beginMeasurement() }
                 (pets + enlarged).forEach { $0.play(action) }
-                try await Task.sleep(for: .seconds(2.5))
-                let settled = pets.map { ($0.renderer.submittedFrameCount, $0.renderer.displayLinkCallbackCount) }
-                try await Task.sleep(for: .milliseconds(400))
+                let completed = try await waitForQuiet()
+                let stopped = try await quietChecks()
                 for (index, pet) in pets.enumerated() {
-                    let stopped = !pet.renderer.isAnimating && !pet.renderer.hasActiveDisplayLink
-                        && pet.renderer.submittedFrameCount == settled[index].0
-                        && pet.renderer.displayLinkCallbackCount == settled[index].1
-                    observations.append(pet.observation(action, stopped: stopped))
+                    observations.append(pet.observation(action, stopped: completed && stopped[index]))
+                }
+                if action == "fallAsleep" {
+                    sleepChecksPassed = completed && stopped.allSatisfy { $0 } && pets.allSatisfy { $0.renderer.isSleeping }
                 }
             }
-            (pets + enlarged).forEach { $0.play("sleep") }
-            try await Task.sleep(for: .milliseconds(200))
-            let sleepCounts = pets.map { ($0.renderer.submittedFrameCount, $0.renderer.displayLinkCallbackCount) }
-            try await Task.sleep(for: .milliseconds(400))
-            sleepChecksPassed = pets.enumerated().allSatisfy { index, pet in
-                pet.renderer.isSleeping && !pet.renderer.isAnimating && !pet.renderer.hasActiveDisplayLink
-                    && pet.renderer.submittedFrameCount == sleepCounts[index].0
-                    && pet.renderer.displayLinkCallbackCount == sleepCounts[index].1 && pet.renderer.assetError == nil
+
+            // Exercise all 25 ordered experience pairs, requesting the target
+            // DURING the source animation, including during a hop and a nap entry.
+            let states = ["ready", "idle", "move", "pet", "sleep"]
+            for source in states {
+                for target in states {
+                    status.stringValue = "Handover \(source) → \(target)…"
+                    (pets + enlarged).forEach { $0.resetFixture() }
+                    pets.forEach { $0.beginMeasurement() }
+                    let initial = pets.map { SampleTransitionPlan(to: $0.intent(for: source), isSleeping: false, animatedSleep: true) }
+                    (pets + enlarged).forEach { $0.play(source) }
+                    try await Task.sleep(for: .milliseconds(180))
+                    let next = pets.enumerated().map { index, pet in
+                        SampleTransitionPlan(to: pet.intent(for: target), isSleeping: initial[index].sleepsAtEnd, animatedSleep: true)
+                    }
+                    (pets + enlarged).forEach { $0.play(target) }
+                    let completed = try await waitForQuiet()
+                    let stopped = try await quietChecks()
+                    for (index, pet) in pets.enumerated() {
+                        transitions.append(pet.transitionObservation("\(source) → \(target)",
+                            expected: initial[index].clips + next[index].clips,
+                            sleeping: target == "sleep", stopped: completed && stopped[index]))
+                    }
+                }
             }
-            let passed = observations.count == 16 && observations.allSatisfy(\.passed) && sleepChecksPassed
+
+            status.stringValue = "Checking rapid clicks and cancellation…"
+            (pets + enlarged).forEach { $0.resetFixture(); $0.beginMeasurement(); $0.play("walkRight") }
+            try await Task.sleep(for: .milliseconds(180))
+            (pets + enlarged).forEach { $0.play("pet"); $0.play("sleep"); $0.play("idle") }
+            let rapidCompleted = try await waitForQuiet()
+            let rapidStopped = try await quietChecks()
+            for (index, pet) in pets.enumerated() {
+                transitions.append(pet.transitionObservation("Latest of three rapid clicks wins",
+                    expected: [.walkRight, .idle], sleeping: false, stopped: rapidCompleted && rapidStopped[index]))
+            }
+            (pets + enlarged).forEach { $0.play("sleep"); $0.play("pet") }
+            try await Task.sleep(for: .milliseconds(180))
+            (pets + enlarged).forEach { $0.renderer.setSuspended(true) }
+            let cancelled = try await quietChecks()
+            (pets + enlarged).forEach { $0.renderer.setSuspended(false) }
+            let resumed = try await quietChecks()
+            cancellationPassed = cancelled.allSatisfy { $0 } && resumed.allSatisfy { $0 }
+
+            let passed = observations.count == 24 && observations.allSatisfy(\.passed)
+                && transitions.count == 104 && transitions.allSatisfy(\.passed) && sleepChecksPassed && cancellationPassed
             try writeReport(passed: passed)
             checking = false
             buttons.forEach { $0.isEnabled = true }
-            status.stringValue = passed ? "96 pt · finite playback + nap checked" : "Playback needs attention — see report"
-            (pets + enlarged).forEach { $0.reset() }
+            status.stringValue = passed ? "96 pt · all 25 state pairs checked" : "Playback needs attention — see report"
+            (pets + enlarged).forEach { $0.resetFixture() }
             try await Task.sleep(for: .milliseconds(150))
             if let board = window?.contentView,
                let bitmap = board.bitmapImageRepForCachingDisplay(in: board.bounds) {
@@ -289,27 +431,32 @@ private final class ReviewRunner: NSObject, NSApplicationDelegate, NSWindowDeleg
             let passed: Bool
             let renderer: String
             let observations: [Observation]
+            let transitions: [TransitionObservation]
             let sleepChecksPassed: Bool
+            let cancellationPassed: Bool
             let limitation: String
         }
-        let value = Report(passed: passed, renderer: "Unmodified shipping PetRenderView and SampleImageDecoder",
-                           observations: observations, sleepChecksPassed: sleepChecksPassed,
+        let value = Report(passed: passed, renderer: "Shipping PetRenderView with additive state-transition routing; unchanged SampleImageDecoder",
+                           observations: observations, transitions: transitions, sleepChecksPassed: sleepChecksPassed,
+                           cancellationPassed: cancellationPassed,
                            limitation: "Embedded native view verifies size, finite playback, root placement and stopped work; not separate desktop panels, all-frame presentation, or artistic approval.")
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         try FileManager.default.createDirectory(at: report.deletingLastPathComponent(), withIntermediateDirectories: true)
         try encoder.encode(value).write(to: report, options: .atomic)
-        print("Candidate native playback: \(passed ? "PASS" : "FAIL") (\(observations.count) sequences)")
+        print("Candidate native playback: \(passed ? "PASS" : "FAIL") (\(observations.count) clips, \(transitions.count) handovers)")
     }
 
     func windowWillClose(_ notification: Notification) {
         task?.cancel()
+        demoTask?.cancel()
         (pets + enlarged).forEach { $0.renderer.setSuspended(true) }
         NSApp.terminate(nil)
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         task?.cancel()
+        demoTask?.cancel()
         (pets + enlarged).forEach { $0.renderer.setSuspended(true) }
     }
 }

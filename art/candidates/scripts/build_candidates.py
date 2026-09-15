@@ -27,7 +27,12 @@ from build_design import (aim, area, blend, camera, collection, ellipsoid,
 from sample_motion import apply_pose, around, linear_keys, new_action, rotation, translation
 
 FPS, COUNT, PIXELS, POINTS, REVIEW_POINTS = 30, 24, 448, 224, 96
-COUNTS = {'idle': 42, 'walkRight': COUNT, 'walkLeft': COUNT, 'pet': 30, 'settle': 18, 'sleep': 1}
+COUNTS = {'idle': 42, 'walkRight': COUNT, 'walkLeft': COUNT, 'pet': 30, 'settle': 18,
+          'fallAsleep': 30, 'wakeUp': 24, 'sleep': 1}
+BOUNDARIES = {'idle': ('ready', 'ready'), 'walkRight': ('ready', 'ready'),
+              'walkLeft': ('ready', 'ready'), 'pet': ('ready', 'happy'),
+              'settle': ('happy', 'ready'), 'fallAsleep': ('ready', 'asleep'),
+              'wakeUp': ('asleep', 'ready'), 'sleep': ('asleep', 'asleep')}
 NAMES = {"acorn-hopper": "Acorn Hopper", "moss-mouse": "Moss Mouse"}
 TRAVEL = {'acorn-hopper': 3.2, 'moss-mouse': 3.0}
 GREEN, CREAM, LEAF, BLUSH = map(linear, ("90995B", "F8E5BF", "768C48", "E6A18D"))
@@ -456,7 +461,7 @@ def stationary_motion(character, clip, index):
     mouse = character.mouse
     t = index / max(1, COUNTS[clip] - 1)
     affection = 0.
-    flourish = glance = blink = sleeping = 0.
+    flourish = glance = blink = sleeping = stretch = nod = 0.
     breath = math.sin(math.pi * t) ** 2
     if clip == 'idle':
         glance = pulse(index, 3, 14, 36)
@@ -468,9 +473,21 @@ def stationary_motion(character, clip, index):
         affection = 1 - smooth(t)
     elif clip == 'sleep':
         sleeping, blink = 1., 1.
-    squash = .042 * affection + .115 * sleeping + (.012 * breath if clip == 'idle' else 0.)
+    elif clip == 'fallAsleep':
+        # A failed attempt to stay awake, then the cap/ears gently fold down.
+        sleeping = smooth((index - 6) / 23)
+        blink = max(.72 * pulse(index, 1, 5, 9), smooth((index - 9) / 13))
+        nod = pulse(index, 2, 7, 14)
+    elif clip == 'wakeUp':
+        # Begin at the exact held sleep pose. Open the eyes, stretch, then
+        # recover to the shared ready pose without moving the planted feet.
+        sleeping = 1 - smooth((index - 2) / 18)
+        blink = max(1 - smooth((index - 4) / 7), .7 * pulse(index, 16, 18, 21))
+        stretch = pulse(index, 5, 12, 21)
+        flourish = .22 * math.sin(index * .7) * pulse(index, 8, 15, 23)
+    squash = .042 * affection + .115 * sleeping - .09 * stretch + (.012 * breath if clip == 'idle' else 0.)
     body_roll = (-.028 if mouse else -.055) * affection + (.025 if mouse else .075) * flourish
-    body_roll += (.012 if mouse else .052) * glance
+    body_roll += (.012 if mouse else .052) * glance + (.018 if mouse else .045) * nod
     scale = Matrix.Diagonal((1 + squash * .38, 1 + squash * .38, 1 - squash, 1))
     body = around(character.body_pivot, rotation('Y', body_roll) @ scale)
     deforms = {'Stage': Matrix.Identity(4), 'Root': Matrix.Identity(4), 'Body': body}
@@ -478,7 +495,7 @@ def stationary_motion(character, clip, index):
         head = body @ around(character.head_pivot,
                             rotation('Y', -.115 * affection + .10 * glance + .09 * sleeping)
                             @ rotation('Z', -.105 * glance)
-                            @ rotation('X', -.07 * affection + .12 * sleeping))
+                            @ rotation('X', -.07 * affection + .12 * sleeping + .075 * nod - .045 * stretch))
         deforms['Head'] = head
     else:
         head = body
@@ -488,13 +505,15 @@ def stationary_motion(character, clip, index):
         side = -1 if name.endswith('.L') else 1
         if name.startswith('Ear'):
             twitch = .16 * pulse(index, 7 if side < 0 else 11, 9 if side < 0 else 14, 14 if side < 0 else 20) if clip == 'idle' else 0.
+            if clip == 'wakeUp':
+                twitch = -.16 * pulse(index, 9 if side < 0 else 12, 13 if side < 0 else 16, 21 if side < 0 else 23)
             deform = head @ around(pivot, rotation('X', .20 * affection + .08 * side * flourish + .45 * sleeping + twitch)
                                    @ rotation('Y', side * (.10 * affection + .44 * sleeping)))
         elif name == 'Tail':
             deform = body @ around(pivot, rotation('Z', .32 * flourish + .10 * glance)
                                    @ rotation('X', .12 * affection - .43 * sleeping))
         elif name == 'Cap':
-            deform = body @ around(pivot, rotation('X', .035 * affection + .15 * sleeping)
+            deform = body @ around(pivot, rotation('X', .035 * affection + .15 * sleeping + .055 * nod - .045 * stretch)
                                    @ rotation('Y', -.065 * flourish - .025 * glance))
         elif name == 'Leaf':
             deform = deforms['Cap'] @ around(pivot, rotation('Y', -.12 * affection + .16 * flourish - .18 * sleeping + .10 * glance))
@@ -656,6 +675,7 @@ def build(args):
     for clip, count in COUNTS.items():
         action = new_action(rig, NAMES[candidate] + ' · ' + clip)
         action['clip_id'], action['duration_seconds'] = clip, count / FPS
+        action['starts_at'], action['ends_at'] = BOUNDARIES[clip]
         frames = []
         for index in range(count):
             scene.frame_set(index + 1)
@@ -701,6 +721,19 @@ def build(args):
                     if abs(key.value - sample['expression'][key.name]) > 1e-5:
                         raise RuntimeError(f'Facial preflight failed: {clip}/{index} {obj.name}/{key.name}')
 
+    # Every entrance and exit must match its canonical pose AND expression.
+    # This verifies the full transition graph before the expensive render pass.
+    canonical = {'ready': contact_clips['idle'][0], 'happy': contact_clips['pet'][-1],
+                 'asleep': contact_clips['sleep'][0]}
+    for clip, states in BOUNDARIES.items():
+        for index, state in zip((0, -1), states):
+            sample, expected = contact_clips[clip][index], canonical[state]
+            error = max(abs(a - b) for name in expected['inPlacePose']
+                        for a, b in zip(sample['inPlacePose'][name], expected['inPlacePose'][name]))
+            if error > 2e-5 or any(abs(sample['expression'][key] - value) > 1e-6
+                                  for key, value in expected['expression'].items()):
+                raise RuntimeError(f'Transition preflight failed: {clip}/{index} → {state}')
+
     select('walkRight', 0)
     # A separate inspection Action lets Space play the editable pose without
     # leaving the close camera. The two export Actions retain true world travel.
@@ -735,12 +768,15 @@ def build(args):
     bpy.context.view_layer.objects.active = rig
     scene.render.filepath = '//runtime/'
     notes = bpy.data.texts.new('START HERE · editable actions')
-    notes.write('Refinement v02 · ' + NAMES[candidate] + '\n\n'
+    notes.write('Transitions v03 · ' + NAMES[candidate] + '\n\n'
                 'Space plays the default in-place 24-frame movement inspection.\n'
                 'Each named Action includes its face: change only the rig Action to inspect another gesture.\n'
                 'Rig custom properties Blink and Happy drive editable eye, eyelid and smile shape keys.\n'
-                'Frame ranges: idle 1–42; walkRight/Left 1–24; pet 1–30; settle 1–18; sleep 1.\n'
+                'Frame ranges: idle 1–42; walkRight/Left 1–24; pet 1–30; settle 1–18; fallAsleep 1–30; wakeUp 1–24; sleep 1.\n'
                 'Pet ends in affection; settle begins in the identical pose and returns to rest.\n'
+                'FallAsleep connects ready to the held sleep pose. WakeUp connects sleep back to ready.\n'
+                'Every Action carries starts_at / ends_at state metadata; both geometry and expression endpoints match.\n'
+                'Finish an airborne action before changing states. Route happy through settle and sleep through wakeUp.\n'
                 'Travel Actions move in world space. Stage remains unkeyed and cancels root movement only during export.\n'
                 'No external images, groom, generated mesh, or add-on dependencies.\n')
     bpy.ops.wm.save_as_mainfile(filepath=str(output / (candidate + '.blend')), compress=True)
@@ -764,7 +800,7 @@ def build(args):
         for index, label in ((4, 'anticipation'), (9, 'airborne'), (17, 'landing')):
             select('walkRight', index, True)
             render(review / (label + '.png'), args.resolution)
-        for clip, index in (('idle', 14), ('pet', 15), ('sleep', 0)):
+        for clip, index in (('idle', 14), ('pet', 15), ('sleep', 0), ('fallAsleep', 15), ('wakeUp', 12)):
             select(clip, index, True)
             render(review / (clip + '.png'), args.resolution)
         select('walkRight', 0)
@@ -797,19 +833,20 @@ def build(args):
             if clip != 'sleep':
                 manifests[clip] = {'frames': frames}
         ground = world_to_camera_view(scene, runtime_camera, Vector((0, 0, 0)))
-        manifest = {'schemaVersion': 1, 'canvasPixels': {'width': PIXELS, 'height': PIXELS},
+        manifest = {'schemaVersion': 2, 'canvasPixels': {'width': PIXELS, 'height': PIXELS},
                     'displaySizePoints': {'width': POINTS, 'height': POINTS}, 'framesPerSecond': FPS,
                     'groundAnchorPixels': {'x': ground.x * PIXELS, 'y': ground.y * PIXELS},
                     'restFrame': 'rest.png', 'sleepFrame': 'sleep.png', 'clips': manifests}
         json_file(runtime / 'manifest.json', manifest)
         json_file(output / 'motion.json', {'schemaVersion': 1, 'framesPerSecond': FPS, 'worldGroundZ': 0.,
                   'sourceCanvasPoints': POINTS, 'reviewCanvasPoints': REVIEW_POINTS,
+                  'boundaries': BOUNDARIES,
                   'cameraScale': runtime_camera.data.ortho_scale, 'travelAxis': list(axis), 'clips': contact_clips})
     select('walkRight', 0)
     evidence = {'candidate': candidate, 'blenderVersion': bpy.app.version_string,
                 'meshObjects': len(character.parts), 'controlBones': len(character.specs),
                 'vertices': sum(len(obj.data.vertices) for obj, _ in character.parts),
-                'revision': 'refinement-v02', 'framesPerClip': COUNTS, 'framesPerSecond': FPS, 'reviewCanvasPoints': REVIEW_POINTS,
+                'revision': 'transitions-v03', 'framesPerClip': COUNTS, 'framesPerSecond': FPS, 'reviewCanvasPoints': REVIEW_POINTS,
                 'runtimeCameraScale': runtime_camera.data.ortho_scale,
                 'travelAtReviewSizePoints': TRAVEL[candidate] * REVIEW_POINTS / runtime_camera.data.ortho_scale,
                 'externalTextures': 0, 'hairObjects': 0,
@@ -824,8 +861,8 @@ def build(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--candidate', choices=NAMES, required=True)
-    parser.add_argument('--output', default=str(ROOT / 'art/candidates/refinement-v02'))
-    parser.add_argument('--review', default=str(ROOT / '.build/candidate-refinement'))
+    parser.add_argument('--output', default=str(ROOT / 'art/candidates/transitions-v03'))
+    parser.add_argument('--review', default=str(ROOT / '.build/candidate-transitions'))
     parser.add_argument('--mode', choices=('preview', 'export', 'all'), default='all')
     parser.add_argument('--views', default='hero,front,side,back')
     parser.add_argument('--resolution', type=int, default=768)
