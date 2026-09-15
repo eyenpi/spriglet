@@ -16,9 +16,9 @@ enum CandidateReview {
         let checkout = Bundle.main.bundleURL.deletingLastPathComponent()
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         let assets = value("--assets").map { URL(fileURLWithPath: $0) }
-            ?? checkout.appendingPathComponent("art/candidates/proof-v01")
+            ?? checkout.appendingPathComponent("art/candidates/refinement-v02")
         let report = value("--report").map { URL(fileURLWithPath: $0) }
-            ?? checkout.appendingPathComponent(".build/candidate-review/native-playback.json")
+            ?? checkout.appendingPathComponent(".build/candidate-refinement/native-playback.json")
         let app = NSApplication.shared
         app.setActivationPolicy(.regular)
         let runner = ReviewRunner(assets: assets, report: report, checkOnly: arguments.contains("--check"))
@@ -30,7 +30,7 @@ enum CandidateReview {
 private struct Observation: Codable {
     let candidate: String
     let background: String
-    let direction: String
+    let action: String
     let canvasPoints: [Double]
     let backingPixels: [Double]
     let acceptedFrames: Int
@@ -44,7 +44,8 @@ private struct Observation: Codable {
     var passed: Bool {
         canvasPoints.allSatisfy { abs($0 - 96) < 0.001 }
             && acceptedFrames > 12 && completed && underruns == 0
-            && movementErrorPoints < 0.001 && abs(travelPoints) > 90
+            && movementErrorPoints < 0.001
+            && (action.hasPrefix("walk") ? abs(travelPoints) > 90 : abs(travelPoints) < 0.001)
             && stoppedAtRest && assetError == nil
     }
 }
@@ -56,6 +57,8 @@ private final class ProofPet {
     let renderer: PetRenderView
     let host: NSView
     let home: NSPoint
+    let canvasSize: Double
+    let followsTravel: Bool
     weak var board: NSView?
     private var start = NSPoint.zero
     private var submittedBefore: UInt64 = 0
@@ -63,12 +66,16 @@ private final class ProofPet {
     private var accepted = 0
     private var maximumError = 0.0
 
-    init(candidate: String, background: String, resources: URL, board: NSView, origin: NSPoint) {
+    init(candidate: String, background: String, resources: URL, board: NSView, origin: NSPoint,
+         canvasSize: Double = 96, followsTravel: Bool = true) {
         self.candidate = candidate
         self.background = background
         self.board = board
+        self.canvasSize = canvasSize
+        self.followsTravel = followsTravel
         home = origin
-        host = NSView(frame: NSRect(origin: origin, size: NSSize(width: 96, height: 96)))
+        start = origin
+        host = NSView(frame: NSRect(origin: origin, size: NSSize(width: canvasSize, height: canvasSize)))
         host.wantsLayer = true
         host.setBoundsSize(NSSize(width: 224, height: 224))
         renderer = PetRenderView(frame: NSRect(x: 0, y: 0, width: 224, height: 224), resourceDirectory: resources)
@@ -76,7 +83,7 @@ private final class ProofPet {
         board.addSubview(host)
         renderer.onFrame = { [weak self] snapshot in
             guard let self, let board = self.board else { return false }
-            let scale = 96.0 / 224.0
+            let scale = self.followsTravel ? self.canvasSize / 224.0 : 0
             let expected = NSPoint(x: self.start.x + snapshot.rootOffsetPoints.x * scale,
                                    y: self.start.y + snapshot.rootOffsetPoints.y * scale)
             self.host.setFrameOrigin(expected)
@@ -87,29 +94,37 @@ private final class ProofPet {
         }
     }
 
-    func play(_ direction: SampleClipID) {
+    func play(_ action: String) {
         renderer.resetPose()
         // Replay always starts in a known position. Leftward travel begins at
         // the right endpoint so the entire trajectory fits in its review card.
-        let sourceTravel = renderer.manifest?.clips[direction.rawValue]?.frames.last?.rootOffsetPoints.x ?? 0
-        start = NSPoint(x: home.x + (direction == .walkLeft ? -sourceTravel * 96 / 224 : 0), y: home.y)
+        let sourceTravel = renderer.manifest?.clips[action]?.frames.last?.rootOffsetPoints.x ?? 0
+        start = NSPoint(x: home.x + (action == "walkLeft" && followsTravel ? -sourceTravel * canvasSize / 224 : 0), y: home.y)
         host.setFrameOrigin(start)
         accepted = 0
         maximumError = 0
         submittedBefore = renderer.submittedFrameCount
         underrunsBefore = renderer.bufferUnderrunCount
-        renderer.playWalk(direction)
+        switch action {
+        case "walkRight": renderer.playWalk(.walkRight)
+        case "walkLeft": renderer.playWalk(.walkLeft)
+        case "idle": renderer.play(.blink)
+        case "pet": renderer.play(.react)
+        case "sleep": renderer.play(.fallAsleep)
+        default: break
+        }
     }
 
     func reset() {
         renderer.resetPose()
+        start = home
         host.setFrameOrigin(home)
     }
 
-    func observation(_ direction: SampleClipID, stopped: Bool) -> Observation {
+    func observation(_ action: String, stopped: Bool) -> Observation {
         let visible = renderer.convert(renderer.bounds, to: board)
         let backing = renderer.convertToBacking(renderer.bounds)
-        return Observation(candidate: candidate, background: background, direction: direction.rawValue,
+        return Observation(candidate: candidate, background: background, action: action,
                            canvasPoints: [visible.width, visible.height],
                            backingPixels: [backing.width, backing.height], acceptedFrames: accepted,
                            completed: renderer.currentSnapshot?.isComplete == true && renderer.submittedFrameCount > submittedBefore,
@@ -126,9 +141,11 @@ private final class ReviewRunner: NSObject, NSApplicationDelegate, NSWindowDeleg
     private let checkOnly: Bool
     private var window: NSWindow?
     private var pets: [ProofPet] = []
+    private var enlarged: [ProofPet] = []
     private let status = NSTextField(labelWithString: "Loading Blender models…")
     private var task: Task<Void, Never>?
     private var observations: [Observation] = []
+    private var sleepChecksPassed = false
     private var checking = true
     private var buttons: [NSButton] = []
 
@@ -148,19 +165,17 @@ private final class ReviewRunner: NSObject, NSApplicationDelegate, NSWindowDeleg
         board.wantsLayer = true
         board.layer?.backgroundColor = NSColor(calibratedWhite: 0.96, alpha: 1).cgColor
         label("Two little forest troublemakers", at: NSRect(x: 30, y: 617, width: 700, height: 32), size: 26, weight: .semibold, in: board)
-        label("Blender prototype · 0.8-second movement · real Spriglet playback", at: NSRect(x: 31, y: 590, width: 850, height: 23), size: 13, in: board)
+        label("Refinement 02 · idle, movement, affection and sleep · real Spriglet playback", at: NSRect(x: 31, y: 590, width: 850, height: 23), size: 13, in: board)
         for (column, candidate) in ["acorn-hopper", "moss-mouse"].enumerated() {
             let x = 26.0 + Double(column) * 458
             let title = column == 0 ? "Acorn Hopper" : "Moss Mouse"
-            let subtitle = column == 0 ? "Squash → pop → tiny landing bounce" : "Crouch → two quick bounds → stop"
+            let subtitle = column == 0 ? "Springy, pleased with itself, a wobbly little cap" : "Curious, darting, independently twitching leaf ears"
             label(title, at: NSRect(x: x + 12, y: 550, width: 400, height: 28), size: 20, weight: .semibold, in: board)
             label(subtitle, at: NSRect(x: x + 12, y: 527, width: 400, height: 21), size: 12, in: board)
             let resources = assets.appendingPathComponent(candidate).appendingPathComponent("runtime")
-            let image = NSImageView(frame: NSRect(x: x + 84, y: 300, width: 250, height: 235))
-            image.imageScaling = .scaleProportionallyUpOrDown
-            image.image = NSImage(contentsOf: resources.appendingPathComponent("rest.png"))
-            board.addSubview(image)
-            label("Enlarged for inspecting the model", at: NSRect(x: x + 80, y: 299, width: 290, height: 18), size: 11, in: board)
+            enlarged.append(ProofPet(candidate: candidate, background: "inspection", resources: resources,
+                                     board: board, origin: NSPoint(x: x + 92, y: 300), canvasSize: 248, followsTravel: false))
+            label("Enlarged pose inspection · movement shown below", at: NSRect(x: x + 67, y: 288, width: 330, height: 18), size: 11, in: board)
             for (row, background) in ["light", "dark"].enumerated() {
                 let y = row == 0 ? 169.0 : 55.0
                 let card = NSView(frame: NSRect(x: x, y: y, width: 432, height: 107))
@@ -176,16 +191,16 @@ private final class ReviewRunner: NSObject, NSApplicationDelegate, NSWindowDeleg
                 pets.append(pet)
             }
         }
-        for (i, title) in ["Hop / dash →", "← Replay", "Rest"].enumerated() {
+        for (i, title) in ["Curious", "Hop / dash →", "← Replay", "Pet both", "Nap", "Rest"].enumerated() {
             let button = NSButton(title: title, target: self, action: #selector(control(_:)))
             button.tag = i
             button.bezelStyle = .rounded
-            button.frame = NSRect(x: 28 + i * 126, y: 15, width: 120, height: 28)
+            button.frame = NSRect(x: 24 + i * 105, y: 14, width: 101, height: 28)
             button.isEnabled = false
             board.addSubview(button)
             buttons.append(button)
         }
-        status.frame = NSRect(x: 423, y: 18, width: 495, height: 22)
+        status.frame = NSRect(x: 662, y: 17, width: 265, height: 23)
         status.font = .systemFont(ofSize: 11)
         status.textColor = .secondaryLabelColor
         board.addSubview(status)
@@ -213,35 +228,45 @@ private final class ReviewRunner: NSObject, NSApplicationDelegate, NSWindowDeleg
 
     @objc private func control(_ sender: NSButton) {
         guard !checking else { return }
-        if sender.tag == 2 {
-            pets.forEach { $0.reset() }
+        if sender.tag == 5 {
+            (pets + enlarged).forEach { $0.reset() }
         } else {
-            pets.forEach { $0.play(sender.tag == 0 ? .walkRight : .walkLeft) }
+            let action = ["idle", "walkRight", "walkLeft", "pet", "sleep"][sender.tag]
+            (pets + enlarged).forEach { $0.play(action) }
         }
     }
 
     private func validate() async {
         do {
             try await Task.sleep(for: .milliseconds(500))
-            for direction in [SampleClipID.walkRight, .walkLeft] {
-                status.stringValue = "Checking 96-point playback on both backgrounds…"
-                pets.forEach { $0.play(direction) }
-                try await Task.sleep(for: .seconds(2))
+            for action in ["idle", "walkRight", "walkLeft", "pet"] {
+                status.stringValue = "Checking \(action) at 96 points…"
+                (pets + enlarged).forEach { $0.play(action) }
+                try await Task.sleep(for: .seconds(2.5))
                 let settled = pets.map { ($0.renderer.submittedFrameCount, $0.renderer.displayLinkCallbackCount) }
                 try await Task.sleep(for: .milliseconds(400))
                 for (index, pet) in pets.enumerated() {
                     let stopped = !pet.renderer.isAnimating && !pet.renderer.hasActiveDisplayLink
                         && pet.renderer.submittedFrameCount == settled[index].0
                         && pet.renderer.displayLinkCallbackCount == settled[index].1
-                    observations.append(pet.observation(direction, stopped: stopped))
+                    observations.append(pet.observation(action, stopped: stopped))
                 }
             }
-            let passed = observations.count == 8 && observations.allSatisfy(\.passed)
+            (pets + enlarged).forEach { $0.play("sleep") }
+            try await Task.sleep(for: .milliseconds(200))
+            let sleepCounts = pets.map { ($0.renderer.submittedFrameCount, $0.renderer.displayLinkCallbackCount) }
+            try await Task.sleep(for: .milliseconds(400))
+            sleepChecksPassed = pets.enumerated().allSatisfy { index, pet in
+                pet.renderer.isSleeping && !pet.renderer.isAnimating && !pet.renderer.hasActiveDisplayLink
+                    && pet.renderer.submittedFrameCount == sleepCounts[index].0
+                    && pet.renderer.displayLinkCallbackCount == sleepCounts[index].1 && pet.renderer.assetError == nil
+            }
+            let passed = observations.count == 16 && observations.allSatisfy(\.passed) && sleepChecksPassed
             try writeReport(passed: passed)
             checking = false
             buttons.forEach { $0.isEnabled = true }
-            status.stringValue = passed ? "96 pt canvas · playback checked · choose either direction to replay" : "Playback needs attention — see native report"
-            pets.forEach { $0.reset() }
+            status.stringValue = passed ? "96 pt · finite playback + nap checked" : "Playback needs attention — see report"
+            (pets + enlarged).forEach { $0.reset() }
             try await Task.sleep(for: .milliseconds(150))
             if let board = window?.contentView,
                let bitmap = board.bitmapImageRepForCachingDisplay(in: board.bounds) {
@@ -264,10 +289,11 @@ private final class ReviewRunner: NSObject, NSApplicationDelegate, NSWindowDeleg
             let passed: Bool
             let renderer: String
             let observations: [Observation]
+            let sleepChecksPassed: Bool
             let limitation: String
         }
         let value = Report(passed: passed, renderer: "Unmodified shipping PetRenderView and SampleImageDecoder",
-                           observations: observations,
+                           observations: observations, sleepChecksPassed: sleepChecksPassed,
                            limitation: "Embedded native view verifies size, finite playback, root placement and stopped work; not separate desktop panels, all-frame presentation, or artistic approval.")
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -278,12 +304,12 @@ private final class ReviewRunner: NSObject, NSApplicationDelegate, NSWindowDeleg
 
     func windowWillClose(_ notification: Notification) {
         task?.cancel()
-        pets.forEach { $0.renderer.setSuspended(true) }
+        (pets + enlarged).forEach { $0.renderer.setSuspended(true) }
         NSApp.terminate(nil)
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         task?.cancel()
-        pets.forEach { $0.renderer.setSuspended(true) }
+        (pets + enlarged).forEach { $0.renderer.setSuspended(true) }
     }
 }

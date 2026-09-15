@@ -39,6 +39,7 @@ jobs:
       - name: Validator regression tests
         run: |
           python3 -m unittest discover -s tools/CharacterSampleValidation -p 'test_*.py'
+          python3 -m unittest discover -s tools/CandidateReview -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/EverydayServicesValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseNotes -p 'test_*.py'

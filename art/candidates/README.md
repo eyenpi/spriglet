@@ -1,15 +1,36 @@
-# Character candidate proofs
+# Character candidates · refinement 02
 
-Two original editable Blender prototypes explore a smaller, quicker companion:
+Two original editable Blender characters explore a smaller, quicker companion.
+Both are retained; `proof-v01` remains an unchanged comparison baseline.
 
-| Candidate | Construction | Controls | Movement |
+| Candidate | Construction and personality | Controls | Travel |
 | --- | --- | ---: | --- |
-| [Acorn Hopper](proof-v01/acorn-hopper/acorn-hopper.blend) | Rounded body, separate cap, one leaf, capsule paws/feet | 9 | One squash-and-hop, 0.8 seconds |
-| [Moss Mouse](proof-v01/moss-mouse/moss-mouse.blend) | Low bean body, round head, leaf ears, short sprig tail, four feet | 11 | Two low bounds with a directional turn, 0.8 seconds |
+| [Acorn Hopper](refinement-v02/acorn-hopper/acorn-hopper.blend) | Round cheeks, scalloped chestnut cap, folded leaf, little raised paws; springy and pleased with itself | 9 bones | One squash-and-hop, 0.8 seconds |
+| [Moss Mouse](refinement-v02/moss-mouse/moss-mouse.blend) | Low bean body, round head, independent leaf ears, sprig tail, four feet; curious and darting | 11 bones | Two directional bounds, 0.8 seconds |
 
-These are selection prototypes, not replacement shipping characters. Both include left and right locomotion, transparent renders, camera turnarounds, a clay review, and a native comparison at a **96-point canvas**. Neither has a complete interaction library. Their source manifest's idle, pet, settle, and sleep entries are explicitly static rest aliases required by the current renderer.
+Both have softer colors, larger eyes, friendlier brows, matte closed-eye creases,
+happy smiles, and delayed secondary motion. This is a basic interaction library,
+not every possible gesture or a claim of a pixel-perfect concept match. The
+shipping Sprout, desktop behavior, and preferences are unchanged.
 
-## Review in the native renderer
+## Animation library
+
+All clips use 30 fps, 448 × 448 RGBA source frames, and a 224-point source
+manifest displayed on a **96-point review canvas**. The opaque pet is smaller
+than the canvas. Travel is approximately 101–102 review points in 0.8 seconds.
+
+| Action | Frames | Behavior |
+| --- | ---: | --- |
+| idle | 42 | Finite curious tilt, blink, and ear/leaf motion; returns to rest |
+| walkRight / walkLeft | 24 each | Anticipation, travel, grounded landing, settle |
+| pet | 30 | Happy eyes and smile; acorn raises paws, mouse leans into affection |
+| settle | 18 | Starts in the exact pet endpoint pose and returns to rest |
+| sleep | 1 held pose | Closed eyes, softened body, lowered leaves/ears; no ticking loop |
+
+There are 140 unique runtime PNGs per character. Unlike proof-v01, idle, pet,
+settle and sleep are not rest aliases. Finite gestures end with a static image.
+
+## Native review
 
 From the repository root:
 
@@ -18,15 +39,34 @@ bash tools/CandidateReview/build.sh
 open tools/CandidateReview/.build/CandidateReview.app
 ```
 
-The separate review app uses the unmodified shipping `PetRenderView` and `SampleImageDecoder`. It shows an enlarged neutral model above two actual-size playback cards, on light and dark backgrounds. Use **Hop / dash →**, **← Replay**, and **Rest**. It changes no Spriglet preferences or bundled artwork. It automatically checks finite playback and writes local observations under `.build/candidate-review/`.
+The separate app uses the unmodified shipping `PetRenderView` and
+`SampleImageDecoder`. Enlarged animated views show poses in place; light/dark
+cards below show 96-point canvases with authored travel. Controls are **Curious**,
+**Hop / dash →**, **← Replay**, **Pet both**, **Nap**, and **Rest**. Pet plays pet
+and settle together. Nap is a held pose, not an authored fall-asleep transition.
 
-## Edit in Blender
+It changes no Spriglet settings or bundled artwork. Automatic checks and a
+snapshot of its own view go under `.build/candidate-refinement/`. The report
+records the display's measured backing scale instead of assuming Retina.
 
-Open either `.blend` in **Blender 5.2.1 LTS**. The selected rig opens with an **IN-PLACE INSPECTION** Action: press Space to review the 24-frame movement in the close camera. The other two Actions contain actual right/left world travel. The `Stage` bone is unkeyed and is used only to compensate travel while exporting images.
+## Edit and rebuild in Blender
 
-The model consists of ordinary editable meshes, vertex colors, named bone groups, and eye `Blink` shape keys. Curve source datablocks are retained. There are no external textures, linked libraries, add-ons, particle hair, or generated image-to-3D meshes. The cap uses shallow shader bump; leaves use a single central ridge. A bounded Cycles catcher supplies the contact shadow. Compositor denoising preserves the original alpha coverage.
+Open either current `.blend` in **Blender 5.2.1 LTS**. Press Space to play the
+default **IN-PLACE INSPECTION** Action without leaving the close camera. A
+`START HERE` text block explains the file. Choose another named rig Action and
+set its frame range from the table. Its face follows automatically: rig custom
+properties `Blink` and `Happy` drive editable eye, eyelid, and smile shape keys.
+Body and face do not need separate action selection. Travel Actions retain real
+world movement; the unkeyed `Stage` control compensates it only during export.
 
-The [builder](scripts/build_candidates.py) reproduces both prototypes. It imports geometry and action helpers from `art/sprout/scripts/`; it does not load or modify the shipping Sprout scene. The geometry is authored through parameters and revised against actual camera renders. The original concept images influenced the proportions and palette; they are not textures mapped onto a rough mesh.
+Construction uses ordinary meshes, vertex colors, bone groups, simple material
+drivers, and retained curve source datablocks. There are no external textures,
+linked libraries, add-ons, grooms, or generated image-to-3D meshes. Cap relief is
+modeled into one shell with a rounded lip. Leaves are closed volumes. A bounded
+Cycles catcher supplies contact shadows; denoising preserves raw alpha coverage.
+
+The [builder](scripts/build_candidates.py) imports geometry/action helpers from
+`art/sprout/scripts/` without loading or changing the shipping Sprout scene.
 
 ```sh
 blender --background --factory-startup --python-exit-code 1 \
@@ -38,28 +78,55 @@ blender --background --factory-startup --python-exit-code 1 \
   --candidate moss-mouse --mode all --samples 40 --device METAL
 ```
 
-On macOS, substitute the Blender app's `Contents/MacOS/Blender` executable if `blender` is not on PATH. `--device CPU` works without Metal. `--mode preview` writes the editable scene and local review poses; `--mode export` writes the scene and complete runtime sequence; `--mode all` does both. To experiment without overwriting the checked-in proof, use `--output .build/candidate-experiment` and `--review .build/candidate-experiment-review`.
+On macOS, use the Blender app's `Contents/MacOS/Blender` executable if needed.
+`--device CPU` works without Metal. Initial Metal shader compilation can take
+longer than subsequent renders. `--mode preview` writes the scene and review
+poses; `--mode export` writes the scene and runtime; `--mode all` does both.
 
-Review outputs include `hero.png`, true orthographic `front.png`, `side.png`, `back.png`, `clay.png`, `anticipation.png`, `airborne.png`, and `landing.png`. The 768-pixel review images are not runtime-size evidence. The native view measures the 96-point presentation independently.
+For experiments, use `--output .build/candidate-experiment` and
+`--review .build/candidate-experiment-review` to preserve checked-in assets.
+Export both full sets after a builder change: validation rejects stale hashes.
 
-## Validate and export comparison media
+Review images include `hero`, orthographic `front`/`side`/`back`, `clay`,
+`anticipation`, `airborne`, `landing`, `idle`, `pet`, and `sleep`.
+Enlarged renders are artistic inspection, not native-size or timing evidence.
+
+## Verify and export comparison media
 
 ```sh
+python3 -m unittest discover -s tools/CandidateReview -p 'test_*.py'
 python3 tools/CandidateReview/verify_assets.py
-blender --background art/candidates/proof-v01/acorn-hopper/acorn-hopper.blend \
+blender --background art/candidates/refinement-v02/acorn-hopper/acorn-hopper.blend \
   --python-exit-code 1 --python tools/CandidateReview/verify_blend.py
-blender --background art/candidates/proof-v01/moss-mouse/moss-mouse.blend \
+blender --background art/candidates/refinement-v02/moss-mouse/moss-mouse.blend \
   --python-exit-code 1 --python tools/CandidateReview/verify_blend.py
 tools/CandidateReview/.build/CandidateReview.app/Contents/MacOS/CandidateReview --check
 bash tools/CandidateReview/render-media.sh
 ```
 
-`render-media.sh` requires FFmpeg. It exports a PNG comparison, 30-fps MP4, and looping GIF under `.build/candidate-review/`. This media uses the actual exported PNGs and their root offsets. It is labeled as an offline comparison, not a desktop recording; GIF timing and a chat viewer's scaling are not native timing or point-size evidence.
+Media export needs FFmpeg. It creates a PNG, 30-fps MP4, looping GIF, and
+affection/sleep stills under `.build/candidate-refinement/`, using exact exported
+PNGs and root offsets. It is labeled as an offline comparison, not a desktop
+recording. Chat scaling and GIF timing do not establish native size or pacing.
 
-The asset check validates all 98 unique PNGs, dimensions, clear borders, animation margins, 24-frame timing, signed root travel, measured rig positions, and grounded stance. The saved-scene check reopens each `.blend` in a new process and compares its evaluated animation to the exported contact measurements. A planted foot must remain fixed; contacts are not inferred from the intended motion alone. Native checks exercise both directions on both backgrounds and confirm that image submissions and display links stop at the end.
+The verifier checks all 280 unique PNGs, clear borders and margins, clip lengths,
+genuine animation, root metadata, evaluated foot contacts, facial driver output,
+and matched pose boundaries. Separate Blender processes reopen the saved files
+and compare all actions with exported contact and expression measurements.
+Regression cases cover sliding despite matching intent, stance breaks, missing
+controls, malformed endpoints, and non-finite measurements.
 
-Numerical checks do not establish a pixel-perfect match to the concept sheets or artistic approval. The current work proves that these designs can be built, edited, animated, and displayed at small size. Facial appeal, leaf motion, and the preferred candidate still require visual selection before a full animation library is produced.
+Native checks exercise 16 finite sequences (four actions × two characters × two
+backgrounds), then verify that held sleep submits no further frames and runs no
+display link. These establish implementation properties, not artistic approval,
+all-frame GPU presentation, or acceptance as separate desktop panels.
 
 ## Provenance
 
-The concepts were explored using AI-generated images. These mesh constructions, rigs, materials, and authored poses were created specifically for Spriglet in Blender, with no third-party model assets. The repository's MIT license applies. `build.json` records the Blender version, geometry/control counts, render settings, and builder/helper hashes. `motion.json` contains reproducible authored contact data. Personal concept sheets, render comparisons, and machine check reports remain local.
+AI-generated concept sheets informed the original exploration. The meshes,
+rigs, materials and poses were authored for Spriglet with no third-party models.
+The repository's MIT license applies. `build.json` records Blender, geometry,
+controls, render settings and source hashes. `motion.json` records authored and
+evaluated contacts/expressions. Concept sheets, render comparisons and machine
+reports remain local. The older [first proof](proof-v01/) is preserved; its static
+interaction aliases and model details are not the current library.
