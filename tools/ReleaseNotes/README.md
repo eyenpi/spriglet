@@ -28,10 +28,10 @@ The check rejects malformed data, duplicate versions/builds, incorrect ordering,
 
 Commit and push the release changes to `main`. Create a new annotated, `v`-prefixed tag at that commit and push that exact tag. Do not move an already published tag to different code.
 
-The existing validation workflow runs the tests and builds for the tag. Its publish job starts only after validation succeeds and checks that the tag matches the newest changelog entry and is part of `main`. It creates the GitHub release from that entry and attaches `CHANGELOG.md` and `Changelog.json`. Preview entries produce GitHub prereleases. The job has write permission only for publication; validation has read permission.
+The existing validation workflow runs the tests and builds for the tag. Its publish job starts only after validation succeeds and checks that the tag matches the newest changelog entry and is part of `main`. It creates the GitHub release from that entry and attaches `CHANGELOG.md`, `Changelog.json`, the validated DMG and ZIP, `SHA256SUMS`, and `release.json`. Package bytes come from the same workflow run and must match the tag commit and clean source report. Preview entries produce GitHub prereleases. The job has write permission only for publication; validation has read permission.
 
 Rerunning publication accepts an already published release only when its commit, title, notes, preview status, and changelog asset checksums agree. A conflicting release is refused. A failed build or version check leaves the tag unpublished as a GitHub release; fix the problem and use a new version and tag if the code changes.
 
-This workflow publishes source and release notes. Signed app packages follow the separate [Developer ID packaging process](../ReleaseValidation/README.md).
+This workflow publishes source, release notes, and unsigned installable previews. Signed app packages follow the [Developer ID packaging process](../ReleaseValidation/README.md). Unsigned packages cannot be published as stable releases. Public downloads are on the versioned GitHub release; individual PR builds also provide the `app-packages` Actions artifact.
 
 Official references: [Apple app version format](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleshortversionstring), [GitHub job dependencies and permissions](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax), and [GitHub CLI release creation](https://cli.github.com/manual/gh_release_create).

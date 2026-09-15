@@ -6,22 +6,24 @@ Meet Acorn Hopper: a tiny, round desktop companion with a wobbly cap, quick hops
 
 <img src="Sources/Spriglet/Resources/AcornHopper/rest.png" alt="Acorn Hopper, the current desktop companion" width="192">
 
-[Acorn's animations and Blender source](art/candidates/README.md) · [Latest tagged preview](https://github.com/eyenpi/spriglet/releases/tag/v0.2.0-preview.1) · [Changelog](CHANGELOG.md) · [Privacy](PRIVACY.md)
+[Acorn's animations and Blender source](art/candidates/README.md) · [Latest tagged preview](https://github.com/eyenpi/spriglet/releases/tag/v0.2.0-preview.2) · [Changelog](CHANGELOG.md) · [Privacy](PRIVACY.md)
 
 ## Current development: one tiny pet
 
 `main` now ships **Acorn Hopper only**, with no character picker. Its Small / Standard / Large canvases measure **72 / 96 / 120 points**; the standard character itself is about 64 points tall. Hops take 0.8 seconds, petting finishes with a soft settle, and nap/wake have authored transitions. Clicking during a hop queues the reaction after landing; petting a sleeping Acorn wakes it first. Rest and sleep hold a still image without a running animation clock.
 
-New pets are named Acorn. Existing saved names and settings stay intact. Other editable models remain future source material, not bundled alternatives. The [asset boundary and reproducible export](tools/CharacterAssets/README.md) keep future character support separate from today's minimal experience. To try Acorn, clone `main` without the tag option below and run `./scripts/run.sh`.
+New pets are named Acorn. Existing saved names and settings stay intact. Other editable models remain future source material, not bundled alternatives. The [asset boundary and reproducible export](tools/CharacterAssets/README.md) keep future character support separate from today's minimal experience. Acorn is available in the preview download below and in source builds.
 
 ## Try the public preview
 
-The latest tagged release is **0.2.0 Preview 1 — Everyday companion** (app version 0.2.0, build 3). That earlier release still features Sprout; Acorn Hopper is currently on `main`. The preview brings native Settings, personality and return-home strolls, firefly play, accessibility actions, and optional sound and launch at login. [Read every change](CHANGELOG.md).
+The latest preview is **0.2.0 Preview 2 — Acorn Hopper download** (app version 0.2.0, build 4). [Download the DMG or ZIP](https://github.com/eyenpi/spriglet/releases/tag/v0.2.0-preview.2), open the DMG, and drag **Spriglet.app** to **Applications**. Eject the image and open Spriglet. It appears on your desktop and in the leaf menu, without a Dock icon.
 
-You need an **Apple silicon Mac**, **macOS 26 or later**, and **full Xcode** selected as your developer toolchain. This is a source preview; a signed, notarized app download is not available yet.
+Requires an **Apple silicon Mac** and **macOS 26 or later**. Xcode is unnecessary for the download. This is an **unsigned preview** with an ad hoc signature and no Apple notarization; macOS Gatekeeper may block it. Signing is still pending. Each release includes `SHA256SUMS` and a source/version report. A DMG does not install on Windows PCs.
+
+To build the preview from source, select full Xcode and run:
 
 ```sh
-git clone --branch v0.2.0-preview.1 --depth 1 https://github.com/eyenpi/spriglet.git
+git clone --branch v0.2.0-preview.2 --depth 1 https://github.com/eyenpi/spriglet.git
 cd spriglet
 ./scripts/run.sh
 ```

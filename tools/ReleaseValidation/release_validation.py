@@ -219,6 +219,10 @@ def report(args):
                    "sourceWorkingTreeDirty": dirty,
                    "xcode": run(["/usr/bin/xcodebuild", "-version"]).decode().strip(),
                    "swift": run(["/usr/bin/xcrun", "swift", "--version"]).decode().strip()})
+    if args.dmg:
+        result["artifacts"] = {path.name: {"sha256": digest(path), "size": path.stat().st_size}
+                               for path in (args.dmg, args.zip)}
+        result["diskImageVerified"] = True
     args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
 
 
@@ -247,6 +251,7 @@ def main():
     notarization.add_argument("--profile", required=True)
     notarization.add_argument("--output", type=Path, required=True)
     reporting = commands.add_parser("report")
+    reporting.add_argument("--dmg", type=Path)
     for name in ("zip", "source-root", "verification", "output"):
         reporting.add_argument("--" + name, type=Path, required=True)
     args = parser.parse_args()

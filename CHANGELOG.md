@@ -4,13 +4,13 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
-## 0.2.0-preview.2 — Submission preparation
+## 0.2.0-preview.2 — Acorn Hopper download
 
 2026-09-15 · App 0.2.0 · Build 4
 
-Accessible privacy and support, bundled licensing, and Mac App Store preparation.
+A tiny Acorn Hopper companion, shared app and website content, and installable preview downloads.
 
-Development source for Apple silicon and macOS 26 or later. App Store submission and signed distribution are pending.
+Download the LOCAL-UNSIGNED DMG or ZIP for Apple silicon and macOS 26 or later. This preview has an ad hoc signature, no Developer ID certificate, and no Apple notarization; macOS Gatekeeper may block it. Xcode is only needed to build from source.
 
 ### Added
 
@@ -21,6 +21,12 @@ Development source for Apple silicon and macOS 26 or later. App Store submission
 - One shared source for app and website branding, contact details, privacy, help, and control labels; automatic synchronization during app builds, icon export, and Cloudflare builds; offline Help & Support in the app.
 - Private security reporting, credential-file guards, checksum-pinned history and workflow scanning, CodeQL analysis, and dependency update automation for the public repository.
 - Isolated Cloudflare PR previews, protected production deployment, artifact safety checks, preview cleanup, retained-build rollback, and public website availability checks.
+- Installable DMG and ZIP previews built and verified in GitHub Actions, with drag-to-Applications installation, SHA-256 checksums, and exact source/version checks before release publication.
+
+### Changed
+
+- Acorn Hopper is the only bundled pet: 194 original Blender frames, a 96-point standard canvas, seven finite clips, and authored hop, pet, nap, and wake transitions. New pets default to Acorn; saved names and settings are preserved.
+- Refreshed clay-style app icon shared with the generated website.
 
 ### Fixed
 
@@ -30,6 +36,8 @@ Development source for Apple silicon and macOS 26 or later. App Store submission
 ### Known limitations
 
 - App Store signing, store metadata, screenshots, and final device acceptance remain required before submission.
+- The downloadable preview is not Developer ID signed or notarized. Normal Gatekeeper acceptance and signed release testing require Apple Developer Program credentials.
+- VoiceOver speech, actual sleep/wake, launch-at-login, and sustained battery use still need final device acceptance.
 
 ## 0.2.0-preview.1 — Everyday companion
 
