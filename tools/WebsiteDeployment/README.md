@@ -4,12 +4,12 @@ The app and website share the sources in `Configuration/Shared` and the app icon
 
 ## Deployment flow
 
-1. **Validate Spriglet** builds and checks pull requests without Cloudflare or Apple secrets. Successful PR and `main` builds upload `website-static` (7-day PR retention, 90-day production retention).
-2. **Deploy website** runs trusted code from protected `main`. It checks the originating workflow, run result, repository, current PR commit, artifact identity/digest, and permitted files. It never checks out PR source or runs artifact scripts/configuration.
-3. A PR gets `meetspriglet-pr-N` on the configured account's `workers.dev` subdomain. The preview keeps the shared artwork and content, with trusted security headers and `noindex`. Closing the PR removes its preview. At most 20 previews may exist; close unused PRs to free capacity.
-4. Production updates `meetspriglet-support` at the domain in `Configuration/Shared/brand.json`, after the current `main` validation and all security checks succeed. GitHub deployment status and the workflow summary show the published URL and commit. Each target is serialized, and stale runs are rechecked before publication.
+1. **Validate Spriglet** waits for the owner's [CI approval](../CI/README.md) on each PR revision. It builds and checks without Cloudflare or Apple secrets. Successful approved PR builds upload `website-static` and `app-packages`, retained for seven days.
+2. **Deploy website preview** follows only a successful approved PR workflow. Failed or canceled runs are filtered before allocating a runner. The uploader uses trusted code from protected `main`, checks the originating workflow, current PR commit, artifact identity/digest, and permitted files, and never executes PR source or artifact scripts/configuration.
+3. A PR gets `meetspriglet-pr-N` on the account's `workers.dev` subdomain. The preview keeps shared artwork and content with trusted security headers and `noindex`. A new commit needs new CI approval before updating it. At most 20 previews may exist; remove closed previews using the cleanup command below.
+4. Production updates and rollback are explicit local operations. Pushes, release tags, PR closure, and schedules do not launch deployment runners. Existing production content stays live until an explicit deployment.
 
-Both deployment and cleanup workflows must be merged into the default branch before GitHub activates their event handlers. Same-repository PRs run automatically. GitHub requires maintainer approval for workflows from external contributors under this repository's configured fork policy. Approval of a build does not give its code deployment secrets.
+The new `website-preview.yml` handler becomes active when merged into the default branch. The registered legacy build/security/deploy/monitor workflows remain disabled. External-contributor workflow approval is separate from the owner's `ci-review` approval; neither gives PR code deployment secrets.
 
 ## GitHub configuration
 
@@ -37,11 +37,27 @@ python3 tools/AppStore/website/check_http.py https://meetspriglet.com
 
 Tests cover artifact traversal/links/duplicates/size limits, trusted headers, shared content preservation, workflow provenance, fork identity, stale/closed PRs, rollback restrictions, and cleanup of reopened PRs. The uploader also verifies the downloaded archive's SHA-256 against GitHub and checks exact public bytes after upload. A preview is untrusted public content; `noindex` is not authentication.
 
-## Monitor and rollback
+## Local publishing, cleanup, monitoring, and rollback
 
-After the initial public HTTPS check succeeds, set repository variable `WEBSITE_LIVE=true`. **Website availability** checks the domain every six hours and can be run manually. It checks routes, TLS, HTTPS redirection, and security headers without expecting every new `main` commit to be deployed immediately. Enable GitHub Actions failure notifications for the maintainer; inspect the run's failed step when notified. This is a periodic availability check, not an uptime SLA.
+After merging and validating the intended production revision, use the authenticated local Cloudflare setup:
 
-To retry the current production deployment, run **Deploy website** manually on `main` with an empty `run_id`. To restore a previous release, supply the numeric ID of a successful **Validate Spriglet** run triggered by a push to `main` whose artifact is still retained. PR/feature-branch builds cannot be promoted using rollback. Required security checks for the restored commit must have passed. Keep the known-good run ID with release records, and verify HTTPS after restoration. Download a production artifact before its retention expires if longer-term recovery is needed.
+```sh
+scripts/deploy-website.sh
+python3 tools/AppStore/website/check_http.py https://meetspriglet.com
+python3 tools/WebsiteDeployment/monitor.py
+```
+
+These commands do not start GitHub Actions. There is no periodic GitHub availability workflow. For a new production version, keep the validated revision and public output with the release records. Restore a known-good revision in an isolated checkout and run the same local deployment/HTTP checks; review its domain and security headers first.
+
+Cleanup is also explicit. With the existing GitHub and scoped preview Cloudflare credentials supplied securely in the local environment (`GH_TOKEN`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`), run:
+
+```sh
+python3 tools/WebsiteDeployment/deploy.py cleanup --pr PR_NUMBER
+```
+
+The tool checks that the PR is closed and targets only its `meetspriglet-pr-N` Worker. It refuses to remove a reopened PR. A preview is retained until this cleanup; closing a PR alone no longer starts CI.
+
+For recovery of deployments from before the CI migration, the local `deploy.py deploy --run RUN_ID --target production --rollback` command still accepts an unexpired successful legacy `validate.yml` main-push artifact after verifying its security checks. New PR artifacts cannot be used as production rollback. No workflow-dispatch handler remains.
 
 When changing a domain or route design, review the deployment policy in `deploy.py`, the shared configuration, and HTTP checks together. The trusted route/header policy always comes from current `main`, including during rollback. Installed apps require an app release to receive changed bundled content; website deployment alone does not update them.
 
@@ -49,10 +65,10 @@ When changing a domain or route design, review the deployment policy in `deploy.
 
 - All required GitHub checks pass and branch rules enforce them.
 - Both environments have scoped credentials and reject unauthorized refs.
-- A PR preview is created, updates after another commit, and is removed on closure.
+- An approved PR creates a preview; a new commit waits for approval; local cleanup removes a closed preview.
 - Malicious artifact/configuration fixtures are rejected before Cloudflare is called.
-- Production deployment and restoration of a retained successful run pass HTTP checks.
+- Explicit local production deployment and restoration pass HTTP checks.
 - Support mail works in both directions; domain renewal/recovery are configured.
-- Public availability workflow succeeds and failure notifications are configured.
+- Local public availability checks succeed.
 
 References: [GitHub workflow privileges](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows), [secure workflow design](https://docs.github.com/en/actions/reference/security/secure-use), [environment protection](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments), [Cloudflare Actions setup](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).

@@ -78,7 +78,7 @@ class ProvenanceTests(unittest.TestCase):
                     'head_repository': {'id': 100, 'full_name': 'contributor/spriglet'},
                     'status': 'completed', 'conclusion': 'success', 'event': 'pull_request',
                     'head_sha': 'a' * 40, 'head_branch': 'feature'}
-        self.pr = {'number': 7, 'state': 'open', 'head': {'sha': 'a' * 40, 'repo': {'id': 100}},
+        self.pr = {'number': 7, 'state': 'open', 'draft': False, 'head': {'sha': 'a' * 40, 'repo': {'id': 100}},
                    'base': {'ref': 'main', 'repo': {'full_name': deploy.REPOSITORY}}}
         self.artifact = {'id': 30, 'name': deploy.ARTIFACT, 'expired': False,
                          'size_in_bytes': 1000, 'digest': 'sha256:' + 'b' * 64}
@@ -86,6 +86,7 @@ class ProvenanceTests(unittest.TestCase):
     def fake_github(self, path, **kwargs):
         return {'actions/runs/20': self.run,
                 'actions/workflows/validate.yml': {'id': 10},
+                'actions/workflows/pr-ci.yml': {'id': 10},
                 'commits/' + 'a' * 40 + '/pulls?per_page=100': [self.pr],
                 'actions/runs/20/artifacts?per_page=100': {'artifacts': [self.artifact]},
                 'branches/main': {'commit': {'sha': 'a' * 40}}}[path]
@@ -107,6 +108,9 @@ class ProvenanceTests(unittest.TestCase):
 
     def test_closed_or_updated_pr_skips_without_deploying(self):
         with patch.object(deploy, 'github', side_effect=self.fake_github):
+            self.pr['draft'] = True
+            self.assertFalse(deploy.resolve_run(20)['deploy'])
+            self.pr['draft'] = False
             self.pr['state'] = 'closed'
             self.assertFalse(deploy.resolve_run(20)['deploy'])
             self.pr['state'] = 'open'; self.pr['head']['sha'] = 'c' * 40
@@ -124,12 +128,12 @@ class ProvenanceTests(unittest.TestCase):
             deploy.resolve_run(20, rollback=True)
 
     def test_feature_push_does_not_publish_production(self):
-        self.run['event'] = 'push'
+        self.run.update(event='push', path=deploy.LEGACY_WORKFLOW)
         with patch.object(deploy, 'github', side_effect=self.fake_github):
             self.assertFalse(deploy.resolve_run(20)['deploy'])
 
     def test_main_requires_current_commit_but_rollback_accepts_a_prior_main_run(self):
-        self.run.update(event='push', head_branch='main', head_repository={'id': 1, 'full_name': deploy.REPOSITORY})
+        self.run.update(event='push', path=deploy.LEGACY_WORKFLOW, head_branch='main', head_repository={'id': 1, 'full_name': deploy.REPOSITORY})
         def newer_main(path, **kwargs):
             if path == 'branches/main':
                 return {'commit': {'sha': 'c' * 40}}
@@ -141,7 +145,7 @@ class ProvenanceTests(unittest.TestCase):
         self.assertEqual(restored['environment'], 'website-production')
 
     def test_fork_push_named_main_cannot_become_production(self):
-        self.run.update(event='push', head_branch='main')
+        self.run.update(event='push', path=deploy.LEGACY_WORKFLOW, head_branch='main')
         with patch.object(deploy, 'github', side_effect=self.fake_github), self.assertRaises(ValueError):
             deploy.resolve_run(20, rollback=True)
 
@@ -150,6 +154,24 @@ class ProvenanceTests(unittest.TestCase):
         with patch.object(deploy, 'github', return_value={'check_runs': [check]}), patch.object(deploy.time, 'sleep') as sleep, self.assertRaises(ValueError):
             deploy.wait_production_checks('a' * 40)
         sleep.assert_not_called()
+
+    def test_automatic_deploy_rejects_pushes_and_non_ci_events(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'event.json'
+            for name, run in (
+                    ('pull_request_target', {}), ('workflow_dispatch', {}),
+                    ('workflow_run', {'event': 'push', 'conclusion': 'success'}),
+                    ('workflow_run', {'event': 'pull_request', 'conclusion': 'cancelled'})):
+                path.write_text(json.dumps({'repository': {'full_name': deploy.REPOSITORY}, 'workflow_run': run}))
+                with self.subTest(name=name, run=run), patch.dict(deploy.os.environ, {
+                        'GITHUB_EVENT_PATH': str(path), 'GITHUB_EVENT_NAME': name}), \
+                        patch.object(deploy, 'resolve_run') as resolve, patch.object(deploy, 'output'):
+                    if name == 'workflow_run':
+                        deploy.resolve()
+                    else:
+                        with self.assertRaises(ValueError):
+                            deploy.resolve()
+                    resolve.assert_not_called()
 
     def test_missing_digest_expired_and_oversize_artifacts_fail_closed(self):
         for changes in ({'digest': ''}, {'expired': True}, {'size_in_bytes': deploy.MAX_ARCHIVE + 1}):

@@ -1,19 +1,23 @@
 name: Validate Spriglet
 
 on:
-  push:
   pull_request:
-  workflow_dispatch:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review]
 
 permissions:
   contents: read
 
 concurrency:
-  group: validate-${{ github.ref }}
+  group: validate-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
   macos:
+    needs: security-checks
+    permissions:
+      contents: read
+      pull-requests: read
     runs-on: macos-26
     timeout-minutes: 20
     steps:
@@ -21,6 +25,10 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+      - name: Refuse an outdated or closed PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/CI/verify_pr.py
       - name: Show the selected stable toolchain
         run: |
           xcodebuild -version
@@ -32,9 +40,6 @@ jobs:
         run: |
           python3 tools/SharedContent/sync.py --check
           python3 tools/ReleaseNotes/release_notes.py check
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            python3 tools/ReleaseNotes/release_notes.py check --tag "$GITHUB_REF_NAME"
-          fi
       - name: Swift Testing
         run: ./scripts/test.sh
       - name: Validator regression tests
@@ -87,14 +92,13 @@ jobs:
           bash tools/EverydayServicesValidation/build.sh
           tools/EverydayServicesValidation/.build/EverydayServicesCheck --resources Sources/Spriglet/Resources/PetSounds --output .build/everyday-services.json
       - name: Publish the generated static website artifact
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: website-static
           overwrite: true
           path: tools/AppStore/website/public/
           if-no-files-found: error
-          retention-days: ${{ github.event_name == 'pull_request' && 7 || 90 }}
+          retention-days: 7
       - name: Upload installable preview packages
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -106,26 +110,76 @@ jobs:
             .build/preview-packages/SHA256SUMS
             .build/preview-packages/release.json
           if-no-files-found: error
-          retention-days: ${{ github.event_name == 'pull_request' && 7 || 90 }}
+          retention-days: 7
 
-  publish:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    needs: macos
-    runs-on: macos-26
-    timeout-minutes: 5
+  # GitHub holds this job before assigning a runner. No polling or waiting runner.
+  # Configure ci-review with the owner as required reviewer, self-review allowed,
+  # admin bypass disabled, and only refs/pull/*/merge allowed. No secrets belong here.
+  security-checks:
+    environment: ci-review
     permissions:
-      contents: write
-      actions: read
+      contents: read
+      pull-requests: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Refuse an outdated, draft, or closed PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/CI/verify_pr.py
+      - name: Approval guard regression tests
+        run: python3 -m unittest discover -s tools/CI -p 'test_*.py'
+      - name: Credential guard regression tests
+        run: python3 -m unittest discover -s tools/Security -p 'test_*.py'
+      - name: Workflow syntax and security lint
+        run: python3 tools/Security/run.py actionlint
+      - name: Scan Git history for secrets
+        run: python3 tools/Security/run.py gitleaks
+
+  codeql:
+    needs: security-checks
+    name: codeql-${{ matrix.language }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            runner: ubuntu-24.04
+            build: none
+          - language: python
+            runner: ubuntu-24.04
+            build: none
+          - language: swift
+            runner: macos-26
+            build: manual
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          fetch-depth: 0
-      - name: Download packages from this validated workflow run
+      - name: Refuse an outdated or closed PR
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name app-packages --dir .build/downloaded-packages
-      - name: Publish the validated tag, changelog, DMG and ZIP
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python3 tools/ReleaseNotes/release_notes.py publish "$GITHUB_REF_NAME" --packages .build/downloaded-packages
+        run: python3 tools/CI/verify_pr.py
+      - name: Resolve the local Swift package before tracing
+        if: matrix.language == 'swift'
+        run: xcodebuild -resolvePackageDependencies -project Spriglet.xcodeproj -scheme Spriglet -derivedDataPath .build/codeql
+      - uses: github/codeql-action/init@311b4ee155dcdab395044f00946f664bd51ff173 # v4.38.0
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build }}
+      - name: Build Swift app for analysis
+        if: matrix.language == 'swift'
+        run: xcodebuild -project Spriglet.xcodeproj -scheme Spriglet -configuration Release -derivedDataPath .build/codeql -destination 'generic/platform=macOS' ARCHS=arm64 ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO build
+      - uses: github/codeql-action/analyze@311b4ee155dcdab395044f00946f664bd51ff173 # v4.38.0
+        with:
+          category: /language:${{ matrix.language }}
