@@ -32,8 +32,14 @@ def main():
             if route in ('/support', '/privacy') and b'Spriglet' not in response.read(1024 * 1024):
                 raise ValueError(f'{route}: expected website content missing')
         print(f'PASS {route}')
-    with build_opener().open(origin.replace('https://', 'http://', 1) + '/support', timeout=30) as response:
-        if response.url != origin + '/support':
+    request = Request(origin.replace('https://', 'http://', 1) + '/support',
+                      headers={'User-Agent': 'SprigletAvailability/1.0'})
+    try:
+        response = opener.open(request, timeout=30)
+    except HTTPError as error:
+        response = error
+    with response:
+        if response.status not in (301, 308) or response.headers.get('Location') != origin + '/support':
             raise ValueError('HTTP does not redirect to the expected HTTPS support page')
     print('PASS HTTP to HTTPS')
 
