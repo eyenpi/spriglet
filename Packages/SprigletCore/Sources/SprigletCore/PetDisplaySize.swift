@@ -1,7 +1,7 @@
 import CoreGraphics
 import Foundation
 
-/// Fixed presentation sizes for the existing 448-pixel character artwork.
+/// Relative size choices. The asset manifest owns its standard canvas size.
 public enum PetDisplaySize: String, CaseIterable, Codable, Sendable {
     case small, standard, large
 
@@ -24,6 +24,10 @@ public enum PetDisplaySize: String, CaseIterable, Codable, Sendable {
     public var scale: Double { pointSize / 224 }
     public var size: CGSize { CGSize(width: pointSize, height: pointSize) }
 
+    public func size(for authored: SampleSize) -> CGSize {
+        CGSize(width: authored.width * scale, height: authored.height * scale)
+    }
+
     /// Derives playback coordinates without changing image paths, pixels, or
     /// frame timing. Both trajectory fitting and presentation use this value.
     /// Source metadata remains available separately for asset verification.
@@ -33,11 +37,12 @@ public enum PetDisplaySize: String, CaseIterable, Codable, Sendable {
               source.canvasPixels.width == source.canvasPixels.height else {
             throw SampleManifestError.invalid("Character size choices require a square authored canvas.")
         }
-        let factor = pointSize / source.displaySizePoints.width
+        let factor = scale
         let result = SproutSampleManifest(
             schemaVersion: source.schemaVersion,
             canvasPixels: source.canvasPixels,
-            displaySizePoints: SampleSize(width: pointSize, height: pointSize),
+            displaySizePoints: SampleSize(width: source.displaySizePoints.width * factor,
+                                          height: source.displaySizePoints.height * factor),
             framesPerSecond: source.framesPerSecond,
             groundAnchorPixels: source.groundAnchorPixels,
             restFrame: source.restFrame,

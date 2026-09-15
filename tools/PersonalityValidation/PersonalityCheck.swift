@@ -158,7 +158,7 @@ private struct Report: Encodable {
     let actualBundledAssetSHA256: [String: String]
     let defaultsSuiteRemoved: Bool
     let limitations = [
-        "The harness displays only its own nonactivating 224-point pet panel with whole-window pass-through; it sends no mouse or keyboard events.",
+        "The harness displays only its own nonactivating 96-point pet panel with whole-window pass-through; it sends no mouse or keyboard events.",
         "The real runtime scheduler receives injected intentions and short delays; policy booleans exercise production branches without changing system settings.",
         "Suspension reasons are called directly. This does not prove real sleep/wake, notification delivery, physical input routing, Spaces, full-screen, or display disconnect/reconnect.",
         "Frame/root observations concern native application callbacks and retained layer geometry, not atomic WindowServer/GPU presentation or a visual-quality verdict.",
@@ -237,12 +237,12 @@ private final class PersonalityRunner: NSObject, NSApplicationDelegate {
             guard let offsets = runtime.renderer.routineRootOffsets(.explore, direction: .walkLeft),
                   let opposite = runtime.renderer.routineRootOffsets(.explore, direction: .walkRight),
                   runtime.desktop.canFitRootMotion(offsets), runtime.desktop.canFitRootMotion(opposite) else {
-                throw HarnessError.blocked("The current usable display area could not fit both complete 78.4-point excursions.")
+                throw HarnessError.blocked("The current usable display area could not fit both complete 102.4-point excursions.")
             }
-            check("native-nonactivating-224-point-panel", runtime.desktop.panel.frame.size == NSSize(width: 224, height: 224)
+            check("native-nonactivating-96-point-panel", runtime.desktop.panel.frame.size == NSSize(width: 96, height: 96)
                   && !runtime.desktop.panel.canBecomeKey && !runtime.desktop.panel.canBecomeMain
                   && runtime.desktop.panel.ignoresMouseEvents,
-                  "The production desktop host is 224 points, cannot become key/main, and uses explicit pass-through.")
+                  "The production desktop host is 96 points, cannot become key/main, and uses explicit pass-through.")
             try await restingCheck("initial-rest", seconds: 0.35)
 
             for direction in [SampleClipID.walkLeft, .walkRight] {
@@ -278,7 +278,7 @@ private final class PersonalityRunner: NSObject, NSApplicationDelegate {
         runtime.recenter()
         guard let screen = runtime.desktop.panel.screen else { return }
         let desired = CGPoint(x: screen.visibleFrame.midX - 112 + 0.375,
-                              y: screen.visibleFrame.minY + min(60, (screen.visibleFrame.height - 224) / 2) + 0.25)
+                              y: screen.visibleFrame.minY + min(60, (screen.visibleFrame.height - runtime.renderer.displaySize.height) / 2) + 0.25)
         let start = runtime.desktop.effectiveOrigin
         runtime.nudge(dx: desired.x - start.x, dy: desired.y - start.y)
     }
@@ -379,7 +379,7 @@ private final class PersonalityRunner: NSObject, NSApplicationDelegate {
               && observation.maximumEffectiveOriginErrorPoints < 0.001 && observation.maximumLayerOffsetMismatchPoints < 0.001,
               "Accepted host frames and sampled committed images matched their root offsets; native layer compensation retained fractional geometry.")
         check("\(name)-bounded-return-preserves-home", error(origin, end) < 0.001 && home == runtime.desktop.savedPlacement
-              && abs(observation.maximumExcursionPoints - (stationary ? 0 : 78.4)) < 0.001,
+              && abs(observation.maximumExcursionPoints - (stationary ? 0 : 102.4)) < 0.001,
               "The complete excursion returned to its precise initial origin without overwriting saved home; parked play did not travel.")
         check("\(name)-bounded-buffer-and-toy", observation.maximumBufferedFrames <= 12
               && observation.fireflyOutsideCanvasSamples == 0 && observation.fireflyChangesWithoutImageCommit == 0
@@ -720,7 +720,7 @@ private final class PersonalityRunner: NSObject, NSApplicationDelegate {
     }
 
     private func loadEvidence() throws {
-        guard let resources = Bundle.main.url(forResource: "SproutSample", withExtension: nil),
+        guard let resources = PetAssetDefinition.acornHopper.resourceDirectory(in: .main),
               let provenance = Bundle.main.url(forResource: "build-provenance", withExtension: "json") else {
             throw HarnessError.blocked("Run the packaged validation app so its asset snapshot and build provenance are available.")
         }

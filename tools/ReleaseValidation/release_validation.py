@@ -77,14 +77,17 @@ def digest(path):
 
 
 def verify_resources(app, source_root):
-    source = source_root / "Sources/Spriglet/Resources/SproutSample"
-    packaged = app / "Contents/Resources/SproutSample"
+    source = source_root / "Sources/Spriglet/Resources/AcornHopper"
+    packaged = app / "Contents/Resources/AcornHopper"
+    require(not (app / "Contents/Resources/SproutSample").exists()
+            and not (app / "Contents/Resources/MossMouse").exists(), "Only Acorn Hopper should ship in this release.")
     metadata_path = source / "manifest.json"
     require(digest(metadata_path) == digest(packaged / "manifest.json"), "Packaged character manifest differs from source.")
     metadata = json.loads(metadata_path.read_text())
-    require(metadata.get("schemaVersion") == 1, "Unsupported character manifest version.")
+    require(metadata.get("schemaVersion") == 2, "Unsupported character manifest version.")
+    require(metadata.get("displaySizePoints") == {"width": 96, "height": 96}, "Incorrect Acorn native size.")
     require(metadata.get("canvasPixels") == {"width": 448, "height": 448}, "Unexpected sample canvas.")
-    require(set(metadata["clips"]) == {"idle", "walkLeft", "walkRight", "pet", "settle"}, "Missing character clip.")
+    require(set(metadata["clips"]) == {"idle", "walkLeft", "walkRight", "pet", "settle", "fallAsleep", "wakeUp"}, "Missing character clip.")
     names = {metadata["restFrame"], metadata["sleepFrame"]}
     for clip in metadata["clips"].values():
         require(0 < len(clip["frames"]) <= 600, "Invalid character clip frame count.")

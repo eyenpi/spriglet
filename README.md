@@ -2,15 +2,21 @@
 
 **A little quiet company for your Mac.**
 
-Meet Sprout: a soft, leaf-eared desktop companion that rests, takes a few steps, and perks up when you pet it. Built with SwiftUI and AppKit, with an editable Blender character and pre-rendered 3D animation.
+Meet Acorn Hopper: a tiny, round desktop companion with a wobbly cap, quick hops, and a happy little reaction when you pet it. Built with SwiftUI and AppKit, with an editable Blender character and pre-rendered 3D animation.
 
-![Sprout walking and reacting on light and dark backgrounds](https://github.com/eyenpi/spriglet/releases/download/v0.1.0-preview.1/spriglet-demo.gif)
+<img src="Sources/Spriglet/Resources/AcornHopper/rest.png" alt="Acorn Hopper, the current desktop companion" width="192">
 
-[Watch the animation demo](https://github.com/eyenpi/spriglet/releases/download/v0.1.0-preview.1/spriglet-demo.mp4) · [Latest preview](https://github.com/eyenpi/spriglet/releases/tag/v0.2.0-preview.1) · [Changelog](CHANGELOG.md) · [Privacy](PRIVACY.md)
+[Acorn's animations and Blender source](art/candidates/README.md) · [Latest tagged preview](https://github.com/eyenpi/spriglet/releases/tag/v0.2.0-preview.1) · [Changelog](CHANGELOG.md) · [Privacy](PRIVACY.md)
+
+## Current development: one tiny pet
+
+`main` now ships **Acorn Hopper only**, with no character picker. Its Small / Standard / Large canvases measure **72 / 96 / 120 points**; the standard character itself is about 64 points tall. Hops take 0.8 seconds, petting finishes with a soft settle, and nap/wake have authored transitions. Clicking during a hop queues the reaction after landing; petting a sleeping Acorn wakes it first. Rest and sleep hold a still image without a running animation clock.
+
+New pets are named Acorn. Existing saved names and settings stay intact. Other editable models remain future source material, not bundled alternatives. The [asset boundary and reproducible export](tools/CharacterAssets/README.md) keep future character support separate from today's minimal experience. To try Acorn, clone `main` without the tag option below and run `./scripts/run.sh`.
 
 ## Try the public preview
 
-The current release is **0.2.0 Preview 1 — Everyday companion** (app version 0.2.0, build 3). It brings native Settings, personality and return-home strolls, firefly play, accessibility actions, and optional sound and launch at login. [Read every change](CHANGELOG.md).
+The latest tagged release is **0.2.0 Preview 1 — Everyday companion** (app version 0.2.0, build 3). That earlier release still features Sprout; Acorn Hopper is currently on `main`. The preview brings native Settings, personality and return-home strolls, firefly play, accessibility actions, and optional sound and launch at login. [Read every change](CHANGELOG.md).
 
 You need an **Apple silicon Mac**, **macOS 26 or later**, and **full Xcode** selected as your developer toolchain. This is a source preview; a signed, notarized app download is not available yet.
 
@@ -36,20 +42,21 @@ No account, server, analytics, desktop capture, or access to other apps' content
 
 ## What is included
 
-This release includes one finished character sample, both walking directions, static awake/nap poses, native Settings and a quick guide, purposeful movement, personality, and the editable model/rig. The source-to-render-to-playback pipeline includes checks for transparency, foot contact, frame timing, cancellation, and quiet rest. The original idle → walk → pet → settle sample and technical checks remain available in the separate Developer Diagnostics window in Debug builds or with `--diagnostics`.
+Current source includes one Acorn pet, both hopping directions, idle, pet/settle, nap/wake transitions and held awake/sleep poses, native Settings and a quick guide, purposeful movement, personality, and the editable model/rig. The source-to-render-to-playback pipeline includes checks for transparency, foot contact, frame timing, cancellation, and quiet rest. The idle → walk → pet → settle sample and technical checks remain available in the separate Developer Diagnostics window in Debug builds or with `--diagnostics`.
 
-It is an early public preview. The larger animation library, broader desktop coverage, sustained battery profiling, and signed distribution are still ahead. Transparent margins of the floating window can affect clicks; **Pass Clicks Through** is the supported fallback. Sprout may remain visible over full-screen apps; use **Hide Pet** or **Pass Clicks Through** when needed. The comparison demo shows the original character animation using the app's actual assets and motion metadata; it does not show the new Settings or firefly controls and is not a desktop screen recording.
+It is an early public preview. Broader desktop coverage, sustained battery profiling, additional selectable pets, and signed distribution are still ahead. Transparent margins of the floating window can affect clicks; **Pass Clicks Through** is the supported fallback. The pet may remain visible over full-screen apps; use **Hide Pet** or **Pass Clicks Through** when needed. The [archived Sprout demo](https://github.com/eyenpi/spriglet/releases/download/v0.1.0-preview.1/spriglet-demo.mp4) shows that earlier character's animation and is not a desktop screen recording.
 
 ## Build, contribute, and create
 
-Development is verified with **Xcode 26.6, Swift 6.3.3, and macOS SDK 26.5**. The app has no third-party runtime dependencies or remote Swift packages. New platform choices are checked against current official Apple/Swift documentation and the installed SDK.
+The Acorn integration is built with **Xcode 27.0 and macOS SDK 27.0**, using Swift 6 mode and a macOS 26 deployment target. The app has no third-party runtime dependencies or remote Swift packages. New platform choices are checked against current official Apple/Swift documentation and the installed SDK.
 
 Use a full checkout of `main` for development. The command above checks out the tagged preview for trying that release.
 
 - [Character and motion checks](tools/CharacterSampleValidation/README.md)
 - [Native size and accessibility checks](tools/EverydayExperienceValidation/README.md)
 - [Sound and login service checks](tools/EverydayServicesValidation/README.md)
-- [Editable character source](art/sprout/README.md)
+- [Shipping Acorn asset architecture and export](tools/CharacterAssets/README.md)
+- [Original Sprout source and legacy fixture](art/sprout/README.md)
 - [App icon artwork and export](art/app-icon/README.md)
 - [Refined Acorn Hopper and Moss Mouse, animations and native comparison](art/candidates/README.md)
 - [Release packaging](tools/ReleaseValidation/README.md)

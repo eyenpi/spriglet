@@ -42,8 +42,8 @@ for path in paths:
     data = path.read_bytes()
     destination.write_bytes(data)
     source_hashes[str(relative)] = hashlib.sha256(data).hexdigest()
-asset_source = root / "Sources/Spriglet/Resources/SproutSample"
-asset_destination = resources / "SproutSample"
+asset_source = root / "Sources/Spriglet/Resources/AcornHopper"
+asset_destination = resources / "AcornHopper"
 if asset_destination.exists():
     shutil.rmtree(asset_destination)
 shutil.copytree(asset_source, asset_destination)

@@ -31,7 +31,7 @@ public enum FireflyMotion {
     /// holds the toy; return/settle frames and a completed timeline have no toy.
     public static func pose(
         for snapshot: SampleTimelineSnapshot, manifest: SproutSampleManifest,
-        direction: SampleClipID = .walkLeft, stationary: Bool = false
+        direction: SampleClipID = .walkLeft, stationary: Bool = false, leadingFrameCount: Int = 0
     ) -> FireflyPose? {
         guard !snapshot.isComplete, direction == .walkLeft || direction == .walkRight,
               let idle = manifest.clips[SampleClipID.idle.rawValue],
@@ -40,7 +40,8 @@ public enum FireflyMotion {
               !idle.frames.isEmpty, !walk.frames.isEmpty, !pet.frames.isEmpty,
               manifest.framesPerSecond.isFinite, manifest.framesPerSecond > 0 else { return nil }
         let catchStart = idle.frames.count + (stationary ? 0 : walk.frames.count)
-        let index = snapshot.timelineFrameIndex
+        guard leadingFrameCount >= 0, snapshot.timelineFrameIndex >= leadingFrameCount else { return nil }
+        let index = snapshot.timelineFrameIndex - leadingFrameCount
         guard index >= 0, index < catchStart + pet.frames.count else { return nil }
         let catching = index >= catchStart
         let catchProgress = catching ? Double(index - catchStart) / Double(max(1, pet.frames.count - 1)) : 0

@@ -82,13 +82,15 @@ class ReleaseValidationTests(unittest.TestCase):
     def test_resource_inventory_and_bytes_are_verified(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            source = root / "Sources/Spriglet/Resources/SproutSample"
+            source = root / "Sources/Spriglet/Resources/AcornHopper"
             app = root / "Spriglet.app"
-            destination = app / "Contents/Resources/SproutSample"
-            names = {"rest.png", "sleep.png"} | {name + ".png" for name in ("idle", "walkLeft", "walkRight", "pet", "settle")}
-            metadata = {"schemaVersion": 1, "canvasPixels": {"width": 448, "height": 448},
+            destination = app / "Contents/Resources/AcornHopper"
+            clips = ("idle", "walkLeft", "walkRight", "pet", "settle", "fallAsleep", "wakeUp")
+            names = {"rest.png", "sleep.png"} | {name + ".png" for name in clips}
+            metadata = {"schemaVersion": 2, "canvasPixels": {"width": 448, "height": 448},
+                        "displaySizePoints": {"width": 96, "height": 96},
                         "restFrame": "rest.png", "sleepFrame": "sleep.png",
-                        "clips": {name: {"frames": [{"file": name + ".png"}]} for name in ("idle", "walkLeft", "walkRight", "pet", "settle")}}
+                        "clips": {name: {"frames": [{"file": name + ".png"}]} for name in clips}}
             png = b"\x89PNG\r\n\x1a\n" + struct.pack(">I", 13) + b"IHDR" + struct.pack(">II", 448, 448)
             for folder in (source, destination):
                 folder.mkdir(parents=True)
@@ -98,7 +100,12 @@ class ReleaseValidationTests(unittest.TestCase):
             privacy = plistlib.dumps({"NSPrivacyTracking": False})
             (root / "Sources/Spriglet/PrivacyInfo.xcprivacy").write_bytes(privacy)
             (app / "Contents/Resources/PrivacyInfo.xcprivacy").write_bytes(privacy)
-            self.assertEqual(release.verify_resources(app, root)["pngCount"], 7)
+            self.assertEqual(release.verify_resources(app, root)["pngCount"], 9)
+            excluded = app / "Contents/Resources/SproutSample"
+            excluded.mkdir()
+            with self.assertRaises(release.ValidationError):
+                release.verify_resources(app, root)
+            excluded.rmdir()
             (destination / "rest.png").write_bytes(png + b"changed")
             with self.assertRaises(release.ValidationError):
                 release.verify_resources(app, root)

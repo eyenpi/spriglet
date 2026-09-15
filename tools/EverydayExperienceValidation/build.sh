@@ -41,7 +41,7 @@ for path in paths:
     data = path.read_bytes()
     destination.write_bytes(data)
     hashes[str(relative)] = hashlib.sha256(data).hexdigest()
-for name in ["SproutSample", "PetSounds"]:
+for name in ["AcornHopper", "PetSounds"]:
     source = root / "Sources/Spriglet/Resources" / name
     destination = resources / name
     if destination.exists():
@@ -54,7 +54,7 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, str(snapshot / "tools/CharacterSampleValidation"))
 from validate_assets import checked_json, contained_path, hit_test_probes
 from png_validation import read_rgba_png
-manifest_path = resources / "SproutSample/manifest.json"
+manifest_path = resources / "AcornHopper/manifest.json"
 manifest = checked_json(manifest_path)
 probes = {
     "manifestSHA256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
@@ -62,7 +62,7 @@ probes = {
 }
 (resources / "asset-alpha-probes.json").write_text(json.dumps(probes, indent=2, sort_keys=True) + "\n")
 asset_hashes = {str(path.relative_to(resources)): hashlib.sha256(path.read_bytes()).hexdigest()
-                for name in ["SproutSample", "PetSounds"]
+                for name in ["AcornHopper", "PetSounds"]
                 for path in sorted((resources / name).rglob("*")) if path.is_file()}
 provenance = {
     "sourceSHA256": hashes,

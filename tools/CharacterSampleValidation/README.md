@@ -1,6 +1,6 @@
 # Character sample validation
 
-These tools check the authored Sprout sample and the real native renderer/desktop controller. They have no third-party dependencies, change no artwork or app settings, and do not launch Blender. The native executable opens disposable windows only when explicitly run.
+These tools check the original authored Sprout sample and the real native renderer/desktop controller. Sprout is now a legacy schema-1 fixture excluded from the shipping app; current Acorn packaging is checked by [CharacterAssets](../CharacterAssets/README.md) and its runtime by [EverydayExperienceValidation](../EverydayExperienceValidation/README.md). These tools have no third-party dependencies, change no artwork or app settings, and do not launch Blender. The native executable opens disposable windows only when explicitly run.
 
 ## Asset checks
 

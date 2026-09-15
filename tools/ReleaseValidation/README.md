@@ -1,5 +1,10 @@
 # Release preparation checks
 
+Current source packages only Acorn Hopper: 194 exact Blender PNGs, seven finite
+clips, and a 96-point standard canvas. Resource validation rejects the original
+Sprout fixture or future Moss Mouse appearing in the app bundle. See the
+[reproducible character export](../CharacterAssets/README.md).
+
 [`scripts/package-release.sh`](../../scripts/package-release.sh) builds and verifies an Apple silicon macOS 26 Release archive. It writes to a new directory under `.build/releases/` and does not publish the result.
 
 For a local development package:
