@@ -1,5 +1,7 @@
 # Release preparation checks
 
+For Mac App Store distribution, use the separate [App Store submission workflow](../AppStore/README.md). The ZIP and notarization commands below serve direct distribution outside the store.
+
 [`scripts/package-release.sh`](../../scripts/package-release.sh) builds and verifies an Apple silicon macOS 26 Release archive. It writes to a new directory under `.build/releases/` and does not publish the result.
 
 For a local development package:

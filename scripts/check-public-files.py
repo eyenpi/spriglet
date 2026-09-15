@@ -32,7 +32,8 @@ def public_path(name):
         return False
     if name.startswith("art/sprout/review-01/"):
         return name == "art/sprout/review-01/sprout-design-v01.blend"
-    return not (path.name.startswith(".env") or path.suffix in {".p12", ".pem", ".mobileprovision", ".pyc"} or re.search(r"\.blend[0-9]+$", path.name))
+    return not (path.name.startswith(".env") or path.suffix in {".p12", ".pem", ".mobileprovision", ".provisionprofile", ".pkg", ".pyc"}
+                or any(part.endswith(".xcarchive") for part in path.parts) or re.search(r"\.blend[0-9]+$", path.name))
 
 
 def main():

@@ -54,6 +54,7 @@ Use a full checkout of `main` for development. The command above checks out the 
 - [Editable character source](art/sprout/README.md)
 - [Smaller character prototypes and native comparison](art/candidates/README.md)
 - [Release packaging](tools/ReleaseValidation/README.md)
+- [Mac App Store preparation and submission](tools/AppStore/README.md)
 - [Changelog and tag publishing](tools/ReleaseNotes/README.md)
 - [Contributing](CONTRIBUTING.md)
 - [Report a bug or suggest an idea](https://github.com/eyenpi/spriglet/issues)

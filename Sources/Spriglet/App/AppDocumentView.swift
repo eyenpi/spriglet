@@ -1,8 +1,9 @@
 import SwiftUI
 
 enum AppLinks {
-    static let privacy = URL(string: "https://github.com/eyenpi/spriglet/blob/main/PRIVACY.md")!
-    static let support = URL(string: "https://github.com/eyenpi/spriglet/issues")!
+    static let privacy = URL(string: "https://meetspriglet.com/privacy")!
+    static let support = URL(string: "https://meetspriglet.com/support")!
+    static let email = URL(string: "mailto:support@meetspriglet.com")!
 
     static var versionDescription: String {
         let info = Bundle.main.infoDictionary ?? [:]
@@ -42,6 +43,7 @@ struct AppDocumentView: View {
                 if let onlineURL { Link("Read Online", destination: onlineURL) }
                 Spacer()
                 Link("Get Support", destination: AppLinks.support)
+                Link("Email Support", destination: AppLinks.email)
             }
         }
         .padding(24)

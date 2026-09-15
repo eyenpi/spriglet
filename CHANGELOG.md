@@ -16,6 +16,8 @@ Development source for Apple silicon and macOS 26 or later. App Store submission
 
 - Privacy Policy and support entries in the menu and Settings, an offline privacy policy, bundled MIT license, and visible app version and build.
 - Editable small character proofs and a native candidate comparison tool.
+- Mac App Store listing copy, submission instructions, unsigned and team-signed Xcode archive preparation, local archive and screenshot validation, and CI coverage for unsigned archive rehearsal.
+- Product, support, and privacy page content for meetspriglet.com, with support@meetspriglet.com for support and privacy requests. Domain hosting and mailbox activation remain pending.
 
 ### Fixed
 

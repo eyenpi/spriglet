@@ -11,6 +11,7 @@
 *.pem
 *.p12
 *.mobileprovision
+*.provisionprofile
 
 # Build products and personal IDE state
 .build/
@@ -22,6 +23,8 @@ xcuserdata/
 *.ipa
 *.dSYM
 *.dSYM.zip
+*.xcarchive/
+*.pkg
 
 # Authoring caches, review exports, and generated verification reports
 __pycache__/
