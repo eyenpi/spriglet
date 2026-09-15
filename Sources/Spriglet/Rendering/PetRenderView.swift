@@ -38,7 +38,9 @@ final class PetRenderView: NSView {
     var fireflyVisible: Bool { !fireflyLayer.isHidden && fireflyLayer.opacity > 0 }
     var currentFireflyPosition: CGPoint? { fireflyVisible ? fireflyLayer.position : nil }
     var currentFireflyFrame: CGRect? { fireflyVisible ? fireflyLayer.frame : nil }
-    var displaySize: NSSize { petDisplaySize.size }
+    var displaySize: NSSize {
+        manifest.map { petDisplaySize.size(for: $0.displaySizePoints) } ?? petDisplaySize.size
+    }
     var sampleDuration: TimeInterval {
         duration(of: [.idle, .walkRight, .pet, .settle])
     }
@@ -63,6 +65,7 @@ final class PetRenderView: NSView {
     private var elapsed: TimeInterval = 0
     private var lastTimestamp: CFTimeInterval?
     private var isSuspended = false
+    private var isInteractionHeld = false
     private var isChangingDisplaySize = false
     private var preferredFramesPerSecond = 30
     private var playbackLink: CADisplayLink?
@@ -71,7 +74,7 @@ final class PetRenderView: NSView {
 
     override var isOpaque: Bool { false }
 
-    init(frame: NSRect, resourceDirectory: URL? = nil) {
+    init(frame: NSRect, resourceDirectory: URL?) {
         super.init(frame: frame)
         wantsLayer = true
         layer?.backgroundColor = NSColor.clear.cgColor
@@ -82,8 +85,7 @@ final class PetRenderView: NSView {
         layer?.addSublayer(imageLayer)
         configureFirefly()
         do {
-            let root = resourceDirectory ?? Bundle.main.url(forResource: "SproutSample", withExtension: nil)
-            guard let root else { throw SampleManifestError.invalid("Bundled Sprout character sample is missing.") }
+            guard let root = resourceDirectory else { throw SampleManifestError.invalid("Bundled character artwork is missing.") }
             self.resourceDirectory = root
             let metadata = try SproutSampleManifest.decode(Data(contentsOf: root.appendingPathComponent("manifest.json")))
             let rest = try SampleImageDecoder.decodeImmediately(url: root.appendingPathComponent(metadata.restFrame), canvas: metadata.canvasPixels)
@@ -92,6 +94,8 @@ final class PetRenderView: NSView {
             playbackManifest = try petDisplaySize.scaledManifest(metadata)
             restImage = rest
             sleepImage = sleep
+            super.setFrameSize(displaySize)
+            updateImageLayerFrame()
             present(rest)
         } catch {
             assetError = error.localizedDescription
@@ -120,7 +124,8 @@ final class PetRenderView: NSView {
     /// Runtime coordinates this with the host resize inside its behavior
     /// transition, then restores any saved placement using the new dimensions.
     func setDisplaySize(_ choice: PetDisplaySize) {
-        guard choice != petDisplaySize || frame.size != choice.size else { return }
+        let targetSize = manifest.map { choice.size(for: $0.displaySizePoints) } ?? choice.size
+        guard choice != petDisplaySize || frame.size != targetSize else { return }
         let wasChangingSize = isChangingDisplaySize
         isChangingDisplaySize = true
         defer { isChangingDisplaySize = wasChangingSize }
@@ -135,7 +140,7 @@ final class PetRenderView: NSView {
         // Attached content inherits the host's resize through its autoresizing
         // mask. Resizing it here as well would apply the parent's delta twice.
         if superview == nil {
-            super.setFrameSize(choice.size)
+            super.setFrameSize(targetSize)
             updateImageLayerFrame()
         }
     }
@@ -173,7 +178,33 @@ final class PetRenderView: NSView {
 
     func play() { play(.react) }
 
-    /// State-aware playback for candidate assets. The current gesture reaches
+    /// Holding a click freezes the exact image/root pair without waking a nap
+    /// or resetting an airborne pose. Releasing resumes the same finite action.
+    func setInteractionHeld(_ held: Bool) {
+        guard held != isInteractionHeld else { return }
+        isInteractionHeld = held
+        if held {
+            playbackLink?.invalidate()
+            playbackLink = nil
+            linkTarget = nil
+            lastTimestamp = nil
+        } else if currentSnapshot != nil {
+            startClock()
+        }
+    }
+
+    /// Graceful production routine entry. Explicit diagnostic replay helpers
+    /// below retain their cancellation semantics.
+    @discardableResult
+    func transitionRoutine(_ routine: PetRoutine, direction: SampleClipID = .walkLeft, stationary: Bool = false) -> Bool {
+        let clips = routineClips(routine, direction: direction, stationary: stationary)
+        guard !clips.isEmpty, canAcceptPlayback else { return false }
+        let request = Request(clips: clips, action: nil, routine: routine, direction: direction, stationary: stationary)
+        if isAnimating, timeline != nil { queuedRequest = request; return true }
+        return begin(request)
+    }
+
+    /// State-aware playback for authored assets. The current gesture reaches
     /// its authored landing/settle, then only the latest pending intent runs.
     /// Unlike the explicit reset/replay helpers, this never resets the pose.
     @discardableResult
@@ -195,15 +226,16 @@ final class PetRenderView: NSView {
     @discardableResult
     func play(_ action: PetAction) -> Bool {
         guard canAcceptPlayback else { return false }
-        guard !(action == .fallAsleep && isSleeping), !(action == .wakeUp && !isSleeping) else { return false }
+        if isAnimating, timeline != nil, action == currentAction {
+            queuedRequest = nil
+            return false
+        }
+        let boundarySleeps = activeRequest?.sleepsAtEnd ?? isSleeping
+        guard !(action == .fallAsleep && boundarySleeps), !(action == .wakeUp && !boundarySleeps) else { return false }
         let next = request(for: action)
         // Teardown callbacks run after the old timeline is cleared. An action
         // requested there replaces it immediately instead of becoming orphaned.
         if isAnimating, timeline != nil {
-            if action == currentAction {
-                queuedRequest = nil
-                return false
-            }
             guard queuedRequest?.action != action else { return false }
             queuedRequest = next
             return true
@@ -277,8 +309,8 @@ final class PetRenderView: NSView {
     private func request(for action: PetAction) -> Request {
         switch action {
         case .react: Request(clips: [.pet, .settle], action: action)
-        case .fallAsleep: Request(clips: [], action: action, sleepsAtEnd: true)
-        case .wakeUp: Request(clips: [], action: action)
+        case .fallAsleep: Request(clips: manifest?.supportsAnimatedSleep == true ? [.fallAsleep] : [], action: action, sleepsAtEnd: true)
+        case .wakeUp: Request(clips: manifest?.supportsAnimatedSleep == true ? [.wakeUp] : [], action: action)
         // The sample's authored idle is the explicit preview for these planner
         // requests; it does not claim three separately authored animation clips.
         case .blink, .lookAround, .stretch: Request(clips: [.idle], action: action)
@@ -303,6 +335,10 @@ final class PetRenderView: NSView {
                                             animatedSleep: playbackManifest.supportsAnimatedSleep)
             request.clips = plan.clips
             request.sleepsAtEnd = plan.sleepsAtEnd
+        } else if playbackManifest.supportsAnimatedSleep, isSleeping,
+                  request.action != .wakeUp, request.action != .fallAsleep {
+            request.leadingWakeFrames = playbackManifest.clips[SampleClipID.wakeUp.rawValue]?.frames.count ?? 0
+            request.clips.insert(.wakeUp, at: 0)
         }
         if request.clips.isEmpty {
             generation &+= 1
@@ -384,7 +420,7 @@ final class PetRenderView: NSView {
     }
 
     private func startClock() {
-        guard playbackLink == nil, isAnimating, !isSuspended, timeline != nil, window != nil else { return }
+        guard playbackLink == nil, isAnimating, !isSuspended, !isInteractionHeld, timeline != nil, window != nil else { return }
         let target = SampleDisplayLinkTarget(owner: self)
         let link = displayLink(target: target, selector: #selector(SampleDisplayLinkTarget.tick(_:)))
         linkTarget = target
@@ -570,12 +606,14 @@ final class PetRenderView: NSView {
     private func commitFirefly(_ snapshot: SampleTimelineSnapshot) {
         guard let request = activeRequest, request.routine == .firefly, let playbackManifest,
               let pose = FireflyMotion.pose(for: snapshot, manifest: playbackManifest,
-                                           direction: request.direction, stationary: request.stationary) else {
+                                           direction: request.direction, stationary: request.stationary,
+                                           leadingFrameCount: request.leadingWakeFrames) else {
             clearFirefly()
             return
         }
         fireflyLayer.position = CGPoint(x: pose.position.x, y: pose.position.y)
-        fireflyLayer.setAffineTransform(CGAffineTransform(scaleX: petDisplaySize.scale, y: petDisplaySize.scale))
+        let effectScale = displaySize.width / 224
+        fireflyLayer.setAffineTransform(CGAffineTransform(scaleX: effectScale, y: effectScale))
         fireflyLayer.opacity = Float(pose.opacity)
         fireflyLayer.isHidden = false
         let wings = CGMutablePath()
@@ -601,6 +639,7 @@ final class PetRenderView: NSView {
         var direction: SampleClipID = .walkLeft
         var stationary = false
         var transitionIntent: SampleTransitionIntent?
+        var leadingWakeFrames = 0
     }
 }
 

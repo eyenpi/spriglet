@@ -177,6 +177,7 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
     private var executableSHA256: String?
     private var probes: AlphaProbes?
     private var activePlayback: Int?
+    private var transitionClips: [SampleClipID]?
     private var motionStart = CGPoint.zero
     private var settingsRequests = 0
     private var placementSettlements = 0
@@ -230,6 +231,7 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
             try requireEnvironment()
             positionSafely()
             try await checkAccessibility()
+            try await checkTransitions()
             try await checkSizes()
             try await checkResizeCancellation()
             try checkEdgeAndMissingHome()
@@ -298,10 +300,13 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
         check("retained-resume-does-not-pause", retainedResume?.handler?() == false && !runtime.isPaused,
               "An already-used native Resume action rejected a repeated invocation instead of pausing the companion.")
         let retainedNap = action(named: "Take a nap")
-        let napped = retainedNap?.handler?() == true && runtime.isSleeping
-        check("retained-nap-does-not-wake", napped && retainedNap?.handler?() == false && runtime.isSleeping,
+        let napAccepted = retainedNap?.handler?() == true
+        let napped = try await waitUntil(timeout: 3) { self.runtime.isSleeping && !self.runtime.isAnimating }
+        check("retained-nap-does-not-wake", napAccepted && napped && retainedNap?.handler?() == false && runtime.isSleeping,
               "A retained named nap action rejected a repeated request after the pet slept, preserving the requested sleep state.")
-        check("native-wake-action-works", invoke("Wake up") && !runtime.isSleeping,
+        let wakeAccepted = invoke("Wake up")
+        let woke = try await waitUntil(timeout: 3) { !self.runtime.isAnimating }
+        check("native-wake-action-works", wakeAccepted && woke && !runtime.isSleeping,
               "The newly exported Wake up action restored the ordinary resting state.")
 
         runtime.setHidden(true)
@@ -335,6 +340,72 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
         positionSafely()
     }
 
+    private func checkTransitions() async throws {
+        let renderer = runtime.renderer
+        runtime.setDisplaySize(.standard)
+        runtime.setParked(false)
+        positionSafely()
+        transitionClips = []
+        defer { transitionClips = nil }
+
+        let hopped = runtime.walk(direction: .walkRight)
+        let airborne = try await waitUntil(timeout: 2) { (renderer.currentSnapshot?.clipFrameIndex ?? 0) >= 6 }
+        renderer.setInteractionHeld(true)
+        let held = Snapshot(runtime)
+        let heldFrame = renderer.currentSnapshot
+        let petQueued = runtime.preview(.react)
+        try await pause(0.25)
+        check("held-hop-preserves-image-and-root", hopped && airborne && petQueued
+              && renderer.currentSnapshot == heldFrame && renderer.submittedFrameCount == held.submittedFrames
+              && runtime.desktop.movementTickCount == held.movementApplications
+              && [runtime.desktop.effectiveOrigin.x, runtime.desktop.effectiveOrigin.y] == held.effectiveOrigin
+              && !renderer.hasActiveDisplayLink,
+              "Holding an in-flight hop stopped its display link without resetting the image/root pair; petting waited at the authored boundary.")
+        renderer.setInteractionHeld(false)
+        let settled = try await waitUntil(timeout: 4) { !renderer.isAnimating }
+        check("hop-lands-before-petting-and-settle", settled && transitionClips == [.walkRight, .pet, .settle]
+              && !renderer.hasActiveDisplayLink && !renderer.isSleeping,
+              "Resuming finished the hop, then played pet and settle exactly once without an interrupted airborne pose.")
+
+        transitionClips = []
+        let nap = runtime.preview(.fallAsleep)
+        let napStarted = try await waitUntil(timeout: 2) { renderer.currentSnapshot?.clip == .fallAsleep }
+        let requestedWake = runtime.preview(.wakeUp)
+        let woke = try await waitUntil(timeout: 4) { !renderer.isAnimating }
+        check("wake-request-during-nap-entry", nap && napStarted && requestedWake && woke
+              && transitionClips == [.fallAsleep, .wakeUp] && !runtime.isSleeping,
+              "Wake requested during nap entry resolved at the future sleeping boundary and used both authored bridges.")
+
+        _ = runtime.preview(.fallAsleep)
+        let asleep = try await waitUntil(timeout: 3) { renderer.isSleeping && !renderer.isAnimating }
+        let pointer = runtime.desktop.panel.convertPoint(toScreen: CGPoint(x: renderer.bounds.midX, y: renderer.bounds.midY))
+        let sleepFrames = renderer.submittedFrameCount
+        element.mouseDown(with: event(.leftMouseDown, at: pointer))
+        try await pause(0.2)
+        check("sleeping-mouse-down-retains-nap", asleep && renderer.isSleeping && runtime.isSleeping
+              && renderer.submittedFrameCount == sleepFrames && !renderer.hasActiveDisplayLink,
+              "The real local mouse-down handler held the sleeping pose instead of resetting it to an awake still.")
+        element.cancelInteraction()
+        transitionClips = []
+        let pressed = element.accessibilityPerformPress()
+        let petted = try await waitUntil(timeout: 4) { !renderer.isAnimating }
+        check("sleeping-primary-press-wakes-before-petting", pressed && petted
+              && transitionClips == [.wakeUp, .pet, .settle] && !runtime.isSleeping,
+              "The real primary accessibility handler woke Acorn through its authored bridge, then played and settled.")
+
+        _ = runtime.preview(.fallAsleep)
+        _ = try await waitUntil(timeout: 3) { renderer.isSleeping && !renderer.isAnimating }
+        transitionClips = []
+        let routine = renderer.transitionRoutine(.firefly, stationary: true)
+        let waking = try await waitUntil(timeout: 2) { renderer.currentSnapshot?.clip == .wakeUp }
+        let hiddenDuringWake = !renderer.fireflyVisible
+        let toy = try await waitUntil(timeout: 3) { renderer.fireflyVisible }
+        let finished = try await waitUntil(timeout: 5) { !renderer.isAnimating }
+        check("sleeping-routine-wakes-before-toy", routine && waking && hiddenDuringWake && toy && finished
+              && transitionClips == [.wakeUp, .idle, .pet, .settle] && !renderer.fireflyVisible && !renderer.hasActiveDisplayLink,
+              "A routine from sleep hid the toy throughout wake-up, then played the finite game and stopped all toy/display work.")
+    }
+
     private func checkSizes() async throws {
         let choices = PetDisplaySize.allCases
         check("three-supported-size-choices", choices.count == 3, "Every supported size is covered by the native geometry and playback cases.")
@@ -346,7 +417,8 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
             runtime.setDisplaySize(choice)
             let renderer = runtime.renderer
             check("\(choice.rawValue)-native-size-and-anchor", runtime.displaySize == choice && renderer.petDisplaySize == choice
-                  && runtime.desktop.panel.frame.size == choice.size && renderer.bounds.size == choice.size && element.bounds.size == choice.size
+                  && runtime.desktop.panel.frame.size == NSSize(width: 96 * choice.scale, height: 96 * choice.scale)
+                  && renderer.bounds.size == runtime.desktop.panel.frame.size && element.bounds.size == renderer.bounds.size
                   && error(anchor, bottomCenter()) < 0.001 && runtime.desktop.savedPlacement == home && runtime.interactionMemory == memory,
                   "Window, rendered view and interaction view use the selected size. A safe resize preserves the fractional canvas bottom-center, saved home and relocation memory.")
             checkAlphaProbes(choice)
@@ -380,7 +452,7 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
         check("\(size.rawValue)-\(routine.rawValue)-finite-scaled-return", started && finished
               && runtime.renderer.completedRoutineCount == completed + 1 && observed.clipsSeen == expectedClips
               && error(origin, runtime.desktop.effectiveOrigin) < 0.001 && runtime.desktop.savedPlacement == home
-              && abs(observed.maximumExcursionPoints - 78.4 * size.scale) < 0.001,
+              && abs(observed.maximumExcursionPoints - 102.4 * size.scale) < 0.001,
               "One complete routine used scaled authored travel, returned to the precise starting origin, and retained saved home.")
         check("\(size.rawValue)-\(routine.rawValue)-paired-native-frames", observed.acceptedFrames > 0 && observed.rejectedFrames == 0
               && observed.frameRootMismatches == 0 && observed.committedFrameRootMismatches == 0
@@ -519,6 +591,9 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
         }
         renderer.onFrame = { [weak self] snapshot in
             let accepted = originalFrame?(snapshot) ?? false
+            if accepted, self?.transitionClips != nil, self?.transitionClips?.last != snapshot.clip {
+                self?.transitionClips?.append(snapshot.clip)
+            }
             guard let self, let index = activePlayback else { return accepted }
             if !accepted { playback[index].rejectedFrames += 1; return false }
             playback[index].acceptedFrames += 1
@@ -551,7 +626,7 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
         if let frame = renderer.currentFireflyFrame {
             playback[index].toySamples += 1
             if !renderer.bounds.contains(frame) { playback[index].toyBoundsFailures += 1 }
-            let expected = 28 * runtime.displaySize.scale
+            let expected = 12 * runtime.displaySize.scale
             if abs(frame.width - expected) > 0.001 || abs(frame.height - expected) > 0.001 { playback[index].toyScaleFailures += 1 }
         }
     }
@@ -626,7 +701,7 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
         }
         build = try JSONDecoder().decode(BuildEvidence.self, from: Data(contentsOf: provenance))
         probes = try JSONDecoder().decode(AlphaProbes.self, from: Data(contentsOf: alpha))
-        for directory in ["SproutSample", "PetSounds"] {
+        for directory in [PetAssetDefinition.acornHopper.resourceName, "PetSounds"] {
             let root = resourceRoot.appendingPathComponent(directory)
             let files = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isRegularFileKey])
             while let file = files?.nextObject() as? URL {
@@ -637,7 +712,7 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
         if let executable = Bundle.main.executableURL { executableSHA256 = try hash(executable) }
         check("bundled-assets-match-compiled-snapshot", assets == build?.assetSHA256,
               "All actual bundled sample and optional sound files matched their build-time SHA-256 values.")
-        check("independent-alpha-report-matches-sample", probes?.manifestSHA256 == assets["SproutSample/manifest.json"],
+        check("independent-alpha-report-matches-sample", probes?.manifestSHA256 == assets["\(PetAssetDefinition.acornHopper.resourceName)/manifest.json"],
               "The independently generated rest-image alpha probes belong to the copied source manifest.")
     }
 

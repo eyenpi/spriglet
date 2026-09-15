@@ -4,9 +4,9 @@ import Testing
 
 @Suite("Stable local character identity")
 struct PetProfileTests {
-    @Test("Blank, controls, and invisible-only names use Sprout", arguments: ["", " \n\t ", "\u{0}\u{7}", "\u{200D}\u{202E}", "\u{0301}"])
+    @Test("Blank, controls, and invisible-only names use the default", arguments: ["", " \n\t ", "\u{0}\u{7}", "\u{200D}\u{202E}", "\u{0301}"])
     func emptyNames(name: String) {
-        #expect(PetProfile(name: name).name == "Sprout")
+        #expect(PetProfile(name: name).name == "Acorn")
     }
 
     @Test("Name cleanup removes control characters and preserves readable word spacing")

@@ -9,7 +9,7 @@ struct WelcomeView: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            if let imageURL = Bundle.main.url(forResource: "rest", withExtension: "png", subdirectory: "SproutSample"),
+            if let imageURL = runtime.characterPreviewURL,
                let image = NSImage(contentsOf: imageURL) {
                 Image(nsImage: image).resizable().scaledToFit().frame(height: 150).accessibilityHidden(true)
             }

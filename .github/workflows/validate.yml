@@ -41,6 +41,7 @@ jobs:
         run: |
           python3 -m unittest discover -s tools/CharacterSampleValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/CandidateReview -p 'test_*.py'
+          python3 -m unittest discover -s tools/CharacterAssets -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/EverydayServicesValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseNotes -p 'test_*.py'
@@ -58,6 +59,7 @@ jobs:
           mkdir -p .build
           python3 tools/CharacterSampleValidation/validate_assets.py Sources/Spriglet/Resources/SproutSample/manifest.json --contacts art/sprout/sample-v01/contact-samples.json --output .build/ci-assets.json
           python3 tools/CandidateReview/verify_assets.py --output .build/ci-candidate-assets.json
+          python3 tools/CharacterAssets/export_acorn.py --check
       - name: App icon artwork and catalog
         run: python3 art/app-icon/verify_icon.py
       - name: Debug and Release builds
@@ -65,6 +67,7 @@ jobs:
           for configuration in Debug Release; do
             xcodebuild -project Spriglet.xcodeproj -scheme Spriglet -configuration "$configuration" -derivedDataPath .build/ci-xcode -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO build
             python3 tools/ReleaseNotes/release_notes.py bundle ".build/ci-xcode/Build/Products/$configuration/Spriglet.app"
+            python3 -c 'import sys; from pathlib import Path; sys.path.insert(0, "tools/ReleaseValidation"); from release_validation import verify_resources; print(verify_resources(Path(sys.argv[1]), Path(".")))' ".build/ci-xcode/Build/Products/$configuration/Spriglet.app"
           done
           python3 tools/AppStore/validate.py --app .build/ci-xcode/Build/Products/Release/Spriglet.app
       - name: App Store archive rehearsal (unsigned, no upload)

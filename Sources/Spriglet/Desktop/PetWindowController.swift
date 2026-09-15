@@ -103,7 +103,7 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         interactionView.onInputEvent = { [weak self] event in
             self?.onInputEvent?(event)
         }
-        interactionView.onPressed = { [weak self] in
+        interactionView.onDragBegan = { [weak self] in
             self?.stopMovement()
         }
         interactionView.onClicked = { [weak self] in
@@ -167,7 +167,12 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     /// baseline scales within the canvas. Saved home intent stays verbatim,
     /// including a preferred display that is currently disconnected.
     func setDisplaySize(_ choice: PetDisplaySize) {
-        guard panel.frame.size != choice.size, !isChangingDisplaySize else { return }
+        setDisplaySize(choice.size)
+    }
+
+    func setDisplaySize(_ size: NSSize) {
+        guard size.width.isFinite, size.height.isFinite, size.width > 0, size.height > 0,
+              panel.frame.size != size, !isChangingDisplaySize else { return }
         isChangingDisplaySize = true
         defer { isChangingDisplaySize = false }
         stopMovement()
@@ -175,11 +180,12 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         let oldFrame = CGRect(origin: effectiveOrigin, size: panel.frame.size)
         let desired: CGPoint
         if let screen = currentScreen {
-            desired = choice.bottomCenterOrigin(resizing: oldFrame, within: screen.visibleFrame)
+            desired = PetPlacement.clampedOrigin(CGPoint(x: oldFrame.midX - size.width / 2, y: oldFrame.minY),
+                                                 windowSize: size, visibleFrame: screen.visibleFrame)
         } else {
-            desired = CGPoint(x: oldFrame.midX - choice.size.width / 2, y: oldFrame.minY)
+            desired = CGPoint(x: oldFrame.midX - size.width / 2, y: oldFrame.minY)
         }
-        positionWindow(at: desired, size: choice.size)
+        positionWindow(at: desired, size: size)
     }
 
     /// Restores silently; the runtime remains responsible for persistence.
