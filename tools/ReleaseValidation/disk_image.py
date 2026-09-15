@@ -59,6 +59,8 @@ def create(args):
         command("/usr/bin/xcrun", "stapler", "validate", args.output)
         command("/usr/bin/codesign", "--verify", "--strict", args.output)
     mount = args.work / "Mounted"
+    # macOS 26 requires an existing mount point; macOS 27 can create it.
+    mount.mkdir()
     command("/usr/sbin/diskutil", "image", "attach", "--readOnly", "--nobrowse",
             "--mountPoint", mount, args.output)
     try:
