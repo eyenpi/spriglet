@@ -20,10 +20,12 @@ xcrun swiftc "${check_flags[@]}" -parse-as-library -framework AppKit -framework 
     -framework ImageIO -framework CoreGraphics -framework ColorSync -framework CryptoKit -framework AVFAudio \
     -I "$check_output" -L "$check_output" -lSprigletCore \
     "$check_root/Sources/Spriglet/Rendering/PetRenderView.swift" \
+    "$check_root/Sources/Spriglet/Rendering/PetRenderView+Scene.swift" \
     "$check_root/Sources/Spriglet/Rendering/SampleImageDecoder.swift" \
     "$check_root/Sources/Spriglet/Desktop/PetWindowController.swift" \
     "$check_root/Sources/Spriglet/Desktop/PetInteractionView.swift" \
     "$check_root/Sources/Spriglet/App/PetRuntime.swift" \
+    "$check_root/Sources/Spriglet/Environment/AppKitEnvironmentSource.swift" \
     "$check_root/Sources/Spriglet/App/SharedContent.generated.swift" \
     "$check_root/Sources/Spriglet/Services/PetSoundService.swift" \
     "$check_root/Sources/Spriglet/Diagnostics/ProcessSample.swift" \

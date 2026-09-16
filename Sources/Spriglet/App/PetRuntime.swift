@@ -42,8 +42,11 @@ final class PetRuntime {
     @ObservationIgnored var onShowSettingsRequested: (@MainActor () -> Void)? {
         didSet { refreshAccessibility() }
     }
+    @ObservationIgnored private var world = PetWorldSnapshot()
+    @ObservationIgnored private let environment: any EnvironmentObserving
+    /// Observable projection of the world policy for menu and Settings updates.
     private var policy = ActivityPolicy()
-    @ObservationIgnored private var tokens: [NotificationCenter.ObservationToken] = []
+    private var scene: any PetSceneRenderer { renderer }
     @ObservationIgnored private var probeTask: Task<Void, Never>?
     @ObservationIgnored private var behaviorTask: Task<Void, Never>?
     @ObservationIgnored private var behaviorGeneration: UInt64 = 0
@@ -51,7 +54,7 @@ final class PetRuntime {
     @ObservationIgnored private let interactionClock = ContinuousClock()
     @ObservationIgnored private var fireflyReadyAt: ContinuousClock.Instant?
     @ObservationIgnored private var prefersLeftExcursion = true
-    @ObservationIgnored private var behaviorPlanner = PetBehaviorPlanner(seed: UInt64.random(in: .min ... .max))
+    @ObservationIgnored private var behaviorDirector: any BehaviorDirector = LegacyBehaviorDirector(seed: UInt64.random(in: .min ... .max))
     @ObservationIgnored private let preferencesStore: PetPreferencesStore
     @ObservationIgnored private let initialPlacement: PetSavedPlacement?
     @ObservationIgnored private var probePlacement: PetSavedPlacement?
@@ -68,7 +71,9 @@ final class PetRuntime {
     @ObservationIgnored private let logger = Logger(subsystem: "dev.spriglet.app", category: "lifecycle")
 
     init(preferencesStore: PetPreferencesStore = PetPreferencesStore(),
-         character: PetAssetDefinition = .acornHopper, resourceBundle: Bundle = .main) {
+         character: PetAssetDefinition = .acornHopper, resourceBundle: Bundle = .main,
+         environment: any EnvironmentObserving = AppKitEnvironmentSource()) {
+        self.environment = environment
         self.preferencesStore = preferencesStore
         self.character = character
         characterResourceDirectory = character.resourceDirectory(in: resourceBundle)
@@ -136,10 +141,10 @@ final class PetRuntime {
         desktop.onUserInteractionChanged = { [weak self] interacting in
             guard let self else { return }
             isInteracting = interacting
-            renderer.setInteractionHeld(interacting)
+            scene.perform(.interactionHeld(interacting))
             if interacting {
                 cancelBehaviorSchedule()
-                behaviorPlanner.resetAfterInteraction()
+                behaviorDirector.resetAfterInteraction()
                 sound.stop()
             } else {
                 reconcileBehaviorSchedule()
@@ -153,7 +158,7 @@ final class PetRuntime {
         }
         desktop.onOcclusionChanged = { [weak self] visible in self?.setSuspension(.occluded, active: !visible) }
         desktop.onScreenChanged = { [weak self] in self?.refreshEnvironment() }
-        desktop.onMovementInterrupted = { [weak self] in self?.renderer.resetPose() }
+        desktop.onMovementInterrupted = { [weak self] in self?.scene.perform(.resetPose) }
         desktop.onWalkRequested = { [weak self] in self?.walk() }
         desktop.onImageOffsetChanged = { [weak self] offset in self?.renderer.setImageOffset(offset) }
         desktop.onPlacementSettled = { [weak self] _ in
@@ -218,9 +223,10 @@ final class PetRuntime {
         probeTask?.cancel()
         probeTask = nil
         desktop?.stopMovement()
-        renderer.setSuspended(true)
+        scene.perform(.suspended(true))
         refreshSoundPolicy()
-        tokens.removeAll()
+        environment.stop()
+        environment.onEvent = nil
     }
 
     @discardableResult
@@ -240,7 +246,7 @@ final class PetRuntime {
     func resetRecentPreferences() {
         withBehaviorTransition {
             interactionMemory = PetInteractionMemory()
-            behaviorPlanner.resetAfterInteraction()
+            behaviorDirector.resetAfterInteraction()
             savePreferences(clearingRecentMemory: true)
             message = "Recent preferences cleared. The name and stable traits are unchanged."
         }
@@ -289,10 +295,10 @@ final class PetRuntime {
         withBehaviorTransition {
             isParked = value
             if value, renderer.currentRoutine == .explore || renderer.currentRoutine == .firefly || desktop.isMoving {
-                renderer.resetPose()
+                scene.perform(.resetPose)
                 desktop.stopMovement()
             }
-            behaviorPlanner.resetAfterInteraction()
+            behaviorDirector.resetAfterInteraction()
             savePreferences()
             message = value
                 ? "Parked. Quiet moments and firefly play stay in one place; you can still move the pet yourself."
@@ -311,7 +317,7 @@ final class PetRuntime {
         withBehaviorTransition {
             let direction = isParked || lowPower ? nil : fittingRoutine(.firefly)
             let stationary = direction == nil
-            renderer.transitionRoutine(.firefly, direction: direction ?? .walkLeft, stationary: stationary)
+            scene.perform(.routine(.firefly, direction: direction ?? .walkLeft, stationary: stationary))
             if renderer.isAnimating, renderer.currentRoutine == .firefly {
                 accepted = true
                 if !sampling { fireflyReadyAt = interactionClock.now.advanced(by: .seconds(20)) }
@@ -334,10 +340,10 @@ final class PetRuntime {
         }
         var accepted = false
         withBehaviorTransition {
-            behaviorPlanner.resetAfterInteraction()
+            behaviorDirector.resetAfterInteraction()
             // Finish the current authored landing/settle, then honor the latest
             // interaction. A sleeping pet wakes through its authored bridge.
-            accepted = renderer.play(action)
+            accepted = scene.perform(.action(action))
             if action == .react, accepted {
                 recordInteraction(.petted)
                 savePreferences()
@@ -355,12 +361,12 @@ final class PetRuntime {
         guard permitsMotion else { return false }
         var accepted = false
         withBehaviorTransition {
-            behaviorPlanner.resetAfterInteraction()
+            behaviorDirector.resetAfterInteraction()
             guard let clip = fittingWalk(preferred: direction) else {
                 message = "There is not enough room for a planted short walk in that direction. Move Spriglet away from the edge."
                 return
             }
-            accepted = renderer.transition(to: clip == .walkLeft ? .moveLeft : .moveRight)
+            accepted = scene.perform(.transition(clip == .walkLeft ? .moveLeft : .moveRight))
             if accepted { message = "Taking a short walk to the \(clip == .walkLeft ? "left" : "right")." }
         }
         return accepted
@@ -369,14 +375,14 @@ final class PetRuntime {
     func characterSample() {
         guard permitsMotion else { return }
         withBehaviorTransition {
-            behaviorPlanner.resetAfterInteraction()
-            renderer.resetPose()
+            behaviorDirector.resetAfterInteraction()
+            scene.perform(.resetPose)
             guard let clip = fittingWalk(preferred: nil, sample: true) else {
                 message = "Move Spriglet away from the screen edge to play the complete character sample."
                 return
             }
             message = "An idle moment, a planted short walk, a happy pet reaction, then settle."
-            renderer.playSample(walk: clip)
+            scene.perform(.sample(walk: clip))
         }
     }
 
@@ -437,7 +443,7 @@ final class PetRuntime {
     func setAutonomousBehavior(_ value: Bool) {
         withBehaviorTransition {
             autonomousBehavior = value
-            if !value, renderer.currentRoutine == .explore { renderer.resetPose() }
+            if !value, renderer.currentRoutine == .explore { scene.perform(.resetPose) }
             savePreferences()
             message = value
                 ? "Quiet moments are on. Parked mode keeps them in one place; otherwise an occasional stroll returns to the same spot."
@@ -447,7 +453,7 @@ final class PetRuntime {
 
     func recenter() {
         withBehaviorTransition {
-            behaviorPlanner.resetAfterInteraction()
+            behaviorDirector.resetAfterInteraction()
             desktop.recenter()
             message = "Your companion is back at its home position."
         }
@@ -455,7 +461,7 @@ final class PetRuntime {
 
     func moveToNextDisplay() {
         withBehaviorTransition {
-            behaviorPlanner.resetAfterInteraction()
+            behaviorDirector.resetAfterInteraction()
             desktop.moveToNextDisplay()
             refreshEnvironment()
             message = "Display placement updated."
@@ -464,7 +470,7 @@ final class PetRuntime {
 
     func nudge(dx: CGFloat = 0, dy: CGFloat = 0) {
         withBehaviorTransition {
-            behaviorPlanner.resetAfterInteraction()
+            behaviorDirector.resetAfterInteraction()
             desktop.nudge(dx: dx, dy: dy)
             refreshMeasurements()
             message = "Companion placement updated."
@@ -552,37 +558,35 @@ final class PetRuntime {
 
     func setSuspension(_ reason: SuspensionReason, active: Bool) {
         withBehaviorTransition {
-            policy.set(reason, active: active)
+            receive(.suspension(reason: reason, active: active))
             let suspended = !policy.allowsAnimation
             if suspended {
                 desktop?.cancelInteraction()
                 desktop?.stopMovement()
             }
-            renderer.setSuspended(suspended)
+            scene.perform(.suspended(suspended))
             refreshSoundPolicy()
             refreshMeasurements()
         }
     }
 
     private func refreshEnvironment() {
-        applyEnvironmentPolicy(
-            lowPower: ProcessInfo.processInfo.isLowPowerModeEnabled,
-            reduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
-        )
+        applyEnvironmentPolicy(environment.currentSnapshot())
     }
 
-    private func applyEnvironmentPolicy(lowPower newLowPower: Bool, reduceMotion newReduceMotion: Bool) {
+    private func applyEnvironmentPolicy(_ snapshot: EnvironmentSnapshot) {
         withBehaviorTransition {
-            let enteringLowPower = !lowPower && newLowPower
-            lowPower = newLowPower
-            reduceMotion = newReduceMotion
-            let thermal = ProcessInfo.processInfo.thermalState
-            setSuspension(.thermalPressure, active: thermal == .serious || thermal == .critical)
+            let enteringLowPower = !lowPower && snapshot.lowPower
+            lowPower = snapshot.lowPower
+            reduceMotion = snapshot.reduceMotion
+            receive(.lowPower(lowPower))
+            receive(.reduceMotion(reduceMotion))
+            setSuspension(.thermalPressure, active: snapshot.thermalPressure.requiresRest)
             let maxFPS = desktop?.panel.screen?.maximumFramesPerSecond ?? 60
-            renderer.setPreferredFramesPerSecond(lowPower ? 30 : maxFPS)
+            scene.perform(.preferredFramesPerSecond(lowPower ? 30 : maxFPS))
             if reduceMotion || (enteringLowPower && (renderer.currentRoutine == .explore || renderer.currentRoutine == .firefly)) {
                 desktop?.stopMovement()
-                renderer.resetPose()
+                scene.perform(.resetPose)
             }
         }
     }
@@ -595,7 +599,8 @@ final class PetRuntime {
     }
 
     func setEnvironmentForValidation(lowPower: Bool, reduceMotion: Bool) {
-        applyEnvironmentPolicy(lowPower: lowPower, reduceMotion: reduceMotion)
+        applyEnvironmentPolicy(EnvironmentSnapshot(lowPower: lowPower, reduceMotion: reduceMotion,
+                                                   thermalPressure: environment.currentSnapshot().thermalPressure))
     }
     #endif
 
@@ -690,20 +695,21 @@ final class PetRuntime {
     private func recordInteraction(_ kind: PetInteractionKind) {
         guard isRunning, !sampling, !isCommandLineProbe, !isTemporaryReview else { return }
         interactionMemory.record(kind)
-        behaviorPlanner.resetAfterInteraction()
+        behaviorDirector.resetAfterInteraction()
         cancelBehaviorSchedule()
     }
 
     private func reconcileBehaviorSchedule() {
-        guard behaviorMutationDepth == 0, isRunning, autonomousBehavior, !sampling, permitsMotion,
-              desktop.panel.isOnActiveSpace, !isAnimating, !isMoving, !isInteracting else {
+        guard behaviorMutationDepth == 0 else { return }
+        refreshWorld()
+        guard isRunning, autonomousBehavior, !sampling, renderer.assetError == nil,
+              world.allowsAutonomousBehavior else {
             cancelBehaviorSchedule()
             return
         }
         guard behaviorTask == nil else { return }
-        scheduleBehavior(behaviorPlanner.next(
-            isSleeping: renderer.isSleeping, profile: profile, memory: interactionMemory,
-            now: .now, canWander: !isParked, lowPower: lowPower, activityLevel: activityLevel
+        scheduleBehavior(behaviorDirector.next(
+            in: world, profile: profile, memory: interactionMemory, now: .now
         ))
     }
 
@@ -743,21 +749,21 @@ final class PetRuntime {
                 // Recheck the complete route when the deadline fires. Parking,
                 // power changes and geometry may differ from planning time.
                 if !isParked, !lowPower, let direction = fittingRoutine(.explore) {
-                    renderer.transitionRoutine(.explore, direction: direction, stationary: false)
+                    scene.perform(.routine(.explore, direction: direction, stationary: false))
                     if renderer.isAnimating { prefersLeftExcursion = direction == .walkRight }
                 } else {
                     performed = .observe
-                    renderer.transitionRoutine(.observe)
+                    scene.perform(.routine(.observe))
                 }
-            case .observe: renderer.transitionRoutine(.observe)
-            case .greet: renderer.transitionRoutine(.greet)
-            case .nap: renderer.play(.fallAsleep)
-            case .wake: renderer.play(.wakeUp)
+            case .observe: scene.perform(.routine(.observe))
+            case .greet: scene.perform(.routine(.greet))
+            case .nap: scene.perform(.action(.fallAsleep))
+            case .wake: scene.perform(.action(.wakeUp))
             }
             if renderer.isAnimating || renderer.isSleeping != wasSleeping {
                 automaticActionCount &+= 1
                 lastAutomaticIntent = performed
-                if !duringProbe { behaviorPlanner.didPerform(performed) }
+                if !duringProbe { behaviorDirector.didPerform(performed, at: .now) }
             }
         }
     }
@@ -776,7 +782,7 @@ final class PetRuntime {
         guard isRunning else { return }
         withBehaviorTransition {
             desktop.stopMovement()
-            renderer.resetPose()
+            scene.perform(.resetPose)
             profile = preferences.profile
             interactionMemory = preferences.interactionMemory
             isParked = preferences.isParked
@@ -797,46 +803,46 @@ final class PetRuntime {
     }
 
     private func observeEnvironment() {
-        let workspace = NSWorkspace.shared
-        let center = workspace.notificationCenter
-        tokens.append(center.addObserver(of: workspace, for: NSWorkspace.ActiveSpaceDidChangeMessage.self) { [weak self] _ in
-            await self?.activeSpaceChanged()
-        })
-        tokens.append(center.addObserver(of: workspace, for: NSWorkspace.ScreensDidSleepMessage.self) { [weak self] _ in
-            await self?.setSuspension(.displayAsleep, active: true)
-        })
-        tokens.append(center.addObserver(of: workspace, for: NSWorkspace.ScreensDidWakeMessage.self) { [weak self] _ in
-            await self?.setSuspension(.displayAsleep, active: false)
-        })
-        tokens.append(center.addObserver(of: workspace, for: NSWorkspace.WillSleepMessage.self) { [weak self] _ in
-            self?.setSuspension(.systemAsleep, active: true)
-        })
-        tokens.append(center.addObserver(of: workspace, for: NSWorkspace.DidWakeMessage.self) { [weak self] _ in
-            self?.setSuspension(.systemAsleep, active: false)
-        })
-        tokens.append(center.addObserver(of: workspace, for: NSWorkspace.SessionDidResignActiveMessage.self) { [weak self] _ in
-            self?.setSuspension(.sessionInactive, active: true)
-        })
-        tokens.append(center.addObserver(of: workspace, for: NSWorkspace.SessionDidBecomeActiveMessage.self) { [weak self] _ in
-            self?.setSuspension(.sessionInactive, active: false)
-        })
-        tokens.append(center.addObserver(of: workspace, for: NSWorkspace.AccessibilityDisplayOptionsDidChangeMessage.self) { [weak self] _ in
-            self?.refreshEnvironment()
-        })
-        let defaultCenter = NotificationCenter.default
-        tokens.append(defaultCenter.addObserver(of: ProcessInfo.processInfo, for: ProcessInfo.PowerStateDidChangeMessage.self) { [weak self] _ in
-            await self?.refreshEnvironment()
-        })
-        tokens.append(defaultCenter.addObserver(of: ProcessInfo.processInfo, for: ProcessInfo.ThermalStateDidChangeMessage.self) { [weak self] _ in
-            await self?.refreshEnvironment()
-        })
+        environment.onEvent = { [weak self] event in
+            guard let self else { return }
+            switch event {
+            case .activeSpaceChanged: activeSpaceChanged()
+            case .policyChanged(let snapshot): applyEnvironmentPolicy(snapshot)
+            case .suspension(let reason, let active):
+                let reason: SuspensionReason = switch reason {
+                case .displayAsleep: .displayAsleep
+                case .systemAsleep: .systemAsleep
+                case .sessionInactive: .sessionInactive
+                }
+                setSuspension(reason, active: active)
+            }
+        }
+        environment.start()
+    }
+
+    private func receive(_ event: PetStimulus.Event) {
+        guard let timestamp = MonotonicTimestamp(seconds: ProcessInfo.processInfo.systemUptime) else { return }
+        world = WorldReducer.reduce(world, PetStimulus(timestamp: timestamp, event: event))
+        if policy != world.activityPolicy { policy = world.activityPolicy }
+    }
+
+    /// Synchronize only at semantic boundaries, never on a rendering tick.
+    private func refreshWorld() {
+        receive(.sleeping(renderer.isSleeping))
+        receive(.wanderingAvailability(!isParked))
+        receive(.activityLevel(activityLevel))
+        receive(.activeSpace(desktop?.panel.isOnActiveSpace ?? false))
+        receive(.interaction(isInteracting))
+        receive(.animating(isAnimating))
+        receive(.moving(isMoving))
+        receive(.habitat(desktop?.currentHabitat))
     }
 
     private func activeSpaceChanged() {
         withBehaviorTransition {
             if desktop?.panel.isOnActiveSpace == false {
                 desktop.stopMovement()
-                renderer.resetPose()
+                scene.perform(.resetPose)
             }
         }
     }

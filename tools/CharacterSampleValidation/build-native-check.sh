@@ -19,6 +19,7 @@ xcrun swiftc "${check_flags[@]}" -parse-as-library -framework AppKit -framework 
     -framework ImageIO -framework CoreGraphics -framework ColorSync -framework CryptoKit \
     -I "$check_output" -L "$check_output" -lSprigletCore \
     "$check_root/Sources/Spriglet/Rendering/PetRenderView.swift" \
+    "$check_root/Sources/Spriglet/Rendering/PetRenderView+Scene.swift" \
     "$check_root/Sources/Spriglet/Rendering/SampleImageDecoder.swift" \
     "$check_root/Sources/Spriglet/Desktop/PetWindowController.swift" \
     "$check_root/Sources/Spriglet/Desktop/PetInteractionView.swift" \

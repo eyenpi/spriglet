@@ -22,6 +22,8 @@ root, snapshot, resources = map(pathlib.Path, sys.argv[1:])
 paths = sorted(root.glob("Packages/SprigletCore/Sources/SprigletCore/*.swift"))
 paths += [root / path for path in [
     "Sources/Spriglet/Rendering/PetRenderView.swift",
+    "Sources/Spriglet/Rendering/PetRenderView+Scene.swift",
+    "Sources/Spriglet/Environment/AppKitEnvironmentSource.swift",
     "Sources/Spriglet/Rendering/SampleImageDecoder.swift",
     "Sources/Spriglet/Desktop/PetWindowController.swift",
     "Sources/Spriglet/Desktop/PetInteractionView.swift",
@@ -77,6 +79,8 @@ xcrun swiftc "${check_flags[@]}" -parse-as-library -framework AppKit -framework 
     -framework ImageIO -framework CoreGraphics -framework ColorSync -framework CryptoKit -framework AVFAudio \
     -I "$check_output" -L "$check_output" -lSprigletCore \
     "$check_snapshot/Sources/Spriglet/Rendering/PetRenderView.swift" \
+    "$check_snapshot/Sources/Spriglet/Rendering/PetRenderView+Scene.swift" \
+    "$check_snapshot/Sources/Spriglet/Environment/AppKitEnvironmentSource.swift" \
     "$check_snapshot/Sources/Spriglet/Rendering/SampleImageDecoder.swift" \
     "$check_snapshot/Sources/Spriglet/Desktop/PetWindowController.swift" \
     "$check_snapshot/Sources/Spriglet/Desktop/PetInteractionView.swift" \

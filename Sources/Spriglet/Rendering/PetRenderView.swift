@@ -249,10 +249,11 @@ final class PetRenderView: NSView {
         begin(Request(clips: [clip], action: nil))
     }
 
-    func playSample(walk: SampleClipID) {
-        guard walk == .walkLeft || walk == .walkRight, canAcceptPlayback else { return }
-        guard cancelPlayback(showRest: true) else { return }
-        begin(Request(clips: [.idle, walk, .pet, .settle], action: nil))
+    @discardableResult
+    func playSample(walk: SampleClipID) -> Bool {
+        guard walk == .walkLeft || walk == .walkRight, canAcceptPlayback else { return false }
+        guard cancelPlayback(showRest: true) else { return false }
+        return begin(Request(clips: [.idle, walk, .pet, .settle], action: nil))
     }
 
     func routineClips(_ routine: PetRoutine, direction: SampleClipID = .walkLeft, stationary: Bool = false) -> [SampleClipID] {

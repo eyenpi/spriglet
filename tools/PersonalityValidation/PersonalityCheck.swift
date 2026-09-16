@@ -476,7 +476,7 @@ private final class PersonalityRunner: NSObject, NSApplicationDelegate {
         check("real-scheduler-starts-one-returning-explore", started && acceptedExplore && ended
               && runtime.automaticActionCount == count + 1 && runtime.renderer.completedRoutineCount == completed + 1
               && error(origin, runtime.desktop.effectiveOrigin) < 0.001 && runtime.desktop.savedPlacement == home,
-              "An injected intention/delay used the real scheduler and policy, accepted one complete explore, and returned without altering saved home.")
+              "The real scheduler must accept one complete returning explore. started=\(started), explore=\(acceptedExplore), ended=\(ended), actions=\(runtime.automaticActionCount - count), completions=\(runtime.renderer.completedRoutineCount - completed), returnError=\(error(origin, runtime.desktop.effectiveOrigin)), homeUnchanged=\(runtime.desktop.savedPlacement == home).")
 
         runtime.setAutonomousBehavior(false)
         runtime.setAutonomousBehavior(true)
@@ -535,7 +535,7 @@ private final class PersonalityRunner: NSObject, NSApplicationDelegate {
                   && settled.remainedStill(since: cancellation) && !runtime.desktop.isMoving
                   && runtime.renderer.completedRoutineCount == completed
                   && runtime.desktop.savedPlacement == home && error(heldOrigin, runtime.desktop.effectiveOrigin) < 0.001,
-                  "Cancellation during an actual walking frame removed the toy and clocks, retained placement, and did not increment routine completion.")
+                  "Cancel an actual moving toy: active=\(active), still=\(settled.remainedStill(since: cancellation)), moving=\(runtime.desktop.isMoving), completions=\(runtime.renderer.completedRoutineCount - completed), homeUnchanged=\(runtime.desktop.savedPlacement == home), placementError=\(error(heldOrigin, runtime.desktop.effectiveOrigin)).")
             restore()
             try await pause(0.05)
         }
