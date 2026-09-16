@@ -1,0 +1,2117 @@
+{
+  "schemaVersion": 3,
+  "identifier": "acorn-hopper",
+  "displayName": "Acorn Hopper",
+  "coordinateSystem": "topLeftPixels",
+  "canvasPixels": {
+    "width": 448,
+    "height": 448
+  },
+  "displaySizePoints": {
+    "width": 96,
+    "height": 96
+  },
+  "groundAnchorPixels": {
+    "x": 224.00008010864258,
+    "y": 418.31627655029297
+  },
+  "contentBoundsPixels": {
+    "x": 0,
+    "y": 0,
+    "width": 448,
+    "height": 448
+  },
+  "featurePolicy": {
+    "required": [
+      "character-package.core",
+      "animation-graph.routes",
+      "layered-rest-rig"
+    ],
+    "optional": []
+  },
+  "capabilities": [
+    "animatedSleep",
+    "layeredRest",
+    "gaze",
+    "blink"
+  ],
+  "poses": {
+    "ready": {
+      "stillFrame": "restRig/neutral.png",
+      "layerIDs": [
+        "blink.left.0.35",
+        "blink.left.0.7",
+        "blink.left.1",
+        "blink.right.0.35",
+        "blink.right.0.7",
+        "blink.right.1",
+        "body",
+        "cap",
+        "eye.left",
+        "eye.right",
+        "feet",
+        "leaf",
+        "shadow"
+      ]
+    },
+    "happy": {
+      "stillFrame": "clips/pet/0029.png",
+      "layerIDs": []
+    },
+    "asleep": {
+      "stillFrame": "sleep.png",
+      "layerIDs": []
+    }
+  },
+  "clips": {
+    "idle": {
+      "startPoseID": "ready",
+      "endPoseID": "ready",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0011.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0012.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0013.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0014.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0015.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0016.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0017.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0018.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0019.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0020.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0021.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0022.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0023.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0024.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0025.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0026.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0027.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0028.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0029.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0030.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0031.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0032.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0033.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0034.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0035.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0036.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0037.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0038.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0039.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/idle/0040.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "gesture"
+      ],
+      "requirements": {
+        "habitatIDs": [],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "stationary",
+      "interruptionMarkers": [
+        {
+          "id": "feetPlanted",
+          "frameIndex": 0
+        },
+        {
+          "id": "safeToRedirect",
+          "frameIndex": 0
+        },
+        {
+          "id": "feetPlanted",
+          "frameIndex": 41
+        },
+        {
+          "id": "safeToRedirect",
+          "frameIndex": 41
+        },
+        {
+          "id": "settled",
+          "frameIndex": 41
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "mode": "exclusive",
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ]
+      }
+    },
+    "walkRight": {
+      "startPoseID": "ready",
+      "endPoseID": "ready",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0006.png",
+          "rootOffsetPoints": {
+            "x": 2.8671996742486954,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0007.png",
+          "rootOffsetPoints": {
+            "x": 10.649599134922028,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0008.png",
+          "rootOffsetPoints": {
+            "x": 22.11840069293976,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0009.png",
+          "rootOffsetPoints": {
+            "x": 36.044795513153076,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0010.png",
+          "rootOffsetPoints": {
+            "x": 51.200000762939446,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0011.png",
+          "rootOffsetPoints": {
+            "x": 66.3551983833313,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0012.png",
+          "rootOffsetPoints": {
+            "x": 80.28159713745117,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0013.png",
+          "rootOffsetPoints": {
+            "x": 91.75038957595825,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0014.png",
+          "rootOffsetPoints": {
+            "x": 99.53279781341553,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0015.png",
+          "rootOffsetPoints": {
+            "x": 102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0016.png",
+          "rootOffsetPoints": {
+            "x": 102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0017.png",
+          "rootOffsetPoints": {
+            "x": 102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0018.png",
+          "rootOffsetPoints": {
+            "x": 102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0019.png",
+          "rootOffsetPoints": {
+            "x": 102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0020.png",
+          "rootOffsetPoints": {
+            "x": 102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0021.png",
+          "rootOffsetPoints": {
+            "x": 102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkRight/0022.png",
+          "rootOffsetPoints": {
+            "x": 102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 102.40000152587889,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "locomotion"
+      ],
+      "requirements": {
+        "habitatIDs": [],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "relocation",
+      "interruptionMarkers": [
+        {
+          "id": "feetPlanted",
+          "frameIndex": 0
+        },
+        {
+          "id": "safeToRedirect",
+          "frameIndex": 0
+        },
+        {
+          "id": "feetPlanted",
+          "frameIndex": 23
+        },
+        {
+          "id": "safeToRedirect",
+          "frameIndex": 23
+        },
+        {
+          "id": "settled",
+          "frameIndex": 23
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "mode": "exclusive",
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ]
+      }
+    },
+    "walkLeft": {
+      "startPoseID": "ready",
+      "endPoseID": "ready",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0006.png",
+          "rootOffsetPoints": {
+            "x": -2.8671996742486954,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0007.png",
+          "rootOffsetPoints": {
+            "x": -10.649599134922028,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0008.png",
+          "rootOffsetPoints": {
+            "x": -22.11840069293976,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0009.png",
+          "rootOffsetPoints": {
+            "x": -36.044795513153076,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0010.png",
+          "rootOffsetPoints": {
+            "x": -51.200000762939446,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0011.png",
+          "rootOffsetPoints": {
+            "x": -66.3551983833313,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0012.png",
+          "rootOffsetPoints": {
+            "x": -80.28159713745117,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0013.png",
+          "rootOffsetPoints": {
+            "x": -91.75038957595825,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0014.png",
+          "rootOffsetPoints": {
+            "x": -99.53279781341553,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0015.png",
+          "rootOffsetPoints": {
+            "x": -102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0016.png",
+          "rootOffsetPoints": {
+            "x": -102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0017.png",
+          "rootOffsetPoints": {
+            "x": -102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0018.png",
+          "rootOffsetPoints": {
+            "x": -102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0019.png",
+          "rootOffsetPoints": {
+            "x": -102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0020.png",
+          "rootOffsetPoints": {
+            "x": -102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0021.png",
+          "rootOffsetPoints": {
+            "x": -102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/walkLeft/0022.png",
+          "rootOffsetPoints": {
+            "x": -102.40000152587889,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": -102.40000152587889,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "locomotion"
+      ],
+      "requirements": {
+        "habitatIDs": [],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "relocation",
+      "interruptionMarkers": [
+        {
+          "id": "feetPlanted",
+          "frameIndex": 0
+        },
+        {
+          "id": "safeToRedirect",
+          "frameIndex": 0
+        },
+        {
+          "id": "feetPlanted",
+          "frameIndex": 23
+        },
+        {
+          "id": "safeToRedirect",
+          "frameIndex": 23
+        },
+        {
+          "id": "settled",
+          "frameIndex": 23
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "mode": "exclusive",
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ]
+      }
+    },
+    "pet": {
+      "startPoseID": "ready",
+      "endPoseID": "happy",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0011.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0012.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0013.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0014.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0015.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0016.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0017.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0018.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0019.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0020.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0021.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0022.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0023.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0024.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0025.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0026.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0027.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0028.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/pet/0029.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "gesture"
+      ],
+      "requirements": {
+        "habitatIDs": [],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "local",
+      "interruptionMarkers": [
+        {
+          "id": "feetPlanted",
+          "frameIndex": 0
+        },
+        {
+          "id": "safeToRedirect",
+          "frameIndex": 0
+        },
+        {
+          "id": "settled",
+          "frameIndex": 29
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "mode": "exclusive",
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ]
+      }
+    },
+    "settle": {
+      "startPoseID": "happy",
+      "endPoseID": "ready",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "clips/settle/0000.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0011.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0012.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0013.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0014.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0015.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/settle/0016.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "gesture"
+      ],
+      "requirements": {
+        "habitatIDs": [],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "local",
+      "interruptionMarkers": [
+        {
+          "id": "feetPlanted",
+          "frameIndex": 17
+        },
+        {
+          "id": "safeToRedirect",
+          "frameIndex": 17
+        },
+        {
+          "id": "settled",
+          "frameIndex": 17
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "mode": "exclusive",
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ]
+      }
+    },
+    "fallAsleep": {
+      "startPoseID": "ready",
+      "endPoseID": "asleep",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0011.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0012.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0013.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0014.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0015.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0016.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0017.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0018.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0019.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0020.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0021.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0022.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0023.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0024.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0025.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0026.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0027.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0028.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/fallAsleep/0029.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "gesture"
+      ],
+      "requirements": {
+        "habitatIDs": [],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "local",
+      "interruptionMarkers": [
+        {
+          "id": "feetPlanted",
+          "frameIndex": 0
+        },
+        {
+          "id": "safeToRedirect",
+          "frameIndex": 0
+        },
+        {
+          "id": "settled",
+          "frameIndex": 29
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "mode": "exclusive",
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ]
+      }
+    },
+    "wakeUp": {
+      "startPoseID": "asleep",
+      "endPoseID": "ready",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "clips/wakeUp/0000.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0011.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0012.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0013.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0014.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0015.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0016.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0017.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0018.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0019.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0020.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0021.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "clips/wakeUp/0022.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "gesture"
+      ],
+      "requirements": {
+        "habitatIDs": [],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "local",
+      "interruptionMarkers": [
+        {
+          "id": "feetPlanted",
+          "frameIndex": 23
+        },
+        {
+          "id": "safeToRedirect",
+          "frameIndex": 23
+        },
+        {
+          "id": "settled",
+          "frameIndex": 23
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "mode": "exclusive",
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ]
+      }
+    }
+  },
+  "layers": {
+    "shadow": {
+      "framePixels": {
+        "x": 111,
+        "y": 401,
+        "width": 226,
+        "height": 34
+      },
+      "pivotPixels": {
+        "x": 224.0,
+        "y": 418.0
+      },
+      "zIndex": 0,
+      "defaultOpacity": 1,
+      "file": "restRig/layers/shadow.png"
+    },
+    "feet": {
+      "framePixels": {
+        "x": 137,
+        "y": 387,
+        "width": 162,
+        "height": 41
+      },
+      "pivotPixels": {
+        "x": 218.0,
+        "y": 407.5
+      },
+      "zIndex": 1,
+      "defaultOpacity": 1,
+      "file": "restRig/layers/feet.png"
+    },
+    "body": {
+      "framePixels": {
+        "x": 98,
+        "y": 205,
+        "width": 235,
+        "height": 202
+      },
+      "pivotPixels": {
+        "x": 224.00008010864258,
+        "y": 403.4187226295471
+      },
+      "zIndex": 2,
+      "defaultOpacity": 1,
+      "file": "restRig/layers/body.png"
+    },
+    "eye.left": {
+      "framePixels": {
+        "x": 145,
+        "y": 278,
+        "width": 44,
+        "height": 42
+      },
+      "pivotPixels": {
+        "x": 167.0,
+        "y": 299.0
+      },
+      "zIndex": 3,
+      "defaultOpacity": 1,
+      "file": "restRig/layers/eye.left.png",
+      "parentID": "body",
+      "mask": {
+        "file": "restRig/layers/eye.left.mask.png",
+        "activationChannelID": "eyes.gaze"
+      }
+    },
+    "eye.right": {
+      "framePixels": {
+        "x": 219,
+        "y": 282,
+        "width": 44,
+        "height": 42
+      },
+      "pivotPixels": {
+        "x": 241.0,
+        "y": 303.0
+      },
+      "zIndex": 4,
+      "defaultOpacity": 1,
+      "file": "restRig/layers/eye.right.png",
+      "parentID": "body",
+      "mask": {
+        "file": "restRig/layers/eye.right.mask.png",
+        "activationChannelID": "eyes.gaze"
+      }
+    },
+    "cap": {
+      "framePixels": {
+        "x": 100,
+        "y": 148,
+        "width": 248,
+        "height": 116
+      },
+      "pivotPixels": {
+        "x": 224.00008010864258,
+        "y": 242.2541561126709
+      },
+      "zIndex": 5,
+      "defaultOpacity": 1,
+      "file": "restRig/layers/cap.png",
+      "parentID": "body"
+    },
+    "leaf": {
+      "framePixels": {
+        "x": 222,
+        "y": 127,
+        "width": 100,
+        "height": 69
+      },
+      "pivotPixels": {
+        "x": 226.43452835083008,
+        "y": 174.12614822387695
+      },
+      "zIndex": 6,
+      "defaultOpacity": 1,
+      "file": "restRig/layers/leaf.png",
+      "parentID": "cap"
+    },
+    "blink.left.0.35": {
+      "framePixels": {
+        "x": 145,
+        "y": 284,
+        "width": 43,
+        "height": 31
+      },
+      "pivotPixels": {
+        "x": 166.5,
+        "y": 299.5
+      },
+      "zIndex": 3,
+      "defaultOpacity": 0,
+      "file": "restRig/layers/blink.left.0.35.png",
+      "parentID": "body"
+    },
+    "blink.right.0.35": {
+      "framePixels": {
+        "x": 218,
+        "y": 288,
+        "width": 48,
+        "height": 30
+      },
+      "pivotPixels": {
+        "x": 242.0,
+        "y": 303.0
+      },
+      "zIndex": 3,
+      "defaultOpacity": 0,
+      "file": "restRig/layers/blink.right.0.35.png",
+      "parentID": "body"
+    },
+    "blink.left.0.7": {
+      "framePixels": {
+        "x": 146,
+        "y": 290,
+        "width": 41,
+        "height": 20
+      },
+      "pivotPixels": {
+        "x": 166.5,
+        "y": 300.0
+      },
+      "zIndex": 3,
+      "defaultOpacity": 0,
+      "file": "restRig/layers/blink.left.0.7.png",
+      "parentID": "body"
+    },
+    "blink.right.0.7": {
+      "framePixels": {
+        "x": 217,
+        "y": 294,
+        "width": 48,
+        "height": 19
+      },
+      "pivotPixels": {
+        "x": 241.0,
+        "y": 303.5
+      },
+      "zIndex": 3,
+      "defaultOpacity": 0,
+      "file": "restRig/layers/blink.right.0.7.png",
+      "parentID": "body"
+    },
+    "blink.left.1": {
+      "framePixels": {
+        "x": 146,
+        "y": 291,
+        "width": 40,
+        "height": 15
+      },
+      "pivotPixels": {
+        "x": 166.0,
+        "y": 298.5
+      },
+      "zIndex": 3,
+      "defaultOpacity": 0,
+      "file": "restRig/layers/blink.left.1.png",
+      "parentID": "body"
+    },
+    "blink.right.1": {
+      "framePixels": {
+        "x": 217,
+        "y": 296,
+        "width": 47,
+        "height": 12
+      },
+      "pivotPixels": {
+        "x": 240.5,
+        "y": 302.0
+      },
+      "zIndex": 3,
+      "defaultOpacity": 0,
+      "file": "restRig/layers/blink.right.1.png",
+      "parentID": "body"
+    }
+  },
+  "proceduralChannels": {
+    "eyes.gaze": {
+      "semanticID": "gaze",
+      "layerIDs": [
+        "eye.left",
+        "eye.right"
+      ],
+      "kind": {
+        "type": "translation",
+        "maximumOffsetPixels": {
+          "x": 1.0,
+          "y": 1.0
+        }
+      },
+      "durationSeconds": 0.16,
+      "delaySeconds": 0,
+      "repeats": false
+    },
+    "body.breath": {
+      "semanticID": "breath",
+      "layerIDs": [
+        "body"
+      ],
+      "kind": {
+        "type": "scale",
+        "maximumDelta": {
+          "x": 0,
+          "y": 0.0040000000000000036
+        }
+      },
+      "durationSeconds": 3.2,
+      "delaySeconds": 0,
+      "repeats": false
+    },
+    "cap.lean": {
+      "semanticID": "lean",
+      "layerIDs": [
+        "cap"
+      ],
+      "kind": {
+        "type": "rotation",
+        "maximumDegrees": 0.65
+      },
+      "durationSeconds": 0.24,
+      "delaySeconds": 0.035,
+      "repeats": false
+    },
+    "leaf.sway": {
+      "semanticID": "secondaryMotion",
+      "layerIDs": [
+        "leaf"
+      ],
+      "kind": {
+        "type": "rotation",
+        "maximumDegrees": 1.1
+      },
+      "durationSeconds": 0.3,
+      "delaySeconds": 0.08,
+      "repeats": false
+    },
+    "eye.left.blink": {
+      "semanticID": "blink.left",
+      "layerIDs": [
+        "eye.left"
+      ],
+      "kind": {
+        "type": "discreteReplacement",
+        "layerIDs": [
+          "blink.left.0.35",
+          "blink.left.0.7",
+          "blink.left.1",
+          "blink.left.0.7",
+          "blink.left.0.35"
+        ],
+        "replacesLayerIDs": [
+          "eye.left"
+        ]
+      },
+      "durationSeconds": 0.16,
+      "delaySeconds": 0,
+      "repeats": false
+    },
+    "eye.right.blink": {
+      "semanticID": "blink.right",
+      "layerIDs": [
+        "eye.right"
+      ],
+      "kind": {
+        "type": "discreteReplacement",
+        "layerIDs": [
+          "blink.right.0.35",
+          "blink.right.0.7",
+          "blink.right.1",
+          "blink.right.0.7",
+          "blink.right.0.35"
+        ],
+        "replacesLayerIDs": [
+          "eye.right"
+        ]
+      },
+      "durationSeconds": 0.16,
+      "delaySeconds": 0,
+      "repeats": false
+    }
+  },
+  "hitRegions": {},
+  "semanticBindings": {
+    "transition.ready": "ready",
+    "transition.curious": "curious",
+    "transition.moveLeft": "moveLeft",
+    "transition.moveRight": "moveRight",
+    "transition.happy": "happy",
+    "transition.sleep": "sleep",
+    "transition.wake": "wake",
+    "petAction.blink": "curious",
+    "petAction.lookAround": "curious",
+    "petAction.stretch": "curious",
+    "petAction.fallAsleep": "sleep",
+    "petAction.wakeUp": "wake",
+    "petAction.react": "happy"
+  },
+  "animationGraph": {
+    "defaultPoseID": "ready",
+    "intents": {
+      "ready": {
+        "targetPoseID": "ready",
+        "clipIDs": [],
+        "replaysAtTarget": false
+      },
+      "curious": {
+        "targetPoseID": "ready",
+        "clipIDs": [
+          "idle"
+        ],
+        "replaysAtTarget": true
+      },
+      "moveLeft": {
+        "targetPoseID": "ready",
+        "clipIDs": [
+          "walkLeft"
+        ],
+        "replaysAtTarget": true,
+        "fallbackIntentID": "curious",
+        "reducedMotionIntentID": "ready"
+      },
+      "moveRight": {
+        "targetPoseID": "ready",
+        "clipIDs": [
+          "walkRight"
+        ],
+        "replaysAtTarget": true,
+        "fallbackIntentID": "curious",
+        "reducedMotionIntentID": "ready"
+      },
+      "happy": {
+        "targetPoseID": "ready",
+        "clipIDs": [
+          "pet",
+          "settle"
+        ],
+        "replaysAtTarget": true
+      },
+      "sleep": {
+        "targetPoseID": "asleep",
+        "clipIDs": [
+          "fallAsleep"
+        ],
+        "replaysAtTarget": false
+      },
+      "wake": {
+        "targetPoseID": "ready",
+        "clipIDs": [],
+        "replaysAtTarget": false
+      }
+    },
+    "transitionClipIDs": [
+      "settle",
+      "wakeUp"
+    ],
+    "instantTransitions": []
+  },
+  "resourceBudget": {
+    "maxDecodedImageBytes": 16777216,
+    "maxBufferedFrames": 12,
+    "maxDecodedLayerBytes": 1048576
+  }
+}

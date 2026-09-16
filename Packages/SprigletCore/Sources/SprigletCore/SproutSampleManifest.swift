@@ -13,12 +13,9 @@ public struct SampleSize: Codable, Equatable, Sendable {
     public init(width: Double, height: Double) { self.width = width; self.height = height }
 }
 
-public enum SampleClipID: String, CaseIterable, Codable, Sendable {
-    case idle, walkRight, walkLeft, pet, settle, fallAsleep, wakeUp
-
-    /// Version one remains the exact five-clip shipping Sprout format.
-    public static let versionOneCases: [Self] = [.idle, .walkRight, .walkLeft, .pet, .settle]
-}
+/// Source-compatible name for the original sample APIs. The underlying value is
+/// now open so character packages can add clips without adding Swift enum cases.
+public typealias SampleClipID = CharacterClipID
 
 /// Local, versioned metadata for the bundled Blender renders. Paths are relative
 /// to one resource directory; this format cannot request a network or parent file.

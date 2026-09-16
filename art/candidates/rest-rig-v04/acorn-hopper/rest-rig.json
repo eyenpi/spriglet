@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 1,
+  "kind": "layeredRestRigPrototype",
+  "status": "artProofOnly",
+  "sourceCanvasPixels": {
+    "width": 448,
+    "height": 448
+  },
+  "displaySizePoints": {
+    "width": 96,
+    "height": 96
+  },
+  "coordinateSystem": "topLeftPixels",
+  "groundAnchorPixels": {
+    "x": 224.00008010864258,
+    "y": 418.31627655029297
+  },
+  "layers": [
+    {
+      "id": "shadow",
+      "file": "layers/shadow.png",
+      "parent": null,
+      "framePixels": {
+        "x": 111,
+        "y": 401,
+        "width": 226,
+        "height": 34
+      },
+      "pivotPixels": {
+        "x": 224.0,
+        "y": 418.0
+      },
+      "zIndex": 0,
+      "defaultOpacity": 1,
+      "decodedSHA256": "af162aba89f8612cc2c8be6f146335e8c7828d3835080aeda9ff9b5c552866b7"
+    },
+    {
+      "id": "feet",
+      "file": "layers/feet.png",
+      "parent": null,
+      "framePixels": {
+        "x": 137,
+        "y": 387,
+        "width": 162,
+        "height": 41
+      },
+      "pivotPixels": {
+        "x": 218.0,
+        "y": 407.5
+      },
+      "zIndex": 1,
+      "defaultOpacity": 1,
+      "decodedSHA256": "e95c9a3bd4cadc19e8e0cfd52bb1f08f477fa4a9c1233f7fb925a3a89ba9ab02"
+    },
+    {
+      "id": "body",
+      "file": "layers/body.png",
+      "parent": null,
+      "framePixels": {
+        "x": 98,
+        "y": 205,
+        "width": 235,
+        "height": 202
+      },
+      "pivotPixels": {
+        "x": 224.00008010864258,
+        "y": 403.4187226295471
+      },
+      "zIndex": 2,
+      "defaultOpacity": 1,
+      "decodedSHA256": "9684d7b5043eedf74cb1de124b6be848dfd65abdeb746844f8849d6de8a6c188"
+    },
+    {
+      "id": "eye.left",
+      "file": "layers/eye.left.png",
+      "parent": "body",
+      "framePixels": {
+        "x": 145,
+        "y": 278,
+        "width": 44,
+        "height": 42
+      },
+      "pivotPixels": {
+        "x": 167.0,
+        "y": 299.0
+      },
+      "zIndex": 3,
+      "defaultOpacity": 1,
+      "decodedSHA256": "3c6fa221c4e128123b23bf73bcc49996e118779e8e01f854a16d9573336d6ba7",
+      "maskFile": "layers/eye.left.mask.png",
+      "maskActivation": "gazeOnly"
+    },
+    {
+      "id": "eye.right",
+      "file": "layers/eye.right.png",
+      "parent": "body",
+      "framePixels": {
+        "x": 219,
+        "y": 282,
+        "width": 44,
+        "height": 42
+      },
+      "pivotPixels": {
+        "x": 241.0,
+        "y": 303.0
+      },
+      "zIndex": 4,
+      "defaultOpacity": 1,
+      "decodedSHA256": "a04b682ce8c3fd70c3e3f57474b8e249d68cd99aac4e69b705428f48fa4ed8d8",
+      "maskFile": "layers/eye.right.mask.png",
+      "maskActivation": "gazeOnly"
+    },
+    {
+      "id": "cap",
+      "file": "layers/cap.png",
+      "parent": "body",
+      "framePixels": {
+        "x": 100,
+        "y": 148,
+        "width": 248,
+        "height": 116
+      },
+      "pivotPixels": {
+        "x": 224.00008010864258,
+        "y": 242.2541561126709
+      },
+      "zIndex": 5,
+      "defaultOpacity": 1,
+      "decodedSHA256": "6b0280eff4cee1a3bcdd7f414f03537881155b39bededa6295235731322aea73"
+    },
+    {
+      "id": "leaf",
+      "file": "layers/leaf.png",
+      "parent": "cap",
+      "framePixels": {
+        "x": 222,
+        "y": 127,
+        "width": 100,
+        "height": 69
+      },
+      "pivotPixels": {
+        "x": 226.43452835083008,
+        "y": 174.12614822387695
+      },
+      "zIndex": 6,
+      "defaultOpacity": 1,
+      "decodedSHA256": "e1e5ce3b792aa233a03c0456b70f41aeb4c5d6d3c588a6a568b9738da45a7c49"
+    },
+    {
+      "id": "blink.left.0.35",
+      "file": "layers/blink.left.0.35.png",
+      "parent": "body",
+      "framePixels": {
+        "x": 145,
+        "y": 284,
+        "width": 43,
+        "height": 31
+      },
+      "pivotPixels": {
+        "x": 166.5,
+        "y": 299.5
+      },
+      "zIndex": 3,
+      "defaultOpacity": 0,
+      "decodedSHA256": "7e12f14589287e1b4245e987248215942a216fc9ee71b2be2f51cf4bc4ac5a01"
+    },
+    {
+      "id": "blink.right.0.35",
+      "file": "layers/blink.right.0.35.png",
+      "parent": "body",
+      "framePixels": {
+        "x": 218,
+        "y": 288,
+        "width": 48,
+        "height": 30
+      },
+      "pivotPixels": {
+        "x": 242.0,
+        "y": 303.0
+      },
+      "zIndex": 3,
+      "defaultOpacity": 0,
+      "decodedSHA256": "65f22bfc080d4ce4048fceb0356c379867393a7a432448e25a71c3b015d2c42e"
+    },
+    {
+      "id": "blink.left.0.7",
+      "file": "layers/blink.left.0.7.png",
+      "parent": "body",
+      "framePixels": {
+        "x": 146,
+        "y": 290,
+        "width": 41,
+        "height": 20
+      },
+      "pivotPixels": {
+        "x": 166.5,
+        "y": 300.0
+      },
+      "zIndex": 3,
+      "defaultOpacity": 0,
+      "decodedSHA256": "94a5c772c2147b3cba8bbd1c570b5634d1d9f1c1edb5125eddd0ad7feb2bb567"
+    },
+    {
+      "id": "blink.right.0.7",
+      "file": "layers/blink.right.0.7.png",
+      "parent": "body",
+      "framePixels": {
+        "x": 217,
+        "y": 294,
+        "width": 48,
+        "height": 19
+      },
+      "pivotPixels": {
+        "x": 241.0,
+        "y": 303.5
+      },
+      "zIndex": 3,
+      "defaultOpacity": 0,
+      "decodedSHA256": "744915b5f139fd0848f37f0372d2410d7f5ca7900cf78422f0a5545624fe0a79"
+    },
+    {
+      "id": "blink.left.1",
+      "file": "layers/blink.left.1.png",
+      "parent": "body",
+      "framePixels": {
+        "x": 146,
+        "y": 291,
+        "width": 40,
+        "height": 15
+      },
+      "pivotPixels": {
+        "x": 166.0,
+        "y": 298.5
+      },
+      "zIndex": 3,
+      "defaultOpacity": 0,
+      "decodedSHA256": "0d06307b072d3e2b29d0fb4c9af865a651d9f29bb73e9cb5c264b88f7feb8c42"
+    },
+    {
+      "id": "blink.right.1",
+      "file": "layers/blink.right.1.png",
+      "parent": "body",
+      "framePixels": {
+        "x": 217,
+        "y": 296,
+        "width": 47,
+        "height": 12
+      },
+      "pivotPixels": {
+        "x": 240.5,
+        "y": 302.0
+      },
+      "zIndex": 3,
+      "defaultOpacity": 0,
+      "decodedSHA256": "9be4ab2a4bab1679d6ee4242cc67abf40a237ead865c8a65dee9f77880a3a7e8"
+    }
+  ],
+  "channels": {
+    "bodyBreath": {
+      "layer": "body",
+      "maximumScaleY": 1.004,
+      "durationSeconds": 3.2,
+      "repeats": false
+    },
+    "capLean": {
+      "layer": "cap",
+      "maximumDegrees": 0.65
+    },
+    "leafSway": {
+      "layer": "leaf",
+      "maximumDegrees": 1.1,
+      "delaySeconds": 0.08
+    },
+    "eyeGaze": {
+      "layers": [
+        "eye.left",
+        "eye.right"
+      ],
+      "maximumOffsetPixels": 1.0,
+      "status": "requiresNativeArtReview"
+    },
+    "blink": {
+      "durationSeconds": 0.16,
+      "amounts": [
+        0,
+        0.35,
+        0.7,
+        1.0,
+        0.7,
+        0.35,
+        0
+      ],
+      "replaces": [
+        "eye.left",
+        "eye.right"
+      ],
+      "blend": "discrete",
+      "repeats": false
+    }
+  },
+  "canonical": {
+    "pose": "ready",
+    "file": "neutral.png",
+    "decodedSHA256": "5d180c605c16d7b63bb151a81b5cfe4d1a971205c5bf8cceb07b010820565a52"
+  },
+  "boundaryVerification": {
+    "legacyExact": false,
+    "legacyDifference": {
+      "identicalDecodedPixels": false,
+      "changedPixelFraction": 0.14700255102040816,
+      "meanAbsoluteAlphaDifferenceByteScale": 0.01143474968112245,
+      "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.304999473747834,
+      "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+    },
+    "rerenderDifference": {
+      "identicalDecodedPixels": false,
+      "changedPixelFraction": 0.020268654336734693,
+      "meanAbsoluteAlphaDifferenceByteScale": 7.473692602040816e-05,
+      "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.006774812789699211,
+      "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+    },
+    "productionHandoffApproved": false
+  },
+  "provenance": {
+    "blenderVersion": "5.2.1 LTS",
+    "samples": 40,
+    "device": "GPU",
+    "pivots": {
+      "body": {
+        "x": 224.00008010864258,
+        "y": 403.4187226295471
+      },
+      "cap": {
+        "x": 224.00008010864258,
+        "y": 242.2541561126709
+      },
+      "leaf": {
+        "x": 226.43452835083008,
+        "y": 174.12614822387695
+      }
+    },
+    "sourceSHA256": "1d05ebca53ca8144d7d746a033b5d2189b0d4c26867ef657da01c056adf013d1",
+    "exporterSHA256": "756b313376155925b0c54bcdd892049a824d394399e8d8fd4d3cd53d962299fd"
+  },
+  "decodedLayerBytes": 427316,
+  "decodedMaskBytes": 14784
+}

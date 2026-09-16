@@ -1,0 +1,367 @@
+{
+  "schemaVersion": 1,
+  "kind": "schema3CanonicalEndpointProposal",
+  "status": "requiresNativeHandoffVerification",
+  "sourceManifestSHA256": "1d288fb3dc619c8709cd7e3bf57a6502c53565a10d9f06b307f0a07a4f2ecf04",
+  "canonicalDecodedSHA256": "5d180c605c16d7b63bb151a81b5cfe4d1a971205c5bf8cceb07b010820565a52",
+  "framesPerSecond": 30,
+  "displaySizePoints": {
+    "width": 96,
+    "height": 96
+  },
+  "replaceRestFrame": "neutral.png",
+  "preserveAllOtherFrames": true,
+  "preserveFrameCountsTimingAndRootOffsets": true,
+  "entries": [
+    {
+      "clipID": "idle",
+      "frameIndex": 0,
+      "pose": "ready",
+      "originalFile": "clips/idle/0000.png",
+      "replacementFile": "neutral.png",
+      "rootOffsetPoints": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "maximumInPlacePoseError": 0.0,
+      "maximumExpressionError": 0,
+      "allFeetPlanted": true,
+      "canonicalDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.14683314732142858,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01143474968112245,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.3050329116021425,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "originalAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.06207649075255102,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.008744220344387755,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.028498280822745747,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "normalizedAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.15199996014030612,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01992984693877551,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.3134459057060333,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      }
+    },
+    {
+      "clipID": "idle",
+      "frameIndex": 41,
+      "pose": "ready",
+      "originalFile": "clips/idle/0041.png",
+      "replacementFile": "neutral.png",
+      "rootOffsetPoints": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "maximumInPlacePoseError": 0.0,
+      "maximumExpressionError": 0,
+      "allFeetPlanted": true,
+      "canonicalDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.14702248086734693,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01143474968112245,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.3050055699363093,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "originalAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.062400350765306124,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.008744220344387755,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.02855533489437443,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "normalizedAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.1517608019770408,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01992984693877551,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.31337467929880375,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      }
+    },
+    {
+      "clipID": "walkRight",
+      "frameIndex": 0,
+      "pose": "ready",
+      "originalFile": "clips/walkRight/0000.png",
+      "replacementFile": "neutral.png",
+      "rootOffsetPoints": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "maximumInPlacePoseError": 0.0,
+      "maximumExpressionError": 0.0,
+      "allFeetPlanted": true,
+      "canonicalDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.14726163903061223,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01143474968112245,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.3050445243201463,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "originalAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.25208765146683676,
+        "meanAbsoluteAlphaDifferenceByteScale": 2.95784837372449,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 2.8963404828077084,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "normalizedAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.2532535475127551,
+        "meanAbsoluteAlphaDifferenceByteScale": 2.968067402742347,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 3.0844765770891738,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      }
+    },
+    {
+      "clipID": "walkRight",
+      "frameIndex": 23,
+      "pose": "ready",
+      "originalFile": "clips/walkRight/0023.png",
+      "replacementFile": "neutral.png",
+      "rootOffsetPoints": {
+        "x": 102.4000015258789,
+        "y": 0.0
+      },
+      "maximumInPlacePoseError": 1.1920928955078125e-07,
+      "maximumExpressionError": 0.0,
+      "allFeetPlanted": true,
+      "canonicalDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.14711216517857142,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01143474968112245,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.30501746271425395,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "originalAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.23463907047193877,
+        "meanAbsoluteAlphaDifferenceByteScale": 1.6274065290178572,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 1.653927736459171,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "normalizedAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.23778300382653061,
+        "meanAbsoluteAlphaDifferenceByteScale": 1.6377551020408163,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 1.8555644979346038,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      }
+    },
+    {
+      "clipID": "walkLeft",
+      "frameIndex": 0,
+      "pose": "ready",
+      "originalFile": "clips/walkLeft/0000.png",
+      "replacementFile": "neutral.png",
+      "rootOffsetPoints": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "maximumInPlacePoseError": 0.0,
+      "maximumExpressionError": 0.0,
+      "allFeetPlanted": true,
+      "canonicalDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.14690788424744897,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01143474968112245,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.3049103560695126,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "originalAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.25059291294642855,
+        "meanAbsoluteAlphaDifferenceByteScale": 2.8049565529336733,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 2.8771778437937505,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "normalizedAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.25186344068877553,
+        "meanAbsoluteAlphaDifferenceByteScale": 2.8152254065688775,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 3.0709231609310277,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      }
+    },
+    {
+      "clipID": "walkLeft",
+      "frameIndex": 23,
+      "pose": "ready",
+      "originalFile": "clips/walkLeft/0023.png",
+      "replacementFile": "neutral.png",
+      "rootOffsetPoints": {
+        "x": -102.4000015258789,
+        "y": 0.0
+      },
+      "maximumInPlacePoseError": 1.1920928955078125e-07,
+      "maximumExpressionError": 0.0,
+      "allFeetPlanted": true,
+      "canonicalDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.14698262117346939,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01143474968112245,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.30499171022575866,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "originalAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.23247169961734693,
+        "meanAbsoluteAlphaDifferenceByteScale": 1.4858846859056123,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 1.6413027645954268,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "normalizedAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.2361637037627551,
+        "meanAbsoluteAlphaDifferenceByteScale": 1.496322943239796,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 1.850039501477681,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      }
+    },
+    {
+      "clipID": "pet",
+      "frameIndex": 0,
+      "pose": "ready",
+      "originalFile": "clips/pet/0000.png",
+      "replacementFile": "neutral.png",
+      "rootOffsetPoints": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "maximumInPlacePoseError": 0.0,
+      "maximumExpressionError": 0.0,
+      "allFeetPlanted": true,
+      "canonicalDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.14682816485969388,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01143474968112245,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.3049269903273823,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "originalAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.16621990593112246,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.27162886639030615,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.3414402740262779,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "normalizedAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.18927873883928573,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.2815489477040816,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.5590573664361601,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      }
+    },
+    {
+      "clipID": "settle",
+      "frameIndex": 17,
+      "pose": "ready",
+      "originalFile": "clips/settle/0017.png",
+      "replacementFile": "neutral.png",
+      "rootOffsetPoints": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "maximumInPlacePoseError": 0.0,
+      "maximumExpressionError": 0.0,
+      "allFeetPlanted": true,
+      "canonicalDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.14693279655612246,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01143474968112245,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.30498769820428334,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "originalAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.1337890625,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.08200633769132654,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.12620901225073342,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "normalizedAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.1698371731505102,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.0924545599489796,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.3741642229808595,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      }
+    },
+    {
+      "clipID": "fallAsleep",
+      "frameIndex": 0,
+      "pose": "ready",
+      "originalFile": "clips/fallAsleep/0000.png",
+      "replacementFile": "neutral.png",
+      "rootOffsetPoints": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "maximumInPlacePoseError": 0.0,
+      "maximumExpressionError": 0.0,
+      "allFeetPlanted": true,
+      "canonicalDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.14729153380102042,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01143474968112245,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.3051074661635503,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "originalAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.015988719706632654,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.0,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.0053017040149393084,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "normalizedAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.14673848054846939,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01143474968112245,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.3048488080127899,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      }
+    },
+    {
+      "clipID": "wakeUp",
+      "frameIndex": 23,
+      "pose": "ready",
+      "originalFile": "clips/wakeUp/0023.png",
+      "replacementFile": "neutral.png",
+      "rootOffsetPoints": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "maximumInPlacePoseError": 0.0,
+      "maximumExpressionError": 0,
+      "allFeetPlanted": true,
+      "canonicalDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.14683812978316327,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.01143474968112245,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.3048840760262454,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "originalAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.077392578125,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.024767817283163265,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.045208760587568356,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      },
+      "normalizedAdjacentDifference": {
+        "identicalDecodedPixels": false,
+        "changedPixelFraction": 0.1538683832908163,
+        "meanAbsoluteAlphaDifferenceByteScale": 0.03560467155612245,
+        "meanAbsolutePremultipliedRGBDifferenceByteScale": 0.3208850597530687,
+        "interpretation": "Encoded color-byte comparison; no visual continuity or color-management certification."
+      }
+    }
+  ]
+}

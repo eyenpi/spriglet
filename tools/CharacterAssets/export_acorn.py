@@ -11,6 +11,7 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import package_acorn
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'art/candidates/transitions-v03/acorn-hopper/runtime'
@@ -37,7 +38,8 @@ def verify(destination=DESTINATION):
     assert actual == expected, 'Packaged Acorn metadata differs from the approved export'
     files = {source['restFrame'], source['sleepFrame']}
     files.update(frame['file'] for clip in source['clips'].values() for frame in clip['frames'])
-    assert {str(path.relative_to(destination)) for path in destination.rglob('*') if path.is_file()} == files | {'manifest.json'}
+    additions = package_acorn.verify(destination)
+    assert {str(path.relative_to(destination)) for path in destination.rglob('*') if path.is_file()} == files | {'manifest.json'} | additions
     for name in files:
         assert hashlib.sha256((SOURCE / name).read_bytes()).digest() == hashlib.sha256((destination / name).read_bytes()).digest(), name
     return len(files)
@@ -56,6 +58,12 @@ def main():
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(SOURCE / name, target)
         (DESTINATION / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+        package, additions = package_acorn.expected(manifest)
+        for name, source in additions.items():
+            target = DESTINATION / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+        (DESTINATION / package_acorn.PACKAGE_NAME).write_text(json.dumps(package, indent=2) + '\n')
     print(f'Acorn Hopper: {verify()} exact Blender PNGs; {STANDARD_POINTS}-point standard canvas verified.')
 
 

@@ -12,6 +12,7 @@ struct SampleTransitionPlanTests {
         case .settle: (.happy, .ready)
         case .fallAsleep: (.ready, .asleep)
         case .wakeUp: (.asleep, .ready)
+        default: (.ready, .ready)
         }
     }
 

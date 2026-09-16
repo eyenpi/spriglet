@@ -21,6 +21,7 @@ xcrun swiftc "${review_flags[@]}" -parse-as-library -framework AppKit -framework
     "$review_root/Sources/Spriglet/Rendering/PetRenderView.swift" \
     "$review_root/Sources/Spriglet/Rendering/PetRenderView+Scene.swift" \
     "$review_root/Sources/Spriglet/Rendering/SampleImageDecoder.swift" \
+    "$review_root/Sources/Spriglet/Rendering/RestRigScene.swift" \
     "$review_dir/CandidateReview.swift" -o "$review_bundle/Contents/MacOS/CandidateReview"
 xcrun swiftc "${review_flags[@]}" -parse-as-library -framework AppKit -framework ImageIO \
     -I "$review_output" -L "$review_output" -lSprigletCore \

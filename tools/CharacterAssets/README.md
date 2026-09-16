@@ -22,6 +22,19 @@ and pose-matched animation boundaries are unchanged. Standard's opaque character
 is about 64 points tall; Small / Standard / Large canvases are 72 / 96 / 120 points.
 A standard hop travels 102.4 points in 0.8 seconds.
 
+The same exporter also installs `character.json` and the verified cropped
+`restRig/` layers from `art/candidates/rest-rig-v04`. The original schema-2
+manifest and 194 frames remain byte-identical compatibility assets. Schema 3
+normalizes the ten ready-pose clip endpoints to one recomposed neutral image,
+preserving every frame count, time, and root offset. The renderer reads this
+sidecar first and fails closed if it is invalid.
+
+The rig separates body, cap, leaf, feet, shadow, eyes and finite blink states.
+Its 442,100 decoded bytes include the gaze masks. All ranges, pivots and delays
+are package data. `package_acorn.py --output DIRECTORY` builds an isolated
+candidate; `--check` verifies its metadata and bytes. Native composition and
+handoff review are described in [RestRigValidation](../RestRigValidation/README.md).
+
 The read-only check rejects altered metadata, changed PNG bytes, missing frames,
 and extra files. Candidate verification separately checks the original Blender
 export and transition endpoints. Release validation compares every shipped

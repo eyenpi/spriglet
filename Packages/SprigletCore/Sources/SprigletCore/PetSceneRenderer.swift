@@ -3,6 +3,12 @@
 public enum PetSceneCommand: Sendable {
     case action(PetAction)
     case transition(SampleTransitionIntent)
+    /// Resolves an authored semantic intent through the character's graph.
+    case intent(String)
+    /// Updates a bounded retained-layer target without starting a frame clock.
+    case procedural(semanticID: String, value: SamplePoint)
+    /// Starts one finite retained-layer phrase when the active pose owns it.
+    case phrase(String)
     case routine(PetRoutine, direction: SampleClipID = .walkLeft, stationary: Bool = false)
     case sample(walk: SampleClipID)
     case resetPose
@@ -17,12 +23,20 @@ public struct PetSceneState: Equatable, Sendable {
     public let isSleeping: Bool
     public let hasActiveFrameClock: Bool
     public let bufferedFrameCount: Int
+    public let currentPoseID: String
 
-    public init(isAnimating: Bool, isSleeping: Bool, hasActiveFrameClock: Bool, bufferedFrameCount: Int) {
+    public init(
+        isAnimating: Bool,
+        isSleeping: Bool,
+        hasActiveFrameClock: Bool,
+        bufferedFrameCount: Int,
+        currentPoseID: String = "ready"
+    ) {
         self.isAnimating = isAnimating
         self.isSleeping = isSleeping
         self.hasActiveFrameClock = hasActiveFrameClock
         self.bufferedFrameCount = bufferedFrameCount
+        self.currentPoseID = currentPoseID
     }
 }
 

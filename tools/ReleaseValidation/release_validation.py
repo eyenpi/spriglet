@@ -76,6 +76,34 @@ def digest(path):
     return checksum.hexdigest()
 
 
+def character_image_inventory(package):
+    """Read schema-3 image dimensions without decoding an entire art library."""
+    require(package.get("schemaVersion") == 3, "Unsupported character package version.")
+    canvas = package["canvasPixels"]
+    images = {}
+
+    def add(name, dimensions):
+        size = tuple(dimensions[key] for key in ("width", "height"))
+        require(all(isinstance(value, (int, float)) and not isinstance(value, bool)
+                    and 1 <= value <= 2048 and value == int(value) for value in size),
+                "Invalid character image dimensions.")
+        require(name not in images or images[name] == size, "Conflicting character image dimensions.")
+        images[name] = size
+
+    for pose in package["poses"].values():
+        if pose.get("stillFrame"):
+            add(pose["stillFrame"], canvas)
+    for clip in package["clips"].values():
+        require(0 < len(clip["frames"]) <= 600, "Invalid character clip frame count.")
+        for frame in clip["frames"]:
+            add(frame["file"], canvas)
+    for layer in package["layers"].values():
+        add(layer["file"], layer["framePixels"])
+        if layer.get("mask"):
+            add(layer["mask"]["file"], layer["framePixels"])
+    return images
+
+
 def verify_resources(app, source_root):
     source = source_root / "Sources/Spriglet/Resources/AcornHopper"
     packaged = app / "Contents/Resources/AcornHopper"
@@ -92,21 +120,30 @@ def verify_resources(app, source_root):
     for clip in metadata["clips"].values():
         require(0 < len(clip["frames"]) <= 600, "Invalid character clip frame count.")
         names.update(frame["file"] for frame in clip["frames"])
-    for name in sorted(names):
+    dimensions = dict.fromkeys(names, (448, 448))
+    package_path = source / "character.json"
+    package_digest = None
+    if package_path.exists():
+        package_digest = digest(package_path)
+        require(package_digest == digest(packaged / "character.json"), "Packaged character graph differs from source.")
+        for name, size in character_image_inventory(json.loads(package_path.read_text())).items():
+            require(name not in dimensions or dimensions[name] == size, "Conflicting legacy image dimensions.")
+            dimensions[name] = size
+    for name, size in sorted(dimensions.items()):
         original = resource_path(source, name)
         archived = resource_path(packaged, name)
         require(digest(original) == digest(archived), "A packaged character frame is missing or changed.")
         with archived.open("rb") as stream:
             header = stream.read(24)
         require(len(header) == 24 and header[:8] == b"\x89PNG\r\n\x1a\n"
-                and header[12:16] == b"IHDR" and struct.unpack(">II", header[16:24]) == (448, 448),
+                and header[12:16] == b"IHDR" and struct.unpack(">II", header[16:24]) == size,
                 "A packaged character PNG has invalid dimensions or a wrong format.")
     actual = {str(path.relative_to(packaged)) for path in packaged.rglob("*.png")}
-    require(actual == names, "Packaged sample contains missing or unreferenced PNGs.")
+    require(actual == set(dimensions), "Packaged sample contains missing or unreferenced PNGs.")
     privacy_source = source_root / "Sources/Spriglet/PrivacyInfo.xcprivacy"
     privacy_app = app / "Contents/Resources/PrivacyInfo.xcprivacy"
     require(read_plist(privacy_source) == read_plist(privacy_app), "Privacy manifest is missing or changed.")
-    return {"pngCount": len(names), "manifestSHA256": digest(metadata_path),
+    return {"pngCount": len(dimensions), "manifestSHA256": digest(metadata_path), "characterPackageSHA256": package_digest,
             "privacyManifestSHA256": digest(privacy_app)}
 
 

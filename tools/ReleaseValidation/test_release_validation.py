@@ -118,6 +118,23 @@ class ReleaseValidationTests(unittest.TestCase):
             with self.assertRaises(OSError):
                 release.verify_resources(app, root)
 
+    def test_layered_inventory_tracks_crops_masks_and_shared_frames(self):
+        package = {"schemaVersion": 3, "canvasPixels": {"width": 448, "height": 448},
+                   "poses": {"ready": {"stillFrame": "ready.png"}},
+                   "clips": {"blink": {"frames": [{"file": "ready.png"}]}},
+                   "layers": {"eye": {"file": "eye.png", "framePixels": {"width": 18, "height": 22},
+                                      "mask": {"file": "eye.mask.png"}}}}
+        self.assertEqual(release.character_image_inventory(package),
+                         {"ready.png": (448, 448), "eye.png": (18, 22), "eye.mask.png": (18, 22)})
+        package["layers"]["eye"]["file"] = "ready.png"
+        with self.assertRaises(release.ValidationError):
+            release.character_image_inventory(package)
+        package["layers"]["eye"]["file"] = "eye.png"
+        for width in (0, 2049, 18.5, True):
+            package["layers"]["eye"]["framePixels"]["width"] = width
+            with self.assertRaises(release.ValidationError):
+                release.character_image_inventory(package)
+
     def test_architecture_and_macho_minimum_os_must_match(self):
         with tempfile.TemporaryDirectory() as directory:
             app = Path(directory) / "Spriglet.app"

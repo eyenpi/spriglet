@@ -11,6 +11,9 @@ struct ProbeMeasurement: Codable {
     let displayLinkCallbackDelta: UInt64
     let movementFrameDelta: UInt64
     let automaticActionDelta: UInt64
+    let finitePhraseDelta: UInt64
+    let proceduralCommitDelta: UInt64
+    let decodedLayerBytes: Int
     let appActiveAtStart: Bool
     let appActiveAtEnd: Bool
     let cpuPercentOfOneCore: Double
@@ -92,7 +95,7 @@ enum RuntimeProbe {
                                              "Layer content assignments and display-link callbacks do not prove compositor presentation or GPU submissions; use Instruments for those costs.",
                                              "Motion eligibility and app activity are sampled at phase boundaries; temporary changes between samples may be missed.",
                                              "Physical mouse routing, focus during another app's typing, full-screen, Spaces, Stage Manager and multiple displays require separate validation.",
-                                             "Measurements cover the bundled Sprout sample and bounded image decoder, not a future full animation library."])
+                                             "Measurements cover the bundled character, bounded image decoder, and finite retained-layer phrases."])
         }
 
         runtime.setHidden(false)
@@ -104,8 +107,9 @@ enum RuntimeProbe {
             return makeReport(blockedDuring: "initial warm-up")
         }
 
-        checks.append(.init(name: "initial-frame-submitted", passed: runtime.renderer.submittedFrameCount > 0,
-                            detail: "The initial pose must complete a layer content assignment before zero idle callbacks can pass. This is not a GPU-output assertion."))
+        checks.append(.init(name: "initial-pose-present", passed: runtime.renderer.submittedFrameCount > 0
+                            || (runtime.renderer.isRestRigVisible && runtime.renderer.decodedLayerBytes > 0),
+                            detail: "The initial pose must have a baked image or visible loaded rig before zero idle callbacks can pass. This is not a GPU-output assertion."))
         let idle = try await measure("static-visible", runtime: runtime, seconds: 3)
         measurements.append(idle)
         guard runtime.permitsMotion else { return makeReport(blockedDuring: "static-visible") }
@@ -194,13 +198,16 @@ enum RuntimeProbe {
         for action in [PetAction.blink, .lookAround, .stretch] {
             guard runtime.permitsMotion else { return makeReport(blockedDuring: action.rawValue) }
             let clipWait = max(3, runtime.renderer.actionDuration(action) + 0.75)
+            let phrasesBefore = runtime.renderer.finitePhraseCount
             runtime.preview(action)
             let clip = try await measure(action.rawValue, runtime: runtime, seconds: clipWait)
             measurements.append(clip)
             guard runtime.permitsMotion else { return makeReport(blockedDuring: action.rawValue) }
             checks.append(.init(name: "\(action.rawValue)-runs-and-settles",
-                                passed: clip.submittedFrameDelta > 0 && !runtime.renderer.isAnimating && !runtime.renderer.isSleeping,
-                                detail: "The legacy request maps to a supported sample sequence and settles awake; these are not three additional animation assets."))
+                                passed: (clip.submittedFrameDelta > 0 || runtime.renderer.finitePhraseCount > phrasesBefore)
+                                    && !runtime.renderer.isAnimating && !runtime.renderer.isSleeping
+                                    && !runtime.renderer.hasActiveDisplayLink && runtime.renderer.activeRigAnimationCount == 0,
+                                detail: "A supported finite clip or retained-layer phrase completes awake with no remaining animation or frame clock."))
         }
 
         let framesBeforeNap = runtime.renderer.submittedFrameCount
@@ -294,6 +301,8 @@ enum RuntimeProbe {
         let callbacks = runtime.renderer.displayLinkCallbackCount
         let ticks = runtime.desktop.movementTickCount
         let automaticActions = runtime.automaticActionCount
+        let phrases = runtime.renderer.finitePhraseCount
+        let proceduralCommits = runtime.renderer.proceduralCommitCount
         let before = ProcessSample.capture()
         try await Task.sleep(for: .seconds(seconds))
         let after = ProcessSample.capture()
@@ -303,6 +312,9 @@ enum RuntimeProbe {
                      displayLinkCallbackDelta: runtime.renderer.displayLinkCallbackCount - callbacks,
                      movementFrameDelta: runtime.desktop.movementTickCount - ticks,
                      automaticActionDelta: runtime.automaticActionCount - automaticActions,
+                     finitePhraseDelta: runtime.renderer.finitePhraseCount - phrases,
+                     proceduralCommitDelta: runtime.renderer.proceduralCommitCount - proceduralCommits,
+                     decodedLayerBytes: runtime.renderer.decodedLayerBytes,
                      appActiveAtStart: appActiveAtStart,
                      appActiveAtEnd: NSApp.isActive,
                      cpuPercentOfOneCore: elapsed > 0 ? (after.cpuSeconds - before.cpuSeconds) / elapsed * 100 : 0,

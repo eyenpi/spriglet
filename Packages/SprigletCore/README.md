@@ -12,6 +12,21 @@ Spriglet keeps behavior and geometry independent of the AppKit window and render
 
 ## Rendering boundary
 
+`CharacterPackage` validates schema 3 geometry, paths, capabilities, channel ranges,
+parent relationships, pose routes, safe markers, and decoded resource budgets.
+`CharacterClipID` is a validated string, so new characters and clips do not need
+new enum cases. Schemas 1 and 2 adapt into the same model without changing their
+timing or root motion. Unknown required features fail closed; explicitly optional
+extensions can be ignored. `CharacterTimeline` pairs frames and exact root values,
+including mixed frame rates, and `CharacterAnimationGraph` resolves finite routes
+and semantic motion-policy fallbacks.
+
+Acorn's schema-3 sidecar adds a small cropped rest rig. Stable layered poses and
+finite baked clips have exclusive visual ownership. Blink, breath, and gaze
+phrases use finite Core Animation animations; only baked frames use a display
+link. The rig has no timer or idle loop. Autonomous continuous breathing is not
+enabled without GPU/WindowServer energy evidence.
+
 `PetSceneRenderer` accepts commands and reports finite scene activity without exposing a platform view. The existing `PetRenderView` adapter retains the authored frame/root pairing, twelve-frame decode buffer, interruption semantics, and clock-free settled pose. The composition root connects the renderer's callbacks to the desktop host. Legacy clip identifiers remain an explicit migration boundary for existing character packages.
 
 Platform notifications live in `AppKitEnvironmentSource`. Its typed observation tokens are released at stop; a generation guard rejects queued callbacks from an older lifetime. Wake and resource-policy listeners remain available while animation is suspended. There is no new polling or visible behavior in this foundation.

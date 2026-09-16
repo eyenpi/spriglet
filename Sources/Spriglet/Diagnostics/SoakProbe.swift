@@ -347,6 +347,8 @@ enum SoakProbe {
         let interval = signposter.beginInterval("Soak Measurement", id: signposter.makeSignpostID(), "\(state, privacy: .public)")
         defer { signposter.endInterval("Soak Measurement", interval) }
         let beforeCounters = SoakCounters(runtime: runtime)
+        let phrases = runtime.renderer.finitePhraseCount
+        let proceduralCommits = runtime.renderer.proceduralCommitCount
         let before = ProcessSample.capture()
         try await Task.sleep(for: .seconds(seconds), tolerance: .milliseconds(50))
         let after = ProcessSample.capture()
@@ -355,6 +357,9 @@ enum SoakProbe {
         return .init(state: state, startedAt: startedAt, seconds: elapsed,
                      submittedFrameDelta: counters.submittedFrames, displayLinkCallbackDelta: counters.displayLinkCallbacks,
                      movementFrameDelta: counters.movementFrames, automaticActionDelta: counters.automaticActions,
+                     finitePhraseDelta: runtime.renderer.finitePhraseCount - phrases,
+                     proceduralCommitDelta: runtime.renderer.proceduralCommitCount - proceduralCommits,
+                     decodedLayerBytes: runtime.renderer.decodedLayerBytes,
                      appActiveAtStart: appActiveAtStart, appActiveAtEnd: NSApp.isActive,
                      cpuPercentOfOneCore: elapsed > 0 ? (after.cpuSeconds - before.cpuSeconds) / elapsed * 100 : 0,
                      footprintMiB: after.footprintBytes.map { Double($0) / 1_048_576 })

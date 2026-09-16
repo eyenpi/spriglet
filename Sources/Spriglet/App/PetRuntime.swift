@@ -96,7 +96,9 @@ final class PetRuntime {
 
     var petName: String { profile.name }
     var characterPreviewURL: URL? {
-        renderer.manifest.flatMap { characterResourceDirectory?.appendingPathComponent($0.restFrame) }
+        guard let package = renderer.characterPackage,
+              let file = package.poses[package.animationGraph.defaultPoseID]?.stillFrame else { return nil }
+        return characterResourceDirectory?.appendingPathComponent(file)
     }
     var traitDescription: String { profile.traitSummary }
     var recentPreferenceDescription: String {

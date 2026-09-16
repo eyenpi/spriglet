@@ -4,6 +4,33 @@ import Testing
 
 @Suite("Production Acorn asset contract")
 struct AcornAssetTests {
+    @Test("Shipping schema 3 preserves timing and pairs every ready boundary with the rest rig")
+    func layeredPackage() throws {
+        var root = URL(fileURLWithPath: #filePath)
+        for _ in 0..<5 { root.deleteLastPathComponent() }
+        let package = try CharacterPackage.decode(Data(contentsOf:
+            root.appendingPathComponent("Sources/Spriglet/Resources/AcornHopper/character.json")))
+        let legacy = try manifest()
+        let ready = try #require(package.poses[package.animationGraph.defaultPoseID])
+        let canonical = try #require(ready.stillFrame)
+        #expect(!ready.layerIDs.isEmpty)
+        #expect(package.resourceBudget.maxBufferedFrames == 12)
+        #expect(package.resourceBudget.maxDecodedLayerBytes <= 1_048_576)
+        for (id, source) in legacy.clips {
+            let clip = try #require(package.clips[id])
+            #expect(clip.framesPerSecond == legacy.framesPerSecond)
+            #expect(clip.frames.map(\.rootOffsetPoints) == source.frames.map(\.rootOffsetPoints))
+            if clip.startPoseID == "ready" { #expect(clip.frames.first?.file == canonical) }
+            if clip.endPoseID == "ready" { #expect(clip.frames.last?.file == canonical) }
+        }
+        for pose in package.poses.keys {
+            for intent in package.animationGraph.intents.keys {
+                let plan = try package.plan(for: intent, from: pose)
+                #expect(plan.endPoseID == package.animationGraph.intents[plan.resolvedIntentID]?.targetPoseID)
+            }
+        }
+    }
+
     private func manifest() throws -> SproutSampleManifest {
         var root = URL(fileURLWithPath: #filePath)
         for _ in 0..<5 { root.deleteLastPathComponent() }
