@@ -38,6 +38,8 @@ public struct PetStimulus: Equatable, Sendable {
         case moving(Bool)
         case activityLevel(PetActivityLevel)
         case habitat(PetHabitat?)
+        case petBounds(CGRect?)
+        case pointer(perception: PointerPerception, attention: PointerAttentionState)
     }
 
     public let timestamp: MonotonicTimestamp
@@ -66,6 +68,9 @@ public struct PetWorldSnapshot: Equatable, Sendable {
     public let isMoving: Bool
     public let activityLevel: PetActivityLevel
     public let habitat: PetHabitat?
+    public let petBounds: CGRect?
+    public let pointer: PointerPerception
+    public let attention: PointerAttentionState
 
     public init(
         timestamp: MonotonicTimestamp = .zero,
@@ -79,7 +84,10 @@ public struct PetWorldSnapshot: Equatable, Sendable {
         isAnimating: Bool = false,
         isMoving: Bool = false,
         activityLevel: PetActivityLevel = .balanced,
-        habitat: PetHabitat? = nil
+        habitat: PetHabitat? = nil,
+        petBounds: CGRect? = nil,
+        pointer: PointerPerception = .empty,
+        attention: PointerAttentionState = .neutral
     ) {
         self.timestamp = timestamp
         self.activityPolicy = activityPolicy
@@ -93,6 +101,9 @@ public struct PetWorldSnapshot: Equatable, Sendable {
         self.isMoving = isMoving
         self.activityLevel = activityLevel
         self.habitat = habitat
+        self.petBounds = petBounds
+        self.pointer = pointer
+        self.attention = attention
     }
 
     public var isSuspended: Bool {

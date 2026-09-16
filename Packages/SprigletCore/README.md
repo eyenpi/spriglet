@@ -8,6 +8,15 @@ Spriglet keeps behavior and geometry independent of the AppKit window and render
 
 `BehaviorDirector` separates planning from execution feedback. `LegacyBehaviorDirector` preserves the existing planner's seeded selection, delays, quiet periods, and movement cooldowns. The runtime keeps one cancellable deadline and checks policy again when it fires. Direct interactions retain the renderer's one-current/one-pending request contract.
 
+Pointer movement passes through `PointerPerception` and `PointerAttention` before
+entering the world. These values retain only the newest ephemeral sample and
+derived approach, dwell, and departure facts. `PointerIntentDirector` maps the
+world to normalized gaze and lean commands after direct interaction, suspension,
+and macro-animation policy checks. No coordinate is persisted or logged. Dwell
+can mature while the pointer is still, using a semantic deadline rather than
+polling. The native coordinator and autonomous behavior share one replaceable
+earliest-deadline task. Event coalescing is capped at 15 Hz, or 10 Hz in Low Power.
+
 `HabitatProvider` supplies validated value geometry with a stable display UUID. The initial `ConservativeFloorHabitatProvider` delegates to `PetPlacement`, preserving existing placement at screen edges, negative display coordinates, and tight usable areas. The host rebuilds geometry from current screens rather than retaining `NSScreen` instances.
 
 ## Rendering boundary

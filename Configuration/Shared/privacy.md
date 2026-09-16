@@ -1,10 +1,12 @@
 # Privacy
 
-Effective September 15, 2026. Developed by {{publisher}}.
+Effective September 16, 2026. Developed by {{publisher}}.
 
 {{appName}} is a local desktop companion. The app contains no accounts, analytics, advertising, server connection, or network client.
 
 It responds to clicks and dragging in its own window and keyboard commands while using {{appName}}. It does not capture your screen, monitor global keystrokes, read other apps' contents, or request Screen Recording, Accessibility, Input Monitoring, or Automation permission. It exposes its own name, status, and actions to macOS accessibility clients without using accessibility access to control another app.
+
+When the companion is awake, visible, unpaused, and not being directly interacted with, it may observe only mouse movement and drag notifications plus the current pointer position. This lets it look toward a nearby pointer or make one small local reaction. It does not observe clicks, scrolls, keyboard input, clipboard contents, or the contents of other apps. Pointer coordinates are used only in memory for the latest moment, are coalesced to at most 15 updates per second (10 in Low Power Mode), and are never saved, logged, or transmitted. Pointer observation stops while the companion is hidden, paused, suspended, constrained, sleeping, or directly interacted with.
 
 Your choices stay in this app's local preferences: the pet's name and stable traits, size, activity frequency, parked mode, automatic moments, pause, visibility, click-through, Spaces behavior, sound preference, a display-relative home position, and whether you completed the welcome. A display identifier helps restore the pet to the same display. The app does not transmit it. One bounded last-good preference payload provides recovery if the current copy is damaged.
 

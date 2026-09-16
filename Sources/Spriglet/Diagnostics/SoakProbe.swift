@@ -349,6 +349,7 @@ enum SoakProbe {
         let beforeCounters = SoakCounters(runtime: runtime)
         let phrases = runtime.renderer.finitePhraseCount
         let proceduralCommits = runtime.renderer.proceduralCommitCount
+        let pointer = runtime.pointerCounters
         let before = ProcessSample.capture()
         try await Task.sleep(for: .seconds(seconds), tolerance: .milliseconds(50))
         let after = ProcessSample.capture()
@@ -360,6 +361,8 @@ enum SoakProbe {
                      finitePhraseDelta: runtime.renderer.finitePhraseCount - phrases,
                      proceduralCommitDelta: runtime.renderer.proceduralCommitCount - proceduralCommits,
                      decodedLayerBytes: runtime.renderer.decodedLayerBytes,
+                     pointerEventDelta: runtime.pointerCounters.receivedEventCount &- pointer.receivedEventCount,
+                     pointerSampleDelta: runtime.pointerCounters.deliveredSampleCount &- pointer.deliveredSampleCount,
                      appActiveAtStart: appActiveAtStart, appActiveAtEnd: NSApp.isActive,
                      cpuPercentOfOneCore: elapsed > 0 ? (after.cpuSeconds - before.cpuSeconds) / elapsed * 100 : 0,
                      footprintMiB: after.footprintBytes.map { Double($0) / 1_048_576 })

@@ -24,5 +24,7 @@
   "previewSound": "Preview Sound",
   "automaticMoments": "Automatic Moments",
   "copyReport": "Copy Report",
-  "quitApp": "Quit {{appName}}"
+  "quitApp": "Quit {{appName}}",
+  "automaticMomentsHelp": "Allow occasional greetings, pauses, and naps. Pointer attention and direct interactions remain available when this is off.",
+  "automaticMomentsOffDetail": "Pointer attention, petting, and play remain available. Pause keeps your companion completely still."
 }

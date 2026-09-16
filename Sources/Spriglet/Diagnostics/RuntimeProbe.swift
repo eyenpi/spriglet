@@ -14,6 +14,8 @@ struct ProbeMeasurement: Codable {
     let finitePhraseDelta: UInt64
     let proceduralCommitDelta: UInt64
     let decodedLayerBytes: Int
+    let pointerEventDelta: UInt64
+    let pointerSampleDelta: UInt64
     let appActiveAtStart: Bool
     let appActiveAtEnd: Bool
     let cpuPercentOfOneCore: Double
@@ -303,6 +305,7 @@ enum RuntimeProbe {
         let automaticActions = runtime.automaticActionCount
         let phrases = runtime.renderer.finitePhraseCount
         let proceduralCommits = runtime.renderer.proceduralCommitCount
+        let pointer = runtime.pointerCounters
         let before = ProcessSample.capture()
         try await Task.sleep(for: .seconds(seconds))
         let after = ProcessSample.capture()
@@ -315,6 +318,8 @@ enum RuntimeProbe {
                      finitePhraseDelta: runtime.renderer.finitePhraseCount - phrases,
                      proceduralCommitDelta: runtime.renderer.proceduralCommitCount - proceduralCommits,
                      decodedLayerBytes: runtime.renderer.decodedLayerBytes,
+                     pointerEventDelta: runtime.pointerCounters.receivedEventCount &- pointer.receivedEventCount,
+                     pointerSampleDelta: runtime.pointerCounters.deliveredSampleCount &- pointer.deliveredSampleCount,
                      appActiveAtStart: appActiveAtStart,
                      appActiveAtEnd: NSApp.isActive,
                      cpuPercentOfOneCore: elapsed > 0 ? (after.cpuSeconds - before.cpuSeconds) / elapsed * 100 : 0,

@@ -27,6 +27,9 @@ xcrun swiftc "${check_flags[@]}" -parse-as-library -framework AppKit -framework 
     "$check_root/Sources/Spriglet/Desktop/PetInteractionView.swift" \
     "$check_root/Sources/Spriglet/App/PetRuntime.swift" \
     "$check_root/Sources/Spriglet/Environment/AppKitEnvironmentSource.swift" \
+    "$check_root/Sources/Spriglet/Environment/PointerSource.swift" \
+    "$check_root/Sources/Spriglet/Environment/DeadlineScheduler.swift" \
+    "$check_root/Sources/Spriglet/Environment/PetAwarenessCoordinator.swift" \
     "$check_root/Sources/Spriglet/App/SharedContent.generated.swift" \
     "$check_root/Sources/Spriglet/Services/PetSoundService.swift" \
     "$check_root/Sources/Spriglet/Diagnostics/ProcessSample.swift" \

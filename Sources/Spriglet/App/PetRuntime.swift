@@ -44,11 +44,12 @@ final class PetRuntime {
     }
     @ObservationIgnored private var world = PetWorldSnapshot()
     @ObservationIgnored private let environment: any EnvironmentObserving
+    @ObservationIgnored private let deadlines: any DeadlineScheduling
+    @ObservationIgnored private let awareness: PetAwarenessCoordinator
     /// Observable projection of the world policy for menu and Settings updates.
     private var policy = ActivityPolicy()
     private var scene: any PetSceneRenderer { renderer }
     @ObservationIgnored private var probeTask: Task<Void, Never>?
-    @ObservationIgnored private var behaviorTask: Task<Void, Never>?
     @ObservationIgnored private var behaviorGeneration: UInt64 = 0
     @ObservationIgnored private var behaviorMutationDepth = 0
     @ObservationIgnored private let interactionClock = ContinuousClock()
@@ -72,8 +73,12 @@ final class PetRuntime {
 
     init(preferencesStore: PetPreferencesStore = PetPreferencesStore(),
          character: PetAssetDefinition = .acornHopper, resourceBundle: Bundle = .main,
-         environment: any EnvironmentObserving = AppKitEnvironmentSource()) {
+         environment: any EnvironmentObserving = AppKitEnvironmentSource(),
+         pointerSource: any PointerObserving = AppKitPointerSource(),
+         deadlines: any DeadlineScheduling = DeadlineScheduler()) {
         self.environment = environment
+        self.deadlines = deadlines
+        awareness = PetAwarenessCoordinator(source: pointerSource, scheduler: deadlines)
         self.preferencesStore = preferencesStore
         self.character = character
         characterResourceDirectory = character.resourceDirectory(in: resourceBundle)
@@ -95,6 +100,7 @@ final class PetRuntime {
     }
 
     var petName: String { profile.name }
+    var pointerCounters: PointerSourceCounters { awareness.counters }
     var characterPreviewURL: URL? {
         guard let package = renderer.characterPackage,
               let file = package.poses[package.animationGraph.defaultPoseID]?.stillFrame else { return nil }
@@ -148,6 +154,8 @@ final class PetRuntime {
                 cancelBehaviorSchedule()
                 behaviorDirector.resetAfterInteraction()
                 sound.stop()
+                refreshWorld()
+                reconcileAwareness()
             } else {
                 reconcileBehaviorSchedule()
             }
@@ -191,6 +199,12 @@ final class PetRuntime {
             self?.message = error
         }
         characterIssue = renderer.assetError
+        awareness.onStimulus = { [weak self] update in
+            guard let self else { return }
+            receive(.pointer(perception: update.perception, attention: update.attention))
+            guard isRunning else { return }
+            for command in PointerIntentDirector.commands(in: world) { scene.perform(command) }
+        }
         if let characterIssue { message = characterIssue }
         desktop.setClickThrough(clickThrough)
         desktop.setAllSpaces(allSpaces)
@@ -214,6 +228,7 @@ final class PetRuntime {
             runProbe(terminateWhenFinished: true)
         } else if isTemporaryReview {
             autonomousBehavior = false
+            reconcileBehaviorSchedule()
         } else {
             reconcileBehaviorSchedule()
         }
@@ -221,6 +236,8 @@ final class PetRuntime {
 
     func stop() {
         isRunning = false
+        awareness.stop()
+        deadlines.cancelAll()
         cancelBehaviorSchedule()
         probeTask?.cancel()
         probeTask = nil
@@ -499,6 +516,8 @@ final class PetRuntime {
         guard isRunning, !sampling else { return }
         probePlacement = desktop.currentPlacement
         sampling = true
+        refreshWorld()
+        reconcileAwareness()
         refreshSoundPolicy()
         refreshAccessibility()
         cancelBehaviorSchedule()
@@ -704,12 +723,13 @@ final class PetRuntime {
     private func reconcileBehaviorSchedule() {
         guard behaviorMutationDepth == 0 else { return }
         refreshWorld()
+        reconcileAwareness()
         guard isRunning, autonomousBehavior, !sampling, renderer.assetError == nil,
               world.allowsAutonomousBehavior else {
             cancelBehaviorSchedule()
             return
         }
-        guard behaviorTask == nil else { return }
+        guard !hasScheduledBehavior else { return }
         scheduleBehavior(behaviorDirector.next(
             in: world, profile: profile, memory: interactionMemory, now: .now
         ))
@@ -717,23 +737,18 @@ final class PetRuntime {
 
     private func cancelBehaviorSchedule() {
         behaviorGeneration &+= 1
-        behaviorTask?.cancel()
-        behaviorTask = nil
+        deadlines.cancel(.autonomousBehavior)
         hasScheduledBehavior = false
     }
 
     private func scheduleBehavior(_ plan: PlannedBehavior, duringProbe: Bool = false) {
         cancelBehaviorSchedule()
         guard plan.delaySeconds.isFinite, plan.delaySeconds >= 0 else { return }
+        guard let deadline = MonotonicTimestamp(seconds: ProcessInfo.processInfo.systemUptime + plan.delaySeconds) else { return }
         let generation = behaviorGeneration
         hasScheduledBehavior = true
-        behaviorTask = Task { [weak self] in
-            do {
-                try await Task.sleep(for: .seconds(plan.delaySeconds),
-                                     tolerance: duringProbe ? .zero : .seconds(1))
-            } catch { return }
+        deadlines.schedule(.autonomousBehavior, at: deadline) { [weak self] in
             guard let self, generation == behaviorGeneration else { return }
-            behaviorTask = nil
             hasScheduledBehavior = false
             guard isRunning, autonomousBehavior, permitsMotion,
                   desktop.panel.isOnActiveSpace, !isAnimating, !isMoving, !isInteracting,
@@ -838,6 +853,23 @@ final class PetRuntime {
         receive(.animating(isAnimating))
         receive(.moving(isMoving))
         receive(.habitat(desktop?.currentHabitat))
+        receive(.petBounds(desktop.map {
+            CGRect(origin: $0.effectiveOrigin, size: renderer.displaySize)
+        }))
+    }
+
+    /// Composition wiring only; perception, hysteresis, and intent selection
+    /// stay in their own reusable boundaries.
+    private func reconcileAwareness() {
+        awareness.update(policy: PointerAwarenessPolicy(
+            isAwake: !world.isSleeping,
+            isVisible: isRunning && !isHidden && world.isOnActiveSpace,
+            isSuspended: world.isSuspended,
+            isPaused: isPaused,
+            isInteracting: world.isInteracting,
+            isConstrained: world.isAnimating || world.isMoving || world.isReduceMotion || sampling || isCommandLineProbe,
+            isLowPower: world.isLowPower
+        ), petBounds: world.petBounds)
     }
 
     private func activeSpaceChanged() {

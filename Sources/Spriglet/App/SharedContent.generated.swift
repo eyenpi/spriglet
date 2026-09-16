@@ -29,6 +29,8 @@ enum AppText {
     static let automaticMoments = "Automatic Moments"
     static let copyReport = "Copy Report"
     static let quitApp = "Quit Spriglet"
+    static let automaticMomentsHelp = "Allow occasional greetings, pauses, and naps. Pointer attention and direct interactions remain available when this is off."
+    static let automaticMomentsOffDetail = "Pointer attention, petting, and play remain available. Pause keeps your companion completely still."
 }
 
 enum AppLinks {

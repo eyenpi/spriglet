@@ -20,12 +20,17 @@ public enum WorldReducer {
         var isMoving = snapshot.isMoving
         var activityLevel = snapshot.activityLevel
         var habitat = snapshot.habitat
+        var petBounds = snapshot.petBounds
+        var pointer = snapshot.pointer
+        var attention = snapshot.attention
 
         switch stimulus.event {
         case let .suspension(reason, active):
             activityPolicy.set(reason, active: active)
+            if active { pointer = .empty; attention = .neutral }
         case let .sleeping(value):
             isSleeping = value
+            if value { pointer = .empty; attention = .neutral }
         case let .wanderingAvailability(value):
             canWander = value
         case let .lowPower(value):
@@ -36,6 +41,7 @@ public enum WorldReducer {
             isOnActiveSpace = value
         case let .interaction(value):
             isInteracting = value
+            if value { pointer = .empty; attention = .neutral }
         case let .animating(value):
             isAnimating = value
         case let .moving(value):
@@ -44,6 +50,20 @@ public enum WorldReducer {
             activityLevel = value
         case let .habitat(value):
             habitat = value
+        case let .petBounds(value):
+            petBounds = value.flatMap { bounds in
+                guard bounds.minX.isFinite, bounds.minY.isFinite, bounds.maxX.isFinite, bounds.maxY.isFinite,
+                      bounds.width > 0, bounds.height > 0 else { return nil }
+                return bounds
+            }
+        case let .pointer(perception, value):
+            if activityPolicy.allowsAnimation, !isSleeping, !isInteracting {
+                pointer = perception
+                attention = value
+            } else {
+                pointer = .empty
+                attention = .neutral
+            }
         }
 
         return PetWorldSnapshot(
@@ -58,7 +78,10 @@ public enum WorldReducer {
             isAnimating: isAnimating,
             isMoving: isMoving,
             activityLevel: activityLevel,
-            habitat: habitat
+            habitat: habitat,
+            petBounds: petBounds,
+            pointer: pointer,
+            attention: attention
         )
     }
 

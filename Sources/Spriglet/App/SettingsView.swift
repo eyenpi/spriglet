@@ -42,11 +42,11 @@ struct SprigletSettingsView: View {
 
             Section("Activity") {
                 Toggle(AppText.automaticMoments, isOn: Binding(get: { runtime.autonomousBehavior }, set: { runtime.setAutonomousBehavior($0) }))
-                    .help("Allow occasional greetings, pauses, and naps. Turning this off keeps only the interactions you request.")
+                    .help(AppText.automaticMomentsHelp)
                 Picker("Frequency", selection: Binding(get: { runtime.activityLevel }, set: { runtime.setActivityLevel($0) })) {
                     ForEach(PetActivityLevel.allCases, id: \.self) { level in Text(level.title).tag(level) }
                 }.pickerStyle(.segmented).disabled(!runtime.autonomousBehavior)
-                detail(runtime.autonomousBehavior ? runtime.activityLevel.summary : "Only the moments you ask for. Petting and play are still available.")
+                detail(runtime.autonomousBehavior ? runtime.activityLevel.summary : AppText.automaticMomentsOffDetail)
                 Toggle(AppText.parkedMode, isOn: Binding(get: { runtime.isParked }, set: { runtime.setParked($0) }))
                     .help("Keep automatic moments and firefly play in one place. You can still drag or ask for a walk.")
                 detail(runtime.isParked

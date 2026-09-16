@@ -21,6 +21,9 @@ paths += [root / path for path in [
     "Sources/Spriglet/Rendering/PetRenderView.swift",
     "Sources/Spriglet/Rendering/PetRenderView+Scene.swift",
     "Sources/Spriglet/Environment/AppKitEnvironmentSource.swift",
+    "Sources/Spriglet/Environment/PointerSource.swift",
+    "Sources/Spriglet/Environment/DeadlineScheduler.swift",
+    "Sources/Spriglet/Environment/PetAwarenessCoordinator.swift",
     "Sources/Spriglet/Rendering/SampleImageDecoder.swift",
     "Sources/Spriglet/Rendering/RestRigScene.swift",
     "Sources/Spriglet/Desktop/PetWindowController.swift",
@@ -89,6 +92,9 @@ xcrun swiftc "${check_flags[@]}" -parse-as-library -framework AppKit -framework 
     "$check_snapshot/Sources/Spriglet/Rendering/PetRenderView.swift" \
     "$check_snapshot/Sources/Spriglet/Rendering/PetRenderView+Scene.swift" \
     "$check_snapshot/Sources/Spriglet/Environment/AppKitEnvironmentSource.swift" \
+    "$check_snapshot/Sources/Spriglet/Environment/PointerSource.swift" \
+    "$check_snapshot/Sources/Spriglet/Environment/DeadlineScheduler.swift" \
+    "$check_snapshot/Sources/Spriglet/Environment/PetAwarenessCoordinator.swift" \
     "$check_snapshot/Sources/Spriglet/Rendering/SampleImageDecoder.swift" \
     "$check_snapshot/Sources/Spriglet/Rendering/RestRigScene.swift" \
     "$check_snapshot/Sources/Spriglet/Desktop/PetWindowController.swift" \
