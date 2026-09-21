@@ -7,8 +7,10 @@ public enum ConversationCopy {
         "What would you like to ask \(name)?"
     }
 
-    /// Spoken in character, as an ordinary reply rather than an error.
-    public static let declineReply = "That's not something I can help with. Want to ask me something else?"
+    /// Spoken in character, as an ordinary reply rather than an error. The system
+    /// model's guardrails decline some health and money questions outright, so the
+    /// decline itself carries the referral the persona would otherwise give.
+    public static let declineReply = "That's something I can't help with. Someone you trust, or a professional, would be a better person to ask."
 
     public static func text(for failure: ConversationFailure, name: String) -> String {
         switch failure {
