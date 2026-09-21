@@ -1,0 +1,4 @@
+# GitHub-hosted preview label newer than the pinned actionlint; see tools/CI/toolchains.json.
+self-hosted-runner:
+  labels:
+    - xcode-27

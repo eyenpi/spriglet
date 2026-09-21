@@ -14,6 +14,34 @@ The first job (`security-checks`) runs credential checks, workflow lint, and the
 
 A new commit cancels the previous pending/running workflow and requests new approval. Each job also checks the current PR head and base before expensive work; closed, draft, retargeted, or outdated PRs are refused. If `main` changes while a run waits, update the PR branch and approve the resulting run. Keep draft runs waiting until the PR is ready. A maintainer can retry failed jobs for the same approved commit from the Actions UI; stale retries are rejected by the freshness check.
 
+## Toolchains
+
+Every macOS job selects an explicit, pinned Xcode instead of the runner image's default. [toolchains.json](toolchains.json) is the single source of truth:
+
+| Pin | Runner | Xcode | macOS SDK | Swift | Used by | Why |
+| --- | --- | --- | --- | --- | --- | --- |
+| `build` | `xcode-27` | 27.0 | 27.0 | 6.4 | `macos` | The documented release toolchain. Builds, tests, packages, and compiles the macOS 27 FoundationModels error mapping. |
+| `codeql` | `macos-26` | 26.6 | 26.5 | 6.3 | `codeql-swift` | CodeQL analyzes Swift 5.4 through 6.3 only. This also proves the app still builds with the macOS 26 SDK. |
+
+`python3 tools/CI/select_xcode.py <pin>` finds that Xcode and verifies the Xcode, SDK, and Swift versions. It then exports `DEVELOPER_DIR` for later steps, with no `sudo` and no `xcode-select`. A pin names a release line: `27.0` accepts 27.0.x but not 27.1. Any drift fails the job, listing each mismatched field. `ConversationCheck --require-modern-error-mapping` independently fails the `macos` job if it is ever built without the Xcode 27 SDK.
+
+Check a local toolchain against CI before a PR:
+
+```sh
+python3 tools/CI/select_xcode.py build --check
+```
+
+`xcode-27` is GitHub's preview image for Xcode 27. It may queue longer than `macos-26` until GitHub makes it generally available. The `.github/actionlint.yaml` file declares the label because the pinned actionlint predates it.
+
+To upgrade a toolchain:
+
+1. Change its entry in `toolchains.json` and the matching `runs-on` in [pr-ci.yml](../../.github/workflows/pr-ci.yml) in the same PR.
+2. Update the build statement in the root README.
+
+`test_select_xcode.py` fails if a pin and its workflow job disagree. It also fails if the build pin loses the Xcode 27 SDK, or if the CodeQL pin moves beyond CodeQL's supported Swift range.
+
+The `macos` job uploads its JSON validation reports as the `validation-reports` artifact, even when a step fails. The reports contain no conversation text; live model evaluations never run in CI.
+
 ## Repository configuration
 
 The `ci-review` environment is required infrastructure; configure it **before** enabling `.github/workflows/pr-ci.yml`:
@@ -36,6 +64,7 @@ Release tags do not trigger CI or publication. Build/publish a release explicitl
 
 ```sh
 python3 -m unittest discover -s tools/CI -p 'test_*.py'
+python3 tools/CI/select_xcode.py build --check
 python3 -m unittest discover -s tools/Security -p 'test_*.py'
 python3 -m unittest discover -s tools/WebsiteDeployment -p 'test_*.py'
 python3 tools/Security/run.py actionlint

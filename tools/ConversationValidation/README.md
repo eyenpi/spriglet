@@ -11,6 +11,8 @@ bash tools/ConversationValidation/build.sh
 tools/ConversationValidation/.build/ConversationCheck --output .build/conversation-validation.json
 ```
 
+CI runs this step with `--require-modern-error-mapping`. That flag fails unless the build used the Xcode 27 SDK pinned in [toolchains.json](../CI/toolchains.json).
+
 The build compiles `SprigletCore` and `SprigletConversation` as static modules. It then compiles the adapter with the app target's settings: Swift 6 strict concurrency, warnings as errors, main-actor default isolation, and a macOS 26 minimum. The check contacts no model, so it runs on CI runners without Apple Intelligence. It covers:
 
 - availability mapping for every system state and unsupported locales

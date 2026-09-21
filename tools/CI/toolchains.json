@@ -1,0 +1,16 @@
+{
+  "build": {
+    "runner": "xcode-27",
+    "xcode": "27.0",
+    "macOSSDK": "27.0",
+    "swift": "6.4",
+    "reason": "The documented release toolchain. Builds, tests, packages, and compiles the macOS 27 FoundationModels error mapping."
+  },
+  "codeql": {
+    "runner": "macos-26",
+    "xcode": "26.6",
+    "macOSSDK": "26.5",
+    "swift": "6.3",
+    "reason": "CodeQL analyzes Swift 5.4 through 6.3 only. This also proves the app still builds with the macOS 26 SDK."
+  }
+}

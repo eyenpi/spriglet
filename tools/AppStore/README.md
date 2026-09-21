@@ -22,7 +22,7 @@ Apple references: [App Store Connect workflow](https://developer.apple.com/help/
 
 ## 2. Build and validate locally
 
-Use the final source checkout and the selected stable Xcode. CI currently uses Xcode 26.6; local Debug/Release builds and an unsigned archive also passed with Xcode 27 (27A266a). Apple opened [App Store submissions for Xcode 27](https://developer.apple.com/news/?id=k1mtkt1k) on September 9, 2026. Recheck Apple's [upcoming requirements](https://developer.apple.com/news/upcoming-requirements/) on the actual upload date. SDK upload requirements and the app's minimum supported OS are separate: Spriglet remains Apple silicon only with a macOS 26 minimum.
+Use the final source checkout and the pinned build toolchain: Xcode 27.0 (27A266a). Run `python3 tools/CI/select_xcode.py build --check` to confirm yours matches. CI builds, packages, and rehearses the unsigned archive with the same pin; see [CI toolchains](../CI/README.md#toolchains). Only CodeQL's Swift analysis uses Xcode 26.6. Apple opened [App Store submissions for Xcode 27](https://developer.apple.com/news/?id=k1mtkt1k) on September 9, 2026. Recheck Apple's [upcoming requirements](https://developer.apple.com/news/upcoming-requirements/) on the actual upload date. SDK upload requirements and the app's minimum supported OS are separate: Spriglet remains Apple silicon only with a macOS 26 minimum.
 
 ```sh
 ./scripts/test.sh
