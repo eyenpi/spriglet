@@ -20,6 +20,7 @@ public enum WorldReducer {
         var isMoving = snapshot.isMoving
         var activityLevel = snapshot.activityLevel
         var habitat = snapshot.habitat
+        var isConversing = snapshot.isConversing
 
         switch stimulus.event {
         case let .suspension(reason, active):
@@ -44,6 +45,8 @@ public enum WorldReducer {
             activityLevel = value
         case let .habitat(value):
             habitat = value
+        case let .conversing(value):
+            isConversing = value
         }
 
         return PetWorldSnapshot(
@@ -58,7 +61,8 @@ public enum WorldReducer {
             isAnimating: isAnimating,
             isMoving: isMoving,
             activityLevel: activityLevel,
-            habitat: habitat
+            habitat: habitat,
+            isConversing: isConversing
         )
     }
 
