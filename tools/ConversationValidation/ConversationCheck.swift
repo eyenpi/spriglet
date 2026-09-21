@@ -11,7 +11,7 @@ struct ConversationCheck {
     static func main() async {
         let arguments = CommandLine.arguments
         guard let output = value(after: "--output", in: arguments) else {
-            FileHandle.standardError.write(Data("usage: ConversationCheck --output <report.json> [--suite <prompts.json>] [--live]\n".utf8))
+            FileHandle.standardError.write(Data("usage: ConversationCheck --output <report.json> [--suite <prompts.json>] [--require-modern-error-mapping] [--live]\n".utf8))
             exit(2)
         }
         let executable = URL(fileURLWithPath: arguments[0]).standardizedFileURL
@@ -21,6 +21,10 @@ struct ConversationCheck {
         var checks = StaticChecks()
         await checks.run()
         let suite = checks.validateSuite(at: suitePath)
+        if arguments.contains("--require-modern-error-mapping") {
+            checks.expect("modern error mapping compiled", StaticChecks.modernMappingCompiled,
+                          "Build with the Xcode 27 SDK pinned in tools/CI/toolchains.json.")
+        }
 
         var report = Report(staticChecks: checks.results, modernErrorMappingCompiled: StaticChecks.modernMappingCompiled)
         if arguments.contains("--live"), let suite {
