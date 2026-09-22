@@ -36,7 +36,6 @@ The quick guide introduces Spriglet on your first launch. It lives in the **leaf
 - **Play with a firefly.** Watch its glow, catch it, and settle. When strolls are allowed, Acorn follows it and walks home; parked play stays in place.
 - **Make it yours.** Choose a name, Small / Standard / Large size, and Quiet / Balanced / Lively frequency. Its stable traits and modest recent preferences give its finite routines variety.
 - **Keep sound optional.** Brief petting and play chimes start off. Launch at login is also an explicit choice in Settings.
-- **Ask it something, if you like.** Conversation starts off. Turn on **Talk Through Siri** in Settings > Conversation, then say "Ask Spriglet". Apple Intelligence answers on your Mac, the pet looks up and reacts, and nothing is sent anywhere or kept. It needs a Mac that supports Apple Intelligence and a developer-signed build: macOS doesn't deliver Siri requests to the unsigned preview downloads. See [testing Siri locally](tools/ConversationValidation/README.md#test-siri-and-shortcuts-locally).
 - **Stay in control.** Whole-window click-through, app-scoped keyboard commands, native accessibility actions, and Reduce Motion support are built in.
 
 ## Local by design
@@ -71,7 +70,7 @@ Use a full checkout of `main` for development. The command above checks out the 
 - [Contributing](CONTRIBUTING.md)
 - [Report a bug or suggest an idea](https://github.com/eyenpi/spriglet/issues)
 
-Run Swift Testing with `./scripts/test.sh`. Build without launching with `./scripts/build.sh Debug` or `./scripts/build.sh Release`. CI checks public history, Swift tests, Python validators, every animation frame, app builds, and silent service adapters; desktop fixtures compile in CI and run separately on a visible Mac session.
+Run Swift Testing with `./scripts/test.sh`. Build without launching with `./scripts/build.sh Debug` or `./scripts/build.sh Release`. macOS delivers Siri, Shortcuts, and extension requests only to team-signed builds. Set `SPRIGLET_DEVELOPMENT_TEAM` to your team ID for a signed build, and test from one installed copy, such as `~/Applications/Spriglet.app`, because macOS routes these requests to a single registered copy per bundle identifier. CI checks public history, Swift tests, Python validators, every animation frame, app builds, and silent service adapters; desktop fixtures compile in CI and run separately on a visible Mac session.
 
 ## Keyboard and accessibility
 

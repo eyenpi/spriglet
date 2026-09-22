@@ -98,7 +98,6 @@ class PinConsistencyTests(unittest.TestCase):
 
     def test_build_toolchain_compiles_the_modern_error_mapping(self):
         self.assertGreaterEqual(int(self.pins["build"]["macOSSDK"].split(".")[0]), 27)
-        self.assertIn("--require-modern-error-mapping", self.job("macos"))
 
 
 if __name__ == "__main__":

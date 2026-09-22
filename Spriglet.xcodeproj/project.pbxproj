@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		A10000000000000000000022 /* SprigletCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000021 /* SprigletCore */; };
-		A10000000000000000000025 /* SprigletConversation in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000024 /* SprigletConversation */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,7 +32,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000022 /* SprigletCore in Frameworks */,
-				A10000000000000000000025 /* SprigletConversation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,7 +76,6 @@
 			name = Spriglet;
 			packageProductDependencies = (
 				A10000000000000000000021 /* SprigletCore */,
-				A10000000000000000000024 /* SprigletConversation */,
 			);
 			productName = Spriglet;
 			productReference = A10000000000000000000006 /* Spriglet.app */;
@@ -281,10 +278,6 @@
 		A10000000000000000000021 /* SprigletCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SprigletCore;
-		};
-		A10000000000000000000024 /* SprigletConversation */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SprigletConversation;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

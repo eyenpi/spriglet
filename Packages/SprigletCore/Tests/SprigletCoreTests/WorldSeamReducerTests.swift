@@ -19,16 +19,14 @@ struct WorldSeamReducerTests {
             PetStimulus(timestamp: time(6), event: .activeSpace(false)),
             PetStimulus(timestamp: time(7), event: .interaction(true)),
             PetStimulus(timestamp: time(8), event: .animating(true)),
-            PetStimulus(timestamp: time(9), event: .moving(true)),
-            PetStimulus(timestamp: time(10), event: .conversing(true))
+            PetStimulus(timestamp: time(9), event: .moving(true))
         ]
 
         let first = WorldReducer.replay(stimuli: trace)
         let second = WorldReducer.replay(stimuli: trace)
 
         #expect(first == second)
-        #expect(first.timestamp == time(10))
-        #expect(first.isConversing)
+        #expect(first.timestamp == time(9))
         #expect(first.isSleeping)
         #expect(first.canWander)
         #expect(first.isLowPower)
@@ -98,8 +96,7 @@ struct WorldSeamReducerTests {
             .activeSpace(false),
             .interaction(true),
             .animating(true),
-            .moving(true),
-            .conversing(true)
+            .moving(true)
         ]
 
         #expect(PetWorldSnapshot().allowsAutonomousBehavior)
@@ -110,20 +107,6 @@ struct WorldSeamReducerTests {
             )
             #expect(!snapshot.allowsAutonomousBehavior)
         }
-    }
-
-    @Test("Finishing a conversation restores autonomy without disturbing other facts")
-    func conversationEndsCleanly() {
-        let talking = WorldReducer.replay(stimuli: [
-            PetStimulus(timestamp: time(1), event: .lowPower(true)),
-            PetStimulus(timestamp: time(2), event: .conversing(true))
-        ])
-        #expect(!talking.allowsAutonomousBehavior)
-
-        let finished = WorldReducer.reduce(talking, PetStimulus(timestamp: time(3), event: .conversing(false)))
-        #expect(!finished.isConversing)
-        #expect(finished.isLowPower)
-        #expect(finished.allowsAutonomousBehavior)
     }
 
     @Test("Malformed elapsed times cannot become timestamps", arguments: [

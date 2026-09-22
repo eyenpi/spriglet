@@ -89,10 +89,6 @@ jobs:
         run: |
           bash tools/EverydayServicesValidation/build.sh
           tools/EverydayServicesValidation/.build/EverydayServicesCheck --resources Sources/Spriglet/Resources/PetSounds --output .build/everyday-services.json
-      - name: Conversation adapter checks (no model required)
-        run: |
-          bash tools/ConversationValidation/build.sh
-          tools/ConversationValidation/.build/ConversationCheck --require-modern-error-mapping --output .build/conversation-validation.json
       - name: Upload validation reports
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

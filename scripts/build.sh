@@ -3,7 +3,7 @@ set -euo pipefail
 task_root="${0:A:h:h}"
 task_configuration="${1:-Debug}"
 task_signing=()
-# Siri and Shortcuts reach only team-signed builds; the default ad hoc signature is rejected.
+# System integrations such as Siri, Shortcuts, and extensions accept only team-signed builds.
 if [[ -n "${SPRIGLET_DEVELOPMENT_TEAM:-}" ]]; then
   task_signing=(CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=Apple Development" "DEVELOPMENT_TEAM=$SPRIGLET_DEVELOPMENT_TEAM")
 fi

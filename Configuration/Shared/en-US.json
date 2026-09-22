@@ -23,9 +23,6 @@
   "openLoginItems": "Open Login Items",
   "previewSound": "Preview Sound",
   "automaticMoments": "Automatic Moments",
-  "conversationTab": "Conversation",
-  "talkThroughSiri": "Talk Through Siri",
-  "forgetConversation": "Forget Conversation",
   "copyReport": "Copy Report",
   "quitApp": "Quit {{appName}}"
 }

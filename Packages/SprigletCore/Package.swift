@@ -7,12 +7,12 @@ let package = Package(
     platforms: [.macOS(.v26)],
     products: [
         .library(name: "SprigletCore", targets: ["SprigletCore"]),
-        .library(name: "SprigletConversation", targets: ["SprigletConversation"])
+        .library(name: "SprigletIntelligence", targets: ["SprigletIntelligence"])
     ],
     targets: [
         .target(name: "SprigletCore"),
-        .target(name: "SprigletConversation", dependencies: ["SprigletCore"]),
+        .target(name: "SprigletIntelligence"),
         .testTarget(name: "SprigletCoreTests", dependencies: ["SprigletCore"]),
-        .testTarget(name: "SprigletConversationTests", dependencies: ["SprigletConversation"])
+        .testTarget(name: "SprigletIntelligenceTests", dependencies: ["SprigletIntelligence"])
     ]
 )

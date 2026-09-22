@@ -23,7 +23,7 @@ Every macOS job selects an explicit, pinned Xcode instead of the runner image's 
 | `build` | `xcode-27` | 27.0 | 27.0 | 6.4 | `macos` | The documented release toolchain. Builds, tests, packages, and compiles the macOS 27 FoundationModels error mapping. |
 | `codeql` | `macos-26` | 26.6 | 26.5 | 6.3 | `codeql-swift` | CodeQL analyzes Swift 5.4 through 6.3 only. This also proves the app still builds with the macOS 26 SDK. |
 
-`python3 tools/CI/select_xcode.py <pin>` finds that Xcode and verifies the Xcode, SDK, and Swift versions. It then exports `DEVELOPER_DIR` for later steps, with no `sudo` and no `xcode-select`. A pin names a release line: `27.0` accepts 27.0.x but not 27.1. Any drift fails the job, listing each mismatched field. `ConversationCheck --require-modern-error-mapping` independently fails the `macos` job if it is ever built without the Xcode 27 SDK.
+`python3 tools/CI/select_xcode.py <pin>` finds that Xcode and verifies the Xcode, SDK, and Swift versions. It then exports `DEVELOPER_DIR` for later steps, with no `sudo` and no `xcode-select`. A pin names a release line: `27.0` accepts 27.0.x but not 27.1. Any drift fails the job, listing each mismatched field. Separately, the `SprigletIntelligence` tests fail if the package is ever built without the Xcode 27 SDK.
 
 Check a local toolchain against CI before a PR:
 
@@ -40,7 +40,7 @@ To upgrade a toolchain:
 
 `test_select_xcode.py` fails if a pin and its workflow job disagree. It also fails if the build pin loses the Xcode 27 SDK, or if the CodeQL pin moves beyond CodeQL's supported Swift range.
 
-The `macos` job uploads its JSON validation reports as the `validation-reports` artifact, even when a step fails. The reports contain no conversation text; live model evaluations never run in CI.
+The `macos` job uploads its JSON validation reports as the `validation-reports` artifact, even when a step fails. CI never runs the on-device model; its runners have no Apple Intelligence.
 
 ## Repository configuration
 

@@ -38,8 +38,6 @@ public struct PetStimulus: Equatable, Sendable {
         case moving(Bool)
         case activityLevel(PetActivityLevel)
         case habitat(PetHabitat?)
-        /// The person is talking with the companion: listening or thinking.
-        case conversing(Bool)
     }
 
     public let timestamp: MonotonicTimestamp
@@ -68,7 +66,6 @@ public struct PetWorldSnapshot: Equatable, Sendable {
     public let isMoving: Bool
     public let activityLevel: PetActivityLevel
     public let habitat: PetHabitat?
-    public let isConversing: Bool
 
     public init(
         timestamp: MonotonicTimestamp = .zero,
@@ -82,8 +79,7 @@ public struct PetWorldSnapshot: Equatable, Sendable {
         isAnimating: Bool = false,
         isMoving: Bool = false,
         activityLevel: PetActivityLevel = .balanced,
-        habitat: PetHabitat? = nil,
-        isConversing: Bool = false
+        habitat: PetHabitat? = nil
     ) {
         self.timestamp = timestamp
         self.activityPolicy = activityPolicy
@@ -97,7 +93,6 @@ public struct PetWorldSnapshot: Equatable, Sendable {
         self.isMoving = isMoving
         self.activityLevel = activityLevel
         self.habitat = habitat
-        self.isConversing = isConversing
     }
 
     public var isSuspended: Bool {
@@ -113,6 +108,5 @@ public struct PetWorldSnapshot: Equatable, Sendable {
             && !isInteracting
             && !isAnimating
             && !isMoving
-            && !isConversing
     }
 }

@@ -1,6 +1,6 @@
 /// Commands accepted by a scene renderer. The legacy clip identifiers remain
 /// confined to this migration adapter until a character supplies its own graph.
-public enum PetSceneCommand: Equatable, Sendable {
+public enum PetSceneCommand: Sendable {
     case action(PetAction)
     case transition(SampleTransitionIntent)
     case routine(PetRoutine, direction: SampleClipID = .walkLeft, stationary: Bool = false)
