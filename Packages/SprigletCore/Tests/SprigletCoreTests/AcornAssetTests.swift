@@ -26,7 +26,10 @@ struct AcornAssetTests {
         let context = CharacterPlaybackContext(
             capabilityIDs: Set(package.capabilities), habitatID: "desktop"
         )
-        for pose in package.poses.keys {
+        // Habitat poses deliberately require a coordinator-owned context
+        // switch at a hidden portal; ordinary desktop graph routing must never
+        // synthesize that host relocation.
+        for pose in ["ready", "happy", "asleep"] {
             for intent in package.animationGraph.intents.keys {
                 let plan = try package.plan(for: intent, from: pose, context: context)
                 #expect(plan.endPoseID == package.animationGraph.intents[plan.resolvedIntentID]?.targetPoseID)

@@ -69,6 +69,49 @@ class AcornPackageTests(unittest.TestCase):
                         <= set(package['animationGraph']['intents']))
         self.assertIn('behavior.reactive-v1', package['featurePolicy']['optional'])
 
+    def test_habitat_library_is_finite_local_and_fail_closed(self):
+        package, files = package_acorn.expected(self.legacy)
+        library = json.loads((package_acorn.HABITATS / 'clips.json').read_text())
+        intent_ids = {
+            'habitat.floorExit', 'habitat.floorReentry', 'habitat.peekIn',
+            'habitat.edgeLook', 'habitat.dangle', 'habitat.pullUp',
+            'habitat.ledgeExit',
+        }
+
+        self.assertEqual(set(library['clips']), intent_ids)
+        self.assertTrue(intent_ids <= set(package['animationGraph']['intents']))
+        self.assertIn('animation.habitat-portals-v1', package['featurePolicy']['optional'])
+        self.assertTrue({'localPortal', 'ledgeGrip'} <= set(package['capabilities']))
+        self.assertNotIn('wallTraversal', package['capabilities'])
+        self.assertEqual(package['resourceBudget']['maxBufferedFrames'], 12)
+        self.assertEqual(package['poses']['ready']['layerIDs'],
+                         sorted(layer['id'] for layer in self.rig['layers']))
+        self.assertEqual(package['poses']['ledge.peek']['hitRegionID'], 'habitat.ledge.peek')
+        self.assertEqual(package['poses']['ledge.hang']['hitRegionID'], 'habitat.ledge.hang')
+
+        for intent_id in intent_ids:
+            intent = package['animationGraph']['intents'][intent_id]
+            self.assertEqual(intent['clipIDs'], [intent_id])
+            self.assertEqual(intent['fallbackIntentID'], 'ready')
+            self.assertEqual(intent['reducedMotionIntentID'], 'ready')
+            self.assertTrue(all(frame['rootOffsetPoints'] == {'x': 0, 'y': 0}
+                                for frame in package['clips'][intent_id]['frames']))
+
+        for clip_id in ('habitat.floorExit', 'habitat.ledgeExit'):
+            clip = package['clips'][clip_id]
+            self.assertEqual(clip['semanticEvents'], [
+                {'id': 'fullyHidden', 'frameIndex': len(clip['frames']) - 1}
+            ])
+            self.assertEqual(clip['frames'][-1]['file'],
+                             package['poses']['portal.hidden']['stillFrame'])
+        for clip_id in intent_ids - {'habitat.floorExit', 'habitat.ledgeExit'}:
+            self.assertFalse(any(event['id'] == 'fullyHidden'
+                                 for event in package['clips'][clip_id]['semanticEvents']))
+
+        habitat_resources = {name for name in files if name.startswith('habitats/')}
+        self.assertEqual(len(habitat_resources), 149)
+        self.assertEqual(len(files), 307)
+
 
 if __name__ == '__main__':
     unittest.main()

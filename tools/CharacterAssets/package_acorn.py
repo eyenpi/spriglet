@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 LEGACY = ROOT / 'Sources/Spriglet/Resources/AcornHopper'
 RIG = ROOT / 'art/candidates/rest-rig-v04/acorn-hopper'
 REACTIVE = ROOT / 'art/candidates/reactive-v04/acorn-hopper'
+HABITATS = ROOT / 'art/candidates/habitats-v05/acorn-hopper'
 PACKAGE_NAME = 'character.json'
 
 
@@ -166,6 +167,29 @@ def expected(legacy):
         'reactive.brake.left', 'reactive.brake.right',
     ]
     package['capabilities'].append('reactiveDodge')
+    merge_authored_library(package, resources, HABITATS, 'habitats')
+    package['featurePolicy']['optional'].append('animation.habitat-portals-v1')
+    package['capabilities'] += ['localPortal', 'ledgeGrip']
+    habitat_intents = {
+        'habitat.floorExit': ('portal.hidden', False),
+        'habitat.floorReentry': ('ready', False),
+        'habitat.peekIn': ('ledge.peek', False),
+        'habitat.edgeLook': ('ledge.peek', True),
+        'habitat.dangle': ('ledge.hang', False),
+        'habitat.pullUp': ('ledge.peek', False),
+        'habitat.ledgeExit': ('portal.hidden', False),
+    }
+    for intent_id, (target_pose, replays) in habitat_intents.items():
+        package['animationGraph']['intents'][intent_id] = {
+            'targetPoseID': target_pose,
+            'clipIDs': [intent_id],
+            'replaysAtTarget': replays,
+            'fallbackIntentID': 'ready',
+            'reducedMotionIntentID': 'ready',
+        }
+    package['animationGraph']['transitionClipIDs'] += [
+        'habitat.floorReentry', 'habitat.ledgeExit', 'habitat.pullUp',
+    ]
     return package, resources
 
 
@@ -201,6 +225,11 @@ def merge_authored_library(package, resources, directory, prefix):
         pose = copy.deepcopy(value)
         if pose.get('stillFrame'): pose['stillFrame'] = path(pose['stillFrame'])
         package['poses'][pose_id] = pose
+    for region_id, value in library.get('hitRegions', {}).items():
+        if region_id == 'habitat.ready':
+            continue
+        assert region_id not in package['hitRegions'], f'Duplicate hit region {region_id}'
+        package['hitRegions'][region_id] = copy.deepcopy(value)
     for clip_id, value in library['clips'].items():
         assert clip_id not in package['clips'], f'Duplicate clip {clip_id}'
         clip = copy.deepcopy(value)

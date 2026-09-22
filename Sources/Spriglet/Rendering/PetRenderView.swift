@@ -250,6 +250,25 @@ final class PetRenderView: NSView {
         _ = cancelPlayback(showRest: true)
     }
 
+    /// Portal relocation changes host context while preserving an exact
+    /// authored hidden pose. Ordinary context changes continue to reset to the
+    /// graph default through `setPlaybackContext(_:)`.
+    @discardableResult
+    func setPlaybackContext(
+        _ context: CharacterPlaybackContext,
+        preservingPoseID poseID: String
+    ) -> Bool {
+        guard characterPackage?.poses[poseID] != nil,
+              currentPoseID == poseID else { return false }
+        guard context != playbackContext else { return true }
+        playbackContext = context
+        _ = cancelPlayback(showRest: false)
+        currentPoseID = poseID
+        currentSnapshot = nil
+        showStablePose(poseID)
+        return currentPoseID == poseID
+    }
+
     func play() { play(.react) }
 
     /// Holding a click freezes the exact image/root pair without waking a nap
