@@ -1,6 +1,6 @@
 # Native everyday-experience validation
 
-This disposable executable checks the actual native accessibility provider, its exported action handlers, Acorn's production screen-top visit, 72 / 96 / 120-point display sizes, resize cancellation, scaled playback, and isolated preference reconstruction. It also checks held-hop image/root continuity, queued petting after landing, wake requests during nap entry, sleeping primary activation, and wake-before-toy timing. It compiles the production renderer, desktop, runtime and sound service; it does not compile or invoke login registration.
+This disposable executable checks the actual native accessibility provider, its exported action handlers, Acorn's 72 / 96 / 120-point display sizes, resize cancellation, scaled playback, and isolated preference reconstruction. It also checks held-hop image/root continuity, queued petting after landing, wake requests during nap entry, sleeping primary activation, and wake-before-toy timing. It compiles the production renderer, desktop, runtime and sound service; it does not compile or invoke login registration.
 
 Build only, from the repository root:
 
@@ -15,12 +15,7 @@ tools/EverydayExperienceValidation/.build/EverydayExperienceValidation.app/Conte
   --output .build/everyday-experience-validation.json
 ```
 
-A run creates one nonactivating pet panel with mouse pass-through. Keep its display and Space available. AppKit may report a transparent panel as occluded, so the harness records that state but does not treat it as compositor evidence; actual appearance remains part of the separate live-app review. The finite native pass is expected to take roughly 90 seconds; each asynchronous wait is capped at 15 seconds. It uses a UUID defaults suite and removes that domain before reporting. Sound preference reconstruction is tested only while paused and sound is disabled before actions resume. No actual VoiceOver, keyboard-navigation, or login setting is changed.
-
-The harness replaces only the global mouse-movement wake observer with an inert
-test implementation so operator movement cannot race its sleep-transition
-checks. Constructed local pet input still runs through the production
-interaction view, and the global observer has separate lifecycle tests.
+A run displays one nonactivating pet panel with mouse pass-through. Keep its display and Space available. The finite native pass is expected to take roughly 90 seconds; each asynchronous wait is capped at 15 seconds. It uses a UUID defaults suite and removes that domain before reporting. Sound preference reconstruction is tested only while paused and sound is disabled before actions resume. No actual VoiceOver, keyboard-navigation, or login setting is changed.
 
 The build compiles private source snapshots and copies the real assets. It generates compact PNG-alpha probes directly from the copied rest image and manifest using snapshotted `tools/CharacterSampleValidation/validate_assets.py` and `png_validation.py`; both scripts are included in the source hashes. No existing validation report or `docs/` file is needed to build. The JSON report records source, asset and executable SHA-256 values, per-size frame/root geometry, actual toy layer bounds, native action names and primary availability, and pass/fail/blocked results. It never includes the test pet name or serialized profile. Exit codes are `0` for passed, `1` for failure, and `2` for an unavailable native environment or cancellation.
 

@@ -41,7 +41,7 @@ final class PetRenderView: NSView {
     var isRestRigVisible: Bool { restRig?.isVisible == true && imageLayer.isHidden }
     /// True whenever either retained presentation path owns visible artwork.
     /// Playback handoffs must preserve this invariant until suspension or an
-    /// intentional hidden habitat pose takes ownership.
+    /// intentional hidden pose takes ownership.
     var hasVisiblePresentation: Bool {
         (restRig?.isVisible == true && restRig?.layer.isHidden == false)
             || (!imageLayer.isHidden && imageLayer.contents != nil)
@@ -92,7 +92,6 @@ final class PetRenderView: NSView {
     private var queuedRequest: Request?
     private var activeRequest: Request?
     private var activePhraseID: String?
-    private var playbackMarkerObservers: [UUID: (CharacterPlaybackMarker) -> Void] = [:]
     private var deliveredMarkers: Set<MarkerDeliveryKey> = []
     private var elapsed: TimeInterval = 0
     private var lastTimestamp: CFTimeInterval?
@@ -250,46 +249,12 @@ final class PetRenderView: NSView {
         updateFrameRate()
     }
 
-    /// Adds a marker consumer without taking ownership of the compatibility
-    /// callback used by validation and other renderer clients.
-    @discardableResult
-    func observePlaybackMarkers(
-        _ observer: @escaping (CharacterPlaybackMarker) -> Void
-    ) -> UUID {
-        let id = UUID()
-        playbackMarkerObservers[id] = observer
-        return id
-    }
-
-    func removePlaybackMarkerObserver(_ id: UUID) {
-        playbackMarkerObservers[id] = nil
-    }
-
     /// Environment policy is an input to route selection, not renderer state.
     /// Changing it cancels any route selected under the previous constraints.
     func setPlaybackContext(_ context: CharacterPlaybackContext) {
         guard context != playbackContext else { return }
         playbackContext = context
         _ = cancelPlayback(showRest: true)
-    }
-
-    /// Portal relocation changes host context while preserving an exact
-    /// authored hidden pose. Ordinary context changes continue to reset to the
-    /// graph default through `setPlaybackContext(_:)`.
-    @discardableResult
-    func setPlaybackContext(
-        _ context: CharacterPlaybackContext,
-        preservingPoseID poseID: String
-    ) -> Bool {
-        guard characterPackage?.poses[poseID] != nil,
-              currentPoseID == poseID else { return false }
-        guard context != playbackContext else { return true }
-        playbackContext = context
-        _ = cancelPlayback(showRest: false)
-        currentPoseID = poseID
-        currentSnapshot = nil
-        showStablePose(poseID)
-        return currentPoseID == poseID
     }
 
     func play() { play(.react) }
@@ -873,10 +838,6 @@ final class PetRenderView: NSView {
             if let poseID = marker.poseID { currentPoseID = poseID }
             onPlaybackMarker?(marker)
             guard generation == expectedGeneration, !isSuspended, self.timeline != nil else { return false }
-            for observer in Array(playbackMarkerObservers.values) {
-                observer(marker)
-                guard generation == expectedGeneration, !isSuspended, self.timeline != nil else { return false }
-            }
         }
         return true
     }

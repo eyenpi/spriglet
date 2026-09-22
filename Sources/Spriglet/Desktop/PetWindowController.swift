@@ -2,64 +2,9 @@ import AppKit
 import ColorSync
 import SprigletCore
 
-/// An exact authored endpoint proof required by cross-habitat host movement.
-/// Construction fails unless a semantic fully-hidden event belongs to the
-/// expected terminal image/pose pair.
-struct PetHabitatRelocationPermit: Equatable {
-    enum Role: Equatable {
-        case floorExit
-        case ledgeExit
-    }
-
-    let role: Role
-    let clipID: CharacterClipID
-    let clipFrameIndex: Int
-    let timelineFrameIndex: Int
-
-    init?(
-        marker: CharacterPlaybackMarker,
-        expectedEndpoint: CharacterTimelineSnapshot,
-        fullyHiddenEventID: String,
-        hiddenPoseID: String,
-        role: Role
-    ) {
-        guard marker.kind == .semanticEvent,
-              marker.id == fullyHiddenEventID,
-              marker.poseID == hiddenPoseID,
-              marker.clipID == expectedEndpoint.clip,
-              marker.clipFrameIndex == expectedEndpoint.clipFrameIndex,
-              marker.timelineFrameIndex == expectedEndpoint.timelineFrameIndex,
-              !expectedEndpoint.isComplete
-        else { return nil }
-        self.role = role
-        clipID = marker.clipID
-        clipFrameIndex = marker.clipFrameIndex
-        timelineFrameIndex = marker.timelineFrameIndex
-    }
-}
-
-enum PetHabitatInvalidationReason: Equatable {
-    case hidden
-    case userInteraction
-    case topologyChanged
-    case displaySizeChanged
-}
-
-struct PetHabitatVisitToken: Equatable {
-    fileprivate let generation: UInt64
-    let sourceDisplayID: UUID
-    let windowSize: CGSize
-
-    init(generation: UInt64, sourceDisplayID: UUID, windowSize: CGSize) {
-        self.generation = generation
-        self.sourceDisplayID = sourceDisplayID
-        self.windowSize = windowSize
-    }
-}
-
 /// The desktop host owns placement and input; it is independent of the renderer.
 @MainActor
-final class PetWindowController: NSObject, NSWindowDelegate, PetHabitatHosting {
+final class PetWindowController: NSObject, NSWindowDelegate {
     let panel: NSPanel
 
     var onPetClicked: (@MainActor () -> Void)?
@@ -73,9 +18,6 @@ final class PetWindowController: NSObject, NSWindowDelegate, PetHabitatHosting {
     /// The value is true when AppKit reports some of the panel as visible.
     var onOcclusionChanged: (@MainActor (Bool) -> Void)?
     var onScreenChanged: (@MainActor () -> Void)?
-    /// The composition root forwards these existing lifecycle changes to the
-    /// habitat coordinator. The host never chooses an animation itself.
-    var onHabitatVisitInvalidated: (@MainActor (PetHabitatInvalidationReason) -> Void)?
     /// Fires only after a completed drag or an explicit placement command.
     var onPlacementSettled: (@MainActor (PetSavedPlacement) -> Void)?
     var onMovementInterrupted: (@MainActor () -> Void)?
@@ -110,7 +52,6 @@ final class PetWindowController: NSObject, NSWindowDelegate, PetHabitatHosting {
 
     private let interactionView: PetInteractionView
     private let habitatProvider: any HabitatProvider
-    private let habitatSafeVisibleFrame: @MainActor (NSScreen) -> CGRect?
 
     /// Rebuilt from fresh screen geometry; no NSScreen crosses into the world.
     var currentHabitat: PetHabitat? {
@@ -124,34 +65,15 @@ final class PetWindowController: NSObject, NSWindowDelegate, PetHabitatHosting {
     private var positionGeneration: UInt64 = 0
     private var dragImageOffset: CGPoint?
     private var isChangingDisplaySize = false
-    private var habitatVisitGeneration: UInt64 = 0
-    private var activeHabitatVisit: ActiveHabitatVisit?
-    private var pendingHabitatClickThrough: Bool?
-    private var pendingHabitatDisplaySize: NSSize?
-    private var needsScreenReconciliationAfterHabitatVisit = false
-
-    private struct ActiveHabitatVisit {
-        let token: PetHabitatVisitToken
-        let floorOrigin: CGPoint
-        let floorPlacement: PetSavedPlacement
-        let previousIgnoresMouseEvents: Bool
-        var didRelocate = false
-        var didRestoreFloor = false
-        var entryRecoveryPermit: PetHabitatRelocationPermit?
-    }
 
     /// `hitTest` receives a point in `contentView` coordinates, respecting flipped views.
     init(
         contentView: NSView,
         size: NSSize = NSSize(width: 224, height: 224),
         habitatProvider: any HabitatProvider = ConservativeFloorHabitatProvider(),
-        habitatSafeVisibleFrame: @escaping @MainActor (NSScreen) -> CGRect? = {
-            PetWindowController.platformSafeVisibleFrame(on: $0)
-        },
         hitTest: @escaping @MainActor (NSPoint) -> Bool = { _ in true }
     ) {
         self.habitatProvider = habitatProvider
-        self.habitatSafeVisibleFrame = habitatSafeVisibleFrame
         interactionView = PetInteractionView(contentView: contentView, hitTest: hitTest)
         panel = PetPanel(
             contentRect: NSRect(origin: .zero, size: size),
@@ -190,7 +112,6 @@ final class PetWindowController: NSObject, NSWindowDelegate, PetHabitatHosting {
             self?.onInputEvent?(event)
         }
         interactionView.onDragBegan = { [weak self] in
-            self?.onHabitatVisitInvalidated?(.userInteraction)
             self?.stopMovement()
         }
         interactionView.onClicked = { [weak self] in
@@ -212,17 +133,8 @@ final class PetWindowController: NSObject, NSWindowDelegate, PetHabitatHosting {
             for: ScreenParametersChanged.self
         ) { [weak self] _ in
             guard let self else { return }
-            onHabitatVisitInvalidated?(.topologyChanged)
-            interactionView.cancelInteraction()
-            if activeHabitatVisit != nil {
-                // Habitat playback has zero local root motion and must retain
-                // its host contract until an authored hidden endpoint. The
-                // coordinator has already requested the shortest safe return.
-                needsScreenReconciliationAfterHabitatVisit = true
-                onScreenChanged?()
-                return
-            }
             stopMovement()
+            interactionView.cancelInteraction()
             if let savedPlacement {
                 applyPlacement(savedPlacement)
             } else {
@@ -250,7 +162,6 @@ final class PetWindowController: NSObject, NSWindowDelegate, PetHabitatHosting {
         stopMovement()
         interactionView.cancelInteraction()
         panel.orderOut(nil)
-        onHabitatVisitInvalidated?(.hidden)
     }
 
     /// Sleep, session loss, and other suspension causes may omit mouse-up.
@@ -270,11 +181,6 @@ final class PetWindowController: NSObject, NSWindowDelegate, PetHabitatHosting {
     func setDisplaySize(_ size: NSSize) {
         guard size.width.isFinite, size.height.isFinite, size.width > 0, size.height > 0,
               panel.frame.size != size, !isChangingDisplaySize else { return }
-        guard activeHabitatVisit == nil else {
-            pendingHabitatDisplaySize = size
-            onHabitatVisitInvalidated?(.displaySizeChanged)
-            return
-        }
         isChangingDisplaySize = true
         defer { isChangingDisplaySize = false }
         stopMovement()
@@ -360,156 +266,8 @@ final class PetWindowController: NSObject, NSWindowDelegate, PetHabitatHosting {
     /// Whole-window click-through is the supported, deterministic fallback.
     func setClickThrough(_ enabled: Bool) {
         interactionView.cancelInteraction()
-        if activeHabitatVisit != nil {
-            pendingHabitatClickThrough = enabled
-            panel.ignoresMouseEvents = true
-        } else {
-            panel.ignoresMouseEvents = enabled
-        }
+        panel.ignoresMouseEvents = enabled
     }
-
-    /// Starts a host-scoped visit without changing the user's saved home. The
-    /// entire finite portal phrase is mouse-transparent and cannot take focus.
-    func beginHabitatVisit() -> PetHabitatVisitToken? {
-        guard activeHabitatVisit == nil, panel.isVisible, !isChangingDisplaySize,
-              let screen = currentScreen,
-              let safeVisibleFrame = habitatSafeVisibleFrame(screen),
-              safeVisibleFrame.contains(
-                CGRect(origin: effectiveOrigin, size: panel.frame.size)
-              ),
-              let placement = currentPlacement else { return nil }
-        stopMovement()
-        interactionView.cancelInteraction()
-        habitatVisitGeneration &+= 1
-        let token = PetHabitatVisitToken(
-            generation: habitatVisitGeneration,
-            sourceDisplayID: placement.displayUUID,
-            windowSize: panel.frame.size
-        )
-        activeHabitatVisit = ActiveHabitatVisit(
-            token: token,
-            floorOrigin: effectiveOrigin,
-            floorPlacement: placement,
-            previousIgnoresMouseEvents: panel.ignoresMouseEvents
-        )
-        panel.ignoresMouseEvents = true
-        return token
-    }
-
-    var habitatVisitWindowSize: CGSize { panel.frame.size }
-    var habitatVisitSourceDisplayID: UUID? { currentPlacement?.displayUUID }
-
-    /// Moves the host only with proof of the exact authored hidden endpoint.
-    /// The complete panel remains below AppKit's current visible-frame ceiling.
-    func relocateHabitatVisit(
-        _ token: PetHabitatVisitToken,
-        to surface: HabitatSurface,
-        permit: PetHabitatRelocationPermit
-    ) -> Bool {
-        guard var visit = activeHabitatVisit, visit.token == token,
-              !visit.didRelocate,
-              panel.frame.size == token.windowSize, panel.isVisible,
-              [.topShelf, .notchLeft, .notchRight].contains(surface.id.kind),
-              surface.normal == .down,
-              surface.isSelectable(using: [.ledgePortalTraversal]),
-              let screen = screen(withStableID: surface.id.displayID),
-              let currentSafeVisibleFrame = habitatSafeVisibleFrame(screen),
-              currentSafeVisibleFrame.contains(surface.safeVisualBounds),
-              abs(surface.interval.fixedCoordinate - surface.safeVisualBounds.maxY) < 0.001,
-              surface.safeVisualBounds.width >= token.windowSize.width,
-              surface.safeVisualBounds.height >= token.windowSize.height,
-              permit.role == .floorExit,
-              permit.clipFrameIndex >= 0, permit.timelineFrameIndex >= 0
-        else { return false }
-
-        let lowerX = surface.safeVisualBounds.minX
-        let upperX = surface.safeVisualBounds.maxX - token.windowSize.width
-        let centeredX = surface.interval.start + surface.interval.length / 2 - token.windowSize.width / 2
-        let origin = CGPoint(
-            x: min(max(centeredX, lowerX), upperX),
-            y: surface.safeVisualBounds.maxY - token.windowSize.height
-        )
-        let frame = CGRect(origin: origin, size: token.windowSize)
-        guard surface.safeVisualBounds.contains(frame),
-              currentSafeVisibleFrame.contains(frame), positionWindow(at: origin)
-        else { return false }
-        visit.didRelocate = true
-        visit.entryRecoveryPermit = permit
-        activeHabitatVisit = visit
-        return true
-    }
-
-    /// Restores the actual captured floor location, never the persisted home.
-    /// A disconnected display uses the placement restore fallback but still
-    /// preserves the user's saved-home value.
-    func restoreHabitatVisitToFloor(
-        _ token: PetHabitatVisitToken,
-        permit: PetHabitatRelocationPermit
-    ) -> Bool {
-        guard var visit = activeHabitatVisit, visit.token == token,
-              visit.didRelocate, !visit.didRestoreFloor,
-              permit.role == .ledgeExit,
-              permit.clipFrameIndex >= 0, permit.timelineFrameIndex >= 0
-        else { return false }
-        guard restoreCapturedFloor(for: &visit) else { return false }
-        activeHabitatVisit = visit
-        return true
-    }
-
-    /// Recovers a failed hidden-endpoint transaction. A floor-exit permit is
-    /// accepted only until the first upper-habitat frame is committed; a ledge
-    /// exit may be retried or recognized as already restored.
-    func recoverHabitatVisitToFloor(
-        _ token: PetHabitatVisitToken,
-        permit: PetHabitatRelocationPermit
-    ) -> Bool {
-        guard var visit = activeHabitatVisit, visit.token == token,
-              permit.clipFrameIndex >= 0, permit.timelineFrameIndex >= 0 else { return false }
-        switch permit.role {
-        case .floorExit:
-            guard !visit.didRelocate || visit.entryRecoveryPermit == permit else { return false }
-        case .ledgeExit:
-            guard visit.didRelocate else { return false }
-        }
-        if visit.didRelocate && !visit.didRestoreFloor {
-            guard restoreCapturedFloor(for: &visit) else { return false }
-        }
-        activeHabitatVisit = visit
-        return true
-    }
-
-    /// Ends the temporary host mode only after a relocated visit returned home.
-    @discardableResult
-    func finishHabitatVisit(_ token: PetHabitatVisitToken) -> Bool {
-        guard let visit = activeHabitatVisit, visit.token == token,
-              !visit.didRelocate || visit.didRestoreFloor else { return false }
-        activeHabitatVisit = nil
-        panel.ignoresMouseEvents = pendingHabitatClickThrough ?? visit.previousIgnoresMouseEvents
-        pendingHabitatClickThrough = nil
-        applyDeferredHabitatChanges()
-        return true
-    }
-
-    /// A hidden or fully occluded panel can safely restore its captured floor
-    /// position without exposing an unauthored relocation. This is the only
-    /// host escape hatch for application shutdown and renderer suspension.
-    @discardableResult
-    func abortHabitatVisitWhileInvisible(_ token: PetHabitatVisitToken) -> Bool {
-        guard let visit = activeHabitatVisit, visit.token == token,
-              !panel.isVisible || !panel.occlusionState.contains(.visible)
-        else { return false }
-        var restoredVisit = visit
-        if restoredVisit.didRelocate && !restoredVisit.didRestoreFloor {
-            guard restoreCapturedFloor(for: &restoredVisit) else { return false }
-        }
-        activeHabitatVisit = nil
-        panel.ignoresMouseEvents = pendingHabitatClickThrough ?? visit.previousIgnoresMouseEvents
-        pendingHabitatClickThrough = nil
-        applyDeferredHabitatChanges()
-        return true
-    }
-
-    var isHabitatVisitActive: Bool { activeHabitatVisit != nil }
 
     func updateAccessibility(name: String, status: String, canPress: Bool, actions: [NSAccessibilityCustomAction]) {
         interactionView.updateAccessibility(name: name, status: status, canPress: canPress, actions: actions)
@@ -537,59 +295,18 @@ final class PetWindowController: NSObject, NSWindowDelegate, PetHabitatHosting {
     }
 
     func beginAuthoredMotion(_ offsets: [SamplePoint]) -> Bool {
-        guard panel.isVisible else { return false }
-        if activeHabitatVisit != nil {
-            guard canBeginHabitatAuthoredMotion(offsets) else { return false }
-        } else {
-            guard canFitRootMotion(offsets) else { return false }
-        }
+        guard panel.isVisible, canFitRootMotion(offsets), let screen = currentScreen else { return false }
         authoredGeneration &+= 1
         authoredStart = effectiveOrigin
-        authoredScreenID = currentScreen?.cgDirectDisplayID
+        authoredScreenID = screen.cgDirectDisplayID
         appliedRootOffset = .zero
         appliedFrameIndex = nil
         return true
     }
 
-    /// Habitat placement is checked when the visit token is acquired and again
-    /// before relocation. Once active, every authored clip is stationary so a
-    /// later safe-area change must not prevent the hidden return from playing.
-    private func canBeginHabitatAuthoredMotion(_ offsets: [SamplePoint]) -> Bool {
-        !offsets.isEmpty
-            && offsets.allSatisfy { $0.x.isFinite && $0.y.isFinite && $0 == .zero }
-    }
-
-    private static func platformSafeVisibleFrame(on screen: NSScreen) -> CGRect? {
-        guard let safeInsets = HabitatInsets(
-            top: screen.safeAreaInsets.top,
-            left: screen.safeAreaInsets.left,
-            bottom: screen.safeAreaInsets.bottom,
-            right: screen.safeAreaInsets.right
-        ) else { return nil }
-        return HabitatScreenSnapshot.deriveSafeVisibleFrame(
-            frame: screen.frame,
-            visibleFrame: screen.visibleFrame,
-            safeAreaInsets: safeInsets
-        )
-    }
-
     /// Only called with the renderer's newly selected authored frame. A held
     /// image never calls this function, so its planted position also stays fixed.
     func applyAuthoredFrame(_ snapshot: SampleTimelineSnapshot) -> Bool {
-        if var visit = activeHabitatVisit {
-            // Habitat phrases are validated as zero-root before playback. A
-            // display hot-plug may cause AppKit to rehome the panel, but it must
-            // not break the marker stream needed for the authored safe return.
-            guard authoredStart != nil, panel.isVisible,
-                  snapshot.rootOffsetPoints == .zero else { return false }
-            if let permit = visit.entryRecoveryPermit, snapshot.clip != permit.clipID {
-                visit.entryRecoveryPermit = nil
-                activeHabitatVisit = visit
-            }
-            appliedRootOffset = .zero
-            appliedFrameIndex = snapshot.timelineFrameIndex
-            return true
-        }
         guard let start = authoredStart, panel.isVisible, let screen = currentScreen,
               screen.cgDirectDisplayID == authoredScreenID else { return false }
         let desired = NSPoint(x: start.x + snapshot.rootOffsetPoints.x, y: start.y + snapshot.rootOffsetPoints.y)
@@ -682,10 +399,6 @@ final class PetWindowController: NSObject, NSWindowDelegate, PetHabitatHosting {
         return UUID(uuidString: CFUUIDCreateString(nil, displayUUID) as String)
     }
 
-    private func screen(withStableID displayID: UUID) -> NSScreen? {
-        NSScreen.screens.first { stableDisplayUUID(for: $0) == displayID }
-    }
-
     private func updateCollectionBehavior() {
         // Apple explicitly prescribes fullScreenPrimary to opt an overlay out of
         // joining other apps' full-screen Spaces. It is exclusive with
@@ -725,40 +438,6 @@ final class PetWindowController: NSObject, NSWindowDelegate, PetHabitatHosting {
             windowSize: panel.frame.size,
             visibleFrame: screen.visibleFrame
         ))
-    }
-
-    private func applyDeferredHabitatChanges() {
-        if let size = pendingHabitatDisplaySize {
-            pendingHabitatDisplaySize = nil
-            setDisplaySize(size)
-        }
-        if needsScreenReconciliationAfterHabitatVisit {
-            needsScreenReconciliationAfterHabitatVisit = false
-            if let savedPlacement {
-                applyPlacement(savedPlacement)
-            } else {
-                constrainToVisibleArea()
-            }
-            onScreenChanged?()
-        }
-    }
-
-    private func restoreCapturedFloor(for visit: inout ActiveHabitatVisit) -> Bool {
-        let restored: Bool
-        if panel.frame.size == visit.token.windowSize,
-           let screen = screen(withStableID: visit.token.sourceDisplayID),
-           screen.visibleFrame.contains(CGRect(origin: visit.floorOrigin, size: visit.token.windowSize)) {
-            restored = positionWindow(at: visit.floorOrigin)
-        } else {
-            restorePlacement(visit.floorPlacement, preservingSavedPlacement: true)
-            // A disconnected preferred display intentionally resolves onto any
-            // current reachable display while preserving the saved-home intent.
-            restored = currentScreen?.visibleFrame.contains(panel.frame) == true
-        }
-        guard restored else { return false }
-        visit.didRestoreFloor = true
-        visit.entryRecoveryPermit = nil
-        return true
     }
 
     @discardableResult

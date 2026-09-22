@@ -67,20 +67,6 @@ struct SampleMotionPlacementTests {
             offsets: [.zero, .init(x: 0.1, y: 0)]) == nil)
     }
 
-    @Test("A zero-margin stationary pose can sit flush with a safe ledge")
-    func zeroMarginLedge() {
-        let safeFrame = CGRect(x: 0, y: 73, width: 1_512, height: 876)
-        let ledgeOrigin = CGPoint(x: 284, y: safeFrame.maxY - size.height)
-        #expect(SampleMotionPlacement.fittingStartOrigin(
-            preferredOrigin: ledgeOrigin, windowSize: size, visibleFrame: safeFrame,
-            offsets: [.zero], margin: 0
-        ) == ledgeOrigin)
-        #expect(SampleMotionPlacement.fittingStartOrigin(
-            preferredOrigin: ledgeOrigin, windowSize: size, visibleFrame: safeFrame,
-            offsets: [.zero]
-        ) != ledgeOrigin)
-    }
-
     @Test("Nonfinite motion and geometry cannot produce an unsafe origin", arguments: [Double.nan, .infinity, -.infinity])
     func invalidNumbers(value: Double) {
         #expect(SampleMotionPlacement.fittingStartOrigin(
