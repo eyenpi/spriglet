@@ -25,6 +25,16 @@ enum EverydayCheck {
     }
 }
 
+/// Keeps operator mouse movement from racing deterministic sleep-transition
+/// checks. Local pet input still runs through the production interaction view.
+@MainActor
+private final class InertWakeMovementSource: WakeMovementObserving {
+    var onWakeMovement: (() -> Void)?
+
+    func start() {}
+    func stop() { onWakeMovement = nil }
+}
+
 private enum Outcome: String, Codable { case passed, failed, blocked }
 private struct Check: Codable { let name: String; let outcome: Outcome; let detail: String }
 private enum ValidationError: Error { case blocked(String) }
@@ -146,7 +156,7 @@ private struct Report: Encodable {
     let executableSHA256: String?
     let actualAssetSHA256: [String: String]
     let limits = [
-        "Build alone never launches the harness. A run displays only its own nonactivating pet panel with Pass Clicks Through enabled.",
+        "Build alone never launches the harness. A run creates only its own nonactivating pet panel with Pass Clicks Through enabled; transparent-panel occlusion is recorded but is not compositor evidence.",
         "Accessibility properties/actions are read and invoked directly on the actual native provider. This does not establish spoken output, rotor discoverability, VoiceOver focus order, or assistive-client delivery.",
         "No VoiceOver or macOS keyboard-navigation setting is changed. Production SwiftUI Settings and keyboard-command navigation require their separate app review.",
         "Constructed local mouse events exercise held-drag cancellation only. They are not injected into the desktop and do not establish physical input routing or keyboard focus.",
@@ -216,7 +226,10 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
             defaults.removePersistentDomain(forName: suiteName)
             store = PetPreferencesStore(defaults: defaults)
             store.save(PetPreferences(isHidden: true, clickThrough: true, allSpaces: false, autonomousBehavior: false))
-            runtime = PetRuntime(preferencesStore: store)
+            runtime = PetRuntime(
+                preferencesStore: store,
+                wakeMovementSource: InertWakeMovementSource()
+            )
             runtime.onShowSettingsRequested = { [weak self] in self?.settingsRequests += 1 }
             runtime.start()
             runtime.desktop.panel.isRestorable = false
@@ -329,6 +342,28 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
         check("native-firefly-action-finite-and-parked", play && toyAppeared && !runtime.renderer.fireflyVisible
               && error(origin, runtime.desktop.effectiveOrigin) < 0.001,
               "The native custom action used the real guarded firefly command and completed in place while parked.")
+
+        let habitatOrigin = runtime.desktop.effectiveOrigin
+        let habitatHome = runtime.desktop.savedPlacement
+        let priorClickThrough = runtime.desktop.panel.ignoresMouseEvents
+        let visitAccepted = invoke(AppText.visitScreenTop)
+        let visitedUpperHabitat = try await waitUntil(timeout: 5) {
+            self.runtime.isVisitingHabitat
+                && self.error(habitatOrigin, self.runtime.desktop.effectiveOrigin) > 1
+        }
+        let visitCompleted = try await waitUntil(timeout: 15) { !self.runtime.isVisitingHabitat }
+        check("native-screen-top-action-accepted", visitAccepted,
+              "The exported production action accepted a package-owned visit from a stable floor pose.")
+        check("native-screen-top-upper-habitat-observed", visitedUpperHabitat,
+              "The production host committed and held an upper safe-area placement during the authored route.")
+        check("native-screen-top-route-restores-host", visitCompleted
+              && error(habitatOrigin, runtime.desktop.effectiveOrigin) < 0.001
+              && runtime.desktop.savedPlacement == habitatHome
+              && runtime.desktop.panel.ignoresMouseEvents == priorClickThrough,
+              "The finite route completed and restored its exact entry position, saved home and input policy.")
+        check("native-screen-top-route-stops-work", visitCompleted
+              && !runtime.renderer.isAnimating && !runtime.renderer.hasActiveDisplayLink,
+              "The completed screen-top route stopped animation and display-link work.")
 
         let beforeMove = runtime.desktop.effectiveOrigin
         let move = invoke("Move right")
@@ -662,9 +697,9 @@ private final class EverydayRunner: NSObject, NSApplicationDelegate {
     }
 
     private func requireEnvironment() throws {
-        guard runtime.canInteract, runtime.desktop.panel.isVisible, runtime.desktop.panel.isOnActiveSpace,
-              runtime.desktop.panel.occlusionState.contains(.visible) else {
-            throw ValidationError.blocked("The own panel or current system motion/visibility policy prevented native playback.")
+        guard runtime.canInteract, runtime.desktop.panel.isVisible,
+              runtime.desktop.panel.isOnActiveSpace else {
+            throw ValidationError.blocked("The own panel or current system motion/Space policy prevented native playback.")
         }
     }
 
