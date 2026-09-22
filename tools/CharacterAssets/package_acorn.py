@@ -187,6 +187,21 @@ def expected(legacy):
             'fallbackIntentID': 'ready',
             'reducedMotionIntentID': 'ready',
         }
+    package['habitatVisitContent'] = {
+        'floorExitIntentID': 'habitat.floorExit',
+        'ledgeEntryIntentID': 'habitat.peekIn',
+        'edgeLookIntentID': 'habitat.edgeLook',
+        'dangleIntentID': 'habitat.dangle',
+        'pullUpIntentID': 'habitat.pullUp',
+        'ledgeExitIntentID': 'habitat.ledgeExit',
+        'floorReentryIntentID': 'habitat.floorReentry',
+        'hiddenPoseID': 'portal.hidden',
+        'ledgePoseID': 'ledge.peek',
+        'hangingPoseID': 'ledge.hang',
+        'floorPoseID': 'ready',
+        'fullyHiddenEventID': 'fullyHidden',
+        'settledMarkerID': 'settled',
+    }
     package['animationGraph']['transitionClipIDs'] += [
         'habitat.floorReentry', 'habitat.ledgeExit', 'habitat.pullUp',
     ]

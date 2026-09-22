@@ -25,6 +25,10 @@ public struct HabitatScreenSnapshot: Equatable, Sendable {
     public let frame: CGRect
     public let visibleFrame: CGRect
     public let safeAreaInsets: HabitatInsets
+    /// The intersection of AppKit's Dock/menu-aware visible frame and the
+    /// display safe-area rectangle. Every selectable surface is derived from
+    /// this region, including while the menu bar is auto-hidden.
+    public let safeVisibleFrame: CGRect
     public let auxiliaryTopLeftArea: CGRect?
     public let auxiliaryTopRightArea: CGRect?
     public let backingScale: CGFloat
@@ -40,11 +44,12 @@ public struct HabitatScreenSnapshot: Equatable, Sendable {
         backingScale: CGFloat,
         isMain: Bool = false
     ) {
-        guard Self.isNonEmptyFiniteRect(frame), Self.isNonEmptyFiniteRect(visibleFrame),
-              frame.contains(visibleFrame), backingScale.isFinite, backingScale > 0,
-              safeAreaInsets.top + safeAreaInsets.bottom <= frame.height,
-              safeAreaInsets.left + safeAreaInsets.right <= frame.width
-        else { return nil }
+        guard backingScale.isFinite, backingScale > 0,
+              let safeVisibleFrame = Self.deriveSafeVisibleFrame(
+            frame: frame,
+            visibleFrame: visibleFrame,
+            safeAreaInsets: safeAreaInsets
+        ) else { return nil }
         guard let left = Self.normalizedAuxiliaryArea(auxiliaryTopLeftArea, within: frame),
               let right = Self.normalizedAuxiliaryArea(auxiliaryTopRightArea, within: frame)
         else { return nil }
@@ -52,6 +57,7 @@ public struct HabitatScreenSnapshot: Equatable, Sendable {
         self.frame = frame
         self.visibleFrame = visibleFrame
         self.safeAreaInsets = safeAreaInsets
+        self.safeVisibleFrame = safeVisibleFrame
         self.auxiliaryTopLeftArea = left
         self.auxiliaryTopRightArea = right
         self.backingScale = backingScale
@@ -74,6 +80,30 @@ public struct HabitatScreenSnapshot: Equatable, Sendable {
         guard isFiniteRect(area), frame.contains(area) else { return nil }
         guard area.width > 0, area.height > 0 else { return .some(nil) }
         return .some(area)
+    }
+
+    /// Derives the same conservative region from fresh platform values without
+    /// requiring callers to retain or reconstruct a complete screen snapshot.
+    public static func deriveSafeVisibleFrame(
+        frame: CGRect,
+        visibleFrame: CGRect,
+        safeAreaInsets: HabitatInsets
+    ) -> CGRect? {
+        guard isNonEmptyFiniteRect(frame), isNonEmptyFiniteRect(visibleFrame),
+              frame.contains(visibleFrame),
+              safeAreaInsets.top + safeAreaInsets.bottom <= frame.height,
+              safeAreaInsets.left + safeAreaInsets.right <= frame.width
+        else { return nil }
+        let safeMinX = frame.minX + safeAreaInsets.left
+        let safeMaxX = frame.maxX - safeAreaInsets.right
+        let safeMinY = frame.minY + safeAreaInsets.bottom
+        let safeMaxY = frame.maxY - safeAreaInsets.top
+        let minX = max(visibleFrame.minX, safeMinX)
+        let maxX = min(visibleFrame.maxX, safeMaxX)
+        let minY = max(visibleFrame.minY, safeMinY)
+        let maxY = min(visibleFrame.maxY, safeMaxY)
+        guard maxX > minX, maxY > minY else { return nil }
+        return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
     }
 
     fileprivate static func isFiniteRect(_ rect: CGRect) -> Bool {
@@ -260,6 +290,24 @@ public struct HabitatPortalArtGeometry: Equatable, Sendable {
             requiredHeadClearance: 46 * scale
         )
     }
+
+    /// Scales a measured art contract to an actual square renderer window.
+    /// This keeps geometry aligned with every supported display-size choice
+    /// without encoding those choices in the platform provider.
+    public func scaled(toPortalWindowSize target: CGSize) -> HabitatPortalArtGeometry? {
+        guard target.width.isFinite, target.height.isFinite,
+              target.width > 0, target.height > 0,
+              portalWindowSize.width > 0, portalWindowSize.height > 0
+        else { return nil }
+        let widthScale = target.width / portalWindowSize.width
+        let heightScale = target.height / portalWindowSize.height
+        guard abs(widthScale - heightScale) < 0.000_001 else { return nil }
+        return HabitatPortalArtGeometry(
+            portalWindowSize: target,
+            gripOffsetFromWindowTop: gripOffsetFromWindowTop * widthScale,
+            requiredHeadClearance: requiredHeadClearance * widthScale
+        )
+    }
 }
 
 /// A value-only habitat surface. `safeVisualBounds` constrains the entire pet
@@ -308,21 +356,28 @@ public struct HabitatTopology: Equatable, Sendable {
         }
     }
 
-    /// Relocation is legal only between explicit opposite endpoints at their
-    /// fully hidden marker, with zero local root translation on both sides.
+    /// Relocation is legal only between selectable same-display surfaces and
+    /// explicit opposite endpoints at their fully hidden marker. Requiring the
+    /// caller's authored capabilities prevents dormant wall geometry from
+    /// becoming an executable route.
     public func permitsInterHabitatRelocation(
         from source: HabitatSurfaceIdentifier,
         exitPortalID: String,
         to destination: HabitatSurfaceIdentifier,
-        entryPortalID: String
+        entryPortalID: String,
+        using capabilities: Set<HabitatCapability>
     ) -> Bool {
-        guard source != destination,
+        guard source != destination, source.displayID == destination.displayID,
               let sourceSurface = surfaces.first(where: { $0.id == source }),
               let destinationSurface = surfaces.first(where: { $0.id == destination }),
+              sourceSurface.isSelectable(using: capabilities),
+              destinationSurface.isSelectable(using: capabilities),
               let exit = sourceSurface.exitPortals.first(where: { $0.id == exitPortalID }),
               let entry = destinationSurface.entryPortals.first(where: { $0.id == entryPortalID })
         else { return false }
-        return exit.requiredMarker == .fullyHidden
+        return exit.direction == .exit
+            && entry.direction == .entry
+            && exit.requiredMarker == .fullyHidden
             && entry.requiredMarker == .fullyHidden
             && exit.localRootTranslation == .zero
             && entry.localRootTranslation == .zero
@@ -351,27 +406,57 @@ public struct HabitatTopology: Equatable, Sendable {
         availability: HabitatGeometryAvailability,
         art: HabitatPortalArtGeometry
     ) -> [HabitatSurface] {
-        let visual = display.visibleFrame
+        let visual = display.safeVisibleFrame
         let floor = surface(
             display: display, kind: .floor,
             interval: HabitatOrientedInterval(axis: .horizontal, fixedCoordinate: visual.minY, start: visual.minX, end: visual.maxX)!,
             normal: .up, bounds: visual, interaction: .authoredHitRegion,
             requirements: .init(), availability: availability
         )
-        let leftWall = surface(
-            display: display, kind: .wallLeft,
-            interval: HabitatOrientedInterval(axis: .vertical, fixedCoordinate: visual.minX, start: visual.minY, end: visual.maxY)!,
-            normal: .right, bounds: visual, interaction: .disabled,
-            requirements: .init([.wallTraversal]), availability: availability
-        )
-        let rightWall = surface(
-            display: display, kind: .wallRight,
-            interval: HabitatOrientedInterval(axis: .vertical, fixedCoordinate: visual.maxX, start: visual.minY, end: visual.maxY)!,
-            normal: .left, bounds: visual, interaction: .disabled,
-            requirements: .init([.wallTraversal]), availability: availability
-        )
+        let walls = wallSurfaces(for: display, art: art, availability: availability)
         let ledges = portalLedges(for: display, art: art, availability: availability)
-        return [floor, leftWall, rightWall] + ledges
+        return [floor] + walls + ledges
+    }
+
+    private static func wallSurfaces(
+        for display: HabitatScreenSnapshot,
+        art: HabitatPortalArtGeometry,
+        availability: HabitatGeometryAvailability
+    ) -> [HabitatSurface] {
+        let visual = display.safeVisibleFrame
+        guard visual.width >= art.portalWindowSize.width,
+              visual.height >= art.portalWindowSize.height
+        else { return [] }
+        let leftBounds = CGRect(
+            x: visual.minX, y: visual.minY,
+            width: art.portalWindowSize.width, height: visual.height
+        )
+        let rightBounds = CGRect(
+            x: visual.maxX - art.portalWindowSize.width, y: visual.minY,
+            width: art.portalWindowSize.width, height: visual.height
+        )
+        return [
+            surface(
+                display: display, kind: .wallLeft,
+                interval: HabitatOrientedInterval(
+                    axis: .vertical, fixedCoordinate: visual.minX,
+                    start: visual.minY, end: visual.maxY
+                )!,
+                normal: .right, bounds: leftBounds,
+                interaction: .supportedVisibleHitRegion,
+                requirements: .init([.wallTraversal]), availability: availability
+            ),
+            surface(
+                display: display, kind: .wallRight,
+                interval: HabitatOrientedInterval(
+                    axis: .vertical, fixedCoordinate: visual.maxX,
+                    start: visual.minY, end: visual.maxY
+                )!,
+                normal: .left, bounds: rightBounds,
+                interaction: .supportedVisibleHitRegion,
+                requirements: .init([.wallTraversal]), availability: availability
+            )
+        ]
     }
 
     private static func portalLedges(
@@ -379,8 +464,9 @@ public struct HabitatTopology: Equatable, Sendable {
         art: HabitatPortalArtGeometry,
         availability: HabitatGeometryAvailability
     ) -> [HabitatSurface] {
-        let visual = display.visibleFrame
-        guard visual.height >= art.portalWindowSize.height else { return [] }
+        let visual = display.safeVisibleFrame
+        guard visual.width >= art.portalWindowSize.width,
+              visual.height >= art.portalWindowSize.height else { return [] }
         let topBounds = { (range: ClosedRange<CGFloat>) in
             CGRect(
                 x: range.lowerBound,
@@ -390,17 +476,22 @@ public struct HabitatTopology: Equatable, Sendable {
             )
         }
         let candidates: [(HabitatSurfaceKind, ClosedRange<CGFloat>)]
-        if let left = display.auxiliaryTopLeftArea,
-           let right = display.auxiliaryTopRightArea,
-           left.maxX < right.minX {
-            candidates = [
-                (.notchLeft, left.minX...left.maxX),
-                (.notchRight, right.minX...right.maxX)
-            ]
-        } else {
+        switch (display.auxiliaryTopLeftArea, display.auxiliaryTopRightArea) {
+        case let (left?, right?):
+            guard left.minY >= visual.maxY, right.minY >= visual.maxY,
+                  left.maxX < right.minX,
+                  let leftRange = horizontalRange(of: left, clippedTo: visual),
+                  let rightRange = horizontalRange(of: right, clippedTo: visual)
+            else { return [] }
+            candidates = [(.notchLeft, leftRange), (.notchRight, rightRange)]
+        case (nil, nil):
             let halfWidth = art.portalWindowSize.width / 2
             let center = visual.midX
             candidates = [(.topShelf, (center - halfWidth)...(center + halfWidth))]
+        default:
+            // One-sided or otherwise incomplete auxiliary geometry could place
+            // a portal under protected hardware, so it exposes no top route.
+            return []
         }
         return candidates.compactMap { kind, range in
             guard range.upperBound - range.lowerBound >= art.portalWindowSize.width,
@@ -419,6 +510,16 @@ public struct HabitatTopology: Equatable, Sendable {
         }
     }
 
+    private static func horizontalRange(
+        of area: CGRect,
+        clippedTo bounds: CGRect
+    ) -> ClosedRange<CGFloat>? {
+        let lower = max(area.minX, bounds.minX)
+        let upper = min(area.maxX, bounds.maxX)
+        guard upper > lower else { return nil }
+        return lower...upper
+    }
+
     private static func surface(
         display: HabitatScreenSnapshot,
         kind: HabitatSurfaceKind,
@@ -432,9 +533,9 @@ public struct HabitatTopology: Equatable, Sendable {
         let id = HabitatSurfaceIdentifier(displayID: display.displayID, kind: kind)
         let connections: Set<HabitatSurfaceKind> = {
             switch kind {
-            case .floor: [.topShelf, .notchLeft, .notchRight]
+            case .floor: [.topShelf, .notchLeft, .notchRight, .wallLeft, .wallRight]
             case .topShelf, .notchLeft, .notchRight: [.floor]
-            case .wallLeft, .wallRight: []
+            case .wallLeft, .wallRight: [.floor]
             }
         }()
         let entries = connections.isEmpty ? [] : [HabitatPortal(

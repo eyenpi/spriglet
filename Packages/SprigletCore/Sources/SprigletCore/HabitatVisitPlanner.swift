@@ -3,7 +3,7 @@ import Foundation
 /// Content-owned identifiers for one finite portal visit. Keeping these names in
 /// data prevents the planner from acquiring a fixed clip enum as the animation
 /// library grows.
-public struct HabitatVisitContent: Equatable, Sendable {
+public struct HabitatVisitContent: Codable, Equatable, Sendable {
     public let floorExitIntentID: String
     public let ledgeEntryIntentID: String
     public let edgeLookIntentID: String
@@ -41,6 +41,7 @@ public struct HabitatVisitContent: Equatable, Sendable {
         ]
         guard values.allSatisfy(Self.isValidIdentifier), Set(values.prefix(7)).count == 7,
               hiddenPoseID != ledgePoseID, hiddenPoseID != floorPoseID,
+              hiddenPoseID != hangingPoseID,
               ledgePoseID != hangingPoseID, ledgePoseID != floorPoseID,
               hangingPoseID != floorPoseID,
               fullyHiddenEventID != settledMarkerID
@@ -58,6 +59,66 @@ public struct HabitatVisitContent: Equatable, Sendable {
         self.floorPoseID = floorPoseID
         self.fullyHiddenEventID = fullyHiddenEventID
         self.settledMarkerID = settledMarkerID
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case floorExitIntentID
+        case ledgeEntryIntentID
+        case edgeLookIntentID
+        case dangleIntentID
+        case pullUpIntentID
+        case ledgeExitIntentID
+        case floorReentryIntentID
+        case hiddenPoseID
+        case ledgePoseID
+        case hangingPoseID
+        case floorPoseID
+        case fullyHiddenEventID
+        case settledMarkerID
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        guard let content = Self(
+            floorExitIntentID: try container.decode(String.self, forKey: .floorExitIntentID),
+            ledgeEntryIntentID: try container.decode(String.self, forKey: .ledgeEntryIntentID),
+            edgeLookIntentID: try container.decode(String.self, forKey: .edgeLookIntentID),
+            dangleIntentID: try container.decode(String.self, forKey: .dangleIntentID),
+            pullUpIntentID: try container.decode(String.self, forKey: .pullUpIntentID),
+            ledgeExitIntentID: try container.decode(String.self, forKey: .ledgeExitIntentID),
+            floorReentryIntentID: try container.decode(String.self, forKey: .floorReentryIntentID),
+            hiddenPoseID: try container.decode(String.self, forKey: .hiddenPoseID),
+            ledgePoseID: try container.decode(String.self, forKey: .ledgePoseID),
+            hangingPoseID: try container.decode(String.self, forKey: .hangingPoseID),
+            floorPoseID: try container.decode(String.self, forKey: .floorPoseID),
+            fullyHiddenEventID: try container.decode(String.self, forKey: .fullyHiddenEventID),
+            settledMarkerID: try container.decode(String.self, forKey: .settledMarkerID)
+        ) else {
+            throw DecodingError.dataCorrupted(
+                .init(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Habitat visit content has malformed or conflicting identifiers."
+                )
+            )
+        }
+        self = content
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(floorExitIntentID, forKey: .floorExitIntentID)
+        try container.encode(ledgeEntryIntentID, forKey: .ledgeEntryIntentID)
+        try container.encode(edgeLookIntentID, forKey: .edgeLookIntentID)
+        try container.encode(dangleIntentID, forKey: .dangleIntentID)
+        try container.encode(pullUpIntentID, forKey: .pullUpIntentID)
+        try container.encode(ledgeExitIntentID, forKey: .ledgeExitIntentID)
+        try container.encode(floorReentryIntentID, forKey: .floorReentryIntentID)
+        try container.encode(hiddenPoseID, forKey: .hiddenPoseID)
+        try container.encode(ledgePoseID, forKey: .ledgePoseID)
+        try container.encode(hangingPoseID, forKey: .hangingPoseID)
+        try container.encode(floorPoseID, forKey: .floorPoseID)
+        try container.encode(fullyHiddenEventID, forKey: .fullyHiddenEventID)
+        try container.encode(settledMarkerID, forKey: .settledMarkerID)
     }
 
     private static func isValidIdentifier(_ value: String) -> Bool {
@@ -95,11 +156,13 @@ public struct HabitatVisitPlan: Equatable, Sendable {
               [.topShelf, .notchLeft, .notchRight].contains(destination.kind),
               topology.permitsInterHabitatRelocation(
                 from: source, exitPortalID: sourceExitPortalID,
-                to: destination, entryPortalID: destinationEntryPortalID
+                to: destination, entryPortalID: destinationEntryPortalID,
+                using: [.ledgePortalTraversal]
               ),
               topology.permitsInterHabitatRelocation(
                 from: destination, exitPortalID: destinationExitPortalID,
-                to: source, entryPortalID: sourceEntryPortalID
+                to: source, entryPortalID: sourceEntryPortalID,
+                using: [.ledgePortalTraversal]
               )
         else { return nil }
         self.source = source
@@ -193,10 +256,10 @@ public struct HabitatVisitPlanner: Sendable {
                   marker.poseID == content.hiddenPoseID else { return [] }
             phase = .enteringFloor
             if cancelRequested {
-                return [
-                    .restoreFloor(plan.source),
-                    .playIntent(content.floorReentryIntentID)
-                ]
+                // The floor exit reached its hidden endpoint without moving the
+                // host. Re-enter in place; a restore permit is only valid after
+                // an actual ledge relocation.
+                return [.playIntent(content.floorReentryIntentID)]
             }
             phase = .enteringLedge(cancelRequested: false)
             return [

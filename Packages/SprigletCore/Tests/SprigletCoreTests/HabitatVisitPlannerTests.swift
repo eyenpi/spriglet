@@ -45,7 +45,7 @@ struct HabitatVisitPlannerTests {
         #expect(planner.cancel() == [])
         #expect(planner.phase == .leavingFloor(cancelRequested: true))
         #expect(planner.receive(.init(id: "fullyHidden", poseID: "hidden")) == [
-            .restoreFloor(plan.source), .playIntent("visit.floor-reentry")
+            .playIntent("visit.floor-reentry")
         ])
         #expect(planner.receive(.init(id: "settled", poseID: "ready")) == [.completed])
     }
@@ -94,6 +94,13 @@ struct HabitatVisitPlannerTests {
             ledgeExitIntentID: "exit", floorReentryIntentID: "entry",
             hiddenPoseID: "hidden", ledgePoseID: "peek", hangingPoseID: "hang",
             floorPoseID: "ready", fullyHiddenEventID: "hidden event", settledMarkerID: "settled"
+        ) == nil)
+        #expect(HabitatVisitContent(
+            floorExitIntentID: "exit-floor", ledgeEntryIntentID: "enter-ledge",
+            edgeLookIntentID: "edge", dangleIntentID: "dangle", pullUpIntentID: "pull",
+            ledgeExitIntentID: "exit-ledge", floorReentryIntentID: "enter-floor",
+            hiddenPoseID: "hang", ledgePoseID: "peek", hangingPoseID: "hang",
+            floorPoseID: "ready", fullyHiddenEventID: "fullyHidden", settledMarkerID: "settled"
         ) == nil)
     }
 

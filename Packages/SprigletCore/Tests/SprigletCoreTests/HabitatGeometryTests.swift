@@ -8,7 +8,7 @@ struct HabitatGeometryTests {
     private let primaryID = UUID(uuidString: "D15A1A00-0000-4000-8000-000000000501")!
     private let secondaryID = UUID(uuidString: "D15A1A00-0000-4000-8000-000000000502")!
 
-    @Test("Non-notched screens produce floor, floating top shelf, and disabled walls")
+    @Test("Non-notched screens produce capability-gated surfaces inside the safe visible frame")
     func basicSurfaces() throws {
         let display = try #require(snapshot())
         let topology = try #require(HabitatTopology(displays: [display]))
@@ -27,8 +27,13 @@ struct HabitatGeometryTests {
         #expect(display.dockAndMenuInsets.top == 30)
         #expect(!shelf.isSelectable(using: []))
         #expect(shelf.isSelectable(using: [.ledgePortalTraversal]))
-        #expect(!wall.isSelectable(using: [.wallTraversal]))
+        #expect(!wall.isSelectable(using: [.ledgePortalTraversal]))
+        #expect(wall.isSelectable(using: [.wallTraversal]))
+        #expect(wall.normal == .right)
+        #expect(wall.safeVisualBounds == CGRect(x: 0, y: 0, width: 96, height: 870))
         #expect(wall.capabilityRequirements.allOf == [.wallTraversal])
+        #expect(wall.entryPortals.map(\.id) == ["wallLeft.entry"])
+        #expect(wall.exitPortals.map(\.id) == ["wallLeft.exit"])
     }
 
     @Test("Notch shelves use auxiliary areas and the complete portal window remains below the strip")
@@ -64,13 +69,103 @@ struct HabitatGeometryTests {
         #expect(HabitatPortalArtGeometry.acorn(scale: 0) == nil)
     }
 
-    @Test("A short visible frame keeps floor geometry but disables a portal candidate that cannot fit")
-    func shortFrameOmitsPortal() throws {
-        let display = try #require(snapshot(visible: CGRect(x: 0, y: 0, width: 800, height: 95)))
+    @Test("A visible frame shorter or narrower than the portal keeps only safe floor geometry")
+    func undersizedFrameOmitsPortal() throws {
+        for visible in [
+            CGRect(x: 0, y: 0, width: 800, height: 95),
+            CGRect(x: 0, y: 0, width: 95, height: 800)
+        ] {
+            let display = try #require(snapshot(frame: visible, visible: visible))
+            let topology = try #require(HabitatTopology(displays: [display]))
+            #expect(surface(.floor, in: topology) != nil)
+            #expect(surface(.topShelf, in: topology) == nil)
+            #expect(surface(.notchLeft, in: topology) == nil)
+            #expect(surface(.wallLeft, in: topology) == nil)
+        }
+    }
+
+    @Test("Every Dock edge and an auto-hidden menu bar use the intersected safe visible frame")
+    func dockAndAutoHideGeometry() throws {
+        let frame = CGRect(x: 0, y: 0, width: 1_440, height: 900)
+        let cases: [(visible: CGRect, expected: CGRect)] = [
+            (
+                CGRect(x: 0, y: 80, width: 1_440, height: 790),
+                CGRect(x: 0, y: 80, width: 1_440, height: 790)
+            ),
+            (
+                CGRect(x: 100, y: 0, width: 1_340, height: 870),
+                CGRect(x: 100, y: 0, width: 1_340, height: 870)
+            ),
+            (
+                CGRect(x: 0, y: 0, width: 1_340, height: 870),
+                CGRect(x: 0, y: 0, width: 1_340, height: 870)
+            ),
+            // Auto-hidden menu bar: visibleFrame expands, while safeAreaInsets
+            // continue to protect the camera/menu strip.
+            (frame, CGRect(x: 0, y: 0, width: 1_440, height: 870))
+        ]
+
+        for (visible, expected) in cases {
+            let display = try #require(snapshot(frame: frame, visible: visible))
+            let topology = try #require(HabitatTopology(displays: [display]))
+            let floor = try #require(surface(.floor, in: topology))
+            let shelf = try #require(surface(.topShelf, in: topology))
+            let leftWall = try #require(surface(.wallLeft, in: topology))
+            let rightWall = try #require(surface(.wallRight, in: topology))
+
+            #expect(display.safeVisibleFrame == expected)
+            #expect(floor.interval.fixedCoordinate == expected.minY)
+            #expect(floor.interval.start == expected.minX)
+            #expect(floor.interval.end == expected.maxX)
+            #expect(shelf.interval.fixedCoordinate == expected.maxY)
+            #expect(shelf.safeVisualBounds.maxY == expected.maxY)
+            #expect(leftWall.interval.fixedCoordinate == expected.minX)
+            #expect(rightWall.interval.fixedCoordinate == expected.maxX)
+            #expect(expected.contains(leftWall.safeVisualBounds))
+            #expect(expected.contains(rightWall.safeVisualBounds))
+        }
+    }
+
+    @Test("Safe-area insets constrain every edge independently of visible-frame insets")
+    func safeAreaIntersection() throws {
+        let frame = CGRect(x: -100, y: 50, width: 1_000, height: 700)
+        let insets = try #require(HabitatInsets(top: 30, left: 12, bottom: 10, right: 18))
+        let display = try #require(snapshot(
+            frame: frame,
+            visible: frame,
+            safeInsets: insets
+        ))
+        let expected = CGRect(x: -88, y: 60, width: 970, height: 660)
         let topology = try #require(HabitatTopology(displays: [display]))
-        #expect(surface(.floor, in: topology) != nil)
-        #expect(surface(.topShelf, in: topology) == nil)
-        #expect(surface(.notchLeft, in: topology) == nil)
+
+        #expect(display.safeVisibleFrame == expected)
+        #expect(HabitatScreenSnapshot.deriveSafeVisibleFrame(
+            frame: frame,
+            visibleFrame: frame,
+            safeAreaInsets: insets
+        ) == expected)
+        #expect(surface(.floor, in: topology)?.interval.fixedCoordinate == expected.minY)
+        #expect(surface(.wallLeft, in: topology)?.interval.fixedCoordinate == expected.minX)
+        #expect(surface(.wallRight, in: topology)?.interval.fixedCoordinate == expected.maxX)
+        #expect(surface(.topShelf, in: topology)?.interval.fixedCoordinate == expected.maxY)
+        #expect(topology.surfaces.allSatisfy { expected.contains($0.safeVisualBounds) })
+    }
+
+    @Test("Incomplete or contradictory notch geometry exposes no top portal")
+    func malformedNotchGeometry() throws {
+        let left = CGRect(x: 0, y: 870, width: 600, height: 30)
+        let oneSided = try #require(snapshot(left: left))
+        let oneSidedTopology = try #require(HabitatTopology(displays: [oneSided]))
+        #expect(surface(.topShelf, in: oneSidedTopology) == nil)
+        #expect(surface(.notchLeft, in: oneSidedTopology) == nil)
+        #expect(surface(.notchRight, in: oneSidedTopology) == nil)
+
+        let rightOverlapping = CGRect(x: 500, y: 870, width: 940, height: 30)
+        let overlapping = try #require(snapshot(left: left, right: rightOverlapping))
+        let overlappingTopology = try #require(HabitatTopology(displays: [overlapping]))
+        #expect(surface(.topShelf, in: overlappingTopology) == nil)
+        #expect(surface(.notchLeft, in: overlappingTopology) == nil)
+        #expect(surface(.notchRight, in: overlappingTopology) == nil)
     }
 
     @Test("Negative origins, mixed scales, and disjoint nonrectangular layouts remain valid")
@@ -117,6 +212,31 @@ struct HabitatGeometryTests {
         ))
         let topology = try #require(HabitatTopology(displays: [primary, overlapping]))
         #expect(topology.surfaces.allSatisfy { $0.availability == .unselectableOverlappingDisplay })
+        #expect(!topology.permitsInterHabitatRelocation(
+            from: .init(displayID: primaryID, kind: .floor),
+            exitPortalID: "floor.exit",
+            to: .init(displayID: primaryID, kind: .topShelf),
+            entryPortalID: "topShelf.entry",
+            using: [.ledgePortalTraversal]
+        ))
+    }
+
+    @Test("Portals never infer a connection between displays")
+    func crossDisplayPortal() throws {
+        let primary = try #require(snapshot(isMain: true))
+        let secondary = try #require(snapshot(
+            id: secondaryID,
+            frame: CGRect(x: 1_440, y: 200, width: 1_280, height: 720),
+            visible: CGRect(x: 1_440, y: 200, width: 1_280, height: 690)
+        ))
+        let topology = try #require(HabitatTopology(displays: [primary, secondary]))
+        #expect(!topology.permitsInterHabitatRelocation(
+            from: .init(displayID: primaryID, kind: .floor),
+            exitPortalID: "floor.exit",
+            to: .init(displayID: secondaryID, kind: .topShelf),
+            entryPortalID: "topShelf.entry",
+            using: [.ledgePortalTraversal]
+        ))
     }
 
     @Test("Only explicit fully hidden zero-root portal pairs can relocate between habitats")
@@ -124,14 +244,38 @@ struct HabitatGeometryTests {
         let topology = try #require(HabitatTopology(displays: [snapshot()!]))
         let floor = HabitatSurfaceIdentifier(displayID: primaryID, kind: .floor)
         let shelf = HabitatSurfaceIdentifier(displayID: primaryID, kind: .topShelf)
+        let wall = HabitatSurfaceIdentifier(displayID: primaryID, kind: .wallLeft)
         #expect(topology.permitsInterHabitatRelocation(
-            from: floor, exitPortalID: "floor.exit", to: shelf, entryPortalID: "topShelf.entry"
+            from: floor, exitPortalID: "floor.exit", to: shelf, entryPortalID: "topShelf.entry",
+            using: [.ledgePortalTraversal]
         ))
         #expect(!topology.permitsInterHabitatRelocation(
-            from: floor, exitPortalID: "floor.entry", to: shelf, entryPortalID: "topShelf.entry"
+            from: floor, exitPortalID: "floor.entry", to: shelf, entryPortalID: "topShelf.entry",
+            using: [.ledgePortalTraversal]
         ))
         #expect(!topology.permitsInterHabitatRelocation(
-            from: floor, exitPortalID: "floor.exit", to: shelf, entryPortalID: "missing"
+            from: floor, exitPortalID: "floor.exit", to: shelf, entryPortalID: "missing",
+            using: [.ledgePortalTraversal]
+        ))
+        #expect(!topology.permitsInterHabitatRelocation(
+            from: floor, exitPortalID: "floor.exit", to: shelf, entryPortalID: "topShelf.entry",
+            using: []
+        ))
+        #expect(!topology.permitsInterHabitatRelocation(
+            from: floor, exitPortalID: "floor.exit", to: wall, entryPortalID: "wallLeft.entry",
+            using: [.ledgePortalTraversal]
+        ))
+        #expect(topology.permitsInterHabitatRelocation(
+            from: floor, exitPortalID: "floor.exit", to: wall, entryPortalID: "wallLeft.entry",
+            using: [.wallTraversal]
+        ))
+        #expect(!topology.permitsInterHabitatRelocation(
+            from: wall, exitPortalID: "wallLeft.exit", to: floor, entryPortalID: "floor.entry",
+            using: [.ledgePortalTraversal]
+        ))
+        #expect(topology.permitsInterHabitatRelocation(
+            from: wall, exitPortalID: "wallLeft.exit", to: floor, entryPortalID: "floor.entry",
+            using: [.wallTraversal]
         ))
         #expect(HabitatPortal(
             id: "bad", direction: .exit, localRootTranslation: CGPoint(x: 1, y: 0),
@@ -152,6 +296,13 @@ struct HabitatGeometryTests {
         #expect(HabitatScreenSnapshot(
             displayID: primaryID,
             frame: CGRect(x: 0, y: 0, width: 800, height: 600),
+            visibleFrame: CGRect(x: 0, y: 580, width: 800, height: 20),
+            safeAreaInsets: HabitatInsets(top: 30, left: 0, bottom: 0, right: 0)!,
+            backingScale: 2
+        ) == nil)
+        #expect(HabitatScreenSnapshot(
+            displayID: primaryID,
+            frame: CGRect(x: 0, y: 0, width: 800, height: 600),
             visibleFrame: CGRect(x: 0, y: 0, width: 800, height: 580),
             safeAreaInsets: insets,
             auxiliaryTopLeftArea: CGRect(x: CGFloat.nan, y: 0, width: 10, height: 10),
@@ -166,13 +317,14 @@ struct HabitatGeometryTests {
         left: CGRect? = nil,
         right: CGRect? = nil,
         backingScale: CGFloat = 2,
-        isMain: Bool = false
+        isMain: Bool = false,
+        safeInsets: HabitatInsets? = nil
     ) -> HabitatScreenSnapshot? {
         HabitatScreenSnapshot(
             displayID: id ?? primaryID,
             frame: frame,
             visibleFrame: visible,
-            safeAreaInsets: HabitatInsets(top: 30, left: 0, bottom: 0, right: 0)!,
+            safeAreaInsets: safeInsets ?? HabitatInsets(top: 30, left: 0, bottom: 0, right: 0)!,
             auxiliaryTopLeftArea: left,
             auxiliaryTopRightArea: right,
             backingScale: backingScale,

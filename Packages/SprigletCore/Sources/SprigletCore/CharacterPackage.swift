@@ -376,6 +376,9 @@ public struct CharacterPackage: Codable, Equatable, Sendable {
     public let proceduralChannels: [String: ProceduralChannel]
     public let hitRegions: [String: HitRegion]
     public let semanticBindings: [String: String]
+    /// Optional, data-owned contract for one finite floor-to-ledge visit.
+    /// Characters that omit it remain fully valid and expose no habitat action.
+    public let habitatVisitContent: HabitatVisitContent?
     public let animationGraph: CharacterAnimationGraph
     public let resourceBudget: ResourceBudget
 
@@ -396,6 +399,7 @@ public struct CharacterPackage: Codable, Equatable, Sendable {
         proceduralChannels: [String: ProceduralChannel] = [:],
         hitRegions: [String: HitRegion] = [:],
         semanticBindings: [String: String],
+        habitatVisitContent: HabitatVisitContent? = nil,
         animationGraph: CharacterAnimationGraph,
         resourceBudget: ResourceBudget
     ) {
@@ -415,6 +419,7 @@ public struct CharacterPackage: Codable, Equatable, Sendable {
         self.proceduralChannels = proceduralChannels
         self.hitRegions = hitRegions
         self.semanticBindings = semanticBindings
+        self.habitatVisitContent = habitatVisitContent
         self.animationGraph = animationGraph
         self.resourceBudget = resourceBudget
     }
@@ -437,6 +442,7 @@ public struct CharacterPackage: Codable, Equatable, Sendable {
         try validateLayersAndChannels()
         try validatePosesAndClips()
         try animationGraph.validate(package: self)
+        try validateHabitatVisitContent()
     }
 
     public init(
@@ -626,6 +632,7 @@ public struct CharacterPackage: Codable, Equatable, Sendable {
             proceduralChannels: proceduralChannels,
             hitRegions: hitRegions,
             semanticBindings: semanticBindings,
+            habitatVisitContent: habitatVisitContent,
             animationGraph: animationGraph,
             resourceBudget: resourceBudget
         )
@@ -816,6 +823,87 @@ public struct CharacterPackage: Codable, Equatable, Sendable {
         for (binding, intent) in semanticBindings {
             guard Self.isIdentifier(binding), animationGraph.intents[intent] != nil else {
                 throw CharacterPackageError.invalid("Invalid semantic binding \(binding).")
+            }
+        }
+    }
+
+    private func validateHabitatVisitContent() throws {
+        guard let content = habitatVisitContent else { return }
+        guard featurePolicy.optional.contains("animation.habitat-portals-v1"),
+              Set(["localPortal", "ledgeGrip"]).isSubset(of: Set(capabilities)) else {
+            throw CharacterPackageError.invalid("Habitat visit content requires its declared feature and capabilities.")
+        }
+
+        let upperHabitats = ["topShelf", "notchLeft", "notchRight"]
+        let roles: [(
+            intentID: String, startPoseID: String, targetPoseID: String,
+            habitatIDs: [String], markerID: String, semantic: Bool
+        )] = [
+            (content.floorExitIntentID, content.floorPoseID, content.hiddenPoseID,
+             ["floor"], content.fullyHiddenEventID, true),
+            (content.ledgeEntryIntentID, content.hiddenPoseID, content.ledgePoseID,
+             upperHabitats, content.settledMarkerID, false),
+            (content.edgeLookIntentID, content.ledgePoseID, content.ledgePoseID,
+             upperHabitats, content.settledMarkerID, false),
+            (content.dangleIntentID, content.ledgePoseID, content.hangingPoseID,
+             upperHabitats, content.settledMarkerID, false),
+            (content.pullUpIntentID, content.hangingPoseID, content.ledgePoseID,
+             upperHabitats, content.settledMarkerID, false),
+            (content.ledgeExitIntentID, content.ledgePoseID, content.hiddenPoseID,
+             upperHabitats, content.fullyHiddenEventID, true),
+            (content.floorReentryIntentID, content.hiddenPoseID, content.floorPoseID,
+             ["floor"], content.settledMarkerID, false)
+        ]
+        guard content.floorPoseID == animationGraph.defaultPoseID,
+              [content.hiddenPoseID, content.ledgePoseID, content.hangingPoseID, content.floorPoseID]
+                .allSatisfy({ poses[$0] != nil }) else {
+            throw CharacterPackageError.invalid("Habitat visit content references an invalid stable pose.")
+        }
+
+        for role in roles {
+            guard let intent = animationGraph.intents[role.intentID],
+                  intent.targetPoseID == role.targetPoseID,
+                  let terminalClipID = intent.clipIDs.last,
+                  let terminalClip = clips[terminalClipID],
+                  terminalClip.endPoseID == role.targetPoseID,
+                  let terminalFrameIndex = terminalClip.frames.indices.last else {
+                throw CharacterPackageError.invalid("Habitat visit content references an invalid intent endpoint.")
+            }
+            let hasMarker = role.semantic
+                ? terminalClip.semanticEvents.contains {
+                    $0.frameIndex == terminalFrameIndex && $0.id == role.markerID
+                }
+                : terminalClip.interruptionMarkers.contains {
+                    $0.frameIndex == terminalFrameIndex && $0.id == role.markerID
+                }
+            guard hasMarker else {
+                throw CharacterPackageError.invalid("Habitat visit content is missing its terminal marker contract.")
+            }
+
+            for habitatID in role.habitatIDs {
+                let context = CharacterPlaybackContext(
+                    capabilityIDs: Set(capabilities),
+                    habitatID: habitatID,
+                    orientationID: "upright",
+                    reduceMotion: false
+                )
+                guard let plan = try? animationGraph.plan(
+                    for: role.intentID,
+                    from: role.startPoseID,
+                    clips: clips,
+                    context: context
+                ), plan.resolvedIntentID == role.intentID,
+                      plan.startPoseID == role.startPoseID,
+                      plan.endPoseID == role.targetPoseID,
+                      !plan.clipIDs.isEmpty,
+                      plan.clipIDs == intent.clipIDs,
+                      plan.clipIDs.allSatisfy({ clipID in
+                          clips[clipID]?.frames.allSatisfy { $0.rootOffsetPoints == .zero } == true
+                      }) else {
+                    throw CharacterPackageError.invalid(
+                        "Habitat visit content does not provide an exact zero-root route."
+                    )
+                }
             }
         }
     }

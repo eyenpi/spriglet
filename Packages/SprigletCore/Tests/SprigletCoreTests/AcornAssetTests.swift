@@ -6,10 +6,8 @@ import Testing
 struct AcornAssetTests {
     @Test("Shipping schema 3 preserves timing and pairs every ready boundary with the rest rig")
     func layeredPackage() throws {
-        var root = URL(fileURLWithPath: #filePath)
-        for _ in 0..<5 { root.deleteLastPathComponent() }
-        let package = try CharacterPackage.decode(Data(contentsOf:
-            root.appendingPathComponent("Sources/Spriglet/Resources/AcornHopper/character.json")))
+        let package = try CharacterPackage.decode(packageData())
+        let root = repositoryRoot()
         let legacy = try manifest()
         let ready = try #require(package.poses[package.animationGraph.defaultPoseID])
         let canonical = try #require(ready.stillFrame)
@@ -44,11 +42,103 @@ struct AcornAssetTests {
         })
     }
 
+    @Test("Habitat visit roles and terminal markers are package-owned and fail closed")
+    func habitatVisitContract() throws {
+        let data = try packageData()
+        let package = try CharacterPackage.decode(data)
+        let content = try #require(package.habitatVisitContent)
+        #expect(content.floorExitIntentID == "habitat.floorExit")
+        #expect(content.ledgeEntryIntentID == "habitat.peekIn")
+        #expect(content.hiddenPoseID == "portal.hidden")
+        #expect(content.floorPoseID == package.animationGraph.defaultPoseID)
+        #expect(content.fullyHiddenEventID == "fullyHidden")
+        #expect(content.settledMarkerID == "settled")
+        for size in PetDisplaySize.allCases {
+            #expect(try package.scaled(to: size).habitatVisitContent == content)
+        }
+
+        var malformed = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        var visit = try #require(malformed["habitatVisitContent"] as? [String: Any])
+        visit["settledMarkerID"] = "missingTerminalMarker"
+        malformed["habitatVisitContent"] = visit
+        #expect(throws: CharacterPackageError.self) {
+            try CharacterPackage.decode(JSONSerialization.data(withJSONObject: malformed))
+        }
+
+        malformed = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        visit = try #require(malformed["habitatVisitContent"] as? [String: Any])
+        visit["edgeLookIntentID"] = visit["ledgeEntryIntentID"]
+        malformed["habitatVisitContent"] = visit
+        #expect(throws: DecodingError.self) {
+            try CharacterPackage.decode(JSONSerialization.data(withJSONObject: malformed))
+        }
+
+        malformed = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        visit = try #require(malformed["habitatVisitContent"] as? [String: Any])
+        visit["hiddenPoseID"] = visit["hangingPoseID"]
+        malformed["habitatVisitContent"] = visit
+        #expect(throws: DecodingError.self) {
+            try CharacterPackage.decode(JSONSerialization.data(withJSONObject: malformed))
+        }
+
+        malformed = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        var graph = try #require(malformed["animationGraph"] as? [String: Any])
+        var intents = try #require(graph["intents"] as? [String: Any])
+        var edgeLook = try #require(intents["habitat.edgeLook"] as? [String: Any])
+        edgeLook["replaysAtTarget"] = false
+        intents["habitat.edgeLook"] = edgeLook
+        graph["intents"] = intents
+        malformed["animationGraph"] = graph
+        #expect(throws: CharacterPackageError.self) {
+            try CharacterPackage.decode(JSONSerialization.data(withJSONObject: malformed))
+        }
+
+        malformed = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        var clips = try #require(malformed["clips"] as? [String: Any])
+        var edgeLookClip = try #require(clips["habitat.edgeLook"] as? [String: Any])
+        var requirements = try #require(edgeLookClip["requirements"] as? [String: Any])
+        requirements["orientationIDs"] = ["sideways"]
+        edgeLookClip["requirements"] = requirements
+        clips["habitat.edgeLook"] = edgeLookClip
+        malformed["clips"] = clips
+        #expect(throws: CharacterPackageError.self) {
+            try CharacterPackage.decode(JSONSerialization.data(withJSONObject: malformed))
+        }
+
+        malformed = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        clips = try #require(malformed["clips"] as? [String: Any])
+        edgeLookClip = try #require(clips["habitat.edgeLook"] as? [String: Any])
+        var frames = try #require(edgeLookClip["frames"] as? [[String: Any]])
+        var movingFrame = frames[1]
+        movingFrame["rootOffsetPoints"] = ["x": 1.0, "y": 0.0]
+        frames[1] = movingFrame
+        edgeLookClip["frames"] = frames
+        clips["habitat.edgeLook"] = edgeLookClip
+        malformed["clips"] = clips
+        #expect(throws: CharacterPackageError.self) {
+            try CharacterPackage.decode(JSONSerialization.data(withJSONObject: malformed))
+        }
+
+        malformed.removeValue(forKey: "habitatVisitContent")
+        let withoutVisit = try CharacterPackage.decode(JSONSerialization.data(withJSONObject: malformed))
+        #expect(withoutVisit.habitatVisitContent == nil)
+    }
+
     private func manifest() throws -> SproutSampleManifest {
+        return try SproutSampleManifest.decode(Data(contentsOf:
+            repositoryRoot().appendingPathComponent("Sources/Spriglet/Resources/AcornHopper/manifest.json")))
+    }
+
+    private func packageData() throws -> Data {
+        try Data(contentsOf: repositoryRoot().appendingPathComponent(
+            "Sources/Spriglet/Resources/AcornHopper/character.json"
+        ))
+    }
+
+    private func repositoryRoot() -> URL {
         var root = URL(fileURLWithPath: #filePath)
         for _ in 0..<5 { root.deleteLastPathComponent() }
-        return try SproutSampleManifest.decode(Data(contentsOf:
-            root.appendingPathComponent("Sources/Spriglet/Resources/AcornHopper/manifest.json")))
+        return root
     }
 
     @Test("A single injected definition identifies the production pet")
