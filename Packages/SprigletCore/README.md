@@ -17,8 +17,6 @@ can mature while the pointer is still, using a semantic deadline rather than
 polling. The native coordinator and autonomous behavior share one replaceable
 earliest-deadline task. Event coalescing is capped at 15 Hz, or 10 Hz in Low Power.
 
-`HabitatProvider` supplies validated value geometry with a stable display UUID. The initial `ConservativeFloorHabitatProvider` delegates to `PetPlacement`, preserving existing placement at screen edges, negative display coordinates, and tight usable areas. The host rebuilds geometry from current screens rather than retaining `NSScreen` instances.
-
 ## Rendering boundary
 
 `CharacterPackage` validates schema 3 geometry, paths, capabilities, channel ranges,
@@ -42,6 +40,6 @@ Platform notifications live in `AppKitEnvironmentSource`. Its typed observation 
 
 ## Validation
 
-Run `./scripts/test.sh` from the repository root. Tests replay environment traces, cover independent suspension causes and autonomy blockers, and compare the adapter's exact suggestions and feedback with the legacy planner. Habitat tests cover malformed and negative-coordinate geometry. Native lifecycle validation lives in [EnvironmentValidation](../../tools/EnvironmentValidation/README.md), with full runtime regressions in [EverydayExperienceValidation](../../tools/EverydayExperienceValidation/README.md) and [PersonalityValidation](../../tools/PersonalityValidation/README.md).
+Run `./scripts/test.sh` from the repository root. Tests replay environment traces, cover independent suspension causes and autonomy blockers, and compare the adapter's exact suggestions and feedback with the legacy planner. Placement tests cover malformed and negative-coordinate geometry. Native lifecycle validation lives in [EnvironmentValidation](../../tools/EnvironmentValidation/README.md), with full runtime regressions in [EverydayExperienceValidation](../../tools/EverydayExperienceValidation/README.md) and [PersonalityValidation](../../tools/PersonalityValidation/README.md).
 
 AppKit lifecycle integration uses current [NotificationCenter messages](https://developer.apple.com/documentation/foundation/notification-center-messages) and [NSWorkspace notifications](https://developer.apple.com/documentation/appkit/nsworkspace). App and harness builds enforce Swift 6 concurrency against the selected SDK, targeting macOS 26 or later.

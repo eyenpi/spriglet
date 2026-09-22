@@ -878,7 +878,6 @@ final class PetRuntime {
         receive(.interaction(isInteracting))
         receive(.animating(isAnimating))
         receive(.moving(isMoving))
-        receive(.habitat(desktop?.currentHabitat))
         receive(.petBounds(desktop.map {
             CGRect(origin: $0.effectiveOrigin, size: renderer.displaySize)
         }))

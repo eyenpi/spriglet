@@ -19,7 +19,6 @@ public enum WorldReducer {
         var isAnimating = snapshot.isAnimating
         var isMoving = snapshot.isMoving
         var activityLevel = snapshot.activityLevel
-        var habitat = snapshot.habitat
         var petBounds = snapshot.petBounds
         var pointer = snapshot.pointer
         var attention = snapshot.attention
@@ -48,8 +47,6 @@ public enum WorldReducer {
             isMoving = value
         case let .activityLevel(value):
             activityLevel = value
-        case let .habitat(value):
-            habitat = value
         case let .petBounds(value):
             petBounds = value.flatMap { bounds in
                 guard bounds.minX.isFinite, bounds.minY.isFinite, bounds.maxX.isFinite, bounds.maxY.isFinite,
@@ -78,7 +75,6 @@ public enum WorldReducer {
             isAnimating: isAnimating,
             isMoving: isMoving,
             activityLevel: activityLevel,
-            habitat: habitat,
             petBounds: petBounds,
             pointer: pointer,
             attention: attention

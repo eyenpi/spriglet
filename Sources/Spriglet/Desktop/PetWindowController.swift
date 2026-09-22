@@ -51,12 +51,6 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     }
 
     private let interactionView: PetInteractionView
-    private let habitatProvider: any HabitatProvider
-
-    /// Rebuilt from fresh screen geometry; no NSScreen crosses into the world.
-    var currentHabitat: PetHabitat? {
-        currentScreen.flatMap { habitat(on: $0, windowSize: panel.frame.size) }
-    }
     private var joinsAllSpaces = true
     private var screenObservation: NotificationCenter.ObservationToken?
     private var authoredStart: NSPoint?
@@ -70,10 +64,8 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     init(
         contentView: NSView,
         size: NSSize = NSSize(width: 224, height: 224),
-        habitatProvider: any HabitatProvider = ConservativeFloorHabitatProvider(),
         hitTest: @escaping @MainActor (NSPoint) -> Bool = { _ in true }
     ) {
-        self.habitatProvider = habitatProvider
         interactionView = PetInteractionView(contentView: contentView, hitTest: hitTest)
         panel = PetPanel(
             contentRect: NSRect(origin: .zero, size: size),
@@ -238,16 +230,8 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         rememberSettledPlacement()
     }
 
-    private func habitat(on screen: NSScreen, windowSize: CGSize) -> PetHabitat? {
-        guard let identity = stableDisplayUUID(for: screen),
-              let display = HabitatDisplayGeometry(displayID: identity, visibleFrame: screen.visibleFrame) else { return nil }
-        return habitatProvider.habitat(for: display, windowSize: windowSize, margin: 12)
-    }
-
     private func restingOrigin(on screen: NSScreen) -> CGPoint {
-        // A display without a persistent UUID still supports existing placement.
-        habitat(on: screen, windowSize: panel.frame.size)?.restingOrigin
-            ?? PetPlacement.restingOrigin(windowSize: panel.frame.size, visibleFrame: screen.visibleFrame)
+        PetPlacement.restingOrigin(windowSize: panel.frame.size, visibleFrame: screen.visibleFrame)
     }
 
     /// An accessible alternative to dragging, bounded to the current usable area.

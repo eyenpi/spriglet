@@ -37,7 +37,6 @@ public struct PetStimulus: Equatable, Sendable {
         case animating(Bool)
         case moving(Bool)
         case activityLevel(PetActivityLevel)
-        case habitat(PetHabitat?)
         case petBounds(CGRect?)
         case pointer(perception: PointerPerception, attention: PointerAttentionState)
     }
@@ -67,7 +66,6 @@ public struct PetWorldSnapshot: Equatable, Sendable {
     public let isAnimating: Bool
     public let isMoving: Bool
     public let activityLevel: PetActivityLevel
-    public let habitat: PetHabitat?
     public let petBounds: CGRect?
     public let pointer: PointerPerception
     public let attention: PointerAttentionState
@@ -84,7 +82,6 @@ public struct PetWorldSnapshot: Equatable, Sendable {
         isAnimating: Bool = false,
         isMoving: Bool = false,
         activityLevel: PetActivityLevel = .balanced,
-        habitat: PetHabitat? = nil,
         petBounds: CGRect? = nil,
         pointer: PointerPerception = .empty,
         attention: PointerAttentionState = .neutral
@@ -100,7 +97,6 @@ public struct PetWorldSnapshot: Equatable, Sendable {
         self.isAnimating = isAnimating
         self.isMoving = isMoving
         self.activityLevel = activityLevel
-        self.habitat = habitat
         self.petBounds = petBounds
         self.pointer = pointer
         self.attention = attention
