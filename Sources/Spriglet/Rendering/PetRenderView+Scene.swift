@@ -12,7 +12,7 @@ extension PetRenderView: PetSceneRenderer {
         switch command {
         case .action(let action): return play(action)
         case .transition(let intent): return transition(to: intent)
-        case .intent(let intentID): return playIntent(intentID)
+        case .intent(let intentID, let priority): return playIntent(intentID, priority: priority)
         case .procedural(let semanticID, let value):
             return retarget(semanticID: semanticID, value: value)
         case .phrase(let semanticID): return playPhrase(semanticID)

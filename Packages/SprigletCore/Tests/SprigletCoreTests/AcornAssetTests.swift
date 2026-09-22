@@ -23,12 +23,22 @@ struct AcornAssetTests {
             if clip.startPoseID == "ready" { #expect(clip.frames.first?.file == canonical) }
             if clip.endPoseID == "ready" { #expect(clip.frames.last?.file == canonical) }
         }
+        let context = CharacterPlaybackContext(
+            capabilityIDs: Set(package.capabilities), habitatID: "desktop"
+        )
         for pose in package.poses.keys {
             for intent in package.animationGraph.intents.keys {
-                let plan = try package.plan(for: intent, from: pose)
+                let plan = try package.plan(for: intent, from: pose, context: context)
                 #expect(plan.endPoseID == package.animationGraph.intents[plan.resolvedIntentID]?.targetPoseID)
             }
         }
+        let behavior = try ReactiveBehaviorPolicy.decode(Data(contentsOf:
+            root.appendingPathComponent("Sources/Spriglet/Resources/AcornHopper/reactive/behavior.json")))
+        #expect(behavior.characterIdentifier == package.identifier)
+        let configured = try behavior.configuration(for: .sprout)
+        #expect(configured.candidates.allSatisfy {
+            package.animationGraph.intents[$0.intentID] != nil
+        })
     }
 
     private func manifest() throws -> SproutSampleManifest {

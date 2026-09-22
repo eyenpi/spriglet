@@ -32,6 +32,7 @@ paths += [root / path for path in [
     "Sources/Spriglet/Desktop/PetWindowController.swift",
     "Sources/Spriglet/Desktop/PetInteractionView.swift",
     "Sources/Spriglet/App/PetRuntime.swift",
+    "Sources/Spriglet/App/ReactiveBehaviorCoordinator.swift",
     "Sources/Spriglet/App/SharedContent.generated.swift",
     "Sources/Spriglet/Services/PetSoundService.swift",
     "Sources/Spriglet/Diagnostics/ProcessSample.swift",
@@ -93,6 +94,7 @@ xcrun swiftc "${check_flags[@]}" -parse-as-library -framework AppKit -framework 
     "$check_snapshot/Sources/Spriglet/Desktop/PetWindowController.swift" \
     "$check_snapshot/Sources/Spriglet/Desktop/PetInteractionView.swift" \
     "$check_snapshot/Sources/Spriglet/App/PetRuntime.swift" \
+    "$check_snapshot/Sources/Spriglet/App/ReactiveBehaviorCoordinator.swift" \
     "$check_snapshot/Sources/Spriglet/App/SharedContent.generated.swift" \
     "$check_snapshot/Sources/Spriglet/Services/PetSoundService.swift" \
     "$check_snapshot/Sources/Spriglet/Diagnostics/ProcessSample.swift" \

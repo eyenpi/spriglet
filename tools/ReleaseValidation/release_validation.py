@@ -129,6 +129,12 @@ def verify_resources(app, source_root):
         for name, size in character_image_inventory(json.loads(package_path.read_text())).items():
             require(name not in dimensions or dimensions[name] == size, "Conflicting legacy image dimensions.")
             dimensions[name] = size
+    behavior_path = source / "reactive/behavior.json"
+    behavior_digest = None
+    if behavior_path.exists():
+        behavior_digest = digest(behavior_path)
+        require(behavior_digest == digest(packaged / "reactive/behavior.json"),
+                "Packaged reactive behavior tuning differs from source.")
     for name, size in sorted(dimensions.items()):
         original = resource_path(source, name)
         archived = resource_path(packaged, name)
@@ -144,6 +150,7 @@ def verify_resources(app, source_root):
     privacy_app = app / "Contents/Resources/PrivacyInfo.xcprivacy"
     require(read_plist(privacy_source) == read_plist(privacy_app), "Privacy manifest is missing or changed.")
     return {"pngCount": len(dimensions), "manifestSHA256": digest(metadata_path), "characterPackageSHA256": package_digest,
+            "reactiveBehaviorSHA256": behavior_digest,
             "privacyManifestSHA256": digest(privacy_app)}
 
 

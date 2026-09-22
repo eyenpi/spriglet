@@ -1,10 +1,19 @@
 /// Commands accepted by a scene renderer. The legacy clip identifiers remain
 /// confined to this migration adapter until a character supplies its own graph.
+public enum PetSceneRequestPriority: Int, Comparable, Sendable {
+    case contextual
+    case directInteraction
+
+    public static func < (lhs: Self, rhs: Self) -> Bool {
+        lhs.rawValue < rhs.rawValue
+    }
+}
+
 public enum PetSceneCommand: Sendable {
     case action(PetAction)
     case transition(SampleTransitionIntent)
     /// Resolves an authored semantic intent through the character's graph.
-    case intent(String)
+    case intent(String, priority: PetSceneRequestPriority = .contextual)
     /// Updates a bounded retained-layer target without starting a frame clock.
     case procedural(semanticID: String, value: SamplePoint)
     /// Starts one finite retained-layer phrase when the active pose owns it.
@@ -45,6 +54,10 @@ public struct PetSceneState: Equatable, Sendable {
 @MainActor
 public protocol PetSceneRenderer: AnyObject {
     var sceneState: PetSceneState { get }
+
+    /// Resolves the current pose and playback context without mutating scene
+    /// ownership. Hosts can validate a complete authored trajectory first.
+    func previewIntent(_ intentID: String) -> CharacterTimeline?
 
     /// True means accepted, including a coalesced request; never completion.
     @discardableResult func perform(_ command: PetSceneCommand) -> Bool

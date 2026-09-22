@@ -8,12 +8,14 @@ Use --output for a candidate; --check is read-only and checks every added byte.
 import argparse
 import copy
 import json
+import hashlib
 from pathlib import Path
 import shutil
 
 ROOT = Path(__file__).resolve().parents[2]
 LEGACY = ROOT / 'Sources/Spriglet/Resources/AcornHopper'
 RIG = ROOT / 'art/candidates/rest-rig-v04/acorn-hopper'
+REACTIVE = ROOT / 'art/candidates/reactive-v04/acorn-hopper'
 PACKAGE_NAME = 'character.json'
 
 
@@ -142,7 +144,68 @@ def expected(legacy):
     for layer in rig['layers']:
         files.add(layer['file'])
         if layer.get('maskFile'): files.add(layer['maskFile'])
-    return package, {'restRig/' + name: RIG / name for name in files}
+    resources = {'restRig/' + name: RIG / name for name in files}
+    merge_authored_library(package, resources, REACTIVE, 'reactive')
+    library = json.loads((REACTIVE / 'clips.json').read_text())
+    resources['reactive/behavior.json'] = REACTIVE / 'behavior.json'
+    package['featurePolicy']['optional'].append('behavior.reactive-v1')
+    package['animationGraph']['intents']['reactive.alert'] = {
+        'targetPoseID': 'ready',
+        'clipIDs': ['reactive.alert', 'reactive.dismiss'],
+        'replaysAtTarget': True,
+        'fallbackIntentID': 'curious',
+        'reducedMotionIntentID': 'curious',
+    }
+    for intent_id, clip_ids in library['phrases'].items():
+        package['animationGraph']['intents'][intent_id] = {
+            'targetPoseID': 'ready', 'clipIDs': clip_ids, 'replaysAtTarget': True,
+            'fallbackIntentID': 'curious', 'reducedMotionIntentID': 'ready',
+        }
+    package['animationGraph']['transitionClipIDs'] += [
+        'reactive.dismiss', 'reactive.abort.left', 'reactive.abort.right',
+        'reactive.brake.left', 'reactive.brake.right',
+    ]
+    package['capabilities'].append('reactiveDodge')
+    return package, resources
+
+
+def merge_authored_library(package, resources, directory, prefix):
+    """Merge a verified additive clip library without replacing the rest rig."""
+    library = json.loads((directory / 'clips.json').read_text())
+    assert library['schemaVersion'] == 1 and library['kind'] == 'schema3AuthoredClipLibrary'
+    for key in ('canvasPixels', 'displaySizePoints', 'coordinateSystem'):
+        assert library[key] == package[key], f'Incompatible library {key}'
+    canonical = package['poses']['ready']['stillFrame']
+    fragment_ready = library['poses']['ready']['stillFrame']
+    assert (directory / fragment_ready).read_bytes() == resources[canonical].read_bytes()
+
+    def path(name):
+        assert isinstance(name, str) and name.endswith('.png')
+        assert all(part not in ('', '.', '..') for part in name.split('/'))
+        assert not any(character in name for character in ('\\', ':', '\0'))
+        source = directory / name
+        assert source.resolve().is_relative_to(directory.resolve()) and not source.is_symlink()
+        assert hashlib.sha256(source.read_bytes()).hexdigest() == library['imagesSHA256'][name]
+        if name == fragment_ready:
+            return canonical
+        target = prefix + '/' + name
+        assert target not in resources or resources[target] == source
+        resources[target] = source
+        return target
+
+    for pose_id, value in library['poses'].items():
+        if pose_id == 'ready':
+            path(value['stillFrame'])
+            continue
+        assert pose_id not in package['poses'], f'Duplicate pose {pose_id}'
+        pose = copy.deepcopy(value)
+        if pose.get('stillFrame'): pose['stillFrame'] = path(pose['stillFrame'])
+        package['poses'][pose_id] = pose
+    for clip_id, value in library['clips'].items():
+        assert clip_id not in package['clips'], f'Duplicate clip {clip_id}'
+        clip = copy.deepcopy(value)
+        for frame in clip['frames']: frame['file'] = path(frame['file'])
+        package['clips'][clip_id] = clip
 
 
 def verify(destination=LEGACY):

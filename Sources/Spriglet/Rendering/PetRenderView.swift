@@ -11,6 +11,7 @@ final class PetRenderView: NSView {
     /// Applies the offset before the corresponding image is committed. This is
     /// one app callback, not a claim of atomic WindowServer/GPU presentation.
     var onFrame: ((SampleTimelineSnapshot) -> Bool)?
+    var onPlaybackMarker: ((CharacterPlaybackMarker) -> Void)?
     var onPlaybackStopped: (() -> Void)?
     var onAssetError: ((String) -> Void)?
 
@@ -84,6 +85,7 @@ final class PetRenderView: NSView {
     private var queuedRequest: Request?
     private var activeRequest: Request?
     private var activePhraseID: String?
+    private var deliveredMarkers: Set<MarkerDeliveryKey> = []
     private var elapsed: TimeInterval = 0
     private var lastTimestamp: CFTimeInterval?
     private var isSuspended = false
@@ -266,7 +268,12 @@ final class PetRenderView: NSView {
             playbackLink = nil
             linkTarget = nil
             lastTimestamp = nil
-        } else if currentSnapshot != nil {
+        } else if timeline != nil {
+            guard !attemptSafeRedirect() else { return }
+            if currentSnapshot == nil {
+                guard let timeline, let initial = decodedFrames[0] else { return }
+                guard commit(initial, snapshot: timeline.snapshot(atFrame: 0)) else { return }
+            }
             startClock()
         }
     }
@@ -316,19 +323,33 @@ final class PetRenderView: NSView {
         if hasActivePlayback {
             guard queuedRequest?.action != action else { return false }
             queuedRequest = next
+            _ = attemptSafeRedirect()
             return true
         }
         return begin(next)
     }
 
     /// Resolves an open semantic intent through the loaded character graph.
+    func previewIntent(_ intentID: String) -> CharacterTimeline? {
+        guard Self.isValidSemanticID(intentID), let package = playbackPackage,
+              let plan = try? package.plan(for: intentID, from: currentPoseID, context: playbackContext) else {
+            return nil
+        }
+        return try? CharacterTimeline(package: package, plan: plan)
+    }
+
     @discardableResult
-    func playIntent(_ intentID: String) -> Bool {
+    func playIntent(
+        _ intentID: String,
+        priority: PetSceneRequestPriority = .contextual
+    ) -> Bool {
         guard canAcceptPlayback, Self.isValidSemanticID(intentID) else { return false }
-        let request = Request(clips: [], action: nil, intentID: intentID)
+        let request = Request(clips: [], action: nil, intentID: intentID, priority: priority)
         if hasActivePlayback {
-            guard queuedRequest?.intentID != intentID else { return false }
+            if let queuedRequest, queuedRequest.priority > priority { return false }
+            guard queuedRequest?.intentID != intentID || queuedRequest?.priority != priority else { return false }
             queuedRequest = request
+            _ = attemptSafeRedirect()
             return true
         }
         return begin(request)
@@ -518,6 +539,7 @@ final class PetRenderView: NSView {
         currentRoutine = nil
         clearFirefly()
         currentSnapshot = nil
+        deliveredMarkers.removeAll(keepingCapacity: true)
         showStablePose(currentPoseID)
         setAnimating(false)
         if !wasAnimating, oldSleeping != isSleeping { onAnimationStateChanged?(false) }
@@ -539,6 +561,7 @@ final class PetRenderView: NSView {
         currentAction = request.action
         currentRoutine = request.routine
         currentSnapshot = nil
+        deliveredMarkers.removeAll(keepingCapacity: true)
         isSleeping = false
         elapsed = 0
         lastTimestamp = nil
@@ -574,7 +597,8 @@ final class PetRenderView: NSView {
                 }
                 guard generation == currentGeneration else { return }
                 prefetchTask = nil
-                if playbackLink == nil, isAnimating, !isSuspended, let initial = decodedFrames[0] {
+                if playbackLink == nil, isAnimating, !isSuspended, !isInteractionHeld,
+                   let initial = decodedFrames[0] {
                     let snapshot = timeline.snapshot(atFrame: 0)
                     guard commit(initial, snapshot: snapshot) else { return }
                     startClock()
@@ -613,7 +637,14 @@ final class PetRenderView: NSView {
         let delta = lastTimestamp.map { min(2 / timeline.maximumFramesPerSecond, max(0, now - $0)) } ?? 0
         lastTimestamp = now
         let candidateTime = elapsed + delta
-        let snapshot = timeline.snapshot(at: candidateTime)
+        var snapshot = timeline.snapshot(at: candidateTime)
+        var didClampToSafeMarker = false
+        if shouldInterruptActivePlayback,
+           let marker = timeline.nextSafeInterruption(afterFrame: currentSnapshot?.timelineFrameIndex ?? -1),
+           snapshot.timelineFrameIndex >= marker.timelineFrameIndex {
+            snapshot = timeline.snapshot(atFrame: marker.timelineFrameIndex)
+            didClampToSafeMarker = true
+        }
         guard let image = decodedFrames[snapshot.timelineFrameIndex] else {
             bufferUnderrunCount &+= 1
             // The authored time, image, and root all stay at the held frame.
@@ -623,7 +654,10 @@ final class PetRenderView: NSView {
         if snapshot.timelineFrameIndex != currentSnapshot?.timelineFrameIndex {
             guard commit(image, snapshot: snapshot) else { return }
         } else if snapshot.isComplete { currentSnapshot = snapshot }
-        elapsed = candidateTime
+        elapsed = didClampToSafeMarker
+            ? (timeline.startTime(atFrame: snapshot.timelineFrameIndex) ?? candidateTime)
+            : candidateTime
+        if attemptSafeRedirect() { return }
         if snapshot.isComplete { finish(); return }
         decodedFrames = decodedFrames.filter {
             $0.key >= snapshot.timelineFrameIndex && $0.key < snapshot.timelineFrameIndex + bufferCapacity
@@ -652,7 +686,7 @@ final class PetRenderView: NSView {
         present(image)
         commitFirefly(snapshot)
         CATransaction.commit()
-        return true
+        return emitMarkers(for: snapshot, expectedGeneration: expectedGeneration)
     }
 
     private func present(_ image: SampleDecodedFrame) {
@@ -678,6 +712,7 @@ final class PetRenderView: NSView {
         queuedRequest = nil
         currentAction = nil
         currentRoutine = nil
+        deliveredMarkers.removeAll(keepingCapacity: true)
         clearFirefly()
         if let completedRoutine {
             completedRoutineCount &+= 1
@@ -716,6 +751,7 @@ final class PetRenderView: NSView {
         queuedRequest = nil
         currentAction = nil
         currentRoutine = nil
+        deliveredMarkers.removeAll(keepingCapacity: true)
         clearFirefly()
         restRig?.stop()
         if let package = characterPackage {
@@ -743,6 +779,62 @@ final class PetRenderView: NSView {
         prefetchTask = nil
         decodedFrames.removeAll(keepingCapacity: true)
         lastTimestamp = nil
+    }
+
+    private var shouldInterruptActivePlayback: Bool {
+        guard let activeRequest, let queuedRequest else { return false }
+        return activeRequest.intentID != nil
+            && activeRequest.priority == .contextual
+            && queuedRequest.priority > activeRequest.priority
+    }
+
+    /// Redirects only from an authored endpoint that is already visible. Before
+    /// the first frame, the retained start pose is the equivalent safe boundary.
+    @discardableResult
+    private func attemptSafeRedirect() -> Bool {
+        guard !isInteractionHeld, shouldInterruptActivePlayback,
+              let timeline, let next = queuedRequest else { return false }
+        if currentSnapshot == nil {
+            return redirectPlayback(from: timeline.startPoseID, to: next)
+        }
+        guard let frameIndex = currentSnapshot?.timelineFrameIndex,
+              let marker = timeline.safeInterruption(atFrame: frameIndex),
+              let poseID = marker.poseID else { return false }
+        return redirectPlayback(from: poseID, to: next)
+    }
+
+    @discardableResult
+    private func redirectPlayback(from poseID: String, to next: Request) -> Bool {
+        stopClockAndLoading()
+        let stoppedGeneration = generation
+        timeline = nil
+        activePhraseID = nil
+        activeRequest = nil
+        queuedRequest = nil
+        currentAction = nil
+        currentRoutine = nil
+        deliveredMarkers.removeAll(keepingCapacity: true)
+        clearFirefly()
+        currentPoseID = poseID
+        onPlaybackStopped?()
+        guard generation == stoppedGeneration, !isSuspended else { return true }
+        if begin(next), hasActivePlayback { return true }
+        currentSnapshot = nil
+        showStablePose(currentPoseID)
+        setAnimating(false)
+        return true
+    }
+
+    private func emitMarkers(for snapshot: SampleTimelineSnapshot, expectedGeneration: UInt64) -> Bool {
+        guard let timeline else { return false }
+        for marker in timeline.markers(atFrame: snapshot.timelineFrameIndex) {
+            let key = MarkerDeliveryKey(marker: marker)
+            guard deliveredMarkers.insert(key).inserted else { continue }
+            if let poseID = marker.poseID { currentPoseID = poseID }
+            onPlaybackMarker?(marker)
+            guard generation == expectedGeneration, !isSuspended, self.timeline != nil else { return false }
+        }
+        return true
     }
 
     private func setAnimating(_ value: Bool) {
@@ -922,6 +1014,19 @@ final class PetRenderView: NSView {
         var phraseSemanticID: String?
         var targetPoseID: String?
         var leadingWakeFrames = 0
+        var priority: PetSceneRequestPriority = .directInteraction
+    }
+
+    private struct MarkerDeliveryKey: Hashable {
+        let kind: Int
+        let id: String
+        let timelineFrameIndex: Int
+
+        init(marker: CharacterPlaybackMarker) {
+            kind = marker.kind.rawValue
+            id = marker.id
+            timelineFrameIndex = marker.timelineFrameIndex
+        }
     }
 }
 

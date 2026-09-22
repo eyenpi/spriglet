@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "characterIdentifier": "acorn-hopper",
+  "rapidApproachSpeed": 420,
+  "maximumProjectedApproachDistance": 150,
+  "departureSpeed": 36,
+  "directInputLifetimeSeconds": 0.75,
+  "utilityVariation": 0.04,
+  "rapidReactionRarity": {
+    "base": 0.12,
+    "curiosityCenteredWeight": 0.06,
+    "playfulnessCenteredWeight": 0.1
+  },
+  "reactionTokenCapacity": 1,
+  "reactionTokenRefillSeconds": 30,
+  "candidates": [
+    {
+      "intent": {
+        "intentID": "dodge.left",
+        "motionClass": "relocation",
+        "horizontalDirection": -1,
+        "minimumSafeExtent": 40
+      },
+      "fallback": null,
+      "trigger": "rapidApproach",
+      "priority": 3,
+      "baseUtility": 0.92,
+      "expirySeconds": 0.45,
+      "cooldownKey": "dodge",
+      "cooldownSeconds": 35,
+      "reactionTokenCost": 1,
+      "requiredCapabilityIDs": [
+        "reactiveDodge"
+      ],
+      "requiresAwake": true,
+      "allowsLowPower": false,
+      "usesRarityGate": true
+    },
+    {
+      "intent": {
+        "intentID": "dodge.right",
+        "motionClass": "relocation",
+        "horizontalDirection": 1,
+        "minimumSafeExtent": 40
+      },
+      "fallback": null,
+      "trigger": "rapidApproach",
+      "priority": 3,
+      "baseUtility": 0.92,
+      "expirySeconds": 0.45,
+      "cooldownKey": "dodge",
+      "cooldownSeconds": 35,
+      "reactionTokenCost": 1,
+      "requiredCapabilityIDs": [
+        "reactiveDodge"
+      ],
+      "requiresAwake": true,
+      "allowsLowPower": false,
+      "usesRarityGate": true
+    },
+    {
+      "intent": {
+        "intentID": "reactive.alert",
+        "motionClass": "local",
+        "horizontalDirection": null,
+        "minimumSafeExtent": 0
+      },
+      "fallback": null,
+      "trigger": "rapidApproach",
+      "priority": 3,
+      "baseUtility": 0.64,
+      "expirySeconds": 0.55,
+      "cooldownKey": "alert",
+      "cooldownSeconds": 4,
+      "reactionTokenCost": 0,
+      "requiredCapabilityIDs": [],
+      "requiresAwake": true,
+      "allowsLowPower": true,
+      "usesRarityGate": false
+    }
+  ]
+}

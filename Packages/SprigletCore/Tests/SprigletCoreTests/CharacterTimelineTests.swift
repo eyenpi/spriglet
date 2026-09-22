@@ -8,7 +8,13 @@ private func timelinePackage() -> CharacterPackage {
             frames: [
                 .init(file: "lead-0.png", rootOffsetPoints: .zero),
                 .init(file: "lead-1.png", rootOffsetPoints: .init(x: 5, y: 0))
-            ]
+            ],
+            interruptionMarkers: [
+                .init(frameIndex: 0, id: "safeToRedirect"),
+                .init(frameIndex: 1, id: "feetPlanted"),
+                .init(frameIndex: 1, id: "safeToRedirect")
+            ],
+            semanticEvents: [.init(frameIndex: 1, id: "turned")]
         ),
         "finish": .init(
             startPoseID: "turned", endPoseID: "ready", framesPerSecond: 40,
@@ -16,6 +22,10 @@ private func timelinePackage() -> CharacterPackage {
                 .init(file: "finish-0.png", rootOffsetPoints: .zero),
                 .init(file: "finish-1.png", rootOffsetPoints: .init(x: 0, y: 2)),
                 .init(file: "finish-2.png", rootOffsetPoints: .init(x: -5, y: 0))
+            ],
+            interruptionMarkers: [
+                .init(frameIndex: 1, id: "feetPlanted"),
+                .init(frameIndex: 1, id: "safeToRedirect")
             ]
         )
     ]
@@ -137,6 +147,22 @@ struct CharacterTimelineTests {
         #expect(timeline.snapshot(atFrame: 5).isComplete)
         #expect(timeline.snapshot(atFrame: .max) == timeline.snapshot(at: .infinity))
         #expect(timeline.rootOffsets.count == timeline.frameCount)
+    }
+
+    @Test("Markers retain deterministic endpoint poses and bounded safe lookup")
+    func markers() throws {
+        let timeline = try CharacterTimeline(package: timelinePackage(), intentID: "turn", from: "ready")
+        #expect(timeline.safeInterruption(atFrame: 0)?.poseID == "ready")
+        #expect(timeline.nextSafeInterruption(afterFrame: 0)?.timelineFrameIndex == 1)
+        #expect(timeline.nextSafeInterruption(afterFrame: 0)?.poseID == "turned")
+        #expect(timeline.markers(atFrame: 1).map(\.id) == ["feetPlanted", "safeToRedirect", "turned"])
+        #expect(timeline.markers(atFrame: 1).map(\.kind) == [.interruption, .interruption, .semanticEvent])
+        #expect(timeline.startTime(atFrame: 1) == 1.0 / 20)
+        #expect(timeline.markers(atFrame: 3).map(\.id) == ["feetPlanted", "safeToRedirect"])
+        #expect(timeline.markers(atFrame: 3).allSatisfy { $0.poseID == nil })
+        #expect(timeline.safeInterruption(atFrame: 3) == nil)
+        #expect(timeline.markers(atFrame: .max).isEmpty)
+        #expect(timeline.nextSafeInterruption(afterFrame: timeline.frameCount - 1) == nil)
     }
 
     @Test("Held poses and discontinuous caller-built plans do not create clocks")

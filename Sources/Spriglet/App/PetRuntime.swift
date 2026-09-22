@@ -46,6 +46,7 @@ final class PetRuntime {
     @ObservationIgnored private let environment: any EnvironmentObserving
     @ObservationIgnored private let deadlines: any DeadlineScheduling
     @ObservationIgnored private let awareness: PetAwarenessCoordinator
+    @ObservationIgnored private var reactiveBehavior: ReactiveBehaviorCoordinator?
     /// Observable projection of the world policy for menu and Settings updates.
     private var policy = ActivityPolicy()
     private var scene: any PetSceneRenderer { renderer }
@@ -151,6 +152,7 @@ final class PetRuntime {
             isInteracting = interacting
             scene.perform(.interactionHeld(interacting))
             if interacting {
+                reactiveBehavior?.suppressCurrentApproach()
                 cancelBehaviorSchedule()
                 behaviorDirector.resetAfterInteraction()
                 sound.stop()
@@ -179,6 +181,7 @@ final class PetRuntime {
         renderer.onAnimationStateChanged = { [weak self] animating in
             guard let self else { return }
             isAnimating = animating
+            if animating { reactiveBehavior?.suppressCurrentApproach() }
             isSleeping = renderer.isSleeping
             if !animating { refreshMeasurements() }
             reconcileBehaviorSchedule()
@@ -204,11 +207,14 @@ final class PetRuntime {
             receive(.pointer(perception: update.perception, attention: update.attention))
             guard isRunning else { return }
             for command in PointerIntentDirector.commands(in: world) { scene.perform(command) }
+            _ = reactiveBehavior?.receive(world: world)
         }
         if let characterIssue { message = characterIssue }
         desktop.setClickThrough(clickThrough)
         desktop.setAllSpaces(allSpaces)
         desktop.restorePlacement(initialPlacement)
+        reconcilePlaybackContext()
+        configureReactiveBehavior()
         setSuspension(.hidden, active: isHidden)
         setSuspension(.userPaused, active: isPaused)
         observeEnvironment()
@@ -605,6 +611,7 @@ final class PetRuntime {
             setSuspension(.thermalPressure, active: snapshot.thermalPressure.requiresRest)
             let maxFPS = desktop?.panel.screen?.maximumFramesPerSecond ?? 60
             scene.perform(.preferredFramesPerSecond(lowPower ? 30 : maxFPS))
+            reconcilePlaybackContext()
             if reduceMotion || (enteringLowPower && (renderer.currentRoutine == .explore || renderer.currentRoutine == .firefly)) {
                 desktop?.stopMovement()
                 scene.perform(.resetPose)
@@ -856,6 +863,43 @@ final class PetRuntime {
         receive(.petBounds(desktop.map {
             CGRect(origin: $0.effectiveOrigin, size: renderer.displaySize)
         }))
+    }
+
+    private func reconcilePlaybackContext() {
+        guard let package = renderer.characterPackage else { return }
+        renderer.setPlaybackContext(CharacterPlaybackContext(
+            capabilityIDs: Set(package.capabilities),
+            habitatID: "desktop",
+            reduceMotion: reduceMotion
+        ))
+    }
+
+    private func configureReactiveBehavior() {
+        guard reactiveBehavior == nil,
+              let root = characterResourceDirectory,
+              let package = renderer.characterPackage else { return }
+        let url = root.appendingPathComponent("reactive/behavior.json")
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
+        do {
+            let policy = try ReactiveBehaviorPolicy.decode(Data(contentsOf: url))
+            let renderer = self.renderer
+            let desktop = self.desktop
+            reactiveBehavior = try ReactiveBehaviorCoordinator(
+                policy: policy,
+                characterIdentifier: package.identifier,
+                traits: profile.traits,
+                capabilityIDs: Set(package.capabilities),
+                previewIntent: { [weak renderer] in renderer?.previewIntent($0) },
+                canFitRootMotion: { [weak desktop] in desktop?.canFitRootMotion($0) == true },
+                performIntent: { [weak renderer] in
+                    renderer?.perform(.intent($0, priority: .contextual)) == true
+                }
+            )
+        } catch {
+            // Optional character behavior fails closed without disabling the
+            // character's rest rig, direct interaction, or legacy routines.
+            logger.error("Reactive character behavior disabled: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     /// Composition wiring only; perception, hysteresis, and intent selection

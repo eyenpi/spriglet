@@ -101,6 +101,14 @@ class ReleaseValidationTests(unittest.TestCase):
             (root / "Sources/Spriglet/PrivacyInfo.xcprivacy").write_bytes(privacy)
             (app / "Contents/Resources/PrivacyInfo.xcprivacy").write_bytes(privacy)
             self.assertEqual(release.verify_resources(app, root)["pngCount"], 9)
+            for folder in (source, destination):
+                (folder / "reactive").mkdir()
+                (folder / "reactive/behavior.json").write_text('{"schemaVersion":1}')
+            self.assertIsNotNone(release.verify_resources(app, root)["reactiveBehaviorSHA256"])
+            (destination / "reactive/behavior.json").write_text('{"schemaVersion":2}')
+            with self.assertRaises(release.ValidationError):
+                release.verify_resources(app, root)
+            (destination / "reactive/behavior.json").write_text('{"schemaVersion":1}')
             excluded = app / "Contents/Resources/SproutSample"
             excluded.mkdir()
             with self.assertRaises(release.ValidationError):

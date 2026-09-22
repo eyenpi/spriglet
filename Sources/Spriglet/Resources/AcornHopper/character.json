@@ -27,13 +27,16 @@
       "animation-graph.routes",
       "layered-rest-rig"
     ],
-    "optional": []
+    "optional": [
+      "behavior.reactive-v1"
+    ]
   },
   "capabilities": [
     "animatedSleep",
     "layeredRest",
     "gaze",
-    "blink"
+    "blink",
+    "reactiveDodge"
   ],
   "poses": {
     "ready": {
@@ -60,6 +63,26 @@
     },
     "asleep": {
       "stillFrame": "sleep.png",
+      "layerIDs": []
+    },
+    "alert": {
+      "stillFrame": "reactive/poses/alert.png",
+      "layerIDs": []
+    },
+    "directed.left": {
+      "stillFrame": "reactive/poses/directed.left.png",
+      "layerIDs": []
+    },
+    "directed.right": {
+      "stillFrame": "reactive/poses/directed.right.png",
+      "layerIDs": []
+    },
+    "landed.left": {
+      "stillFrame": "reactive/poses/landed.left.png",
+      "layerIDs": []
+    },
+    "landed.right": {
+      "stillFrame": "reactive/poses/landed.right.png",
       "layerIDs": []
     }
   },
@@ -1711,6 +1734,1624 @@
           "secondaryMotion"
         ]
       }
+    },
+    "reactive.alert": {
+      "startPoseID": "ready",
+      "endPoseID": "alert",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.alert/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.alert/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.alert/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.alert/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.alert/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.alert/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.alert/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.alert/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.alert/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.alert/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/poses/alert.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "reactive",
+        "dodge",
+        "alert"
+      ],
+      "requirements": {
+        "habitatIDs": [
+          "desktop"
+        ],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "local",
+      "interruptionMarkers": [
+        {
+          "frameIndex": 0,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 0,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 11,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 11,
+          "id": "safeToRedirect"
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ],
+        "mode": "exclusive"
+      }
+    },
+    "reactive.turn.left": {
+      "startPoseID": "alert",
+      "endPoseID": "directed.left",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "reactive/poses/alert.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.left/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.left/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.left/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.left/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.left/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.left/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.left/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.left/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.left/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.left/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/poses/directed.left.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "reactive",
+        "dodge",
+        "turn"
+      ],
+      "requirements": {
+        "habitatIDs": [
+          "desktop"
+        ],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "local",
+      "interruptionMarkers": [
+        {
+          "frameIndex": 0,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 0,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 11,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 11,
+          "id": "safeToRedirect"
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ],
+        "mode": "exclusive"
+      }
+    },
+    "reactive.turn.right": {
+      "startPoseID": "alert",
+      "endPoseID": "directed.right",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "reactive/poses/alert.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.right/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.right/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.right/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.right/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.right/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.right/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.right/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.right/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.right/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.turn.right/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/poses/directed.right.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "reactive",
+        "dodge",
+        "turn"
+      ],
+      "requirements": {
+        "habitatIDs": [
+          "desktop"
+        ],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "local",
+      "interruptionMarkers": [
+        {
+          "frameIndex": 0,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 0,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 11,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 11,
+          "id": "safeToRedirect"
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ],
+        "mode": "exclusive"
+      }
+    },
+    "reactive.hop.left": {
+      "startPoseID": "directed.left",
+      "endPoseID": "landed.left",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "reactive/poses/directed.left.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0006.png",
+          "rootOffsetPoints": {
+            "x": -0.7870370000600815,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0007.png",
+          "rootOffsetPoints": {
+            "x": -2.9629627764225006,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0008.png",
+          "rootOffsetPoints": {
+            "x": -6.249999523162842,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0009.png",
+          "rootOffsetPoints": {
+            "x": -10.370370268821716,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0010.png",
+          "rootOffsetPoints": {
+            "x": -15.046295642852783,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0011.png",
+          "rootOffsetPoints": {
+            "x": -19.999997854232788,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0012.png",
+          "rootOffsetPoints": {
+            "x": -24.953702688217163,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0013.png",
+          "rootOffsetPoints": {
+            "x": -29.629629135131836,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0014.png",
+          "rootOffsetPoints": {
+            "x": -33.75000047683716,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0015.png",
+          "rootOffsetPoints": {
+            "x": -37.03703594207764,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0016.png",
+          "rootOffsetPoints": {
+            "x": -39.212961196899414,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0017.png",
+          "rootOffsetPoints": {
+            "x": -39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0018.png",
+          "rootOffsetPoints": {
+            "x": -39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0019.png",
+          "rootOffsetPoints": {
+            "x": -39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0020.png",
+          "rootOffsetPoints": {
+            "x": -39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0021.png",
+          "rootOffsetPoints": {
+            "x": -39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0022.png",
+          "rootOffsetPoints": {
+            "x": -39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0023.png",
+          "rootOffsetPoints": {
+            "x": -39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.left/0024.png",
+          "rootOffsetPoints": {
+            "x": -39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/poses/landed.left.png",
+          "rootOffsetPoints": {
+            "x": -39.999995708465576,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "reactive",
+        "dodge",
+        "hop"
+      ],
+      "requirements": {
+        "habitatIDs": [
+          "desktop"
+        ],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "relocation",
+      "interruptionMarkers": [
+        {
+          "frameIndex": 0,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 0,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 5,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 17,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 25,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 25,
+          "id": "safeToRedirect"
+        }
+      ],
+      "semanticEvents": [
+        {
+          "frameIndex": 17,
+          "id": "footDown"
+        }
+      ],
+      "ownership": {
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ],
+        "mode": "exclusive"
+      }
+    },
+    "reactive.hop.right": {
+      "startPoseID": "directed.right",
+      "endPoseID": "landed.right",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "reactive/poses/directed.right.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.7870370000600815,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0007.png",
+          "rootOffsetPoints": {
+            "x": 2.9629627764225006,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0008.png",
+          "rootOffsetPoints": {
+            "x": 6.249999523162842,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0009.png",
+          "rootOffsetPoints": {
+            "x": 10.370370268821716,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0010.png",
+          "rootOffsetPoints": {
+            "x": 15.046295642852783,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0011.png",
+          "rootOffsetPoints": {
+            "x": 19.999997854232788,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0012.png",
+          "rootOffsetPoints": {
+            "x": 24.953702688217163,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0013.png",
+          "rootOffsetPoints": {
+            "x": 29.629629135131836,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0014.png",
+          "rootOffsetPoints": {
+            "x": 33.75000047683716,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0015.png",
+          "rootOffsetPoints": {
+            "x": 37.03703594207764,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0016.png",
+          "rootOffsetPoints": {
+            "x": 39.212961196899414,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0017.png",
+          "rootOffsetPoints": {
+            "x": 39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0018.png",
+          "rootOffsetPoints": {
+            "x": 39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0019.png",
+          "rootOffsetPoints": {
+            "x": 39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0020.png",
+          "rootOffsetPoints": {
+            "x": 39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0021.png",
+          "rootOffsetPoints": {
+            "x": 39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0022.png",
+          "rootOffsetPoints": {
+            "x": 39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0023.png",
+          "rootOffsetPoints": {
+            "x": 39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.hop.right/0024.png",
+          "rootOffsetPoints": {
+            "x": 39.999995708465576,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/poses/landed.right.png",
+          "rootOffsetPoints": {
+            "x": 39.999995708465576,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "reactive",
+        "dodge",
+        "hop"
+      ],
+      "requirements": {
+        "habitatIDs": [
+          "desktop"
+        ],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "relocation",
+      "interruptionMarkers": [
+        {
+          "frameIndex": 0,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 0,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 5,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 17,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 25,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 25,
+          "id": "safeToRedirect"
+        }
+      ],
+      "semanticEvents": [
+        {
+          "frameIndex": 17,
+          "id": "footDown"
+        }
+      ],
+      "ownership": {
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ],
+        "mode": "exclusive"
+      }
+    },
+    "reactive.brake.left": {
+      "startPoseID": "landed.left",
+      "endPoseID": "ready",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "reactive/poses/landed.left.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0011.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0012.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0013.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.left/0014.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "reactive",
+        "dodge",
+        "brake"
+      ],
+      "requirements": {
+        "habitatIDs": [
+          "desktop"
+        ],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "local",
+      "interruptionMarkers": [
+        {
+          "frameIndex": 0,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 0,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 15,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 15,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 15,
+          "id": "settled"
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ],
+        "mode": "exclusive"
+      }
+    },
+    "reactive.brake.right": {
+      "startPoseID": "landed.right",
+      "endPoseID": "ready",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "reactive/poses/landed.right.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0011.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0012.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0013.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.brake.right/0014.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "reactive",
+        "dodge",
+        "brake"
+      ],
+      "requirements": {
+        "habitatIDs": [
+          "desktop"
+        ],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "local",
+      "interruptionMarkers": [
+        {
+          "frameIndex": 0,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 0,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 15,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 15,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 15,
+          "id": "settled"
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ],
+        "mode": "exclusive"
+      }
+    },
+    "reactive.dismiss": {
+      "startPoseID": "alert",
+      "endPoseID": "ready",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "reactive/poses/alert.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.dismiss/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.dismiss/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.dismiss/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.dismiss/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.dismiss/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.dismiss/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.dismiss/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.dismiss/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.dismiss/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.dismiss/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "reactive",
+        "dodge",
+        "dismiss"
+      ],
+      "requirements": {
+        "habitatIDs": [
+          "desktop"
+        ],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "local",
+      "interruptionMarkers": [
+        {
+          "frameIndex": 0,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 0,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 11,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 11,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 11,
+          "id": "settled"
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ],
+        "mode": "exclusive"
+      }
+    },
+    "reactive.abort.left": {
+      "startPoseID": "directed.left",
+      "endPoseID": "ready",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "reactive/poses/directed.left.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.left/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.left/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.left/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.left/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.left/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.left/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.left/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.left/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.left/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.left/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "reactive",
+        "dodge",
+        "abort"
+      ],
+      "requirements": {
+        "habitatIDs": [
+          "desktop"
+        ],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "local",
+      "interruptionMarkers": [
+        {
+          "frameIndex": 0,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 0,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 11,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 11,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 11,
+          "id": "settled"
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ],
+        "mode": "exclusive"
+      }
+    },
+    "reactive.abort.right": {
+      "startPoseID": "directed.right",
+      "endPoseID": "ready",
+      "framesPerSecond": 30,
+      "frames": [
+        {
+          "file": "reactive/poses/directed.right.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.right/0001.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.right/0002.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.right/0003.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.right/0004.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.right/0005.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.right/0006.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.right/0007.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.right/0008.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.right/0009.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "reactive/clips/reactive.abort.right/0010.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        {
+          "file": "restRig/neutral.png",
+          "rootOffsetPoints": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "tags": [
+        "reactive",
+        "dodge",
+        "abort"
+      ],
+      "requirements": {
+        "habitatIDs": [
+          "desktop"
+        ],
+        "orientationIDs": [],
+        "capabilityIDs": []
+      },
+      "motionClass": "local",
+      "interruptionMarkers": [
+        {
+          "frameIndex": 0,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 0,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 11,
+          "id": "feetPlanted"
+        },
+        {
+          "frameIndex": 11,
+          "id": "safeToRedirect"
+        },
+        {
+          "frameIndex": 11,
+          "id": "settled"
+        }
+      ],
+      "semanticEvents": [],
+      "ownership": {
+        "channelIDs": [
+          "body",
+          "face",
+          "shadow",
+          "secondaryMotion"
+        ],
+        "mode": "exclusive"
+      }
     }
   },
   "layers": {
@@ -2101,11 +3742,50 @@
         "targetPoseID": "ready",
         "clipIDs": [],
         "replaysAtTarget": false
+      },
+      "reactive.alert": {
+        "targetPoseID": "ready",
+        "clipIDs": [
+          "reactive.alert",
+          "reactive.dismiss"
+        ],
+        "replaysAtTarget": true,
+        "fallbackIntentID": "curious",
+        "reducedMotionIntentID": "curious"
+      },
+      "dodge.left": {
+        "targetPoseID": "ready",
+        "clipIDs": [
+          "reactive.alert",
+          "reactive.turn.left",
+          "reactive.hop.left",
+          "reactive.brake.left"
+        ],
+        "replaysAtTarget": true,
+        "fallbackIntentID": "curious",
+        "reducedMotionIntentID": "ready"
+      },
+      "dodge.right": {
+        "targetPoseID": "ready",
+        "clipIDs": [
+          "reactive.alert",
+          "reactive.turn.right",
+          "reactive.hop.right",
+          "reactive.brake.right"
+        ],
+        "replaysAtTarget": true,
+        "fallbackIntentID": "curious",
+        "reducedMotionIntentID": "ready"
       }
     },
     "transitionClipIDs": [
       "settle",
-      "wakeUp"
+      "wakeUp",
+      "reactive.dismiss",
+      "reactive.abort.left",
+      "reactive.abort.right",
+      "reactive.brake.left",
+      "reactive.brake.right"
     ],
     "instantTransitions": []
   },

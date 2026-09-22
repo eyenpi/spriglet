@@ -58,6 +58,17 @@ class AcornPackageTests(unittest.TestCase):
             (root / next(iter(files))).write_bytes(b'changed')
             with self.assertRaises(AssertionError): package_acorn.verify(root)
 
+    def test_reactive_behavior_is_versioned_and_copied_with_the_graph(self):
+        package, files = package_acorn.expected(self.legacy)
+        behavior = json.loads(files['reactive/behavior.json'].read_text())
+        self.assertEqual(behavior['schemaVersion'], 1)
+        self.assertEqual(behavior['characterIdentifier'], package['identifier'])
+        self.assertEqual({candidate['intent']['intentID'] for candidate in behavior['candidates']},
+                         {'dodge.left', 'dodge.right', 'reactive.alert'})
+        self.assertTrue({candidate['intent']['intentID'] for candidate in behavior['candidates']}
+                        <= set(package['animationGraph']['intents']))
+        self.assertIn('behavior.reactive-v1', package['featurePolicy']['optional'])
+
 
 if __name__ == '__main__':
     unittest.main()
