@@ -400,6 +400,7 @@ private final class RenderHost {
     var markers: [CharacterPlaybackMarker] = []
     var animationStates: [Bool] = []
     var playbackStopCount = 0
+    var exposedPresentationGap = false
     var failure: String?
     var clips: [String] { frames.map(\.clip.rawValue) }
     var markerKeys: [String] {
@@ -438,7 +439,13 @@ private final class RenderHost {
             ))
             return true
         }
-        renderer.onAnimationStateChanged = { [weak self] in self?.animationStates.append($0) }
+        renderer.onAnimationStateChanged = { [weak self] isAnimating in
+            guard let self else { return }
+            animationStates.append(isAnimating)
+            if isAnimating, !renderer.hasVisiblePresentation {
+                exposedPresentationGap = true
+            }
+        }
         renderer.onPlaybackStopped = { [weak self] in self?.playbackStopCount += 1 }
     }
 
@@ -448,8 +455,9 @@ private final class RenderHost {
     func requireSettled(label: String) throws {
         guard !renderer.isAnimating, !renderer.hasActiveDisplayLink,
               renderer.bufferedFrameCount == 0, renderer.activeRigAnimationCount == 0,
-              renderer.currentPoseID == "ready" else {
-            throw ReactiveFailure("\(label) left a frame clock, buffer, rig animation, or non-ready pose")
+              renderer.currentPoseID == "ready", renderer.hasVisiblePresentation,
+              !exposedPresentationGap else {
+            throw ReactiveFailure("\(label) exposed a blank presentation handoff or left playback unsettled")
         }
     }
 

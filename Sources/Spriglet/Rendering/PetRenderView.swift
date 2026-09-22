@@ -39,6 +39,13 @@ final class PetRenderView: NSView {
     }
     var hasActiveDisplayLink: Bool { playbackLink != nil }
     var isRestRigVisible: Bool { restRig?.isVisible == true && imageLayer.isHidden }
+    /// True whenever either retained presentation path owns visible artwork.
+    /// Playback handoffs must preserve this invariant until suspension or an
+    /// intentional hidden habitat pose takes ownership.
+    var hasVisiblePresentation: Bool {
+        (restRig?.isVisible == true && restRig?.layer.isHidden == false)
+            || (!imageLayer.isHidden && imageLayer.contents != nil)
+    }
     var bufferedFrameCount: Int { decodedFrames.count }
     var proceduralCommitCount: UInt64 { restRig?.targetCommitCount ?? 0 }
     var finitePhraseCount: UInt64 { restRig?.finitePhraseCount ?? 0 }
@@ -572,8 +579,8 @@ final class PetRenderView: NSView {
               generation == preparationGeneration, canAcceptPlayback, assetError == nil else { return false }
         generation &+= 1
         let requestGeneration = generation
-        restRig?.hide()
-        imageLayer.isHidden = false
+        // Keep the currently presented pose visible while frame zero decodes.
+        // `commit` transfers ownership to the baked image in one transaction.
         timeline = sequence
         activeRequest = request
         activePhraseID = nil
@@ -701,6 +708,7 @@ final class PetRenderView: NSView {
             cancelPlayback(showRest: true)
             return false
         }
+        restRig?.hide()
         currentSnapshot = snapshot
         present(image)
         commitFirefly(snapshot)
@@ -710,11 +718,8 @@ final class PetRenderView: NSView {
 
     private func present(_ image: SampleDecodedFrame) {
         currentImage = image
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
         imageLayer.isHidden = false
         imageLayer.contents = image.image
-        CATransaction.commit()
         submittedFrameCount &+= 1
     }
 
@@ -870,11 +875,18 @@ final class PetRenderView: NSView {
 
     @discardableResult
     private func beginPhrase(_ semanticID: String, request: Request) -> Bool {
-        guard let rig = restRig, rig.enter(poseID: currentPoseID),
-              rig.playPhrase(semanticID: semanticID) else { return false }
+        guard let rig = restRig else { return false }
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        guard rig.enter(poseID: currentPoseID), rig.playPhrase(semanticID: semanticID) else {
+            CATransaction.commit()
+            return false
+        }
+        imageLayer.isHidden = true
+        imageLayer.contents = nil
+        CATransaction.commit()
         generation &+= 1
         let requestGeneration = generation
-        imageLayer.isHidden = true
         activePhraseID = semanticID
         activeRequest = request
         currentAction = request.action
@@ -906,6 +918,9 @@ final class PetRenderView: NSView {
     }
 
     private func showStablePose(_ poseID: String, fallback: SampleDecodedFrame? = nil) {
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        defer { CATransaction.commit() }
         restRig?.stop()
         if restRig?.enter(poseID: poseID) == true {
             currentImage = restImage
