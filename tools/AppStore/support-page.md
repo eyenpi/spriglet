@@ -36,6 +36,12 @@ Both start off and can be enabled in Settings > General. Sounds are brief and li
 
 Launch at Login uses macOS's own registration. Keep the installed app in a stable location, such as Applications. If macOS asks for approval, use the **Open Login Items…** button and review the entry in System Settings. Turn the option off whenever you no longer want it.
 
+## Talk with your companion
+
+Turn on **Talk Through Siri** in Settings > Conversation, then say "Ask Spriglet" to Siri or use the Ask Spriglet action in Shortcuts. Apple Intelligence creates the replies on your Mac. Conversation therefore needs a Mac that supports Apple Intelligence, with Apple Intelligence turned on; Settings > Conversation explains when it's unavailable.
+
+Your companion can only talk. It can't see your screen, open apps, set reminders, or look things up online, and it can be wrong. Siri phrases are English for now. **Forget Conversation** clears the current conversation immediately.
+
 ## Privacy and local preferences
 
 Spriglet has no account and does not send app data to a server. Settings > Companion > **Clear Recent Preferences** forgets recent petting, play, and placement preferences while keeping your name, stable traits, and other choices. For help removing all local settings or deleting support correspondence, email the same support address.

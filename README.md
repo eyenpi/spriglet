@@ -36,6 +36,7 @@ The quick guide introduces Spriglet on your first launch. It lives in the **leaf
 - **Play with a firefly.** Watch its glow, catch it, and settle. When strolls are allowed, Acorn follows it and walks home; parked play stays in place.
 - **Make it yours.** Choose a name, Small / Standard / Large size, and Quiet / Balanced / Lively frequency. Its stable traits and modest recent preferences give its finite routines variety.
 - **Keep sound optional.** Brief petting and play chimes start off. Launch at login is also an explicit choice in Settings.
+- **Ask it something, if you like.** Conversation starts off. Turn on **Talk Through Siri** in Settings > Conversation, then say "Ask Spriglet". Apple Intelligence answers on your Mac, the pet looks up and reacts, and nothing is sent anywhere or kept. It needs a Mac that supports Apple Intelligence.
 - **Stay in control.** Whole-window click-through, app-scoped keyboard commands, native accessibility actions, and Reduce Motion support are built in.
 
 ## Local by design

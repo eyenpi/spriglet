@@ -73,6 +73,22 @@ struct ConversationControllerTests {
         #expect(harness.model.discardCount == 1)
     }
 
+    @Test("Readiness is known before anyone is asked for a question")
+    func readiness() throws {
+        let off = try Harness()
+        #expect(off.controller.readinessFailure() == .disabled)
+
+        let unavailable = try Harness(enabled: true)
+        unavailable.model.availability = .unavailable(.appleIntelligenceNotEnabled)
+        #expect(unavailable.controller.readinessFailure() == .unavailable(.appleIntelligenceNotEnabled))
+        #expect(unavailable.controller.availability == .unavailable(.appleIntelligenceNotEnabled))
+
+        let ready = try Harness(enabled: true)
+        #expect(ready.controller.readinessFailure() == nil)
+        #expect(ready.presence.events.isEmpty)
+        #expect(ready.model.prewarmCount == 0)
+    }
+
     @Test("Each unavailable reason is reported without calling the model", arguments: ModelUnavailableReason.allCases)
     func unavailable(reason: ModelUnavailableReason) async throws {
         let harness = try Harness(enabled: true)

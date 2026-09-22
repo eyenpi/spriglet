@@ -20,6 +20,7 @@ final class PetRuntime {
     private(set) var profile = PetProfile()
     private(set) var interactionMemory = PetInteractionMemory()
     private(set) var isSleeping = false
+    private(set) var isConversing = false
     private(set) var hasScheduledBehavior = false
     private(set) var automaticActionCount: UInt64 = 0
     private(set) var lastAutomaticIntent: PetBehaviorIntent?
@@ -42,6 +43,8 @@ final class PetRuntime {
     @ObservationIgnored var onShowSettingsRequested: (@MainActor () -> Void)? {
         didSet { refreshAccessibility() }
     }
+    /// Called when the system sleeps, the display sleeps, or the user session resigns.
+    @ObservationIgnored var onSystemDeactivated: (@MainActor () -> Void)?
     @ObservationIgnored private var world = PetWorldSnapshot()
     @ObservationIgnored private let environment: any EnvironmentObserving
     /// Observable projection of the world policy for menu and Settings updates.
@@ -110,6 +113,7 @@ final class PetRuntime {
     var status: String {
         if isHidden { return "Hidden" }
         if isPaused { return "Paused" }
+        if isConversing { return "Talking" }
         if !policy.allowsAnimation { return "System rest" }
         if renderer.currentRoutine == .firefly { return "Firefly play" }
         if renderer.currentRoutine == .explore { return "Exploring nearby" }
@@ -354,6 +358,19 @@ final class PetRuntime {
             }
         }
         return accepted
+    }
+
+    /// A conversation holds the pet still and may add one authored reaction. It
+    /// shares every other command's eligibility and reentrancy guard, and never
+    /// records petting or plays a sound.
+    func setConversing(_ value: Bool, reaction: (PetWorldSnapshot) -> PetSceneCommand?) {
+        withBehaviorTransition {
+            isConversing = value
+            refreshWorld()
+            if !value { behaviorDirector.resetAfterInteraction() }
+            guard isRunning, !sampling, renderer.assetError == nil, let command = reaction(world) else { return }
+            scene.perform(command)
+        }
     }
 
     @discardableResult
@@ -815,6 +832,7 @@ final class PetRuntime {
                 case .sessionInactive: .sessionInactive
                 }
                 setSuspension(reason, active: active)
+                if active { onSystemDeactivated?() }
             }
         }
         environment.start()
@@ -836,6 +854,7 @@ final class PetRuntime {
         receive(.animating(isAnimating))
         receive(.moving(isMoving))
         receive(.habitat(desktop?.currentHabitat))
+        receive(.conversing(isConversing))
     }
 
     private func activeSpaceChanged() {

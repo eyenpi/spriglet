@@ -1,3 +1,5 @@
+import AppIntents
+import SprigletConversation
 import SwiftUI
 
 @main
@@ -11,7 +13,7 @@ struct SprigletApp: App {
             SprigletMenuLabel(runtime: delegate.runtime, presentation: delegate.presentation)
         }
         Settings {
-            SprigletSettingsView(runtime: delegate.runtime, login: delegate.login)
+            SprigletSettingsView(runtime: delegate.runtime, login: delegate.login, conversation: delegate.conversation)
         }
         .windowResizability(.contentSize)
         .commands { CompanionCommands(runtime: delegate.runtime, presentation: delegate.presentation) }
@@ -53,10 +55,27 @@ struct SprigletApp: App {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    let runtime = PetRuntime()
+    let runtime: PetRuntime
     let login = LoginItemService()
     let presentation = AppPresentation()
+    let conversation: ConversationController
     private var acceptanceRecorder: DesktopAcceptanceRecorder?
+
+    /// Runs while SwiftUI creates the app, before any scene, so an intent in a
+    /// Siri-launched process always finds its dependency.
+    override init() {
+        let runtime = PetRuntime()
+        let reviewLaunch = AppPresentation.isProbe || AppPresentation.isTemporary
+        let conversation = ConversationController(
+            model: SystemConversationModel(), presence: runtime,
+            store: ConversationPreferencesStore(allowsChanges: !reviewLaunch)
+        )
+        self.runtime = runtime
+        self.conversation = conversation
+        super.init()
+        runtime.onSystemDeactivated = { conversation.systemDidDeactivate() }
+        AppDependencyManager.shared.add(dependency: conversation)
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         runtime.start()

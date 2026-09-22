@@ -27,6 +27,9 @@ enum AppText {
     static let openLoginItems = "Open Login Items"
     static let previewSound = "Preview Sound"
     static let automaticMoments = "Automatic Moments"
+    static let conversationTab = "Conversation"
+    static let talkThroughSiri = "Talk Through Siri"
+    static let forgetConversation = "Forget Conversation"
     static let copyReport = "Copy Report"
     static let quitApp = "Quit Spriglet"
 }

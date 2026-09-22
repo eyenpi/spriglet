@@ -57,6 +57,15 @@ public final class ConversationController {
         if current != availability { availability = current }
     }
 
+    /// Why any request would fail before model work, or nil when ready. Surfaces
+    /// check this first so nobody is asked a question that cannot be answered.
+    public func readinessFailure() -> ConversationFailure? {
+        refreshAvailability()
+        guard isEnabled else { return .disabled }
+        if case .unavailable(let reason) = availability { return .unavailable(reason) }
+        return nil
+    }
+
     /// Called when a surface starts waiting for the person to speak or type.
     public func beginAttention(surface: ConversationSurface) -> AttentionID {
         let id = AttentionID(mintIdentifier())

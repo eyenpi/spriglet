@@ -1,16 +1,18 @@
 # Privacy
 
-Effective September 15, 2026. Developed by Ali Nabipour.
+Effective September 22, 2026. Developed by Ali Nabipour.
 
 Spriglet is a local desktop companion. The app contains no accounts, analytics, advertising, server connection, or network client.
 
 It responds to clicks and dragging in its own window and keyboard commands while using Spriglet. It does not capture your screen, monitor global keystrokes, read other apps' contents, or request Screen Recording, Accessibility, Input Monitoring, or Automation permission. It exposes its own name, status, and actions to macOS accessibility clients without using accessibility access to control another app.
 
-Your choices stay in this app's local preferences: the pet's name and stable traits, size, activity frequency, parked mode, automatic moments, pause, visibility, click-through, Spaces behavior, sound preference, a display-relative home position, and whether you completed the welcome. A display identifier helps restore the pet to the same display. The app does not transmit it. One bounded last-good preference payload provides recovery if the current copy is damaged.
+Your choices stay in this app's local preferences: the pet's name and stable traits, size, activity frequency, parked mode, automatic moments, pause, visibility, click-through, Spaces behavior, sound preference, whether conversation is on, a display-relative home position, and whether you completed the welcome. A display identifier helps restore the pet to the same display. The app does not transmit it. One bounded last-good preference payload provides recovery if the current copy is damaged.
 
 Recent petting, firefly games, and completed placement changes contribute three small, capped values with their last update times. Their influence decays and expires after 24 hours. Spriglet keeps no interaction event history or information about other apps. Clear Recent Preferences removes these values from both the current preferences and their single recovery copy; it keeps the name, traits, and other choices.
 
 Optional sounds are short original files bundled with the app. Sound starts off, uses no microphone, and contacts no service. Automatic activity remains silent. Disabling sound or suspending the companion stops playback.
+
+Conversation is optional and starts off. After you turn on **Talk Through Siri** in Settings > Conversation, you can ask your companion something by saying "Ask Spriglet" to Siri or with the Ask Spriglet action in Shortcuts. Spriglet receives only the text of your question, as Siri recognized it or as you gave it to Shortcuts; Spriglet itself uses no microphone. Apple Intelligence creates the reply on this Mac, and Spriglet sends nothing to a server. Besides your question, the reply draws only on your companion's name and personality, whether it was napping, a general sense of recent petting, and the local day and time of day. It does not use your screen, files, other apps, or location. The current conversation stays in memory only and is never saved or logged. It is forgotten after 10 quiet minutes, when your Mac or its display sleeps, when you switch users, when you choose **Forget Conversation**, when you turn talking off, or when you quit. Siri cannot reach Spriglet while your Mac is locked. Siri and Shortcuts are provided by Apple and handle your speech and requests under Apple's own privacy terms.
 
 Launch at login is an explicit Settings choice managed by macOS through `SMAppService`. Spriglet reads the system registration status; it does not register itself merely because it launches or opens Settings. The OS may require your approval in Login Items. No login choice is sent to a server or duplicated in app preferences as a replacement for that system state.
 

@@ -1,10 +1,12 @@
 import AppKit
+import SprigletConversation
 import SprigletCore
 import SwiftUI
 
 struct SprigletSettingsView: View {
     let runtime: PetRuntime
     let login: LoginItemService
+    let conversation: ConversationController
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openWindow) private var openWindow
     @State private var selectedTab: SettingsTab = .companion
@@ -14,13 +16,14 @@ struct SprigletSettingsView: View {
         TabView(selection: $selectedTab) {
             Tab("Companion", systemImage: "leaf", value: .companion) { companion }
             Tab("Desktop", systemImage: "macwindow", value: .desktop) { desktop }
+            Tab(AppText.conversationTab, systemImage: "bubble.left.and.bubble.right", value: .conversation) { conversationPage }
             Tab("General", systemImage: "gearshape", value: .general) { general }
         }
         .frame(width: 520, height: 590)
-        .onAppear { nameDraft = runtime.petName; login.refresh() }
+        .onAppear { nameDraft = runtime.petName; login.refresh(); conversation.refreshAvailability() }
         .onChange(of: runtime.petName) { _, value in nameDraft = value }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { login.refresh() }
+            if phase == .active { login.refresh(); conversation.refreshAvailability() }
         }
     }
 
@@ -113,6 +116,35 @@ struct SprigletSettingsView: View {
         }
     }
 
+    private var conversationPage: some View {
+        settingsPage {
+            Section("Talk with \(runtime.petName)") {
+                Toggle(AppText.talkThroughSiri, isOn: Binding(get: { conversation.isEnabled }, set: { conversation.setEnabled($0) }))
+                    .disabled(!conversation.allowsChanges)
+                detail("Say “Ask \(AppText.appName)” to Siri, or use the Ask \(AppText.appName) action in Shortcuts. Apple Intelligence answers on this Mac. \(AppText.appName) sends nothing anywhere and keeps no record of what you say.")
+                LabeledContent("Status", value: conversationStatus)
+                    .accessibilityElement(children: .combine)
+                if !conversation.allowsChanges {
+                    detail("Conversation can't be changed in this temporary review or validation copy.")
+                }
+            }
+            Section("This conversation") {
+                detail("Forgotten after 10 quiet minutes, when your Mac or its display sleeps, when you switch users, or when you turn talking off.")
+                Button(AppText.forgetConversation) { conversation.forget() }
+                    .disabled(!conversation.hasHistory)
+            }
+        }
+    }
+
+    private var conversationStatus: String {
+        guard conversation.isEnabled else { return "Off" }
+        switch conversation.phase {
+        case .listening: return "Listening"
+        case .thinking: return "Thinking"
+        case .idle: return ConversationCopy.status(for: conversation.availability, name: runtime.petName)
+        }
+    }
+
     private var general: some View {
         settingsPage {
             Section("Sound") {
@@ -181,8 +213,10 @@ struct SprigletSettingsView: View {
     }
 
     private func commitName() {
+        let previous = runtime.petName
         runtime.renamePet(nameDraft)
         nameDraft = runtime.petName
+        if runtime.petName != previous { conversation.companionDidChange() }
     }
 
     private var motionUnavailableMessage: String {
@@ -203,5 +237,5 @@ struct SprigletSettingsView: View {
         }
     }
 
-    private enum SettingsTab: Hashable { case companion, desktop, general }
+    private enum SettingsTab: Hashable { case companion, desktop, conversation, general }
 }

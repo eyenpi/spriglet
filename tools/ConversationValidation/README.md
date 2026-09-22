@@ -1,6 +1,6 @@
 # Conversation adapter validation
 
-`SystemConversationModel` is the only production type that reaches Apple's on-device language model through the FoundationModels framework. It conforms to the pure `ConversationModel` protocol from `SprigletConversation`. It holds at most one `LanguageModelSession`, requests a structured `CompanionReplyContent` (spoken text plus one of four gestures), and falls back to plain text when the engine retries. It converts every framework error into a `ConversationFailure`. Nothing constructs it in the app yet.
+`SystemConversationModel` is the only production type that reaches Apple's on-device language model through the FoundationModels framework. It conforms to the pure `ConversationModel` protocol from `SprigletConversation`. It holds at most one `LanguageModelSession`, requests a structured `CompanionReplyContent` (spoken text plus one of four gestures), and falls back to plain text when the engine retries. It converts every framework error into a `ConversationFailure`. The app creates exactly one, in `AppDelegate`, for the shared `ConversationController` that `AskCompanionIntent` uses.
 
 ## Build and run without the model
 
