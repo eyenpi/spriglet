@@ -1,6 +1,31 @@
 import AppKit
 import SprigletCore
 
+/// The coordinator needs only this narrow host contract. Keeping NSWindow and
+/// placement policy behind it makes hidden-endpoint recovery deterministic and
+/// lets the failure boundaries be exercised without moving a real desktop.
+@MainActor
+protocol PetHabitatHosting: AnyObject {
+    var habitatVisitWindowSize: CGSize { get }
+    var habitatVisitSourceDisplayID: UUID? { get }
+    func beginHabitatVisit() -> PetHabitatVisitToken?
+    func relocateHabitatVisit(
+        _ token: PetHabitatVisitToken,
+        to surface: HabitatSurface,
+        permit: PetHabitatRelocationPermit
+    ) -> Bool
+    func restoreHabitatVisitToFloor(
+        _ token: PetHabitatVisitToken,
+        permit: PetHabitatRelocationPermit
+    ) -> Bool
+    func recoverHabitatVisitToFloor(
+        _ token: PetHabitatVisitToken,
+        permit: PetHabitatRelocationPermit
+    ) -> Bool
+    func finishHabitatVisit(_ token: PetHabitatVisitToken) -> Bool
+    func abortHabitatVisitWhileInvisible(_ token: PetHabitatVisitToken) -> Bool
+}
+
 /// Coordinates one finite, click-transparent portal visit. Geometry is rebuilt
 /// on every start and reconciliation; no `NSScreen`, timer, or polling loop is
 /// retained by this type.
@@ -63,12 +88,13 @@ final class PetHabitatCoordinator {
     }
 
     private var configuration: Configuration
-    private let desktop: PetWindowController
+    private let desktop: any PetHabitatHosting
     private let currentTopology: @MainActor () -> HabitatTopology?
     private let setPlaybackHabitat: @MainActor (String, String?) -> Bool
     private let previewIntent: @MainActor (String) -> CharacterTimeline?
     private let performIntent: @MainActor (String) -> Bool
     private let resetScene: @MainActor () -> Void
+    private let onActivityChanged: @MainActor (Bool) -> Void
     private var planner = HabitatVisitPlanner()
     private var active: ActiveVisit?
     private var generation: UInt64 = 0
@@ -82,14 +108,15 @@ final class PetHabitatCoordinator {
 
     init(
         configuration: Configuration,
-        desktop: PetWindowController,
+        desktop: any PetHabitatHosting,
         currentTopology: @escaping @MainActor () -> HabitatTopology? = {
             ScreenHabitatProvider().currentTopology()
         },
         setPlaybackHabitat: @escaping @MainActor (String, String?) -> Bool,
         previewIntent: @escaping @MainActor (String) -> CharacterTimeline?,
         performIntent: @escaping @MainActor (String) -> Bool,
-        resetScene: @escaping @MainActor () -> Void
+        resetScene: @escaping @MainActor () -> Void,
+        onActivityChanged: @escaping @MainActor (Bool) -> Void = { _ in }
     ) {
         self.configuration = configuration
         self.desktop = desktop
@@ -98,6 +125,7 @@ final class PetHabitatCoordinator {
         self.previewIntent = previewIntent
         self.performIntent = performIntent
         self.resetScene = resetScene
+        self.onActivityChanged = onActivityChanged
     }
 
     func setAutomaticVisitsEnabled(_ enabled: Bool) {
@@ -114,8 +142,8 @@ final class PetHabitatCoordinator {
               trigger == .explicitPreview || configuration.automaticVisitsEnabled,
               configuration.capabilities.contains(.ledgePortalTraversal),
               let topology = currentTopology(),
-              topology.artGeometry.portalWindowSize == desktop.panel.frame.size,
-              let sourceDisplayID = desktop.currentPlacement?.displayUUID,
+              topology.artGeometry.portalWindowSize == desktop.habitatVisitWindowSize,
+              let sourceDisplayID = desktop.habitatVisitSourceDisplayID,
               let route = makeRoute(in: topology, sourceDisplayID: sourceDisplayID),
               let token = desktop.beginHabitatVisit()
         else { return false }
@@ -140,6 +168,7 @@ final class PetHabitatCoordinator {
             _ = setPlaybackHabitat("desktop", nil)
             return false
         }
+        onActivityChanged(true)
         return true
     }
 
@@ -176,9 +205,13 @@ final class PetHabitatCoordinator {
         }
 
         let fact = HabitatVisitMarkerFact(id: marker.id, poseID: marker.poseID ?? "")
-        let effects = planner.receive(fact)
+        let previousPlanner = planner
+        var proposedPlanner = planner
+        let effects = proposedPlanner.receive(fact)
         guard active?.generation == expectedGeneration else { return }
+        planner = proposedPlanner
         if !execute(effects, permit: permit, generation: expectedGeneration) {
+            planner = previousPlanner
             recoverAfterFailure(from: fact, permit: permit, generation: expectedGeneration)
         }
     }
@@ -203,14 +236,19 @@ final class PetHabitatCoordinator {
     }
 
     func cancel(_ reason: CancellationReason) {
-        guard var visit = active, !visit.recoveringAtFloor,
-              !visit.cancellationRequested else { return }
+        guard var visit = active else { return }
+        // A graceful return requested while visible can later become an
+        // immediate safe abort when AppKit hides or fully occludes the panel.
+        // Check that stronger proof before recovery/idempotence guards: stop or
+        // hide can otherwise strand a suspended recovery with no marker source.
         if [.hidden, .stopped].contains(reason),
            desktop.abortHabitatVisitWhileInvisible(visit.hostToken) {
             cancellationCount &+= 1
             finishAbortedVisit(generation: visit.generation)
             return
         }
+        guard !visit.recoveringAtFloor else { return }
+        guard !visit.cancellationRequested else { return }
         visit.cancellationRequested = true
         active = visit
         cancellationCount &+= 1
@@ -280,6 +318,12 @@ final class PetHabitatCoordinator {
                         guard let self, active?.generation == expectedGeneration else { return }
                         if !play(intentID, generation: expectedGeneration) {
                             active?.expectedMarker = nil
+                            if let permit {
+                                _ = recoverHiddenTransition(
+                                    permit: permit,
+                                    generation: expectedGeneration
+                                )
+                            }
                         }
                     }
                     continue
@@ -366,17 +410,8 @@ final class PetHabitatCoordinator {
         permit: PetHabitatRelocationPermit?,
         generation expectedGeneration: UInt64
     ) {
-        guard var visit = active, visit.generation == expectedGeneration else { return }
-        if let permit,
-           desktop.restoreHabitatVisitToFloor(visit.hostToken, permit: permit) {
-            planner.reset()
-            visit.recoveringAtFloor = true
-            active = visit
-            if play(visit.plan.content.floorReentryIntentID, generation: expectedGeneration) { return }
-            resetScene()
-            _ = desktop.finishHabitatVisit(visit.hostToken)
-            active = nil
-            _ = setPlaybackHabitat("desktop", nil)
+        guard let visit = active, visit.generation == expectedGeneration else { return }
+        if let permit, recoverHiddenTransition(permit: permit, generation: expectedGeneration) {
             return
         }
         let recovery = planner.recover(from: fact)
@@ -386,15 +421,55 @@ final class PetHabitatCoordinator {
         if !effects.isEmpty, execute(effects, permit: nil, generation: expectedGeneration) { return }
     }
 
+    /// Completes a partially applied hidden-endpoint transaction on the floor.
+    /// The host accepts the floor-exit permit only before any upper frame was
+    /// presented, and accepts the ledge-exit permit for an idempotent restore.
+    @discardableResult
+    private func recoverHiddenTransition(
+        permit: PetHabitatRelocationPermit,
+        generation expectedGeneration: UInt64
+    ) -> Bool {
+        guard var visit = active, visit.generation == expectedGeneration,
+              desktop.recoverHabitatVisitToFloor(visit.hostToken, permit: permit)
+        else { return false }
+
+        planner.reset()
+        visit.recoveringAtFloor = true
+        visit.cancellationRequested = true
+        visit.expectedMarker = nil
+        active = visit
+
+        let floorContextAccepted = setPlaybackHabitat(
+            HabitatSurfaceKind.floor.rawValue,
+            visit.plan.content.hiddenPoseID
+        )
+        if floorContextAccepted,
+           play(visit.plan.content.floorReentryIntentID, generation: expectedGeneration) {
+            return true
+        }
+
+        // The host is already back at a proven floor endpoint. If renderer
+        // recovery is unavailable, reveal only the ordinary stable pose there.
+        resetScene()
+        complete(generation: expectedGeneration, counted: false)
+        return active == nil
+    }
+
     private func complete(generation expectedGeneration: UInt64, counted: Bool) {
         guard let visit = active, visit.generation == expectedGeneration else { return }
+        let previousPlanner = planner
         active = nil
         planner.reset()
+        guard desktop.finishHabitatVisit(visit.hostToken) else {
+            active = visit
+            planner = previousPlanner
+            return
+        }
         generation &+= 1
         lastFinishedGeneration = expectedGeneration
-        guard desktop.finishHabitatVisit(visit.hostToken) else { return }
         if counted { completedVisitCount &+= 1 }
         _ = setPlaybackHabitat("desktop", nil)
+        onActivityChanged(false)
     }
 
     private func finishAbortedVisit(generation expectedGeneration: UInt64) {
@@ -405,5 +480,6 @@ final class PetHabitatCoordinator {
         lastFinishedGeneration = expectedGeneration
         resetScene()
         _ = setPlaybackHabitat("desktop", nil)
+        onActivityChanged(false)
     }
 }

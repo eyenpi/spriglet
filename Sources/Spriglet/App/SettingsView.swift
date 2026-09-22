@@ -61,8 +61,12 @@ struct SprigletSettingsView: View {
                     Button(AppText.playWithFirefly, systemImage: "sparkle") { runtime.playWithFirefly() }
                         .disabled(!runtime.canPlayWithFirefly)
                 }
+                Button(AppText.visitScreenTop, systemImage: "arrow.up.to.line") {
+                    runtime.visitScreenTop()
+                }
+                .disabled(!runtime.canVisitHabitat)
                 if !runtime.permitsMotion { detail(motionUnavailableMessage) }
-                else { detail("Sounds are optional in General. Parked firefly play stays in place.") }
+                else { detail("Sounds are optional in General. Screen-top visits return safely before controls resume.") }
             }
 
             Section("Recent preferences") {
@@ -77,7 +81,7 @@ struct SprigletSettingsView: View {
         settingsPage {
             Section("Availability") {
                 Toggle(AppText.pause, isOn: Binding(get: { runtime.isPaused }, set: { runtime.setPaused($0) }))
-                    .help("Stop animation and movement until you resume.")
+                    .help("Return safely from a screen-top visit, then stop animation and movement until you resume.")
                 Toggle(AppText.hidePet, isOn: Binding(get: { runtime.isHidden }, set: { runtime.setHidden($0) }))
                 Toggle(AppText.passClicksThrough, isOn: Binding(get: { runtime.clickThrough }, set: { runtime.setClickThrough($0) }))
                 detail("Send clicks through the entire pet window to the app underneath. The Spriglet menu and Settings remain available.")
@@ -88,7 +92,7 @@ struct SprigletSettingsView: View {
                 HStack {
                     Button(AppText.bringPetHome) { runtime.recenter() }
                     Button(AppText.nextDisplay) { runtime.moveToNextDisplay() }
-                }
+                }.disabled(!runtime.canAdjustPlacement)
                 HStack {
                     Text("Move pet")
                     Spacer()
@@ -96,7 +100,7 @@ struct SprigletSettingsView: View {
                     moveButton("Down", symbol: "arrow.down", dy: -48)
                     moveButton("Up", symbol: "arrow.up", dy: 48)
                     moveButton("Right", symbol: "arrow.right", dx: 48)
-                }
+                }.disabled(!runtime.canAdjustPlacement)
                 HStack {
                     Button("Walk Left") { runtime.walk(direction: .walkLeft) }
                     Button("Walk Right") { runtime.walk(direction: .walkRight) }
@@ -104,7 +108,7 @@ struct SprigletSettingsView: View {
                 detail("Drag to place your companion. Its home is remembered and stays reachable when displays change.")
             }
             Section("Keyboard and VoiceOver") {
-                detail("Use the Companion menu for keyboard commands. VoiceOver offers petting, play, parking, pause, and placement actions on the pet itself.")
+                detail("Use the Companion menu for keyboard commands. VoiceOver offers petting, play, screen-top visits, parking, pause, and placement actions on the pet itself.")
                 shortcut("Pet", keys: "⌥⌘P", spoken: "Option Command P")
                 shortcut("Firefly", keys: "⌥⌘F", spoken: "Option Command F")
                 shortcut(AppText.parkedMode, keys: "⌥⌘K", spoken: "Option Command K")

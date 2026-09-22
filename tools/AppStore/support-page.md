@@ -24,7 +24,7 @@ Check **Pause**, **Hide Pet**, and **Parked Mode** in the leaf menu. Reduce Moti
 
 ## How do I interact with it?
 
-Click to pet, drag to move, or choose **Play with Firefly** in the leaf menu. Settings > Companion offers name, size, and activity controls. Spriglet's keyboard commands work while using Spriglet; they are not global shortcuts.
+Click to pet, drag to move, or choose **Play with Firefly** or **Visit Screen Top** in the leaf menu. A screen-top visit uses the current display's safe area and returns the companion to its prior place when that display remains available. Settings > Companion offers name, size, and activity controls. Spriglet's keyboard commands work while using Spriglet; they are not global shortcuts.
 
 ## The pet is getting in the way
 

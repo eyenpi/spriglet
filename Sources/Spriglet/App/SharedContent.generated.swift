@@ -12,6 +12,7 @@ enum AppText {
     static let documentUnavailable = "This document could not be opened. Please contact support."
     static let aboutText = "A little quiet company, with no account, tracking, or access to other apps. Your companion and its preferences stay on this Mac."
     static let playWithFirefly = "Play with Firefly"
+    static let visitScreenTop = "Visit Screen Top"
     static let parkedMode = "Parked Mode"
     static let pause = "Pause"
     static let resume = "Resume"

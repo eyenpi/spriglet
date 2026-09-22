@@ -20,6 +20,7 @@ final class PetRuntime {
     private(set) var profile = PetProfile()
     private(set) var interactionMemory = PetInteractionMemory()
     private(set) var isSleeping = false
+    private(set) var isVisitingHabitat = false
     private(set) var hasScheduledBehavior = false
     private(set) var automaticActionCount: UInt64 = 0
     private(set) var lastAutomaticIntent: PetBehaviorIntent?
@@ -48,6 +49,8 @@ final class PetRuntime {
     @ObservationIgnored private let awareness: PetAwarenessCoordinator
     @ObservationIgnored private let contextCoordinator: PetContextCoordinator
     @ObservationIgnored private var reactiveBehavior: ReactiveBehaviorCoordinator?
+    @ObservationIgnored private var habitatCoordinator: PetHabitatCoordinator?
+    @ObservationIgnored private var habitatMarkerObserverID: UUID?
     /// Observable projection of the world policy for menu and Settings updates.
     private var policy = ActivityPolicy()
     private var scene: any PetSceneRenderer { renderer }
@@ -61,6 +64,7 @@ final class PetRuntime {
     @ObservationIgnored private let preferencesStore: PetPreferencesStore
     @ObservationIgnored private let initialPlacement: PetSavedPlacement?
     @ObservationIgnored private var probePlacement: PetSavedPlacement?
+    @ObservationIgnored private var pendingDisplaySize: PetDisplaySize?
     @ObservationIgnored private var isRunning = false
     @ObservationIgnored private var isInteracting = false
     @ObservationIgnored private let isCommandLineProbe = CommandLine.arguments.contains("--probe")
@@ -128,6 +132,11 @@ final class PetRuntime {
 
     var status: String {
         if isHidden { return "Hidden" }
+        if isVisitingHabitat {
+            if isPaused { return "Returning safely, then paused" }
+            if !policy.allowsAnimation { return "Returning safely" }
+            return "Visiting the screen top"
+        }
         if isPaused { return "Paused" }
         if !policy.allowsAnimation { return "System rest" }
         if renderer.currentRoutine == .firefly { return "Firefly play" }
@@ -139,16 +148,25 @@ final class PetRuntime {
     }
 
     var permitsMotion: Bool { policy.allowsAnimation && !reduceMotion && renderer.assetError == nil }
-    var canInteract: Bool { permitsMotion && !sampling }
+    var canInteract: Bool { permitsMotion && !sampling && !isVisitingHabitat }
     var canPlayWithFirefly: Bool { canInteract && !isAnimating && !isInteracting }
+    var canVisitHabitat: Bool {
+        habitatCoordinator != nil && !isVisitingHabitat
+            && habitatVisitEligibility.allowsExplicitVisit
+    }
+    var canAdjustPlacement: Bool { !isVisitingHabitat }
     var canPreviewSound: Bool { soundEnabled && policy.allowsAnimation && !sampling && !isTemporaryReview && !isCommandLineProbe }
 
     func start() {
         guard desktop == nil else { return }
         renderer.setDisplaySize(displaySize)
-        desktop = PetWindowController(contentView: renderer, size: renderer.displaySize) { [weak renderer] point in
-            renderer?.containsPet(at: point) ?? false
-        }
+        desktop = PetWindowController(
+            contentView: renderer,
+            size: renderer.displaySize,
+            hitTest: { [weak renderer] point in
+                renderer?.containsPet(at: point) ?? false
+            }
+        )
         desktop.onPetClicked = { [weak self] in
             guard let self, !self.sampling else { return }
             self.play()
@@ -162,6 +180,7 @@ final class PetRuntime {
             isInteracting = interacting
             scene.perform(.interactionHeld(interacting))
             if interacting {
+                cancelHabitatVisit(.userInteraction)
                 reactiveBehavior?.suppressCurrentApproach()
                 cancelBehaviorSchedule()
                 behaviorDirector.resetAfterInteraction()
@@ -178,9 +197,22 @@ final class PetRuntime {
             self?.reconcileBehaviorSchedule()
             self?.refreshAccessibility()
         }
-        desktop.onOcclusionChanged = { [weak self] visible in self?.setSuspension(.occluded, active: !visible) }
-        desktop.onScreenChanged = { [weak self] in self?.refreshEnvironment() }
-        desktop.onMovementInterrupted = { [weak self] in self?.scene.perform(.resetPose) }
+        desktop.onOcclusionChanged = { [weak self] visible in
+            guard let self else { return }
+            if !visible { cancelHabitatVisit(.hidden) }
+            setSuspension(.occluded, active: !visible)
+        }
+        desktop.onScreenChanged = { [weak self] in
+            self?.reconcileHabitatVisit()
+            self?.refreshEnvironment()
+        }
+        desktop.onHabitatVisitInvalidated = { [weak self] reason in
+            self?.cancelHabitatVisit(reason.coordinatorReason)
+        }
+        desktop.onMovementInterrupted = { [weak self] in
+            guard let self, !isHabitatVisitActive, !isVisitingHabitat else { return }
+            scene.perform(.resetPose)
+        }
         desktop.onWalkRequested = { [weak self] in self?.walk() }
         desktop.onImageOffsetChanged = { [weak self] offset in self?.renderer.setImageOffset(offset) }
         desktop.onPlacementSettled = { [weak self] _ in
@@ -208,14 +240,16 @@ final class PetRuntime {
             self?.sound.stop()
         }
         renderer.onAssetError = { [weak self] error in
-            self?.characterIssue = error
-            self?.message = error
+            guard let self else { return }
+            recoverFromHabitatRendererFailure()
+            characterIssue = error
+            message = error
         }
         characterIssue = renderer.assetError
         awareness.onStimulus = { [weak self] update in
             guard let self else { return }
             receive(.pointer(perception: update.perception, attention: update.attention))
-            guard isRunning else { return }
+            guard isRunning, !isHabitatVisitActive, !isVisitingHabitat else { return }
             for command in PointerIntentDirector.commands(in: world) { scene.perform(command) }
             _ = reactiveBehavior?.receive(world: world)
         }
@@ -228,6 +262,7 @@ final class PetRuntime {
         desktop.restorePlacement(initialPlacement)
         reconcilePlaybackContext()
         configureReactiveBehavior()
+        configureHabitat()
         setSuspension(.hidden, active: isHidden)
         setSuspension(.userPaused, active: isPaused)
         observeEnvironment()
@@ -255,6 +290,8 @@ final class PetRuntime {
 
     func stop() {
         isRunning = false
+        desktop?.hide()
+        cancelHabitatVisit(.stopped)
         awareness.stop()
         contextCoordinator.stop()
         contextCoordinator.onFact = nil
@@ -264,6 +301,10 @@ final class PetRuntime {
         probeTask = nil
         desktop?.stopMovement()
         scene.perform(.suspended(true))
+        if let habitatMarkerObserverID {
+            renderer.removePlaybackMarkerObserver(habitatMarkerObserverID)
+            self.habitatMarkerObserverID = nil
+        }
         refreshSoundPolicy()
         environment.stop()
         environment.onEvent = nil
@@ -296,6 +337,13 @@ final class PetRuntime {
         guard value != displaySize else { return }
         withBehaviorTransition {
             displaySize = value
+            if isHabitatVisitActive {
+                pendingDisplaySize = value
+                savePreferences()
+                cancelHabitatVisit(.displaySizeChanged)
+                message = "Returning from the screen top before changing companion size."
+                return
+            }
             desktop?.cancelInteraction()
             renderer.setDisplaySize(value)
             desktop?.setDisplaySize(renderer.displaySize)
@@ -304,6 +352,25 @@ final class PetRuntime {
             refreshMeasurements()
             message = "Companion size changed to \(value.title.lowercased())."
         }
+    }
+
+    @discardableResult
+    func visitScreenTop() -> Bool {
+        guard canVisitHabitat, let habitatCoordinator else {
+            message = habitatVisitUnavailableMessage
+            return false
+        }
+        var accepted = false
+        withBehaviorTransition {
+            reactiveBehavior?.suppressCurrentApproach()
+            behaviorDirector.resetAfterInteraction()
+            accepted = habitatCoordinator.requestVisit(.explicitPreview)
+            synchronizeHabitatState()
+            message = accepted
+                ? "A quick climb to peek from the top of this display."
+                : habitatVisitUnavailableMessage
+        }
+        return accepted
     }
 
     func setActivityLevel(_ value: PetActivityLevel) {
@@ -348,7 +415,8 @@ final class PetRuntime {
 
     @discardableResult
     func playWithFirefly() -> Bool {
-        guard permitsMotion, !isAnimating, !isInteracting else { return false }
+        guard permitsMotion, !isAnimating, !isInteracting,
+              !isHabitatVisitActive, !isVisitingHabitat else { return false }
         if let fireflyReadyAt, interactionClock.now < fireflyReadyAt {
             message = "Give the firefly a little time to return before another game."
             return false
@@ -374,7 +442,7 @@ final class PetRuntime {
 
     @discardableResult
     func preview(_ action: PetAction) -> Bool {
-        guard permitsMotion else {
+        guard permitsMotion, !isHabitatVisitActive, !isVisitingHabitat else {
             message = "Show and resume the pet to interact. Reduce Motion keeps Spriglet still."
             return false
         }
@@ -398,7 +466,7 @@ final class PetRuntime {
 
     @discardableResult
     func walk(direction: SampleClipID? = nil) -> Bool {
-        guard permitsMotion else { return false }
+        guard permitsMotion, !isHabitatVisitActive, !isVisitingHabitat else { return false }
         var accepted = false
         withBehaviorTransition {
             behaviorDirector.resetAfterInteraction()
@@ -447,7 +515,13 @@ final class PetRuntime {
         withBehaviorTransition {
             isPaused = value
             setSuspension(.userPaused, active: value)
-            message = value ? "Paused. Animation and movement have stopped." : "Resumed in a resting pose."
+            if value {
+                message = isHabitatVisitActive
+                    ? "Returning safely, then pausing."
+                    : "Paused. Animation and movement have stopped."
+            } else {
+                message = "Resumed in a resting pose."
+            }
             savePreferences()
         }
     }
@@ -455,8 +529,15 @@ final class PetRuntime {
     func setHidden(_ value: Bool) {
         withBehaviorTransition {
             isHidden = value
-            setSuspension(.hidden, active: value)
-            if value { desktop.hide() } else { desktop.show() }
+            if value {
+                // Ordering out first gives the habitat host concrete proof that
+                // an interrupted portal visit can be restored without a flash.
+                desktop.hide()
+                setSuspension(.hidden, active: true)
+            } else {
+                setSuspension(.hidden, active: false)
+                desktop.show()
+            }
             message = value ? "Pet hidden. Settings and the leaf menu remain available." : "Your companion is visible again."
             savePreferences()
         }
@@ -474,7 +555,11 @@ final class PetRuntime {
     func setAllSpaces(_ value: Bool) {
         withBehaviorTransition {
             allSpaces = value
-            desktop.setAllSpaces(value)
+            if isHabitatVisitActive {
+                cancelHabitatVisit(.policyChanged)
+            } else {
+                desktop.setAllSpaces(value)
+            }
             message = value ? "Your companion follows ordinary desktop Spaces." : "Your companion stays on its current desktop Space."
             savePreferences()
         }
@@ -492,6 +577,10 @@ final class PetRuntime {
     }
 
     func recenter() {
+        guard canAdjustPlacement else {
+            message = "Placement controls return after the screen-top visit."
+            return
+        }
         withBehaviorTransition {
             behaviorDirector.resetAfterInteraction()
             desktop.recenter()
@@ -500,6 +589,10 @@ final class PetRuntime {
     }
 
     func moveToNextDisplay() {
+        guard canAdjustPlacement else {
+            message = "Display controls return after the screen-top visit."
+            return
+        }
         withBehaviorTransition {
             behaviorDirector.resetAfterInteraction()
             desktop.moveToNextDisplay()
@@ -509,6 +602,10 @@ final class PetRuntime {
     }
 
     func nudge(dx: CGFloat = 0, dy: CGFloat = 0) {
+        guard canAdjustPlacement else {
+            message = "Placement controls return after the screen-top visit."
+            return
+        }
         withBehaviorTransition {
             behaviorDirector.resetAfterInteraction()
             desktop.nudge(dx: dx, dy: dy)
@@ -535,6 +632,10 @@ final class PetRuntime {
 
     private func runDiagnostic(extended: Bool, terminateWhenFinished: Bool) {
         guard isRunning, !sampling else { return }
+        guard !isHabitatVisitActive, !isVisitingHabitat else {
+            message = "Development checks are available after the screen-top visit."
+            return
+        }
         probePlacement = desktop.currentPlacement
         sampling = true
         refreshWorld()
@@ -605,9 +706,15 @@ final class PetRuntime {
             let suspended = !policy.allowsAnimation
             if suspended {
                 desktop?.cancelInteraction()
-                desktop?.stopMovement()
+                if !isHabitatVisitActive, !isVisitingHabitat { desktop?.stopMovement() }
             }
-            scene.perform(.suspended(suspended))
+            reconcileHabitatVisit()
+            // A visible cross-habitat host can only return at an authored
+            // hidden marker. Let that bounded return finish before suspending
+            // its renderer; hidden or occluded panels abort synchronously.
+            if !isHabitatVisitActive {
+                scene.perform(.suspended(suspended))
+            }
             refreshSoundPolicy()
             refreshMeasurements()
         }
@@ -627,10 +734,15 @@ final class PetRuntime {
             setSuspension(.thermalPressure, active: snapshot.thermalPressure.requiresRest)
             let maxFPS = desktop?.panel.screen?.maximumFramesPerSecond ?? 60
             scene.perform(.preferredFramesPerSecond(lowPower ? 30 : maxFPS))
+            reconcileHabitatVisit()
             reconcilePlaybackContext()
             if reduceMotion || (enteringLowPower && (renderer.currentRoutine == .explore || renderer.currentRoutine == .firefly)) {
-                desktop?.stopMovement()
-                scene.perform(.resetPose)
+                if isHabitatVisitActive {
+                    cancelHabitatVisit(.policyChanged)
+                } else {
+                    desktop?.stopMovement()
+                    scene.perform(.resetPose)
+                }
             }
         }
     }
@@ -675,6 +787,9 @@ final class PetRuntime {
             if canPlayWithFirefly {
                 command(AppText.playWithFirefly) { $0.canPlayWithFirefly && $0.playWithFirefly() }
             }
+            if canVisitHabitat {
+                command(AppText.visitScreenTop) { $0.canVisitHabitat && $0.visitScreenTop() }
+            }
             if canInteract {
                 let wasSleeping = isSleeping
                 command(wasSleeping ? "Wake up" : "Take a nap") {
@@ -694,11 +809,13 @@ final class PetRuntime {
                 $0.setPaused(targetPaused)
                 return true
             }
-            command("Bring pet home") { $0.recenter(); return true }
-            command("Move left") { $0.nudge(dx: -48); return true }
-            command("Move right") { $0.nudge(dx: 48); return true }
-            command("Move up") { $0.nudge(dy: 48); return true }
-            command("Move down") { $0.nudge(dy: -48); return true }
+            if canAdjustPlacement {
+                command("Bring pet home") { $0.recenter(); return true }
+                command("Move left") { $0.nudge(dx: -48); return true }
+                command("Move right") { $0.nudge(dx: 48); return true }
+                command("Move up") { $0.nudge(dy: 48); return true }
+                command("Move down") { $0.nudge(dy: -48); return true }
+            }
         }
         if onShowSettingsRequested != nil {
             actions.append(NSAccessibilityCustomAction(name: "Open Settings") { [weak self] in
@@ -749,7 +866,8 @@ final class PetRuntime {
         reconcileAwareness()
         reconcileContext()
         guard isRunning, autonomousBehavior, !world.isSleeping,
-              !sampling, renderer.assetError == nil,
+              !sampling, !isHabitatVisitActive, !isVisitingHabitat,
+              renderer.assetError == nil,
               world.allowsAutonomousBehavior else {
             cancelBehaviorSchedule()
             return
@@ -777,6 +895,7 @@ final class PetRuntime {
             hasScheduledBehavior = false
             guard isRunning, autonomousBehavior, permitsMotion,
                   desktop.panel.isOnActiveSpace, !isAnimating, !isMoving, !isInteracting,
+                  !isHabitatVisitActive, !isVisitingHabitat,
                   !sampling || duringProbe else { return }
             performBehavior(plan.intent, duringProbe: duringProbe)
         }
@@ -884,8 +1003,165 @@ final class PetRuntime {
         }))
     }
 
+    private var isHabitatVisitActive: Bool {
+        habitatCoordinator?.isActive == true
+    }
+
+    private var habitatVisitEligibility: HabitatVisitEligibility {
+        HabitatVisitEligibility(
+            isRunning: isRunning,
+            isHidden: isHidden,
+            isPaused: isPaused,
+            isSystemSuspended: !policy.allowsAnimation,
+            isReduceMotionEnabled: reduceMotion,
+            isLowPowerModeEnabled: lowPower,
+            isOnActiveSpace: desktop?.panel.isOnActiveSpace == true,
+            isSleeping: isSleeping,
+            isAnimating: isAnimating,
+            isMoving: isMoving,
+            isInteracting: isInteracting,
+            isSampling: sampling
+        )
+    }
+
+    private var habitatContinuationAllowed: Bool {
+        isRunning && !isHidden && !isPaused && policy.allowsAnimation
+            && !reduceMotion && !lowPower && !sampling
+            && desktop?.panel.isOnActiveSpace == true
+    }
+
+    private var habitatVisitUnavailableMessage: String {
+        if habitatCoordinator == nil {
+            return "This character does not include a verified screen-top visit."
+        }
+        if isHidden { return "Show the pet before starting a screen-top visit." }
+        if isPaused { return "Resume the pet before starting a screen-top visit." }
+        if reduceMotion { return "Reduce Motion keeps screen-top visits still." }
+        if lowPower { return "Screen-top visits rest while Low Power Mode is on." }
+        if isSleeping { return "Wake the pet before starting a screen-top visit." }
+        if !policy.allowsAnimation { return "Screen-top visits resume when the system is available." }
+        if isAnimating || isMoving || isInteracting || isVisitingHabitat {
+            return "Finish the current moment before starting a screen-top visit."
+        }
+        return "A safe screen-top habitat is not available on this display."
+    }
+
+    private func configureHabitat() {
+        guard habitatCoordinator == nil, habitatMarkerObserverID == nil,
+              !isCommandLineProbe, !isTemporaryReview,
+              let desktop,
+              let package = renderer.characterPackage,
+              package.identifier == character.id,
+              package.identifier == PetAssetDefinition.acornHopper.id,
+              let content = package.habitatVisitContent
+        else { return }
+
+        let renderer = self.renderer
+        habitatCoordinator = PetHabitatCoordinator(
+            configuration: .init(content: content),
+            desktop: desktop,
+            currentTopology: { [weak renderer] in
+                guard let renderer,
+                      let art = HabitatPortalArtGeometry.acornStandard.scaled(
+                        toPortalWindowSize: renderer.displaySize
+                      ) else { return nil }
+                return ScreenHabitatProvider(artGeometry: art).currentTopology()
+            },
+            setPlaybackHabitat: { [weak self] habitatID, poseID in
+                self?.setHabitatPlaybackContext(habitatID, preserving: poseID) == true
+            },
+            previewIntent: { [weak renderer] in renderer?.previewIntent($0) },
+            performIntent: { [weak renderer] in
+                renderer?.perform(.intent($0, priority: .contextual)) == true
+            },
+            resetScene: { [weak renderer] in renderer?.perform(.resetPose) },
+            onActivityChanged: { [weak self] _ in
+                self?.synchronizeHabitatState()
+            }
+        )
+        habitatMarkerObserverID = renderer.observePlaybackMarkers { [weak self] marker in
+            guard let self else { return }
+            habitatCoordinator?.receive(marker)
+            synchronizeHabitatState()
+        }
+    }
+
+    private func setHabitatPlaybackContext(
+        _ habitatID: String,
+        preserving poseID: String?
+    ) -> Bool {
+        guard let package = renderer.characterPackage else { return false }
+        // A visit can be asked to return after Reduce Motion changes. Preserve
+        // the already-authorized finite route until it reaches the floor, then
+        // reconcile the ordinary context with the new preference.
+        let context = CharacterPlaybackContext(
+            capabilityIDs: Set(package.capabilities),
+            habitatID: habitatID,
+            orientationID: "upright",
+            reduceMotion: false
+        )
+        if let poseID {
+            return renderer.setPlaybackContext(context, preservingPoseID: poseID)
+        }
+        renderer.setPlaybackContext(context)
+        return renderer.playbackContext == context
+    }
+
+    private func reconcileHabitatVisit() {
+        guard let habitatCoordinator, habitatCoordinator.isActive else { return }
+        habitatCoordinator.reconcile(
+            policyAllowsVisit: habitatContinuationAllowed,
+            displaySize: renderer.displaySize
+        )
+        synchronizeHabitatState()
+    }
+
+    private func cancelHabitatVisit(_ reason: PetHabitatCoordinator.CancellationReason) {
+        habitatCoordinator?.cancel(reason)
+        synchronizeHabitatState()
+    }
+
+    /// A renderer failure removes the marker stream that normally returns a
+    /// visit. Hide the panel before using the host's invisible-abort contract,
+    /// then restore ordinary visibility only after the temporary host is gone.
+    private func recoverFromHabitatRendererFailure() {
+        guard isHabitatVisitActive, let desktop else { return }
+        let shouldReshow = isRunning && !isHidden && desktop.panel.isVisible
+        desktop.hide()
+        if shouldReshow, !isHabitatVisitActive {
+            desktop.show()
+        }
+    }
+
+    private func synchronizeHabitatState() {
+        let active = isHabitatVisitActive
+        guard active != isVisitingHabitat else { return }
+        isVisitingHabitat = active
+        if active {
+            cancelBehaviorSchedule()
+            reactiveBehavior?.suppressCurrentApproach()
+        } else {
+            if let pendingDisplaySize {
+                self.pendingDisplaySize = nil
+                desktop?.cancelInteraction()
+                renderer.setDisplaySize(pendingDisplaySize)
+                desktop?.setDisplaySize(renderer.displaySize)
+            }
+            desktop?.setAllSpaces(allSpaces)
+            reconcilePlaybackContext()
+            scene.perform(.suspended(!policy.allowsAnimation))
+        }
+        refreshMeasurements()
+        refreshWorld()
+        reconcileAwareness()
+        reconcileContext()
+        if behaviorMutationDepth == 0 { reconcileBehaviorSchedule() }
+        refreshAccessibility()
+    }
+
     private func reconcilePlaybackContext() {
-        guard let package = renderer.characterPackage else { return }
+        guard !isHabitatVisitActive, !isVisitingHabitat,
+              let package = renderer.characterPackage else { return }
         renderer.setPlaybackContext(CharacterPlaybackContext(
             capabilityIDs: Set(package.capabilities),
             habitatID: "desktop",
@@ -930,7 +1206,8 @@ final class PetRuntime {
             isSuspended: world.isSuspended,
             isPaused: isPaused,
             isInteracting: world.isInteracting,
-            isConstrained: world.isAnimating || world.isMoving || world.isReduceMotion || sampling || isCommandLineProbe,
+            isConstrained: world.isAnimating || world.isMoving || world.isReduceMotion
+                || isHabitatVisitActive || isVisitingHabitat || sampling || isCommandLineProbe,
             isLowPower: world.isLowPower
         ), petBounds: world.petBounds)
     }
@@ -942,7 +1219,8 @@ final class PetRuntime {
             isVisible: isRunning && !isHidden && world.isOnActiveSpace
                 && !reasons.contains(.occluded),
             isPaused: isPaused || sampling || world.isInteracting
-                || world.isAnimating || world.isMoving,
+                || world.isAnimating || world.isMoving || isHabitatVisitActive
+                || isVisitingHabitat,
             isSessionActive: !reasons.contains(.sessionInactive),
             isSystemAwake: !reasons.contains(.systemAsleep),
             isDisplayAwake: !reasons.contains(.displayAsleep),
@@ -954,6 +1232,7 @@ final class PetRuntime {
 
     private func receiveContextFact(_ fact: UserActivityContextFact) {
         refreshWorld()
+        guard !isHabitatVisitActive, !isVisitingHabitat else { return }
         guard let intent = ContextIntentDirector.intent(
             for: fact, in: world,
             automaticMomentsEnabled: autonomousBehavior && !isCommandLineProbe
@@ -984,9 +1263,26 @@ final class PetRuntime {
     private func activeSpaceChanged() {
         withBehaviorTransition {
             if desktop?.panel.isOnActiveSpace == false {
-                desktop.stopMovement()
-                scene.perform(.resetPose)
+                if isHabitatVisitActive || isVisitingHabitat {
+                    let invisible = desktop.panel.isVisible == false
+                        || !desktop.panel.occlusionState.contains(.visible)
+                    cancelHabitatVisit(invisible ? .hidden : .policyChanged)
+                } else {
+                    desktop.stopMovement()
+                    scene.perform(.resetPose)
+                }
             }
+        }
+    }
+}
+
+private extension PetHabitatInvalidationReason {
+    var coordinatorReason: PetHabitatCoordinator.CancellationReason {
+        switch self {
+        case .hidden: .hidden
+        case .userInteraction: .userInteraction
+        case .topologyChanged: .topologyChanged
+        case .displaySizeChanged: .displaySizeChanged
         }
     }
 }

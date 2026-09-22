@@ -35,6 +35,8 @@ struct PetCommandActions: View {
                 .keyboardShortcut("p", modifiers: [.command, .option]).disabled(!runtime.canInteract)
             Button(AppText.playWithFirefly) { runtime.playWithFirefly() }
                 .keyboardShortcut("f", modifiers: [.command, .option]).disabled(!runtime.canPlayWithFirefly)
+            Button(AppText.visitScreenTop) { runtime.visitScreenTop() }
+                .disabled(!runtime.canVisitHabitat)
             Toggle(AppText.parkedMode, isOn: Binding(get: { runtime.isParked }, set: { runtime.setParked($0) }))
                 .keyboardShortcut("k", modifiers: [.command, .option])
             Button(runtime.isPaused ? AppText.resume : AppText.pause) { runtime.setPaused(!runtime.isPaused) }
@@ -50,6 +52,7 @@ struct PetCommandActions: View {
                     .keyboardShortcut("w", modifiers: [.command, .option]).disabled(!runtime.canInteract)
                 Button(AppText.bringPetHome) { runtime.recenter() }
                     .keyboardShortcut("r", modifiers: [.command, .option])
+                    .disabled(!runtime.canAdjustPlacement)
                 Menu("Move Pet") {
                     Button("Left") { runtime.nudge(dx: -48) }
                         .keyboardShortcut(.leftArrow, modifiers: [.command, .option])
@@ -60,7 +63,7 @@ struct PetCommandActions: View {
                     Button("Down") { runtime.nudge(dy: -48) }
                         .keyboardShortcut(.downArrow, modifiers: [.command, .option])
                     Button(AppText.nextDisplay) { runtime.moveToNextDisplay() }
-                }
+                }.disabled(!runtime.canAdjustPlacement)
             }
         }.disabled(runtime.sampling)
     }

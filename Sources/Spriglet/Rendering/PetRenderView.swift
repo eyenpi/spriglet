@@ -92,6 +92,7 @@ final class PetRenderView: NSView {
     private var queuedRequest: Request?
     private var activeRequest: Request?
     private var activePhraseID: String?
+    private var playbackMarkerObservers: [UUID: (CharacterPlaybackMarker) -> Void] = [:]
     private var deliveredMarkers: Set<MarkerDeliveryKey> = []
     private var elapsed: TimeInterval = 0
     private var lastTimestamp: CFTimeInterval?
@@ -247,6 +248,21 @@ final class PetRenderView: NSView {
     func setPreferredFramesPerSecond(_ value: Int) {
         preferredFramesPerSecond = max(1, value)
         updateFrameRate()
+    }
+
+    /// Adds a marker consumer without taking ownership of the compatibility
+    /// callback used by validation and other renderer clients.
+    @discardableResult
+    func observePlaybackMarkers(
+        _ observer: @escaping (CharacterPlaybackMarker) -> Void
+    ) -> UUID {
+        let id = UUID()
+        playbackMarkerObservers[id] = observer
+        return id
+    }
+
+    func removePlaybackMarkerObserver(_ id: UUID) {
+        playbackMarkerObservers[id] = nil
     }
 
     /// Environment policy is an input to route selection, not renderer state.
@@ -857,6 +873,10 @@ final class PetRenderView: NSView {
             if let poseID = marker.poseID { currentPoseID = poseID }
             onPlaybackMarker?(marker)
             guard generation == expectedGeneration, !isSuspended, self.timeline != nil else { return false }
+            for observer in Array(playbackMarkerObservers.values) {
+                observer(marker)
+                guard generation == expectedGeneration, !isSuspended, self.timeline != nil else { return false }
+            }
         }
         return true
     }

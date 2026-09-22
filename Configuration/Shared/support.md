@@ -24,7 +24,7 @@ Check **{{pause}}**, **{{hidePet}}**, and **{{parkedMode}}** in the leaf menu. R
 
 ## How do I interact with it?
 
-Click to pet, drag to move, or choose **{{playWithFirefly}}** in the leaf menu. Settings > Companion offers name, size, and activity controls. {{appName}}'s keyboard commands work while using {{appName}}; they are not global shortcuts.
+Click to pet, drag to move, or choose **{{playWithFirefly}}** or **{{visitScreenTop}}** in the leaf menu. A screen-top visit uses the current display's safe area and returns the companion to its prior place when that display remains available. Settings > Companion offers name, size, and activity controls. {{appName}}'s keyboard commands work while using {{appName}}; they are not global shortcuts.
 
 ## The pet is getting in the way
 
