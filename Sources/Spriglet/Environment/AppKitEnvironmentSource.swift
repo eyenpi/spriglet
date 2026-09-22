@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import SprigletCore
 
 /// A small platform boundary for the environmental facts that affect the pet's
 /// resource policy. The values deliberately exclude AppKit objects so they can
@@ -42,6 +43,7 @@ enum EnvironmentEvent: Equatable, Sendable {
     case activeSpaceChanged
     case suspension(reason: EnvironmentSuspensionReason, active: Bool)
     case policyChanged(EnvironmentSnapshot)
+    case context(GenericContextStimulus)
 }
 
 /// The lifecycle contract for platform environment sources.
@@ -97,6 +99,7 @@ final class AppKitEnvironmentSource: EnvironmentObserving {
             for: NSWorkspace.ActiveSpaceDidChangeMessage.self
         ) { [weak self] _ in
             await self?.emit(.activeSpaceChanged, generation: generation)
+            await self?.emit(.context(.spaceChanged), generation: generation)
         })
         observationTokens.append(workspaceNotificationCenter.addObserver(
             of: workspace,
@@ -115,6 +118,7 @@ final class AppKitEnvironmentSource: EnvironmentObserving {
                 .suspension(reason: .displayAsleep, active: false),
                 generation: generation
             )
+            await self?.emit(.context(.displayWoke), generation: generation)
         })
         observationTokens.append(workspaceNotificationCenter.addObserver(
             of: workspace,
@@ -133,6 +137,7 @@ final class AppKitEnvironmentSource: EnvironmentObserving {
                 .suspension(reason: .systemAsleep, active: false),
                 generation: generation
             )
+            self?.emit(.context(.displayWoke), generation: generation)
         })
         observationTokens.append(workspaceNotificationCenter.addObserver(
             of: workspace,
@@ -151,6 +156,7 @@ final class AppKitEnvironmentSource: EnvironmentObserving {
                 .suspension(reason: .sessionInactive, active: false),
                 generation: generation
             )
+            self?.emit(.context(.sessionActivated), generation: generation)
         })
         observationTokens.append(workspaceNotificationCenter.addObserver(
             of: workspace,

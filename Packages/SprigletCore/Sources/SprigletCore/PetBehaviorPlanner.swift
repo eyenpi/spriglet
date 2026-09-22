@@ -37,8 +37,7 @@ public struct PetBehaviorPlanner: Sendable {
         var weights: [(PetBehaviorIntent, Int)] = [
             (.observe, 50 + Int((1 - traits.playfulness) * 15) + Int(recent.relocation * 10) + (lowPower ? 20 : 0)),
             (.greet, 14 + Int(traits.sociability * 12) + Int(recent.affection * 8)),
-            (.explore, canExplore ? 6 + Int(traits.curiosity * 12) + Int(traits.playfulness * 4) - Int(recent.relocation * 6) : 0),
-            (.nap, 3 + Int((1 - traits.playfulness) * 4) + Int(recent.play * 6) + (lowPower ? 4 : 0))
+            (.explore, canExplore ? 6 + Int(traits.curiosity * 12) + Int(traits.playfulness * 4) - Int(recent.relocation * 6) : 0)
         ]
         for index in weights.indices where weights[index].0 != .observe && weights[index].0 == previousPerformedIntent {
             weights[index].1 = 0

@@ -186,7 +186,7 @@ struct PetBehaviorPlannerTests {
         let baseline = counts(profile: PetProfile())
         let affectionate = counts(profile: PetProfile(), memory: affection)
         #expect(affectionate[.greet, default: 0] > baseline[.greet, default: 0])
-        #expect(baseline[.nap, default: 0] > 0 && baseline[.nap, default: 0] < 4_096 / 10)
+        #expect(baseline[.nap, default: 0] == 0)
     }
 
     @Test("Different seeds vary the finite suggestions")

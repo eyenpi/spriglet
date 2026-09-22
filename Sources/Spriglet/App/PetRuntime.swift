@@ -46,6 +46,7 @@ final class PetRuntime {
     @ObservationIgnored private let environment: any EnvironmentObserving
     @ObservationIgnored private let deadlines: any DeadlineScheduling
     @ObservationIgnored private let awareness: PetAwarenessCoordinator
+    @ObservationIgnored private let contextCoordinator: PetContextCoordinator
     @ObservationIgnored private var reactiveBehavior: ReactiveBehaviorCoordinator?
     /// Observable projection of the world policy for menu and Settings updates.
     private var policy = ActivityPolicy()
@@ -76,10 +77,19 @@ final class PetRuntime {
          character: PetAssetDefinition = .acornHopper, resourceBundle: Bundle = .main,
          environment: any EnvironmentObserving = AppKitEnvironmentSource(),
          pointerSource: any PointerObserving = AppKitPointerSource(),
+         contextSource: (any ContextObserving)? = nil,
+         userActivitySource: (any UserActivityObserving)? = nil,
+         wakeMovementSource: (any WakeMovementObserving)? = nil,
          deadlines: any DeadlineScheduling = DeadlineScheduler()) {
         self.environment = environment
         self.deadlines = deadlines
         awareness = PetAwarenessCoordinator(source: pointerSource, scheduler: deadlines)
+        contextCoordinator = PetContextCoordinator(
+            context: contextSource ?? ContextSource(scheduler: deadlines),
+            userActivity: userActivitySource ?? UserActivitySource(),
+            wakeMovement: wakeMovementSource ?? WakeMovementSource(),
+            scheduler: deadlines
+        )
         self.preferencesStore = preferencesStore
         self.character = character
         characterResourceDirectory = character.resourceDirectory(in: resourceBundle)
@@ -209,6 +219,9 @@ final class PetRuntime {
             for command in PointerIntentDirector.commands(in: world) { scene.perform(command) }
             _ = reactiveBehavior?.receive(world: world)
         }
+        contextCoordinator.onFact = { [weak self] fact in
+            self?.receiveContextFact(fact)
+        }
         if let characterIssue { message = characterIssue }
         desktop.setClickThrough(clickThrough)
         desktop.setAllSpaces(allSpaces)
@@ -243,6 +256,8 @@ final class PetRuntime {
     func stop() {
         isRunning = false
         awareness.stop()
+        contextCoordinator.stop()
+        contextCoordinator.onFact = nil
         deadlines.cancelAll()
         cancelBehaviorSchedule()
         probeTask?.cancel()
@@ -524,6 +539,7 @@ final class PetRuntime {
         sampling = true
         refreshWorld()
         reconcileAwareness()
+        reconcileContext()
         refreshSoundPolicy()
         refreshAccessibility()
         cancelBehaviorSchedule()
@@ -731,7 +747,9 @@ final class PetRuntime {
         guard behaviorMutationDepth == 0 else { return }
         refreshWorld()
         reconcileAwareness()
-        guard isRunning, autonomousBehavior, !sampling, renderer.assetError == nil,
+        reconcileContext()
+        guard isRunning, autonomousBehavior, !world.isSleeping,
+              !sampling, renderer.assetError == nil,
               world.allowsAutonomousBehavior else {
             cancelBehaviorSchedule()
             return
@@ -832,6 +850,7 @@ final class PetRuntime {
             switch event {
             case .activeSpaceChanged: activeSpaceChanged()
             case .policyChanged(let snapshot): applyEnvironmentPolicy(snapshot)
+            case .context(let stimulus): contextCoordinator.submit(stimulus)
             case .suspension(let reason, let active):
                 let reason: SuspensionReason = switch reason {
                 case .displayAsleep: .displayAsleep
@@ -914,6 +933,52 @@ final class PetRuntime {
             isConstrained: world.isAnimating || world.isMoving || world.isReduceMotion || sampling || isCommandLineProbe,
             isLowPower: world.isLowPower
         ), petBounds: world.petBounds)
+    }
+
+    private func reconcileContext() {
+        let reasons = world.activityPolicy.reasons
+        contextCoordinator.update(policy: PetContextPolicy(
+            isSleeping: world.isSleeping,
+            isVisible: isRunning && !isHidden && world.isOnActiveSpace
+                && !reasons.contains(.occluded),
+            isPaused: isPaused || sampling || world.isInteracting
+                || world.isAnimating || world.isMoving,
+            isSessionActive: !reasons.contains(.sessionInactive),
+            isSystemAwake: !reasons.contains(.systemAsleep),
+            isDisplayAwake: !reasons.contains(.displayAsleep),
+            isThermallyConstrained: reasons.contains(.thermalPressure),
+            automaticMomentsEnabled: autonomousBehavior && !isCommandLineProbe
+                && !isTemporaryReview
+        ))
+    }
+
+    private func receiveContextFact(_ fact: UserActivityContextFact) {
+        refreshWorld()
+        guard let intent = ContextIntentDirector.intent(
+            for: fact, in: world,
+            automaticMomentsEnabled: autonomousBehavior && !isCommandLineProbe
+                && !isTemporaryReview
+        ) else { return }
+        withBehaviorTransition {
+            let accepted: Bool
+            let recorded: PetBehaviorIntent
+            switch intent {
+            case .wake:
+                recorded = .wake
+                accepted = scene.perform(.action(.wakeUp))
+            case .nap:
+                recorded = .nap
+                accepted = scene.perform(.action(.fallAsleep))
+            case .appGlance:
+                recorded = .observe
+                accepted = scene.perform(.phrase("gaze"))
+            }
+            if accepted {
+                automaticActionCount &+= 1
+                lastAutomaticIntent = recorded
+                behaviorDirector.didPerform(recorded, at: .now)
+            }
+        }
     }
 
     private func activeSpaceChanged() {
