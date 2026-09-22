@@ -46,6 +46,28 @@ The report also records an overflow probe: which error family a macOS 26 API cal
 
 For quick persona iteration, the macOS 27 `fm` command line tool can prompt the same model once its terms are accepted with `sudo fm license`. Confirm any change with the live evaluation.
 
+## Test Siri and Shortcuts locally
+
+macOS delivers App Intents only to apps signed by a developer team. `linkd` rejects the default ad hoc build with `Rejecting invalid client due to requiresValidatedBundle`, and Shortcuts then reports that it couldn't communicate with the app. The public preview downloads are ad hoc signed, so they can't receive Siri or Shortcuts requests either. Settings > Conversation says so through `SiriReachability`.
+
+Build with an Apple Development certificate (a free Personal Team works). Then install one copy in a standard location:
+
+```sh
+SPRIGLET_DEVELOPMENT_TEAM=YOUR_TEAM_ID ./scripts/build.sh Debug
+ditto .build/xcode/Build/Products/Debug/Spriglet.app ~/Applications/Spriglet.app
+open ~/Applications/Spriglet.app
+```
+
+Siri and Shortcuts pick one registered copy per bundle identifier. Old build folders, archives, and disk images all register as `dev.spriglet.app`. If the action is missing or stale, list the registrations and unregister copies you don't use. This removes only LaunchServices entries, not files:
+
+```sh
+lsregister=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
+$lsregister -dump | grep -B30 "dev.spriglet.app" | grep "^path:"
+$lsregister -u PATH_TO_UNUSED_COPY/Spriglet.app
+```
+
+The phrase takes no free text. Say "Ask Spriglet", then answer when Siri asks for the question.
+
 ## Findings recorded on macOS 27.0, Apple M3 Pro, AFM 3 Core Advanced, 8,192-token context
 
 - On macOS 27, calls made through the macOS 26 API surface throw the newer `LanguageModelError`. An app built with the Xcode 26 SDK cannot name those types, so it maps them all to a generic failure. Build releases with the Xcode 27 SDK.

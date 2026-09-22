@@ -42,6 +42,8 @@ Turn on **{{talkThroughSiri}}** in Settings > {{conversationTab}}, then say "Ask
 
 Your companion can only talk. It can't see your screen, open apps, set reminders, or look things up online, and it can be wrong. Siri phrases are English for now. **{{forgetConversation}}** clears the current conversation immediately.
 
+macOS delivers Siri and Shortcuts requests only to apps signed by a developer, such as App Store releases. The unsigned preview downloads can't receive them, and Settings > {{conversationTab}} says so.
+
 ## Privacy and local preferences
 
 {{appName}} has no account and does not send app data to a server. Settings > Companion > **{{clearRecentPreferences}}** forgets recent petting, play, and placement preferences while keeping your name, stable traits, and other choices. For help removing all local settings or deleting support correspondence, email the same support address.

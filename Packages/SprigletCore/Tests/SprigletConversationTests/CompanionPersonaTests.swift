@@ -184,6 +184,12 @@ struct ConversationCopyTests {
             == "Turn on Apple Intelligence in System Settings to talk with Pip.")
         #expect(ConversationCopy.questionPrompt(name: "Pip") == "What would you like to ask Pip?")
     }
+
+    @Test("The unsigned-build notice is short and plain", arguments: [ConversationCopy.siriUnreachable, ConversationCopy.siriUnreachableDetail])
+    func unreachableCopy(text: String) {
+        #expect(text.count <= 140)
+        #expect(ReplySanitizer.spoken(text, limit: 400) == text)
+    }
 }
 
 @Suite("Conversation gestures")

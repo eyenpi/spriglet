@@ -124,6 +124,9 @@ struct SprigletSettingsView: View {
                 detail("Say “Ask \(AppText.appName)” to Siri, or use the Ask \(AppText.appName) action in Shortcuts. Apple Intelligence answers on this Mac. \(AppText.appName) sends nothing anywhere and keeps no record of what you say.")
                 LabeledContent("Status", value: conversationStatus)
                     .accessibilityElement(children: .combine)
+                if conversation.isEnabled && !SiriReachability.isReachable {
+                    detail(ConversationCopy.siriUnreachableDetail)
+                }
                 if !conversation.allowsChanges {
                     detail("Conversation can't be changed in this temporary review or validation copy.")
                 }
@@ -141,7 +144,9 @@ struct SprigletSettingsView: View {
         switch conversation.phase {
         case .listening: return "Listening"
         case .thinking: return "Thinking"
-        case .idle: return ConversationCopy.status(for: conversation.availability, name: runtime.petName)
+        case .idle:
+            if conversation.availability == .available && !SiriReachability.isReachable { return ConversationCopy.siriUnreachable }
+            return ConversationCopy.status(for: conversation.availability, name: runtime.petName)
         }
     }
 

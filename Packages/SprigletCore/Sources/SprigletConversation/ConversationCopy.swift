@@ -46,6 +46,10 @@ public enum ConversationCopy {
         }
     }
 
+    /// Settings status when macOS will not deliver Siri or Shortcuts actions to this build.
+    public static let siriUnreachable = "Siri can't reach this preview build."
+    public static let siriUnreachableDetail = "Siri and Shortcuts work only with builds signed by a developer, such as App Store releases. This copy can't receive them."
+
     /// A short status line for Settings.
     public static func status(for availability: ModelAvailability, name: String) -> String {
         switch availability {
