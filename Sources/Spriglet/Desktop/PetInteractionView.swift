@@ -1,4 +1,5 @@
 import AppKit
+import QuartzCore
 
 /// Local hit testing and dragging need no global event monitor or polling loop.
 @MainActor
@@ -16,6 +17,7 @@ final class PetInteractionView: NSView {
     var onInputEvent: (@MainActor (String) -> Void)?
 
     private let renderedContent: NSView
+    private let morphView: TopBarMorphView
     private let containsPet: @MainActor (NSPoint) -> Bool
     private var drag: Drag?
     private var isInteracting = false
@@ -23,6 +25,7 @@ final class PetInteractionView: NSView {
 
     init(contentView: NSView, hitTest: @escaping @MainActor (NSPoint) -> Bool) {
         renderedContent = contentView
+        morphView = TopBarMorphView(frame: contentView.frame)
         containsPet = hitTest
         super.init(frame: contentView.frame)
         wantsLayer = true
@@ -30,6 +33,9 @@ final class PetInteractionView: NSView {
         contentView.frame = bounds
         contentView.autoresizingMask = [.width, .height]
         addSubview(contentView)
+        morphView.frame = bounds
+        morphView.autoresizingMask = [.width, .height]
+        addSubview(morphView)
         setAccessibilityElement(true)
         setAccessibilityRole(.button)
         setAccessibilityIdentifier("spriglet.pet.interaction")
@@ -45,6 +51,19 @@ final class PetInteractionView: NSView {
     override var needsPanelToBecomeKey: Bool { false }
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    var renderedLayer: CALayer? { renderedContent.layer }
+
+    func setTopBarMorphProgress(_ progress: CGFloat) {
+        guard progress.isFinite else { return }
+        morphView.setProgress(progress)
+        let t = min(1, max(0, (progress - 0.08) / 0.49))
+        let eased = t * t * (3 - 2 * t)
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        renderedContent.layer?.opacity = Float(1 - eased)
+        CATransaction.commit()
+    }
 
     override func hitTest(_ point: NSPoint) -> NSView? {
         guard !isHidden else { return nil }

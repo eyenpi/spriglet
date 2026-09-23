@@ -77,12 +77,16 @@ final class TopBarEyesController {
         else if motionAllowed && isVisible { startGaze() }
     }
 
-    @discardableResult
-    func show(on screen: NSScreen, animated: Bool) -> Bool {
-        guard let target = TopBarEyePlacement.target(
+    func target(on screen: NSScreen) -> CGRect? {
+        TopBarEyePlacement.target(
             screenFrame: screen.frame, visibleFrame: screen.visibleFrame,
             auxiliaryLeft: screen.auxiliaryTopLeftArea, auxiliaryRight: screen.auxiliaryTopRightArea
-        ) else { return false }
+        )
+    }
+
+    @discardableResult
+    func show(on screen: NSScreen, animated: Bool) -> Bool {
+        guard let target = target(on: screen) else { return false }
         anchor = target
         glideRange = screen.auxiliaryTopRightArea == nil && screen.auxiliaryTopLeftArea == nil
             ? -8...8 : -4...0

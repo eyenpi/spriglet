@@ -26,7 +26,7 @@ Check **{{pause}}**, **{{hidePet}}**, and **{{parkedMode}}** in the leaf menu. R
 
 Click to pet, drag to move, or choose **{{playWithFirefly}}** in the leaf menu. Settings > Companion offers name, size, and activity controls. {{appName}}'s keyboard commands work while using {{appName}}; they are not global shortcuts.
 
-Drag Acorn near the upper edge, or choose **Move Acorn to Top Bar** from the Companion menu, to show its eyes beside the notch or on a notchless menu bar. Click the eyes to return Acorn to its desktop home, or drag them downward and release the full pet where you want it. **Return Acorn to Desktop** in the menu and Settings > Desktop also works when clicks pass through. Pausing or Reduce Motion stops the eye animation; hiding the pet hides both forms.
+Drag Acorn near the upper edge and watch its body fold into eyes beside the notch or on a notchless menu bar. **Move Acorn to Top Bar** in the Companion menu runs the same transition. Click the eyes to expand Acorn at its desktop home, or drag them downward and release the full pet where you want it. **Return Acorn to Desktop** in the menu and Settings > Desktop also works when clicks pass through. Pausing or Reduce Motion stops the eye animation; hiding the pet hides both forms.
 
 ## The pet is getting in the way
 

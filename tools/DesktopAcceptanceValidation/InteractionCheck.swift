@@ -207,12 +207,32 @@ private final class InteractionRunner {
         eyeHost.eyes.mouseUp(with: event(.leftMouseUp, screenPoint: eyeStart, panel: eyeHost.panel))
         check("top-bar-eyes-click-returns", eyeClicks == 1 && eyeDragBegins == 1,
               "A separate eye click still requests the desktop return once.")
+
+        let morphHost = PetWindowController(contentView: NSView(frame: NSRect(x: 0, y: 0, width: 96, height: 96)),
+                                            size: NSSize(width: 96, height: 96))
+        let morphInput = morphHost.panel.contentView as! PetInteractionView
+        let morphView = morphInput.subviews.compactMap { $0 as? TopBarMorphView }.first!
+        morphHost.panel.setFrameOrigin(NSPoint(x: screen.frame.midX - 48, y: screen.visibleFrame.midY - 48))
+        let morphStart = NSPoint(x: morphHost.panel.frame.midX, y: morphHost.panel.frame.midY)
+        let morphPointer = NSPoint(x: morphStart.x, y: screen.frame.maxY - 90)
+        morphInput.mouseDown(with: event(.leftMouseDown, screenPoint: morphStart, panel: morphHost.panel))
+        morphInput.mouseDragged(with: event(.leftMouseDragged, screenPoint: morphPointer, panel: morphHost.panel))
+        let emergingEyes = (morphView.subviews.first as? TopBarEyesView)?.layer?.opacity ?? 0
+        check("drag-shapes-body-toward-eyes",
+              morphView.progress > 0.45 && morphView.progress < 0.65
+                && emergingEyes > 0.4 && !morphHost.isEyeDocked,
+              "The real drag path continuously reshapes the body before it reaches the docking threshold.")
+        morphInput.mouseUp(with: event(.leftMouseUp, screenPoint: morphPointer, panel: morphHost.panel))
+        check("undocked-drag-restores-body",
+              morphView.progress == 0 && (morphView.subviews.first as? TopBarEyesView)?.layer?.opacity == 0
+                && morphHost.panel.level == .floating,
+              "Releasing below the docking threshold restores the complete character silhouette.")
         let expectedNames: Set<String> = ["mouseDown", "dragBegan", "mouseUp-click", "mouseUp-drag", "mouseCancelled",
                                          "accessibilityPress", "interactionCancelled"]
         check("input-entry-points-distinguishable", expectedNames.isSubset(of: Set(events)),
               "The opt-in callback distinguishes local mouse handlers, cancellation, and accessibility press without coordinates or text.")
         check("no-visible-window-or-activation", !desktop.panel.isVisible && !dragHost.panel.isVisible
-                && !eyeHost.panel.isVisible && !NSApp.isActive,
+                && !eyeHost.panel.isVisible && !morphHost.panel.isVisible && !NSApp.isActive,
               "All checks completed with every panel ordered out and the application inactive.")
 
         return InteractionReport(passed: checks.allSatisfy(\.passed), checks: checks,
@@ -243,6 +263,7 @@ private final class InteractionRunner {
         let paths = ["Sources/Spriglet/Desktop/PetWindowController.swift",
                      "Sources/Spriglet/Desktop/PetInteractionView.swift",
                      "Sources/Spriglet/Desktop/TopBarEyesController.swift",
+                     "Sources/Spriglet/Desktop/TopBarMorphView.swift",
                      "Sources/Spriglet/App/PetRuntime.swift",
                      "tools/DesktopAcceptanceValidation/InteractionCheck.swift"]
         return try Dictionary(uniqueKeysWithValues: paths.map { path in

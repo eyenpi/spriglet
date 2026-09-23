@@ -1,5 +1,6 @@
 import AppKit
 import ColorSync
+import QuartzCore
 import SprigletCore
 
 /// The desktop host owns placement and input; it is independent of the renderer.
@@ -74,8 +75,12 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     private var transitionGeneration: UInt64 = 0
     private var requestedVisible = false
     private var dragPreviewScale: CGFloat = 1
+    private var morphProgress: CGFloat = 0
+    private var morphLink: CADisplayLink?
+    private var morphLinkTarget: MorphDisplayLinkTarget?
+    private var morphAnimation: MorphAnimation?
     private var isDraggingEyesOut = false
-    private var eyeDragRestoresClickThrough = false
+    private var clickThroughEnabled = false
     private var transitionMotionAllowed = true
 
     /// `hitTest` receives a point in `contentView` coordinates, respecting flipped views.
@@ -124,6 +129,7 @@ final class PetWindowController: NSObject, NSWindowDelegate {
             self?.onInputEvent?(event)
         }
         interactionView.onDragBegan = { [weak self] in
+            self?.stopMorphAnimation()
             self?.stopMovement()
         }
         interactionView.onClicked = { [weak self] in
@@ -134,19 +140,21 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         }
         interactionView.onDragEnded = { [weak self] in
             guard let self else { return }
-            defer {
-                lastDragPointer = nil
-                if !isEyeDocked && dragPreviewScale < 1 {
-                    animatePetScale(from: dragPreviewScale, to: 1, duration: 0.2)
-                }
-                setDragPreviewScale(1)
-            }
+            defer { lastDragPointer = nil }
             if let pointer = lastDragPointer,
                let screen = NSScreen.screens.first(where: { $0.frame.contains(pointer) }),
                TopBarEyePlacement.isNearTop(pointer, screenFrame: screen.frame),
                setTopBarMode(true, animated: true, on: screen) { return }
             constrainToVisibleArea()
             rememberSettledPlacement()
+            if morphProgress > 0 {
+                animateMorph(to: 0, scale: 1, origin: panel.frame.origin, duration: 0.22) { [weak self] in
+                    self?.panel.level = .floating
+                }
+            } else {
+                applyMorph(0, scale: 1)
+                panel.level = .floating
+            }
         }
         topBarEyes.onReturn = { [weak self] in
             self?.setTopBarMode(false, animated: true)
@@ -168,6 +176,8 @@ final class PetWindowController: NSObject, NSWindowDelegate {
             for: ScreenParametersChanged.self
         ) { [weak self] _ in
             guard let self else { return }
+            let wasMorphing = morphLink != nil
+            stopMorphAnimation()
             cancelEyeDragOut()
             stopMovement()
             interactionView.cancelInteraction()
@@ -176,10 +186,20 @@ final class PetWindowController: NSObject, NSWindowDelegate {
             } else {
                 constrainToVisibleArea()
             }
-            if isEyeDocked, let screen = currentScreen,
-               !topBarEyes.show(on: screen, animated: false) {
-                setTopBarMode(false, animated: false)
+            var changedMode = false
+            if isEyeDocked {
+                if let screen = currentScreen, topBarEyes.show(on: screen, animated: false) {
+                    panel.orderOut(nil)
+                } else {
+                    setTopBarMode(false, animated: false)
+                    changedMode = true
+                }
             }
+            panel.allowsTopBarTransition = false
+            panel.level = .floating
+            panel.ignoresMouseEvents = clickThroughEnabled
+            applyMorph(0, scale: 1)
+            if wasMorphing && !changedMode { onEyeDockChanged?(isEyeDocked) }
             onScreenChanged?()
         }
 
@@ -205,12 +225,19 @@ final class PetWindowController: NSObject, NSWindowDelegate {
 
     func hide() {
         requestedVisible = false
+        let wasMorphing = morphLink != nil
+        stopMorphAnimation()
         cancelEyeDragOut()
         stopMovement()
         interactionView.cancelInteraction()
         panel.allowsTopBarTransition = false
+        panel.level = .floating
+        panel.ignoresMouseEvents = clickThroughEnabled
+        applyMorph(0, scale: 1)
         topBarEyes.hide()
         panel.orderOut(nil)
+        if wasMorphing, !isEyeDocked, let savedPlacement { applyPlacement(savedPlacement) }
+        if wasMorphing { onEyeDockChanged?(isEyeDocked) }
     }
 
     /// Sleep, session loss, and other suspension causes may omit mouse-up.
@@ -318,8 +345,8 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     /// Whole-window click-through is the supported, deterministic fallback.
     func setClickThrough(_ enabled: Bool) {
         interactionView.cancelInteraction()
-        eyeDragRestoresClickThrough = enabled
-        panel.ignoresMouseEvents = isDraggingEyesOut || enabled
+        clickThroughEnabled = enabled
+        panel.ignoresMouseEvents = isDraggingEyesOut || morphLink != nil || enabled
         topBarEyes.setClickThrough(enabled)
     }
 
@@ -345,41 +372,44 @@ final class PetWindowController: NSObject, NSWindowDelegate {
                        on preferredScreen: NSScreen? = nil, releasePoint: CGPoint? = nil) -> Bool {
         if isDraggingEyesOut { cancelEyeDragOut() }
         guard enabled != isEyeDocked else { return true }
-        let animated = animated && transitionMotionAllowed
+        stopMorphAnimation()
+        let animated = animated && transitionMotionAllowed && requestedVisible
         transitionGeneration &+= 1
         let generation = transitionGeneration
         if enabled {
             guard let screen = preferredScreen ?? currentScreen,
-                  topBarEyes.show(on: screen, animated: animated) else { return false }
-            if !requestedVisible { topBarEyes.hide() }
+                  let eyeFrame = topBarEyes.target(on: screen) else { return false }
             stopMovement()
             isEyeDocked = true
             onEyeDockChanged?(true)
             onOcclusionChanged?(true)
-            let oldFrame = panel.frame
-            let destination = CGPoint(x: topBarEyes.panel.frame.midX - oldFrame.width / 2,
-                                      y: topBarEyes.panel.frame.midY - oldFrame.height / 2)
-            if animated && panel.isVisible && requestedVisible {
+            let homeOrigin = effectiveOrigin
+            let size = panel.frame.size
+            let destination = CGPoint(x: eyeFrame.midX - size.width / 2,
+                                      y: eyeFrame.midY - size.height / 2)
+            if animated && panel.isVisible {
                 panel.allowsTopBarTransition = true
-                animatePetScale(from: dragPreviewScale, to: 0.14, duration: 0.42)
-                NSAnimationContext.runAnimationGroup { context in
-                    context.duration = 0.42
-                    context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                    panel.animator().setFrameOrigin(destination)
-                    panel.animator().alphaValue = 0
-                } completionHandler: { [weak self] in
-                    MainActor.assumeIsolated {
-                        guard let self, self.transitionGeneration == generation, self.isEyeDocked else { return }
-                        self.panel.orderOut(nil)
-                        self.panel.setFrame(oldFrame, display: false)
-                        self.panel.allowsTopBarTransition = false
-                        self.panel.alphaValue = 1
-                        self.setDragPreviewScale(1)
-                    }
+                panel.level = .statusBar
+                panel.ignoresMouseEvents = true
+                animateMorph(to: 1, scale: 0.34, origin: destination, duration: 0.42) { [weak self] in
+                    guard let self, self.transitionGeneration == generation, self.isEyeDocked else { return }
+                    self.panel.orderOut(nil)
+                    self.positionWindow(at: homeOrigin)
+                    self.panel.allowsTopBarTransition = false
+                    self.panel.level = .floating
+                    self.panel.ignoresMouseEvents = self.clickThroughEnabled
+                    self.applyMorph(0, scale: 1)
+                    _ = self.topBarEyes.show(on: screen, animated: false)
+                    self.onOcclusionChanged?(true)
                 }
             } else {
+                _ = topBarEyes.show(on: screen, animated: false)
+                if !requestedVisible { topBarEyes.hide() }
                 panel.orderOut(nil)
-                setDragPreviewScale(1)
+                panel.allowsTopBarTransition = false
+                panel.level = .floating
+                panel.ignoresMouseEvents = clickThroughEnabled
+                applyMorph(0, scale: 1)
             }
             return true
         }
@@ -401,34 +431,37 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         } else {
             destination = panel.frame.origin
         }
-        let eyeFrame = topBarEyes.panel.frame
-        topBarEyes.hide(animated: animated && requestedVisible)
-        if animated && requestedVisible {
+        let eyeFrame = topBarEyes.isVisible ? topBarEyes.panel.frame
+            : (screen.flatMap { topBarEyes.target(on: $0) } ?? topBarEyes.panel.frame)
+        if animated {
             let start = CGPoint(x: eyeFrame.midX - size.width / 2, y: eyeFrame.midY - size.height / 2)
+            let isReversingActiveMorph = panel.isVisible && !topBarEyes.isVisible
             panel.allowsTopBarTransition = true
-            positionWindow(at: start)
-            panel.alphaValue = 0
-            panel.orderFrontRegardless()
-            animatePetScale(from: 0.14, to: 1, duration: 0.42)
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.42
-                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                panel.animator().setFrameOrigin(destination)
-                panel.animator().alphaValue = 1
-            } completionHandler: { [weak self] in
-                MainActor.assumeIsolated {
-                    guard let self, self.transitionGeneration == generation, !self.isEyeDocked else { return }
-                    self.positionWindow(at: destination)
-                    self.panel.allowsTopBarTransition = false
-                    self.setDragPreviewScale(1)
-                    self.rememberSettledPlacement()
-                    self.onEyeDockChanged?(false)
-                }
+            panel.level = .statusBar
+            panel.ignoresMouseEvents = true
+            if !isReversingActiveMorph {
+                positionWindow(at: start)
+                applyMorph(1, scale: 0.34)
+                panel.orderFrontRegardless()
+            }
+            topBarEyes.hide()
+            animateMorph(to: 0, scale: 1, origin: destination, duration: 0.42) { [weak self] in
+                guard let self, self.transitionGeneration == generation, !self.isEyeDocked else { return }
+                self.panel.allowsTopBarTransition = false
+                self.panel.level = .floating
+                self.panel.ignoresMouseEvents = self.clickThroughEnabled
+                self.constrainToVisibleArea()
+                self.rememberSettledPlacement()
+                self.onEyeDockChanged?(false)
+                self.onOcclusionChanged?(true)
             }
         } else {
+            topBarEyes.hide()
             positionWindow(at: destination)
             panel.allowsTopBarTransition = false
-            panel.alphaValue = 1
+            panel.level = .floating
+            panel.ignoresMouseEvents = clickThroughEnabled
+            applyMorph(0, scale: 1)
             if requestedVisible { panel.orderFrontRegardless() }
             else { panel.orderOut(nil) }
             rememberSettledPlacement()
@@ -440,15 +473,15 @@ final class PetWindowController: NSObject, NSWindowDelegate {
 
     private func beginEyeDragOut(at point: CGPoint) {
         guard isEyeDocked, requestedVisible, !isDraggingEyesOut else { return }
+        stopMorphAnimation()
         transitionGeneration &+= 1
         isDraggingEyesOut = true
-        eyeDragRestoresClickThrough = panel.ignoresMouseEvents
         topBarEyes.setDraggingOut(true)
         // The eye panel must keep receiving the rest of this mouse sequence.
         // The revealed pet therefore follows the pointer without taking input.
         panel.ignoresMouseEvents = true
         panel.allowsTopBarTransition = true
-        panel.alphaValue = 1
+        panel.level = .statusBar
         panel.orderFrontRegardless()
         updateEyeDragOut(at: point)
     }
@@ -459,7 +492,8 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         positionWindow(at: CGPoint(x: point.x - size.width / 2, y: point.y - size.height / 2))
         if let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }) {
             let distance = screen.frame.maxY - point.y
-            setDragPreviewScale(min(1, max(0.25, distance / 140)))
+            let progress = TopBarMorphView.progress(distanceFromTop: distance)
+            applyMorph(progress, scale: morphScale(for: progress))
         }
     }
 
@@ -469,13 +503,22 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         isDraggingEyesOut = false
         isEyeDocked = false
         topBarEyes.hide()
-        panel.ignoresMouseEvents = eyeDragRestoresClickThrough
-        panel.allowsTopBarTransition = false
-        constrainToVisibleArea()
-        if dragPreviewScale < 1 { animatePetScale(from: dragPreviewScale, to: 1, duration: 0.2) }
-        setDragPreviewScale(1)
-        rememberSettledPlacement()
-        onEyeDockChanged?(false)
+        let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }) ?? currentScreen
+        let size = panel.frame.size
+        let destination = screen.map {
+            PetPlacement.clampedOrigin(
+                CGPoint(x: point.x - size.width / 2, y: point.y - size.height / 2),
+                windowSize: size, visibleFrame: $0.visibleFrame)
+        } ?? panel.frame.origin
+        animateMorph(to: 0, scale: 1, origin: destination, duration: 0.28) { [weak self] in
+            guard let self else { return }
+            self.panel.allowsTopBarTransition = false
+            self.panel.level = .floating
+            self.panel.ignoresMouseEvents = self.clickThroughEnabled
+            self.constrainToVisibleArea()
+            self.rememberSettledPlacement()
+            self.onEyeDockChanged?(false)
+        }
         onOcclusionChanged?(true)
     }
 
@@ -483,28 +526,76 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         guard isDraggingEyesOut else { return }
         isDraggingEyesOut = false
         topBarEyes.setDraggingOut(false)
-        panel.ignoresMouseEvents = eyeDragRestoresClickThrough
+        panel.ignoresMouseEvents = clickThroughEnabled
         panel.allowsTopBarTransition = false
+        panel.level = .floating
         panel.orderOut(nil)
-        setDragPreviewScale(1)
+        applyMorph(0, scale: 1)
     }
 
-    private func animatePetScale(from start: CGFloat, to end: CGFloat, duration: TimeInterval) {
-        guard let layer = interactionView.layer else { return }
-        let animation = CABasicAnimation(keyPath: "transform.scale")
-        animation.fromValue = start
-        animation.toValue = end
-        animation.duration = duration
-        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        layer.add(animation, forKey: "topBarTransition")
+    private func applyMorph(_ progress: CGFloat, scale: CGFloat) {
+        morphProgress = progress
+        interactionView.setTopBarMorphProgress(progress)
+        setDragPreviewScale(scale)
     }
 
     private func setDragPreviewScale(_ scale: CGFloat) {
         dragPreviewScale = scale
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        interactionView.layer?.transform = CATransform3DMakeScale(scale, scale, 1)
+        interactionView.renderedLayer?.transform = CATransform3DMakeScale(scale, scale, 1)
         CATransaction.commit()
+    }
+
+    private func morphScale(for progress: CGFloat) -> CGFloat {
+        let t = min(1, max(0, (progress - 0.30) / 0.70))
+        let eased = t * t * (3 - 2 * t)
+        return 1 - 0.66 * eased
+    }
+
+    private func animateMorph(to progress: CGFloat, scale: CGFloat, origin: CGPoint,
+                              duration: TimeInterval, completion: @escaping @MainActor () -> Void) {
+        stopMorphAnimation()
+        if duration <= 0 || !panel.isVisible {
+            positionWindow(at: origin)
+            applyMorph(progress, scale: scale)
+            completion()
+            return
+        }
+        let animation = MorphAnimation(start: CACurrentMediaTime(), duration: duration,
+                                       fromOrigin: panel.frame.origin, toOrigin: origin,
+                                       fromProgress: morphProgress, toProgress: progress,
+                                       fromScale: dragPreviewScale, toScale: scale,
+                                       completion: completion)
+        morphAnimation = animation
+        let target = MorphDisplayLinkTarget(owner: self)
+        let link = panel.displayLink(target: target, selector: #selector(MorphDisplayLinkTarget.tick(_:)))
+        morphLinkTarget = target
+        morphLink = link
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 60)
+        link.add(to: .main, forMode: .common)
+    }
+
+    fileprivate func advanceMorph(_ link: CADisplayLink) {
+        guard let animation = morphAnimation else { return }
+        let t = min(1, max(0, (CACurrentMediaTime() - animation.start) / animation.duration))
+        let eased = t * t * (3 - 2 * t)
+        let origin = CGPoint(x: animation.fromOrigin.x + (animation.toOrigin.x - animation.fromOrigin.x) * eased,
+                             y: animation.fromOrigin.y + (animation.toOrigin.y - animation.fromOrigin.y) * eased)
+        positionWindow(at: origin)
+        applyMorph(animation.fromProgress + (animation.toProgress - animation.fromProgress) * eased,
+                   scale: animation.fromScale + (animation.toScale - animation.fromScale) * eased)
+        if t >= 1 {
+            stopMorphAnimation()
+            animation.completion()
+        }
+    }
+
+    private func stopMorphAnimation() {
+        morphLink?.invalidate()
+        morphLink = nil
+        morphLinkTarget = nil
+        morphAnimation = nil
     }
 
     /// Compatibility entry point for diagnostics; timing belongs to the authored
@@ -659,8 +750,9 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         lastDragPointer = pointer
         if let screen = NSScreen.screens.first(where: { $0.frame.contains(pointer) }) {
             let distance = screen.frame.maxY - pointer.y
-            let scale = min(1, max(0.34, distance / 90))
-            setDragPreviewScale(scale)
+            let progress = TopBarMorphView.progress(distanceFromTop: distance)
+            applyMorph(progress, scale: morphScale(for: progress))
+            panel.level = progress > 0.01 ? .statusBar : .floating
         }
         let offset = dragImageOffset ?? imageOffset
         // Keep the grabbed point under the pointer while crossing display
@@ -715,6 +807,29 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         onMovementChanged?(moving)
     }
 
+}
+
+@MainActor
+private struct MorphAnimation {
+    let start: CFTimeInterval
+    let duration: TimeInterval
+    let fromOrigin: CGPoint
+    let toOrigin: CGPoint
+    let fromProgress: CGFloat
+    let toProgress: CGFloat
+    let fromScale: CGFloat
+    let toScale: CGFloat
+    let completion: @MainActor () -> Void
+}
+
+@MainActor
+private final class MorphDisplayLinkTarget: NSObject {
+    private weak var owner: PetWindowController?
+    init(owner: PetWindowController) { self.owner = owner }
+    @objc func tick(_ link: CADisplayLink) {
+        guard let owner else { link.invalidate(); return }
+        owner.advanceMorph(link)
+    }
 }
 
 @MainActor
