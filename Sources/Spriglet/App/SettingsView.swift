@@ -85,6 +85,13 @@ struct SprigletSettingsView: View {
                 detail("The pet may remain visible over full-screen apps. Use \(AppText.hidePet) or \(AppText.passClicksThrough) when needed.")
             }
             Section("Placement") {
+                if runtime.isEyeDocked {
+                    Button("Return Acorn to Desktop") { runtime.returnFromTopBar() }
+                    detail("Click the eyes to return home, or drag them downward and release Acorn where you want it.")
+                } else {
+                    Button("Move Acorn to Top Bar") { runtime.moveToTopBar() }
+                    detail("Drag Acorn toward the top edge to turn into eyes beside the notch or along the menu bar.")
+                }
                 HStack {
                     Button(AppText.bringPetHome) { runtime.recenter() }
                     Button(AppText.nextDisplay) { runtime.moveToNextDisplay() }

@@ -5,7 +5,7 @@ import SprigletCore
 /// The desktop host owns placement and input; it is independent of the renderer.
 @MainActor
 final class PetWindowController: NSObject, NSWindowDelegate {
-    let panel: NSPanel
+    let panel: PetPanel
 
     var onPetClicked: (@MainActor () -> Void)?
     var onAccessibilityPress: (@MainActor () -> Bool)? {
@@ -22,12 +22,14 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     var onPlacementSettled: (@MainActor (PetSavedPlacement) -> Void)?
     var onMovementInterrupted: (@MainActor () -> Void)?
     var onWalkRequested: (@MainActor () -> Void)?
+    var onEyeDockChanged: (@MainActor (Bool) -> Void)?
     /// AppKit may round the panel origin; the renderer applies the remainder
     /// to its image layer before committing the corresponding authored image.
     var onImageOffsetChanged: (@MainActor (CGPoint) -> Void)? {
         didSet { onImageOffsetChanged?(imageOffset) }
     }
     private(set) var isMoving = false
+    private(set) var isEyeDocked = false
     private(set) var movementTickCount: UInt64 = 0
     private(set) var savedPlacement: PetSavedPlacement?
     private(set) var appliedRootOffset = SamplePoint.zero
@@ -41,6 +43,7 @@ final class PetWindowController: NSObject, NSWindowDelegate {
 
     /// A nonmutating snapshot of the actual position, which may differ after a walk.
     var currentPlacement: PetSavedPlacement? {
+        if isEyeDocked { return savedPlacement }
         guard let screen = currentScreen, let displayUUID = stableDisplayUUID(for: screen) else { return nil }
         return PetSavedPlacement.capture(
             displayUUID: displayUUID,
@@ -55,7 +58,8 @@ final class PetWindowController: NSObject, NSWindowDelegate {
 
     /// Rebuilt from fresh screen geometry; no NSScreen crosses into the world.
     var currentHabitat: PetHabitat? {
-        currentScreen.flatMap { habitat(on: $0, windowSize: panel.frame.size) }
+        if isEyeDocked { return nil }
+        return currentScreen.flatMap { habitat(on: $0, windowSize: panel.frame.size) }
     }
     private var joinsAllSpaces = true
     private var screenObservation: NotificationCenter.ObservationToken?
@@ -65,6 +69,14 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     private var positionGeneration: UInt64 = 0
     private var dragImageOffset: CGPoint?
     private var isChangingDisplaySize = false
+    private let topBarEyes = TopBarEyesController()
+    private var lastDragPointer: CGPoint?
+    private var transitionGeneration: UInt64 = 0
+    private var requestedVisible = false
+    private var dragPreviewScale: CGFloat = 1
+    private var isDraggingEyesOut = false
+    private var eyeDragRestoresClickThrough = false
+    private var transitionMotionAllowed = true
 
     /// `hitTest` receives a point in `contentView` coordinates, respecting flipped views.
     init(
@@ -122,8 +134,31 @@ final class PetWindowController: NSObject, NSWindowDelegate {
         }
         interactionView.onDragEnded = { [weak self] in
             guard let self else { return }
+            defer {
+                lastDragPointer = nil
+                if !isEyeDocked && dragPreviewScale < 1 {
+                    animatePetScale(from: dragPreviewScale, to: 1, duration: 0.2)
+                }
+                setDragPreviewScale(1)
+            }
+            if let pointer = lastDragPointer,
+               let screen = NSScreen.screens.first(where: { $0.frame.contains(pointer) }),
+               TopBarEyePlacement.isNearTop(pointer, screenFrame: screen.frame),
+               setTopBarMode(true, animated: true, on: screen) { return }
             constrainToVisibleArea()
             rememberSettledPlacement()
+        }
+        topBarEyes.onReturn = { [weak self] in
+            self?.setTopBarMode(false, animated: true)
+        }
+        topBarEyes.onDragOut = { [weak self] pointer in
+            self?.beginEyeDragOut(at: pointer)
+        }
+        topBarEyes.onDragProgress = { [weak self] pointer in
+            self?.updateEyeDragOut(at: pointer)
+        }
+        topBarEyes.onDragFinished = { [weak self] pointer in
+            self?.finishEyeDragOut(at: pointer)
         }
 
         // Foundation's actor-isolated observation is available in macOS 26.
@@ -133,12 +168,17 @@ final class PetWindowController: NSObject, NSWindowDelegate {
             for: ScreenParametersChanged.self
         ) { [weak self] _ in
             guard let self else { return }
+            cancelEyeDragOut()
             stopMovement()
             interactionView.cancelInteraction()
             if let savedPlacement {
                 applyPlacement(savedPlacement)
             } else {
                 constrainToVisibleArea()
+            }
+            if isEyeDocked, let screen = currentScreen,
+               !topBarEyes.show(on: screen, animated: false) {
+                setTopBarMode(false, animated: false)
             }
             onScreenChanged?()
         }
@@ -153,14 +193,23 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     }
 
     func show() {
+        requestedVisible = true
+        if isEyeDocked {
+            if let screen = currentScreen { _ = topBarEyes.show(on: screen, animated: false) }
+            return
+        }
         constrainToVisibleArea()
         // Neither makes the panel key nor activates its owning application.
         panel.orderFrontRegardless()
     }
 
     func hide() {
+        requestedVisible = false
+        cancelEyeDragOut()
         stopMovement()
         interactionView.cancelInteraction()
+        panel.allowsTopBarTransition = false
+        topBarEyes.hide()
         panel.orderOut(nil)
     }
 
@@ -216,6 +265,7 @@ final class PetWindowController: NSObject, NSWindowDelegate {
 
     /// Restores the pet near the lower edge of its current display.
     func recenter() {
+        if isEyeDocked { setTopBarMode(false, animated: false) }
         stopMovement()
         interactionView.cancelInteraction()
         placeAtRestingPosition()
@@ -228,6 +278,7 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     }
 
     func moveToNextDisplay() {
+        if isEyeDocked { setTopBarMode(false, animated: false) }
         stopMovement()
         interactionView.cancelInteraction()
         let screens = NSScreen.screens
@@ -252,6 +303,7 @@ final class PetWindowController: NSObject, NSWindowDelegate {
 
     /// An accessible alternative to dragging, bounded to the current usable area.
     func nudge(dx: CGFloat, dy: CGFloat) {
+        if isEyeDocked { setTopBarMode(false, animated: false) }
         guard dx.isFinite, dy.isFinite, let screen = currentScreen else { return }
         stopMovement()
         interactionView.cancelInteraction()
@@ -266,7 +318,9 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     /// Whole-window click-through is the supported, deterministic fallback.
     func setClickThrough(_ enabled: Bool) {
         interactionView.cancelInteraction()
-        panel.ignoresMouseEvents = enabled
+        eyeDragRestoresClickThrough = enabled
+        panel.ignoresMouseEvents = isDraggingEyesOut || enabled
+        topBarEyes.setClickThrough(enabled)
     }
 
     func updateAccessibility(name: String, status: String, canPress: Bool, actions: [NSAccessibilityCustomAction]) {
@@ -276,6 +330,181 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     func setAllSpaces(_ enabled: Bool) {
         joinsAllSpaces = enabled
         updateCollectionBehavior()
+        topBarEyes.setAllSpaces(enabled)
+    }
+
+    func setEyeMotionAllowed(_ allowed: Bool) {
+        transitionMotionAllowed = allowed
+        topBarEyes.setMotionAllowed(allowed)
+    }
+
+    /// Dragging near the menu bar enters this mode. The reverse transition is
+    /// also available from the eyes, the menu, and accessibility activation.
+    @discardableResult
+    func setTopBarMode(_ enabled: Bool, animated: Bool = true,
+                       on preferredScreen: NSScreen? = nil, releasePoint: CGPoint? = nil) -> Bool {
+        if isDraggingEyesOut { cancelEyeDragOut() }
+        guard enabled != isEyeDocked else { return true }
+        let animated = animated && transitionMotionAllowed
+        transitionGeneration &+= 1
+        let generation = transitionGeneration
+        if enabled {
+            guard let screen = preferredScreen ?? currentScreen,
+                  topBarEyes.show(on: screen, animated: animated) else { return false }
+            if !requestedVisible { topBarEyes.hide() }
+            stopMovement()
+            isEyeDocked = true
+            onEyeDockChanged?(true)
+            onOcclusionChanged?(true)
+            let oldFrame = panel.frame
+            let destination = CGPoint(x: topBarEyes.panel.frame.midX - oldFrame.width / 2,
+                                      y: topBarEyes.panel.frame.midY - oldFrame.height / 2)
+            if animated && panel.isVisible && requestedVisible {
+                panel.allowsTopBarTransition = true
+                animatePetScale(from: dragPreviewScale, to: 0.14, duration: 0.42)
+                NSAnimationContext.runAnimationGroup { context in
+                    context.duration = 0.42
+                    context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                    panel.animator().setFrameOrigin(destination)
+                    panel.animator().alphaValue = 0
+                } completionHandler: { [weak self] in
+                    MainActor.assumeIsolated {
+                        guard let self, self.transitionGeneration == generation, self.isEyeDocked else { return }
+                        self.panel.orderOut(nil)
+                        self.panel.setFrame(oldFrame, display: false)
+                        self.panel.allowsTopBarTransition = false
+                        self.panel.alphaValue = 1
+                        self.setDragPreviewScale(1)
+                    }
+                }
+            } else {
+                panel.orderOut(nil)
+                setDragPreviewScale(1)
+            }
+            return true
+        }
+
+        isEyeDocked = false
+        let screen = releasePoint.flatMap { point in NSScreen.screens.first(where: { $0.frame.contains(point) }) }
+            ?? currentScreen ?? NSScreen.main
+        let size = panel.frame.size
+        let destination: CGPoint
+        if let releasePoint, let screen {
+            destination = PetPlacement.clampedOrigin(
+                CGPoint(x: releasePoint.x - size.width / 2, y: releasePoint.y - size.height / 2),
+                windowSize: size, visibleFrame: screen.visibleFrame)
+        } else if let screen, let savedPlacement,
+                  let restored = savedPlacement.restoredOrigin(windowSize: size, visibleFrame: screen.visibleFrame) {
+            destination = restored
+        } else if let screen {
+            destination = restingOrigin(on: screen)
+        } else {
+            destination = panel.frame.origin
+        }
+        let eyeFrame = topBarEyes.panel.frame
+        topBarEyes.hide(animated: animated && requestedVisible)
+        if animated && requestedVisible {
+            let start = CGPoint(x: eyeFrame.midX - size.width / 2, y: eyeFrame.midY - size.height / 2)
+            panel.allowsTopBarTransition = true
+            positionWindow(at: start)
+            panel.alphaValue = 0
+            panel.orderFrontRegardless()
+            animatePetScale(from: 0.14, to: 1, duration: 0.42)
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.42
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                panel.animator().setFrameOrigin(destination)
+                panel.animator().alphaValue = 1
+            } completionHandler: { [weak self] in
+                MainActor.assumeIsolated {
+                    guard let self, self.transitionGeneration == generation, !self.isEyeDocked else { return }
+                    self.positionWindow(at: destination)
+                    self.panel.allowsTopBarTransition = false
+                    self.setDragPreviewScale(1)
+                    self.rememberSettledPlacement()
+                    self.onEyeDockChanged?(false)
+                }
+            }
+        } else {
+            positionWindow(at: destination)
+            panel.allowsTopBarTransition = false
+            panel.alphaValue = 1
+            if requestedVisible { panel.orderFrontRegardless() }
+            else { panel.orderOut(nil) }
+            rememberSettledPlacement()
+            onEyeDockChanged?(false)
+        }
+        onOcclusionChanged?(true)
+        return true
+    }
+
+    private func beginEyeDragOut(at point: CGPoint) {
+        guard isEyeDocked, requestedVisible, !isDraggingEyesOut else { return }
+        transitionGeneration &+= 1
+        isDraggingEyesOut = true
+        eyeDragRestoresClickThrough = panel.ignoresMouseEvents
+        topBarEyes.setDraggingOut(true)
+        // The eye panel must keep receiving the rest of this mouse sequence.
+        // The revealed pet therefore follows the pointer without taking input.
+        panel.ignoresMouseEvents = true
+        panel.allowsTopBarTransition = true
+        panel.alphaValue = 1
+        panel.orderFrontRegardless()
+        updateEyeDragOut(at: point)
+    }
+
+    private func updateEyeDragOut(at point: CGPoint) {
+        guard isDraggingEyesOut, point.x.isFinite, point.y.isFinite else { return }
+        let size = panel.frame.size
+        positionWindow(at: CGPoint(x: point.x - size.width / 2, y: point.y - size.height / 2))
+        if let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }) {
+            let distance = screen.frame.maxY - point.y
+            setDragPreviewScale(min(1, max(0.25, distance / 140)))
+        }
+    }
+
+    private func finishEyeDragOut(at point: CGPoint) {
+        guard isDraggingEyesOut else { return }
+        updateEyeDragOut(at: point)
+        isDraggingEyesOut = false
+        isEyeDocked = false
+        topBarEyes.hide()
+        panel.ignoresMouseEvents = eyeDragRestoresClickThrough
+        panel.allowsTopBarTransition = false
+        constrainToVisibleArea()
+        if dragPreviewScale < 1 { animatePetScale(from: dragPreviewScale, to: 1, duration: 0.2) }
+        setDragPreviewScale(1)
+        rememberSettledPlacement()
+        onEyeDockChanged?(false)
+        onOcclusionChanged?(true)
+    }
+
+    private func cancelEyeDragOut() {
+        guard isDraggingEyesOut else { return }
+        isDraggingEyesOut = false
+        topBarEyes.setDraggingOut(false)
+        panel.ignoresMouseEvents = eyeDragRestoresClickThrough
+        panel.allowsTopBarTransition = false
+        panel.orderOut(nil)
+        setDragPreviewScale(1)
+    }
+
+    private func animatePetScale(from start: CGFloat, to end: CGFloat, duration: TimeInterval) {
+        guard let layer = interactionView.layer else { return }
+        let animation = CABasicAnimation(keyPath: "transform.scale")
+        animation.fromValue = start
+        animation.toValue = end
+        animation.duration = duration
+        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        layer.add(animation, forKey: "topBarTransition")
+    }
+
+    private func setDragPreviewScale(_ scale: CGFloat) {
+        dragPreviewScale = scale
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        interactionView.layer?.transform = CATransform3DMakeScale(scale, scale, 1)
+        CATransaction.commit()
     }
 
     /// Compatibility entry point for diagnostics; timing belongs to the authored
@@ -286,7 +515,7 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     }
 
     func canFitRootMotion(_ offsets: [SamplePoint]) -> Bool {
-        guard !isChangingDisplaySize, let screen = currentScreen,
+        guard !isEyeDocked, !isChangingDisplaySize, let screen = currentScreen,
               let start = SampleMotionPlacement.fittingStartOrigin(
                 preferredOrigin: effectiveOrigin, windowSize: panel.frame.size,
                 visibleFrame: screen.visibleFrame, offsets: offsets
@@ -336,6 +565,10 @@ final class PetWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowDidChangeOcclusionState(_ notification: Notification) {
+        if isEyeDocked {
+            onOcclusionChanged?(topBarEyes.isVisible)
+            return
+        }
         let isVisible = panel.occlusionState.contains(.visible)
         if !isVisible {
             stopMovement()
@@ -423,6 +656,12 @@ final class PetWindowController: NSObject, NSWindowDelegate {
 
     private func move(to origin: NSPoint, following pointer: NSPoint) {
         guard pointer.x.isFinite, pointer.y.isFinite, !NSScreen.screens.isEmpty else { return }
+        lastDragPointer = pointer
+        if let screen = NSScreen.screens.first(where: { $0.frame.contains(pointer) }) {
+            let distance = screen.frame.maxY - pointer.y
+            let scale = min(1, max(0.34, distance / 90))
+            setDragPreviewScale(scale)
+        }
         let offset = dragImageOffset ?? imageOffset
         // Keep the grabbed point under the pointer while crossing display
         // boundaries. Clamping each event sticks at an edge and then jumps by
@@ -479,9 +718,13 @@ final class PetWindowController: NSObject, NSWindowDelegate {
 }
 
 @MainActor
-private final class PetPanel: NSPanel {
+final class PetPanel: NSPanel {
+    var allowsTopBarTransition = false
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
+    override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
+        allowsTopBarTransition ? frameRect : super.constrainFrameRect(frameRect, to: screen)
+    }
 }
 
 /// Bridge the stable AppKit notification into Foundation's macOS 26 typed API.

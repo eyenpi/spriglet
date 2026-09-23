@@ -40,7 +40,7 @@ final class LoginItemService {
         let diagnosticFlags: Set<String> = [
             "--probe", "--soak", "--sample-review", "--welcome-review",
             "--desktop-acceptance", "--everyday-services-validation", "--everyday-review",
-            "--settings-review", "--diagnostics"
+            "--settings-review", "--topbar-review", "--diagnostics"
         ]
         return !arguments.contains { diagnosticFlags.contains($0) }
     }

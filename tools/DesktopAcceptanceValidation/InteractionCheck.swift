@@ -94,7 +94,7 @@ private final class InteractionRunner {
         // ordered out, so each tested cause is independently responsible.
         runtime.setSuspension(.hidden, active: false)
         check("sample-assets-loaded", runtime.renderer.assetError == nil,
-              "The hidden runtime loaded the actual bundled Sprout sample.")
+              "The hidden runtime loaded the actual bundled Acorn character.")
 
         for reason in [SuspensionReason.systemAsleep, .displayAsleep, .sessionInactive, .userPaused, .thermalPressure] {
             let clicksBefore = clicks
@@ -178,12 +178,42 @@ private final class InteractionRunner {
         _ = dragView.accessibilityPerformPress()
         check("click-and-accessibility-press-still-work", directClicks == 2,
               "An ordinary completed press and a separate accessibility press each invoke one click; cancellation invokes none.")
+
+        let eyeHost = TopBarEyesController()
+        eyeHost.panel.setFrameOrigin(NSPoint(x: screen.visibleFrame.midX, y: screen.visibleFrame.midY))
+        let eyeStart = NSPoint(x: eyeHost.panel.frame.midX, y: eyeHost.panel.frame.midY)
+        var eyeDragBegins = 0
+        var eyeDragProgress: [CGPoint] = []
+        var eyeDragFinished: CGPoint?
+        var eyeClicks = 0
+        eyeHost.onDragOut = { _ in eyeDragBegins += 1 }
+        eyeHost.onDragProgress = { eyeDragProgress.append($0) }
+        eyeHost.onDragFinished = { eyeDragFinished = $0 }
+        eyeHost.onReturn = { eyeClicks += 1 }
+        eyeHost.eyes.mouseDown(with: event(.leftMouseDown, screenPoint: eyeStart, panel: eyeHost.panel))
+        for offset in [20.0, 50.0, 90.0, 130.0] {
+            eyeHost.eyes.mouseDragged(with: event(.leftMouseDragged,
+                                                 screenPoint: NSPoint(x: eyeStart.x + offset / 2,
+                                                                      y: eyeStart.y - offset), panel: eyeHost.panel))
+        }
+        let eyeRelease = NSPoint(x: eyeStart.x + 65, y: eyeStart.y - 130)
+        eyeHost.eyes.mouseUp(with: event(.leftMouseUp, screenPoint: eyeRelease, panel: eyeHost.panel))
+        check("top-bar-eyes-track-drag-until-release",
+              eyeDragBegins == 1 && eyeDragProgress.count == 3
+                && near(eyeDragProgress.last ?? .zero, eyeRelease)
+                && near(eyeDragFinished ?? .zero, eyeRelease) && eyeClicks == 0,
+              "Dragging out starts once, reports each later pointer position, and finishes at release without becoming a click.")
+        eyeHost.eyes.mouseDown(with: event(.leftMouseDown, screenPoint: eyeStart, panel: eyeHost.panel))
+        eyeHost.eyes.mouseUp(with: event(.leftMouseUp, screenPoint: eyeStart, panel: eyeHost.panel))
+        check("top-bar-eyes-click-returns", eyeClicks == 1 && eyeDragBegins == 1,
+              "A separate eye click still requests the desktop return once.")
         let expectedNames: Set<String> = ["mouseDown", "dragBegan", "mouseUp-click", "mouseUp-drag", "mouseCancelled",
                                          "accessibilityPress", "interactionCancelled"]
         check("input-entry-points-distinguishable", expectedNames.isSubset(of: Set(events)),
               "The opt-in callback distinguishes local mouse handlers, cancellation, and accessibility press without coordinates or text.")
-        check("no-visible-window-or-activation", !desktop.panel.isVisible && !dragHost.panel.isVisible && !NSApp.isActive,
-              "All checks completed with both panels ordered out and the application inactive.")
+        check("no-visible-window-or-activation", !desktop.panel.isVisible && !dragHost.panel.isVisible
+                && !eyeHost.panel.isVisible && !NSApp.isActive,
+              "All checks completed with every panel ordered out and the application inactive.")
 
         return InteractionReport(passed: checks.allSatisfy(\.passed), checks: checks,
                                  maximumDragOriginErrorPoints: maximumDragError,
@@ -212,6 +242,7 @@ private final class InteractionRunner {
         let root = URL(fileURLWithPath: CommandLine.arguments[index + 1])
         let paths = ["Sources/Spriglet/Desktop/PetWindowController.swift",
                      "Sources/Spriglet/Desktop/PetInteractionView.swift",
+                     "Sources/Spriglet/Desktop/TopBarEyesController.swift",
                      "Sources/Spriglet/App/PetRuntime.swift",
                      "tools/DesktopAcceptanceValidation/InteractionCheck.swift"]
         return try Dictionary(uniqueKeysWithValues: paths.map { path in

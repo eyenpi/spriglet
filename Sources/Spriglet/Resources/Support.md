@@ -26,6 +26,8 @@ Check **Pause**, **Hide Pet**, and **Parked Mode** in the leaf menu. Reduce Moti
 
 Click to pet, drag to move, or choose **Play with Firefly** in the leaf menu. Settings > Companion offers name, size, and activity controls. Spriglet's keyboard commands work while using Spriglet; they are not global shortcuts.
 
+Drag Acorn near the upper edge, or choose **Move Acorn to Top Bar** from the Companion menu, to show its eyes beside the notch or on a notchless menu bar. Click the eyes to return Acorn to its desktop home, or drag them downward and release the full pet where you want it. **Return Acorn to Desktop** in the menu and Settings > Desktop also works when clicks pass through. Pausing or Reduce Motion stops the eye animation; hiding the pet hides both forms.
+
 ## The pet is getting in the way
 
 In Settings > Desktop, choose **Pass Clicks Through** to send clicks through the entire pet window, or **Hide Pet** to put it away. Settings and the menu remain available. Transparent margins of the pet window can intercept clicks while click-through is off. The pet may appear over full-screen apps; hide it when needed.

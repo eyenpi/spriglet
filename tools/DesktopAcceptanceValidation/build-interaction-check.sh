@@ -23,6 +23,7 @@ xcrun swiftc "${check_flags[@]}" -parse-as-library -framework AppKit -framework 
     "$check_root/Sources/Spriglet/Rendering/PetRenderView+Scene.swift" \
     "$check_root/Sources/Spriglet/Rendering/SampleImageDecoder.swift" \
     "$check_root/Sources/Spriglet/Desktop/PetWindowController.swift" \
+    "$check_root/Sources/Spriglet/Desktop/TopBarEyesController.swift" \
     "$check_root/Sources/Spriglet/Desktop/PetInteractionView.swift" \
     "$check_root/Sources/Spriglet/App/PetRuntime.swift" \
     "$check_root/Sources/Spriglet/Environment/AppKitEnvironmentSource.swift" \
@@ -33,6 +34,7 @@ xcrun swiftc "${check_flags[@]}" -parse-as-library -framework AppKit -framework 
     "$check_root/Sources/Spriglet/Diagnostics/SoakProbe.swift" \
     "$check_dir/InteractionCheck.swift" -o "$check_bundle/Contents/MacOS/InteractionCheck"
 ln -sfn "$check_root/Sources/Spriglet/Resources/SproutSample" "$check_bundle/Contents/Resources/SproutSample"
+ln -sfn "$check_root/Sources/Spriglet/Resources/AcornHopper" "$check_bundle/Contents/Resources/AcornHopper"
 ln -sfn "$check_root/Sources/Spriglet/Resources/PetSounds" "$check_bundle/Contents/Resources/PetSounds"
 cat > "$check_bundle/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>

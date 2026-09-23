@@ -10,6 +10,7 @@ final class PetRuntime {
     private(set) var isPaused = false
     private(set) var isAnimating = false
     private(set) var isMoving = false
+    private(set) var isEyeDocked = false
     private(set) var clickThrough = false
     private(set) var allSpaces = true
     private(set) var autonomousBehavior = true
@@ -68,6 +69,7 @@ final class PetRuntime {
         || CommandLine.arguments.contains("--settings-review")
         || CommandLine.arguments.contains("--diagnostics")
         || CommandLine.arguments.contains("--everyday-review")
+        || CommandLine.arguments.contains("--topbar-review")
     @ObservationIgnored private let logger = Logger(subsystem: "dev.spriglet.app", category: "lifecycle")
 
     init(preferencesStore: PetPreferencesStore = PetPreferencesStore(),
@@ -89,6 +91,7 @@ final class PetRuntime {
         displaySize = preferences.displaySize
         activityLevel = preferences.activityLevel
         soundEnabled = preferences.soundEnabled
+        isEyeDocked = preferences.topBarEyes
         profile = preferences.profile
         interactionMemory = preferences.interactionMemory
         initialPlacement = preferences.placement
@@ -110,6 +113,7 @@ final class PetRuntime {
     var status: String {
         if isHidden { return "Hidden" }
         if isPaused { return "Paused" }
+        if isEyeDocked { return "Watching from the top bar" }
         if !policy.allowsAnimation { return "System rest" }
         if renderer.currentRoutine == .firefly { return "Firefly play" }
         if renderer.currentRoutine == .explore { return "Exploring nearby" }
@@ -120,6 +124,9 @@ final class PetRuntime {
     }
 
     var permitsMotion: Bool { policy.allowsAnimation && !reduceMotion && renderer.assetError == nil }
+    private var eyeMotionAllowed: Bool {
+        !reduceMotion && !lowPower && policy.reasons.subtracting([.topBarEyes]).isEmpty
+    }
     var canInteract: Bool { permitsMotion && !sampling }
     var canPlayWithFirefly: Bool { canInteract && !isAnimating && !isInteracting }
     var canPreviewSound: Bool { soundEnabled && policy.allowsAnimation && !sampling && !isTemporaryReview && !isCommandLineProbe }
@@ -159,6 +166,14 @@ final class PetRuntime {
         desktop.onOcclusionChanged = { [weak self] visible in self?.setSuspension(.occluded, active: !visible) }
         desktop.onScreenChanged = { [weak self] in self?.refreshEnvironment() }
         desktop.onMovementInterrupted = { [weak self] in self?.scene.perform(.resetPose) }
+        desktop.onEyeDockChanged = { [weak self] docked in
+            guard let self else { return }
+            isEyeDocked = docked
+            setSuspension(.topBarEyes, active: docked)
+            desktop.setEyeMotionAllowed(eyeMotionAllowed)
+            refreshAccessibility()
+            savePreferences()
+        }
         desktop.onWalkRequested = { [weak self] in self?.walk() }
         desktop.onImageOffsetChanged = { [weak self] offset in self?.renderer.setImageOffset(offset) }
         desktop.onPlacementSettled = { [weak self] _ in
@@ -193,6 +208,7 @@ final class PetRuntime {
         desktop.setClickThrough(clickThrough)
         desktop.setAllSpaces(allSpaces)
         desktop.restorePlacement(initialPlacement)
+        if isEyeDocked, !desktop.setTopBarMode(true, animated: false) { isEyeDocked = false }
         setSuspension(.hidden, active: isHidden)
         setSuspension(.userPaused, active: isPaused)
         observeEnvironment()
@@ -203,7 +219,10 @@ final class PetRuntime {
         refreshSoundPolicy()
         refreshAccessibility()
         logger.info("Companion started; finite activity with a single cancellable resting deadline")
-        if CommandLine.arguments.contains("--sample-review") {
+        if CommandLine.arguments.contains("--topbar-review") {
+            autonomousBehavior = false
+            _ = desktop.setTopBarMode(true, animated: false)
+        } else if CommandLine.arguments.contains("--sample-review") {
             autonomousBehavior = false
             characterSample()
         } else if CommandLine.arguments.contains("--soak") {
@@ -407,6 +426,7 @@ final class PetRuntime {
         withBehaviorTransition {
             isPaused = value
             setSuspension(.userPaused, active: value)
+            desktop?.setEyeMotionAllowed(eyeMotionAllowed)
             message = value ? "Paused. Animation and movement have stopped." : "Resumed in a resting pose."
             savePreferences()
         }
@@ -417,6 +437,7 @@ final class PetRuntime {
             isHidden = value
             setSuspension(.hidden, active: value)
             if value { desktop.hide() } else { desktop.show() }
+            desktop.setEyeMotionAllowed(eyeMotionAllowed)
             message = value ? "Pet hidden. Settings and the leaf menu remain available." : "Your companion is visible again."
             savePreferences()
         }
@@ -428,6 +449,21 @@ final class PetRuntime {
             desktop.setClickThrough(value)
             message = value ? "Clicks pass through the entire pet window. Use this menu to interact." : "Pet interaction enabled."
             savePreferences()
+        }
+    }
+
+    func returnFromTopBar() {
+        guard isEyeDocked else { return }
+        _ = desktop.setTopBarMode(false)
+        message = "Acorn returned to the desktop."
+    }
+
+    func moveToTopBar() {
+        guard !isEyeDocked else { return }
+        if desktop.setTopBarMode(true) {
+            message = "Acorn is watching from the top bar."
+        } else {
+            message = "The top bar is unavailable on this display."
         }
     }
 
@@ -559,6 +595,7 @@ final class PetRuntime {
     func setSuspension(_ reason: SuspensionReason, active: Bool) {
         withBehaviorTransition {
             receive(.suspension(reason: reason, active: active))
+            desktop?.setEyeMotionAllowed(eyeMotionAllowed)
             let suspended = !policy.allowsAnimation
             if suspended {
                 desktop?.cancelInteraction()
@@ -579,6 +616,7 @@ final class PetRuntime {
             let enteringLowPower = !lowPower && snapshot.lowPower
             lowPower = snapshot.lowPower
             reduceMotion = snapshot.reduceMotion
+            desktop?.setEyeMotionAllowed(eyeMotionAllowed)
             receive(.lowPower(lowPower))
             receive(.reduceMotion(reduceMotion))
             setSuspension(.thermalPressure, active: snapshot.thermalPressure.requiresRest)
@@ -673,7 +711,8 @@ final class PetRuntime {
             allSpaces: allSpaces, autonomousBehavior: autonomousBehavior,
             placement: desktop.savedPlacement, profile: profile,
             interactionMemory: interactionMemory, isParked: isParked,
-            displaySize: displaySize, activityLevel: activityLevel, soundEnabled: soundEnabled
+            displaySize: displaySize, activityLevel: activityLevel, soundEnabled: soundEnabled,
+            topBarEyes: isEyeDocked
         )
     }
 
@@ -793,6 +832,7 @@ final class PetRuntime {
             setClickThrough(preferences.clickThrough)
             setAllSpaces(preferences.allSpaces)
             desktop.restorePlacement(preferences.placement)
+            _ = desktop.setTopBarMode(preferences.topBarEyes, animated: false)
             if let probePlacement {
                 desktop.restorePlacement(probePlacement, preservingSavedPlacement: true)
             }

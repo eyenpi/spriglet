@@ -41,6 +41,11 @@ struct PetCommandActions: View {
                 .keyboardShortcut(".", modifiers: [.command, .option])
             Button(runtime.isHidden ? AppText.showPet : AppText.hidePet) { runtime.setHidden(!runtime.isHidden) }
                 .keyboardShortcut("h", modifiers: [.command, .shift])
+            if runtime.isEyeDocked {
+                Button("Return Acorn to Desktop") { runtime.returnFromTopBar() }
+            } else {
+                Button("Move Acorn to Top Bar") { runtime.moveToTopBar() }
+            }
             if !compact {
                 Divider()
                 Button(runtime.isSleeping ? "Wake Up" : "Take a Nap") {

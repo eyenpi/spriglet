@@ -14,6 +14,7 @@ public struct PetPreferences: Codable, Equatable, Sendable {
     public var displaySize: PetDisplaySize
     public var activityLevel: PetActivityLevel
     public var soundEnabled: Bool
+    public var topBarEyes: Bool
 
     public init(
         isHidden: Bool = false,
@@ -27,7 +28,8 @@ public struct PetPreferences: Codable, Equatable, Sendable {
         isParked: Bool = true,
         displaySize: PetDisplaySize = .standard,
         activityLevel: PetActivityLevel = .balanced,
-        soundEnabled: Bool = false
+        soundEnabled: Bool = false,
+        topBarEyes: Bool = false
     ) {
         self.isHidden = isHidden
         self.isPaused = isPaused
@@ -41,6 +43,7 @@ public struct PetPreferences: Codable, Equatable, Sendable {
         self.displaySize = displaySize
         self.activityLevel = activityLevel
         self.soundEnabled = soundEnabled
+        self.topBarEyes = topBarEyes
     }
 
     public init(from decoder: any Decoder) throws {
@@ -60,12 +63,14 @@ public struct PetPreferences: Codable, Equatable, Sendable {
         displaySize = (try? values.decode(PetDisplaySize.self, forKey: .displaySize)) ?? .standard
         activityLevel = (try? values.decode(PetActivityLevel.self, forKey: .activityLevel)) ?? .balanced
         soundEnabled = (try? values.decode(Bool.self, forKey: .soundEnabled)) ?? false
+        topBarEyes = (try? values.decode(Bool.self, forKey: .topBarEyes)) ?? false
     }
 
     private enum CodingKeys: String, CodingKey {
         case isHidden, isPaused, clickThrough, allSpaces, autonomousBehavior, placement
         case profile, interactionMemory, isParked
         case displaySize, activityLevel, soundEnabled
+        case topBarEyes
     }
 }
 

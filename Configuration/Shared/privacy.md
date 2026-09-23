@@ -6,6 +6,8 @@ Effective September 15, 2026. Developed by {{publisher}}.
 
 It responds to clicks and dragging in its own window and keyboard commands while using {{appName}}. It does not capture your screen, monitor global keystrokes, read other apps' contents, or request Screen Recording, Accessibility, Input Monitoring, or Automation permission. It exposes its own name, status, and actions to macOS accessibility clients without using accessibility access to control another app.
 
+When Acorn's top-bar eyes are visible, {{appName}} reads the current pointer location to aim them. The position stays in memory only for the current animation; {{appName}} does not save a pointer path or send it anywhere.
+
 Your choices stay in this app's local preferences: the pet's name and stable traits, size, activity frequency, parked mode, automatic moments, pause, visibility, click-through, Spaces behavior, sound preference, a display-relative home position, and whether you completed the welcome. A display identifier helps restore the pet to the same display. The app does not transmit it. One bounded last-good preference payload provides recovery if the current copy is damaged.
 
 Recent petting, firefly games, and completed placement changes contribute three small, capped values with their last update times. Their influence decays and expires after 24 hours. {{appName}} keeps no interaction event history or information about other apps. {{clearRecentPreferences}} removes these values from both the current preferences and their single recovery copy; it keeps the name, traits, and other choices.

@@ -32,6 +32,7 @@ The quick guide introduces Spriglet on your first launch. It lives in the **leaf
 
 - **Click to pet.** Acorn reacts, then gently settles.
 - **Drag to move.** Its home position is remembered on this Mac.
+- **Visit the top bar.** Drag Acorn toward the upper edge, or choose **Move Acorn to Top Bar** in the Companion menu. It becomes a small pair of eyes beside a camera notch, or near the center of a notchless menu bar. The eyes glance toward the pointer, make small movements, and blink. Click them to return Acorn to its desktop home, or drag them downward and release Acorn where you want it. The menu also offers **Return Acorn to Desktop**.
 - **Stay parked or stroll.** Parked Mode starts on. Turn it off for occasional short excursions that return to their starting spot on the same display. Automatic Moments, Pause, and Hide remain easy to reach.
 - **Play with a firefly.** Watch its glow, catch it, and settle. When strolls are allowed, Acorn follows it and walks home; parked play stays in place.
 - **Make it yours.** Choose a name, Small / Standard / Large size, and Quiet / Balanced / Lively frequency. Its stable traits and modest recent preferences give its finite routines variety.
@@ -40,7 +41,7 @@ The quick guide introduces Spriglet on your first launch. It lives in the **leaf
 
 ## Local by design
 
-No account, server, analytics, desktop capture, or access to other apps' contents. Preferences stay on your Mac. Spriglet requests no Screen Recording, Accessibility, Input Monitoring, or Automation permission. [Read the privacy details](PRIVACY.md).
+No account, server, analytics, desktop capture, or access to other apps' contents. While the top-bar eyes are visible, Spriglet reads the current pointer position locally for their gaze and does not store a pointer history. Preferences stay on your Mac. Spriglet requests no Screen Recording, Accessibility, Input Monitoring, or Automation permission. [Read the privacy details](PRIVACY.md).
 
 ## What is included
 

@@ -7,6 +7,7 @@ public enum SuspensionReason: String, CaseIterable, Sendable {
     case displayAsleep
     case sessionInactive
     case thermalPressure
+    case topBarEyes
 }
 
 /// Combines suspension causes without letting one resume event override another.

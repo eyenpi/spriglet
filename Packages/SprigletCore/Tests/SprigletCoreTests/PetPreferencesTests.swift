@@ -16,10 +16,24 @@ struct PetPreferencesTests {
             #expect(preferences.autonomousBehavior)
             #expect(preferences.placement == nil)
             #expect(preferences.isParked)
+            #expect(!preferences.topBarEyes)
             #expect(preferences.profile == PetProfile())
             #expect(preferences.interactionMemory == PetInteractionMemory())
             #expect(defaults.object(forKey: PetPreferencesStore.storageKey) == nil)
             #expect(defaults.object(forKey: PetPreferencesStore.backupStorageKey) == nil)
+        }
+    }
+
+    @Test("Top-bar eyes choice persists and older payloads default to desktop")
+    func topBarEyesRoundTrip() throws {
+        try withIsolatedDefaults { defaults in
+            let store = PetPreferencesStore(defaults: defaults)
+            store.save(PetPreferences(topBarEyes: true))
+            #expect(PetPreferencesStore(defaults: defaults).load().topBarEyes)
+            defaults.set(Data("""
+            {"version":4,"preferences":{"isHidden":false,"isPaused":false,"clickThrough":false,"allSpaces":true,"autonomousBehavior":true}}
+            """.utf8), forKey: PetPreferencesStore.storageKey)
+            #expect(!PetPreferencesStore(defaults: defaults).load().topBarEyes)
         }
     }
 
