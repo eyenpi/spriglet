@@ -1,10 +1,10 @@
 # Website and email setup
 
-The app and App Store listing use **meetspriglet.com**. Activate these destinations before sending a build to App Review.
+Prepared metadata and bundled help use **meetspriglet.com**. The Mallow app makes no requests to this site and exposes no link controls. Generating these files does not deploy them. Verify the public pages and mailbox separately before sending a build to App Review.
 
 | Destination | Content or purpose |
 | --- | --- |
-| `https://meetspriglet.com` | Temporary redirect to support; product design is deferred |
+| `https://meetspriglet.com` | Redirect to current companion help; product text is prepared locally |
 | `https://meetspriglet.com/support` | Public support page using [support-page.md](support-page.md) |
 | `https://meetspriglet.com/privacy` | The exact current [PRIVACY.md](../../PRIVACY.md), formatted for the website |
 | `support@meetspriglet.com` | One address for app support, privacy questions, and deletion requests |
@@ -27,7 +27,7 @@ Create **support@meetspriglet.com** as a mailbox, or an alias/forwarder that als
 - Configure the provider's MX, SPF, DKIM, and DMARC instructions. Avoid creating conflicting SPF records if another service already uses the domain.
 - Send a message from an unrelated provider to the address and confirm delivery.
 - Reply from `support@meetspriglet.com` and check that the recipient receives the reply with the intended sender address.
-- Confirm somebody will monitor it during App Review and after release. Apply the support-correspondence retention/deletion policy in `PRIVACY.md`.
+- Confirm somebody will monitor it during App Review and after release. Handle correspondence under the published policy; the app sends no diagnostics automatically.
 - Never commit mailbox credentials or account recovery details. The public email address itself is intentionally included in the app and metadata.
 
 App Review can use the same email address once monitored. Enter the review contact name **Ali Nabipour** and a real reachable telephone number privately in App Store Connect. The telephone number is still needed; it is not invented here. EU trader contact information and any other legally required disclosures must reflect the actual publisher and be completed in the account.
@@ -38,7 +38,7 @@ App Review can use the same email address once monitored. Enter the review conta
 - [ ] `/support` visibly includes a working email link and useful help.
 - [ ] `/privacy` matches `PRIVACY.md` and the bundled `PrivacyPolicy.md` in the reviewed build.
 - [ ] Support mail delivery and replies have been tested.
-- [ ] The app's Read Online, Get Support, and Email Support controls open the expected destinations.
+- [ ] Links in bundled help, prepared metadata and generated website pages use the expected destinations.
 - [ ] Any required publisher/trader disclosures are present and accurate.
 - [ ] After approval, add the real App Store product link to the product page. Do not invent an App Store ID or claim that the app is already available before release.
 

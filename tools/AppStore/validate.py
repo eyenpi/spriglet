@@ -21,7 +21,6 @@ require = release.require
 CATEGORY = "public.app-category.entertainment"
 SCREENSHOT_SIZES = {(1280, 800), (1440, 900), (2560, 1600), (2880, 1800)}
 PRIVACY_REASONS = {
-    "NSPrivacyAccessedAPICategoryUserDefaults": ["CA92.1"],
     "NSPrivacyAccessedAPICategorySystemBootTime": ["35F9.1"],
 }
 
@@ -62,7 +61,7 @@ def validate_privacy(value):
 def validate_store_info(info):
     require(info.get("LSApplicationCategoryType") == CATEGORY, "Missing Entertainment category.")
     require(info.get("ITSAppUsesNonExemptEncryption") is False, "Encryption declaration needs review.")
-    require(info.get("LSUIElement") is True, "Review notes assume a menu-bar app.")
+    require(info.get("LSUIElement") is True, "Review notes assume an accessory app without a Dock icon.")
     require(bool(info.get("NSHumanReadableCopyright")), "Missing copyright.")
 
 
@@ -100,13 +99,14 @@ def check_source(root):
     validate_privacy(release.read_plist(root / "Sources/Spriglet/PrivacyInfo.xcprivacy"))
     metadata = json.loads((root / "tools/AppStore/metadata/en-US.json").read_text())
     validate_metadata(metadata)
-    links = (root / "Sources/Spriglet/App/SharedContent.generated.swift").read_text()
-    require(f'"{metadata["privacyPolicyURL"]}"' in links and f'"{metadata["supportURL"]}"' in links,
-            "In-app links and store URLs disagree.")
-    require(f'"mailto:{metadata["supportEmail"]}"' in links, "In-app email and support contact disagree.")
     for source, bundled in (("PRIVACY.md", "PrivacyPolicy.md"), ("LICENSE", "License.txt")):
         require((root / source).read_bytes() == (root / "Sources/Spriglet/Resources" / bundled).read_bytes(),
                 f"Bundled document differs from {source}.")
+    brand = json.loads((root / "Configuration/Shared/brand.json").read_text())
+    require(metadata["marketingURL"] == brand["websiteURL"]
+            and metadata["supportURL"] == brand["websiteURL"] + "/support"
+            and metadata["privacyPolicyURL"] == brand["websiteURL"] + "/privacy"
+            and metadata["supportEmail"] == brand["supportEmail"], "Store contact differs from canonical brand content.")
     subprocess.run([sys.executable, str(ROOT / "tools/SharedContent/sync.py"), "--source-root", str(root), "--check"], check=True, stdout=sys.stderr)
     icon_root = root / "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset"
     icons = json.loads((icon_root / "Contents.json").read_text())["images"]

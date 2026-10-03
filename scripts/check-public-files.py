@@ -30,6 +30,8 @@ def public_path(name):
         return False
     if name.startswith(LOCAL_PREFIXES) or path.name in LOCAL_NAMES or LOCAL_PARTS.intersection(path.parts):
         return False
+    # Historical published commits contain this source model. Keep history
+    # scannable; tools/Architecture/check.py rejects models in the active tree.
     if name.startswith("art/sprout/review-01/"):
         return name == "art/sprout/review-01/sprout-design-v01.blend"
     return not (path.name.startswith((".env", ".dev.vars")) or path.suffix in {".p12", ".pem", ".p8", ".key", ".mobileprovision", ".provisionprofile", ".pkg", ".pyc"}
@@ -38,10 +40,24 @@ def public_path(name):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--working-tree", action="store_true", help="Check current tracked and new files rather than index blobs")
     parser.add_argument("--history", action="store_true", help="also check all commits reachable from HEAD")
     args = parser.parse_args()
     if args.history and git("rev-parse", "--is-shallow-repository").strip() == b"true":
         raise RuntimeError("History checking requires a full checkout (fetch-depth: 0 in CI).")
+    if args.working_tree:
+        names = git("ls-files", "--cached", "--others", "--exclude-standard", "-z").decode().split("\0")
+        failures = []
+        checked = 0
+        for name in sorted(set(names)):
+            if not name or not (ROOT / name).is_file(): continue
+            if not public_path(name): failures.append(f"Local-only path: {name}"); continue
+            data = (ROOT / name).read_bytes(); checked += 1
+            if b"\0" not in data and (HOME_PATH.search(data) or KEY_HEADER.search(data) or TOKEN.search(data)):
+                failures.append(f"Personal path or credential candidate in: {name}")
+        if failures: print("\n".join(failures), file=sys.stderr); return 1
+        print(f"Working-tree public file check passed: {checked} files.")
+        return 0
     entries = []
     for entry in git("ls-files", "--stage", "-z").split(b"\0"):
         if entry:

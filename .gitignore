@@ -32,17 +32,12 @@ xcuserdata/
 *.xcarchive/
 *.pkg
 
-# Authoring caches, review exports, and generated verification reports
+# Generated verification and Python caches
 __pycache__/
 *.py[cod]
-*.blend[0-9]*
-/art/sprout/review-01/*
-!/art/sprout/review-01/sprout-design-v01.blend
-/art/sprout/sample-v01/review/
 /art/**/verification*.json
 /art/**/icon-verification*.json
 
-# Local publication and retired review utilities
+# Local publication utilities
 /tools/PublicRelease/
 /tools/DesktopValidation/
-/tools/CharacterSampleReview/

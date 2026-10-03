@@ -1,51 +1,31 @@
-# Spriglet support
+# Help & Support
 
-Need help with your desktop companion? Email **[support@meetspriglet.com](mailto:support@meetspriglet.com)**. Ali Nabipour develops Spriglet and handles support and privacy questions at this address.
+Spriglet is an early native desktop companion for Apple silicon Macs running macOS 26 or later. The current character is Mallow.
 
-Please include your macOS version, your Mac model, the Spriglet version and build shown in Settings > General, and what happened. A short description is usually enough. Diagnostic reports and screenshots are optional; remove private information and unrelated desktop content before sending them.
+## Interacting with Mallow
 
-Open **Help & Support…** from the leaf menu or Settings > General to read this same help offline. Use **Read Online** to visit the website.
+Hover to get a reaction. Click to invite. Drag to play. Click elsewhere to return home.
 
-## Install the preview
+Mallow starts with its face visible below the notch. A short hover gives a small acknowledgement; a click brings it out. Touch it again for a wave or swing. Drag the character to pick it up. Release near the notch to let it catch; release away from it for gravity and a soft landing. Click elsewhere to bring it home.
 
-Download the DMG or ZIP from [GitHub Releases](https://github.com/eyenpi/spriglet/releases). Open the DMG, drag **Spriglet.app** to **Applications**, eject the disk image, and open the installed app. You do not need Xcode for the download.
+## Where it lives
 
-The current download is an **unsigned preview** with an ad hoc signature and no Apple notarization. macOS Gatekeeper may block it; it is not yet a signed public release. Release downloads include SHA-256 checksums and a source/version report. Spriglet runs on Apple silicon Macs with macOS 26 or later; the DMG does not run on Windows.
+On a notched display, Mallow uses the actual housing geometry reported by macOS. Displays without a notch use a small resting place near the upper right edge, below the menu bar. The bottom resting surface clears the space reserved by macOS. The app does not inspect other windows or assume it knows the exact Dock icon shelf.
 
-## Where is Spriglet?
+## Keeping your work clear
 
-Spriglet lives in the **leaf menu in your menu bar**, without a Dock icon. The first-run Quick Guide introduces the controls. Reopen it using **Quick Guide…** in the leaf menu or **Show Quick Guide** in Settings > General.
+Mallow stays in the resting peek until invited and returns after you leave it alone. The transparent margins of its window pass clicks through. Reduce Motion limits decorative movement; Low Power Mode and thermal pressure lower animation cadence. Animation stops while the display sleeps, the session is inactive or thermal pressure is critical.
 
-If the companion is hidden, open the leaf menu and choose **Show Pet**. If it is out of view, use Settings > Desktop > **Bring Pet Home**. **Next Display** moves it to another connected screen.
+## Quitting
 
-## Why is my companion staying still?
+Open Spriglet again from Finder to activate its ordinary app menu, then choose Quit Spriglet or press Command-Q. There is no permanent menu-bar item, action card, settings window or Dock icon.
 
-Check **Pause**, **Hide Pet**, and **Parked Mode** in the leaf menu. Reduce Motion keeps the companion still, and macOS power, display, or session state can pause activity. Automatic Moments controls spontaneous activity; petting and play remain deliberate actions when motion is available.
+## Local preview and troubleshooting
 
-## How do I interact with it?
+This rewrite is a local preview, not an Apple-notarized release. Installing a downloaded unsigned build may be blocked by macOS. For bugs, include the app version, macOS version, display arrangement, what you did and whether Reduce Motion or Low Power Mode was enabled. Avoid including private desktop content in screenshots.
 
-Click to pet, drag to move, or choose **Play with Firefly** in the leaf menu. Settings > Companion offers name, size, and activity controls. Spriglet's keyboard commands work while using Spriglet; they are not global shortcuts.
+## Contact
 
-## The pet is getting in the way
+Email [support@meetspriglet.com](mailto:support@meetspriglet.com) or visit [support](https://meetspriglet.com/support). Sending a support message is your choice; the app does not send diagnostics or messages on your behalf.
 
-In Settings > Desktop, choose **Pass Clicks Through** to send clicks through the entire pet window, or **Hide Pet** to put it away. Settings and the menu remain available. Transparent margins of the pet window can intercept clicks while click-through is off. The pet may appear over full-screen apps; hide it when needed.
-
-## Sound and launch at login
-
-Both start off and can be enabled in Settings > General. Sounds are brief and limited to deliberate petting, play, or Preview Sound. Automatic activity stays silent.
-
-Launch at Login uses macOS's own registration. Keep the installed app in a stable location, such as Applications. If macOS asks for approval, use the **Open Login Items…** button and review the entry in System Settings. Turn the option off whenever you no longer want it.
-
-## Privacy and local preferences
-
-Spriglet has no account and does not send app data to a server. Settings > Companion > **Clear Recent Preferences** forgets recent petting, play, and placement preferences while keeping your name, stable traits, and other choices. For help removing all local settings or deleting support correspondence, email the same support address.
-
-Read the [privacy policy](https://meetspriglet.com/privacy). A bundled copy is available offline from the leaf menu and Settings > General. Diagnostic reports are copied only when you choose **Copy Report**; Spriglet does not send them automatically.
-
-## Compatibility and quitting
-
-Spriglet requires an **Apple silicon Mac with macOS 26 or later**. Choose **Quit Spriglet** from the leaf menu to close it completely.
-
-[Back to Spriglet](https://meetspriglet.com) · [Privacy policy](https://meetspriglet.com/privacy)
-
-Developed by Ali Nabipour. © 2026 Ali Nabipour.
+[Back to Spriglet](https://meetspriglet.com) · [Privacy Policy](https://meetspriglet.com/privacy)

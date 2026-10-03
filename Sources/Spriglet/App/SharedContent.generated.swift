@@ -6,40 +6,10 @@ enum AppText {
     static let supportTitle = "Help & Support"
     static let privacyTitle = "Privacy Policy"
     static let licenseTitle = "License"
-    static let readOnline = "Read Online"
-    static let getSupport = "Get Support"
-    static let emailSupport = "Email Support"
-    static let documentUnavailable = "This document could not be opened. Please contact support."
-    static let aboutText = "A little quiet company, with no account, tracking, or access to other apps. Your companion and its preferences stay on this Mac."
-    static let playWithFirefly = "Play with Firefly"
-    static let parkedMode = "Parked Mode"
-    static let pause = "Pause"
-    static let resume = "Resume"
-    static let showPet = "Show Pet"
-    static let hidePet = "Hide Pet"
-    static let passClicksThrough = "Pass Clicks Through"
-    static let clearRecentPreferences = "Clear Recent Preferences"
-    static let bringPetHome = "Bring Pet Home"
-    static let nextDisplay = "Next Display"
-    static let quickGuide = "Quick Guide"
-    static let showQuickGuide = "Show Quick Guide"
-    static let launchAtLogin = "Launch at Login"
-    static let openLoginItems = "Open Login Items"
-    static let previewSound = "Preview Sound"
-    static let automaticMoments = "Automatic Moments"
-    static let copyReport = "Copy Report"
+    static let companionName = "Mallow"
+    static let interactionHelp = "Hover to get a reaction. Click to invite. Drag to play. Click elsewhere to return home."
+    static let restingPresence = "Curious peek"
+    static let engagedPresence = "Invited out"
+    static let playingPresence = "Playing"
     static let quitApp = "Quit Spriglet"
-}
-
-enum AppLinks {
-    static let privacy = URL(string: "https://meetspriglet.com/privacy")!
-    static let support = URL(string: "https://meetspriglet.com/support")!
-    static let email = URL(string: "mailto:support@meetspriglet.com")!
-
-    static var versionDescription: String {
-        let info = Bundle.main.infoDictionary ?? [:]
-        let version = info["CFBundleShortVersionString"] as? String ?? "Unknown"
-        let build = info["CFBundleVersion"] as? String ?? "Unknown"
-        return "\(version) (\(build))"
-    }
 }

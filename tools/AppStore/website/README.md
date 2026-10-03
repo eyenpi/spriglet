@@ -1,10 +1,10 @@
 # Support and privacy website
 
-Static pages for **meetspriglet.com**, hosted with Cloudflare Workers Static Assets. The root temporarily redirects to `/support`; the product page will be designed separately. No framework, client script, analytics, form, database, or email service is included.
+Static pages for **meetspriglet.com**, hosted with Cloudflare Workers Static Assets. The root redirects to `/support`; the prepared Mallow product text is in `../product-page.md`. A dedicated landing page is future work. No framework, client script, analytics, form, database, or email service is included.
 
 ## Content
 
-- `/support`: [shared support source](../../../Configuration/Shared/support.md), also bundled in the app's Help & Support window.
+- `/support`: [shared support source](../../../Configuration/Shared/support.md), also bundled as an offline resource. The Mallow app has no Help window.
 - `/privacy`: [shared privacy source](../../../Configuration/Shared/privacy.md), also rendered to root `PRIVACY.md` and the offline app policy.
 - `/`: temporary `302` redirect to `/support`.
 - Unknown paths: a proper `404` page with support and privacy links.
@@ -47,9 +47,9 @@ python3 tools/AppStore/website/check_http.py https://meetspriglet.com
 
 Wrangler runs the shared generator automatically before dev/deploy; do not use `--no-bundle` to bypass the build. The deploy script also regenerates before Wrangler reads its configuration, so domain changes apply to the same deployment. The generated custom-domain configuration creates the Worker domain, its DNS record, and certificate through Cloudflare. Do not manually guess an origin IP or DNS target. `workers.dev` is disabled. Domain changes can take time to propagate; a successful deploy alone does not prove the public URLs work. Keep Cloudflare Web Analytics and optional content-injection features disabled for this script-free site.
 
-Check HTTP-to-HTTPS behavior and the public URLs after deployment. Support mailbox setup and a real send/reply check remain separate; see [website-setup.md](../website-setup.md). The [deployment workflow](../../WebsiteDeployment/README.md) builds isolated PR previews and publishes validated `main` builds after its default-branch activation and protected environment setup.
+Check HTTP-to-HTTPS behavior and the public URLs after deployment. Support mailbox setup and a real send/reply check remain separate; see [website-setup.md](../website-setup.md). The [deployment workflow](../../WebsiteDeployment/README.md) builds isolated previews after approved PR validation. Publishing production content is a separate local operation with deployment credentials; merging or tagging an app release does not publish the website.
 
-When the product design is ready, replace `index.html` generation and remove the temporary root redirect in `_redirects`. Preserve `/support` and `/privacy`, which are already used by the app and App Store metadata.
+When a landing page is added, replace `index.html` generation and remove the temporary root redirect in `_redirects`. Preserve `/support` and `/privacy`, which are already used by the app and App Store metadata.
 
 ## Official references
 

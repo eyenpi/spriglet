@@ -1,22 +1,24 @@
 # Spriglet
 
-## A little quiet company for your Mac.
+## A small companion that feels alive.
 
-Meet Acorn Hopper, a tiny, round desktop companion. Pet it, share a short game with a firefly, or let it rest nearby while you use your Mac.
+Meet Mallow, a soft lavender companion that peeks out beneath your Mac's notch. Its face stays visible while it quietly blinks and breathes beside your work.
 
-Spriglet is free and built for Apple silicon Macs running macOS 26 or later.
+Spriglet is a native, local app for Apple silicon Macs running macOS 26 or later. This is an early Mallow preview.
 
-### Make it yours
+### Everything happens through the character
 
-Choose a name, three sizes, and a Quiet, Balanced, or Lively activity level. Keep your companion parked or allow occasional short strolls that return home.
+Hover to get a reaction. Click to invite. Drag to play. Click elsewhere to return home.
 
-### Stay in control
+A second touch brings a wave or a gentle swing. Release near the notch to let Mallow catch it; release farther away to try gravity and a soft, squishy landing. Clicking elsewhere brings it home. Displays without a notch use a small home at the upper right edge.
 
-Click to pet and drag to move. Pause, hide, or pass clicks through whenever you need. Optional interaction sounds and launch at login start off. The leaf menu in your menu bar opens Settings for all controls.
+### Quiet by default
+
+Mallow stays at its small resting peek until invited. It returns to that peek after you move on. Empty space around the character passes clicks through to your work. It respects Reduce Motion, Low Power Mode, display sleep and session changes.
 
 ### Local by design
 
-No account, advertising, analytics, or server connection in the app. Preferences stay on your Mac. Spriglet does not capture your screen, monitor global keystrokes, or read other apps.
+No account, server connection, analytics, screen capture or global keyboard monitoring. Future capabilities have a separate command boundary; no plugins or assistant services are active in this preview.
 
 [Get support](https://meetspriglet.com/support) · [Privacy policy](https://meetspriglet.com/privacy) · [Source code](https://github.com/eyenpi/spriglet)
 

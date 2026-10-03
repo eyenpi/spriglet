@@ -1,98 +1,91 @@
-# Spriglet
+# Spriglet · Mallow
 
-**A little quiet company for your Mac.**
+A soft, local desktop companion for Apple silicon Macs running macOS 26 or later. Mallow rests beneath the notch with its face visible, blinking and breathing while you work. It has no action cards, settings window or permanent menu-bar controls.
 
-Meet Acorn Hopper: a tiny, round desktop companion with a wobbly cap, quick hops, and a happy little reaction when you pet it. Built with SwiftUI and AppKit, with an editable Blender character and pre-rendered 3D animation.
+Hover for a small reaction. Click to invite it out; touch again for a wave or swing. Drag to pick it up. Release near home to let it catch, or away from home for gravity and a squishy landing. Click elsewhere to return it to its resting peek. On a display without a notch, it rests at the upper right edge below the menu bar.
 
-<img src="Sources/Spriglet/Resources/AcornHopper/rest.png" alt="Acorn Hopper, the current desktop companion" width="192">
+This is the first Mallow release, `v0.3.0-preview.1` (app 0.3.0, build 5). Downloads are on [GitHub releases](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1); choose the `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP. macOS may block an unsigned download. Plugins and assistant services are not implemented. The local app uses ad hoc signing; it has not been Apple-notarized or submitted to the App Store.
 
-[Acorn's animations and Blender source](art/candidates/README.md) · [Latest tagged preview](https://github.com/eyenpi/spriglet/releases/tag/v0.2.0-preview.2) · [Changelog](CHANGELOG.md) · [Privacy](PRIVACY.md)
+![Mallow peeking, reacting and playing](art/mallow/demo.gif)
 
-## Current development: one tiny pet
+The preview above uses the production simulation and renderer on a simulated desktop.
 
-`main` now ships **Acorn Hopper only**, with no character picker. Its Small / Standard / Large canvases measure **72 / 96 / 120 points**; the standard character itself is about 64 points tall. Hops take 0.8 seconds, petting finishes with a soft settle, and nap/wake have authored transitions. Clicking during a hop queues the reaction after landing; petting a sleeping Acorn wakes it first. Rest and sleep hold a still image without a running animation clock.
+## Build and run
 
-New pets are named Acorn. Existing saved names and settings stay intact. Other editable models remain future source material, not bundled alternatives. The [asset boundary and reproducible export](tools/CharacterAssets/README.md) keep future character support separate from today's minimal experience. Acorn is available in the preview download below and in source builds.
-
-## Try the public preview
-
-The latest preview is **0.2.0 Preview 2 — Acorn Hopper download** (app version 0.2.0, build 4). [Download the DMG or ZIP](https://github.com/eyenpi/spriglet/releases/tag/v0.2.0-preview.2), open the DMG, and drag **Spriglet.app** to **Applications**. Eject the image and open Spriglet. It appears on your desktop and in the leaf menu, without a Dock icon.
-
-Requires an **Apple silicon Mac** and **macOS 26 or later**. Xcode is unnecessary for the download. This is an **unsigned preview** with an ad hoc signature and no Apple notarization; macOS Gatekeeper may block it. Signing is still pending. Each release includes `SHA256SUMS` and a source/version report. A DMG does not install on Windows PCs.
-
-To build the preview from source, select full Xcode and run:
+Select the full Xcode 26 toolchain, then:
 
 ```sh
-git clone --branch v0.2.0-preview.2 --depth 1 https://github.com/eyenpi/spriglet.git
-cd spriglet
+./scripts/test.sh
+./scripts/build.sh Debug
+./scripts/build.sh Release
 ./scripts/run.sh
 ```
 
-The quick guide introduces Spriglet on your first launch. It lives in the **leaf menu in your menu bar**, without a Dock icon. Open **Settings…** there to choose its name, size, and behavior. Pet, play, pause, and quit from the same menu.
+Builds live under `.build/xcode/Build/Products/`. Reopening the app from Finder activates its ordinary app menu; Command-Q quits. Launch and character interaction do not steal keyboard focus. Right-click returns Mallow home. Escape also returns it home when this app receives keyboard input.
 
-- **Click to pet.** Acorn reacts, then gently settles.
-- **Drag to move.** Its home position is remembered on this Mac.
-- **Stay parked or stroll.** Parked Mode starts on. Turn it off for occasional short excursions that return to their starting spot on the same display. Automatic Moments, Pause, and Hide remain easy to reach.
-- **Play with a firefly.** Watch its glow, catch it, and settle. When strolls are allowed, Acorn follows it and walks home; parked play stays in place.
-- **Make it yours.** Choose a name, Small / Standard / Large size, and Quiet / Balanced / Lively frequency. Its stable traits and modest recent preferences give its finite routines variety.
-- **Keep sound optional.** Brief petting and play chimes start off. Launch at login is also an explicit choice in Settings.
-- **Stay in control.** Whole-window click-through, app-scoped keyboard commands, native accessibility actions, and Reduce Motion support are built in.
+For a finite, reproducible animation preview using the production code:
 
-## Local by design
+```sh
+./scripts/preview.sh .build/preview/frames
+```
 
-No account, server, analytics, desktop capture, or access to other apps' contents. Preferences stay on your Mac. Spriglet requests no Screen Recording, Accessibility, Input Monitoring, or Automation permission. [Read the privacy details](PRIVACY.md).
+The exporter writes PNG frames locally. It runs no assistant service and reads no desktop content.
 
-## What is included
+## Architecture
 
-Current source includes one Acorn pet, both hopping directions, idle, pet/settle, nap/wake transitions and held awake/sleep poses, native Settings and a quick guide, purposeful movement, personality, and the editable model/rig. The source-to-render-to-playback pipeline includes checks for transparency, foot contact, frame timing, cancellation, and quiet rest. The idle → walk → pet → settle sample and technical checks remain available in the separate Developer Diagnostics window in Debug builds or with `--diagnostics`.
+There is one production simulation and one renderer. The preview exporter uses those same modules.
 
-It is an early public preview. Broader desktop coverage, sustained battery profiling, additional selectable pets, and signed distribution are still ahead. Transparent margins of the floating window can affect clicks; **Pass Clicks Through** is the supported fallback. The pet may remain visible over full-screen apps; use **Hide Pet** or **Pass Clicks Through** when needed. The [archived Sprout demo](https://github.com/eyenpi/spriglet/releases/download/v0.1.0-preview.1/spriglet-demo.mp4) shows that earlier character's animation and is not a desktop screen recording.
+| Layer | Location | Responsibility |
+| --- | --- | --- |
+| Core | `Packages/CompanionKit/Sources/CompanionCore` | Geometry, interaction state, fixed-step physics, pose blending, frame policy and typed commands. Pure Swift values; no AppKit, timers, files or networking. |
+| Rendering | `Packages/CompanionKit/Sources/CompanionRendering` | Draw immutable snapshots as vector artwork. No engine references, events, window ownership or clocks. |
+| macOS environment | `Sources/Spriglet/Environment` | Convert real display measurements and lifecycle signals into core values. Observe outside clicks without reading clicked content. |
+| Desktop host | `Sources/Spriglet/Desktop` | Transparent nonactivating panel, actual-frame coordinate compensation, hit testing and accessible character actions. |
+| Runtime | `Sources/Spriglet/Runtime` | Wire the three boundaries together and own the single screen-bound animation clock. |
+| App | `Sources/Spriglet/App` | Launch, shutdown and generated shared text. |
 
-## Build, contribute, and create
+`CompanionRuntime` is the composition root. It owns a `CompanionEngine`, `DesktopEnvironment`, `CompanionWindowHost` and `ScreenFrameClock`. Adapters report to the runtime; they never call one another. Core state is held in a session value and advances in 120 Hz simulation steps, independently of display cadence. The renderer receives a `CompanionSnapshot` and cannot mutate the model.
 
-The Acorn integration is built with **Xcode 27.0 and macOS SDK 27.0**, using Swift 6 mode and a macOS 26 deployment target. The app has no third-party runtime dependencies or remote Swift packages. New platform choices are checked against current official Apple/Swift documentation and the installed SDK.
+### Changing behavior
 
-The current development build also includes an offline Privacy Policy, support links, and the MIT license in Settings > General. Privacy Policy and support are available in the leaf menu. The displayed version and build help identify support reports.
+Add a semantic input or command in `CompanionInput.swift`. Interaction transitions belong in `InteractionState.swift` and `CompanionEngine.swift`; trajectories, contact and weight belong in `BodyPhysics.swift`; authored pose targets belong in `MotionAnimator.swift`. Preserve the existing pose when a motion changes. Keep scene measurements and coordinate conversion outside behavior code.
 
-Use a full checkout of `main` for development. The command above checks out the tagged preview for trying that release.
+### Changing the character
 
-- [Character and motion checks](tools/CharacterSampleValidation/README.md)
-- [Native size and accessibility checks](tools/EverydayExperienceValidation/README.md)
-- [Sound and login service checks](tools/EverydayServicesValidation/README.md)
-- [Shipping Acorn asset architecture and export](tools/CharacterAssets/README.md)
-- [Original Sprout source and legacy fixture](art/sprout/README.md)
-- [App icon artwork and export](art/app-icon/README.md)
-- [Refined Acorn Hopper and Moss Mouse, animations and native comparison](art/candidates/README.md)
-- [Release packaging](tools/ReleaseValidation/README.md)
-- [Mac App Store preparation and submission](tools/AppStore/README.md)
-- [Changelog and tag publishing](tools/ReleaseNotes/README.md)
-- [Shared app/website assets and content](tools/SharedContent/README.md)
-- [Contributing](CONTRIBUTING.md)
-- [Report a bug or suggest an idea](https://github.com/eyenpi/spriglet/issues)
+Edit `MallowRenderer.swift` and the pose contract. The app, preview and icon share the same vector source. Regenerate icons with `art/app-icon/export_icon_catalog.sh` and run the rendering tests. No spritesheet, frame decoder or separate character manifest is required.
 
-Run Swift Testing with `./scripts/test.sh`. Build without launching with `./scripts/build.sh Debug` or `./scripts/build.sh Release`. CI checks public history, Swift tests, Python validators, every animation frame, app builds, and silent service adapters; desktop fixtures compile in CI and run separately on a visible Mac session.
+### Future capabilities
 
-## Keyboard and accessibility
+A capability requests a `CompanionCommand` through `CompanionRuntime.perform(_:)`. It does not receive a window, renderer, input monitor or mutable engine. This is the extension boundary; a plugin loader, permissions model and assistant services belong in a separate capability layer when there is a concrete feature to build. There are no placeholder registries, service locators or dormant plugin implementations.
 
-Use **⌘,** for Settings while Spriglet is active. The Companion menu lists app-scoped commands; it installs no global shortcut monitor.
+### Lifecycle and resources
 
-| Action | Shortcut |
-| --- | --- |
-| Pet / Firefly | ⌥⌘P / ⌥⌘F |
-| Parked Mode | ⌥⌘K |
-| Pause / Resume | ⌥⌘. |
-| Hide / Show Pet | ⇧⌘H |
-| Short walk / Home | ⌥⌘W / ⌥⌘R |
-| Move pet | ⌥⌘arrow key |
+The host renders deliberate motion at up to 60 fps and quiet peeking/grounded breathing at 30 fps. Low Power Mode caps cadence at 30 fps; Reduce Motion or serious thermal pressure cap it at 15 fps. Display sleep, inactive sessions and critical thermal pressure suspend the clock and hide the panel. Suspension cancels pointer capture; waking resumes without simulating the time spent asleep. Reduce Motion preserves blinking while limiting decorative movement and return flights.
 
-The pet exposes its name, state, size, primary petting action, and custom play, pause, parking, placement, and Settings actions to accessibility clients. Standard native controls support keyboard navigation. VoiceOver speech/rotor review, real login registration and the next-login launch, and actual Mac sleep/wake remain manual acceptance checks. Native provider, adapter, and simulated lifecycle checks do not establish those results.
+Mallow only occupies a small transparent panel. Empty margins pass clicks through; a drag retains capture until release or cancellation. The floor clears macOS-reported reserved space. Other app windows and the exact Dock icon shelf are not inspected.
 
-Sound starts off and only deliberate petting, play, or Preview Sound can request a finite chime. Launch at Login uses macOS’s own registration status and changes only when you choose it. Keep an opted-in installation in a stable location.
+## Verification
 
-Spriglet was developed with AI assistance. GitHub Copilot CLI contributed the public preview's welcome and everyday controls. The underlying app and Blender pipeline predate that contribution.
+`./scripts/test.sh` checks dependency boundaries, core interactions, trajectory/contact behavior, pose continuity, lifecycle policy, coordinate compensation and native rendered pixels. Debug and Release Xcode builds use Swift 6 with strict concurrency and warnings as errors.
 
-## License
+The PR workflow retains owner approval before runner allocation and its security checks. It runs the same new tests, renders a production preview, checks shared content, validates both app builds and rehearses unsigned packaging. CI compilation is separate from live interaction and visual acceptance.
 
-**MIT for code and original artwork/audio**, including the editable character, rig, animation frames, chimes, and demo. See [LICENSE](LICENSE) and [ASSETS.md](ASSETS.md).
+```sh
+python3 tools/SharedContent/sync.py --check
+python3 tools/ReleaseNotes/release_notes.py check
+python3 art/app-icon/verify_icon.py
+python3 tools/AppStore/validate.py
+python3 scripts/check-public-files.py --working-tree
+```
 
-CI waits for owner approval on each PR revision before allocating a runner. See the [approval and runner usage guide](tools/CI/README.md). Pushes and tags do not independently run CI.
+App text, help, privacy and prepared website/store content are generated from `Configuration/Shared`. Edit those sources and run the synchronizer. Nothing in a normal build publishes the website or uploads the app.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md), [asset provenance](ASSETS.md), [privacy](PRIVACY.md), [release tooling](tools/ReleaseValidation/README.md) and [CI approval](tools/CI/README.md). Retired implementations and authored artwork remain recoverable in Git history rather than in the active codebase.
+
+## Release process and next steps
+
+The Mallow release replaces the previous character and interaction system. The bundle identifier remains `dev.spriglet.app`; old saved preferences are neither imported nor deleted. There is no login item registration in this preview. Quit an older running preview before opening Mallow.
+
+A release goes through a PR, required security and Mac build checks, then a merge to `main`. Build and package that exact clean revision, mount and verify the DMG, create an immutable annotated tag and publish the matching changelog and checksummed downloads. The publisher refuses mismatched or dirty source. See [release instructions](tools/ReleaseNotes/README.md) and [packaging](tools/ReleaseValidation/README.md).
+
+The next priorities are broader device acceptance (sleep/wake, multiple displays, VoiceOver and sustained energy use), more authored expressions and idle moments, and Developer ID signing/notarization. After that, add one useful capability through the typed command boundary before introducing a permissioned plugin loader. No assistant behavior, external-app awareness or 3D runtime is included in this release.

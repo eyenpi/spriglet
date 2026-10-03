@@ -90,7 +90,7 @@ def outputs(context, documents):
     name = context["appName"]
     return {
         "support.html": page(context, context["supportTitle"], f"Help with {name}, your local desktop companion for Mac. Contact support and find answers to common questions.", "support", document(support)),
-        "privacy.html": page(context, context["privacyTitle"], f"How {name} handles local preferences, optional diagnostics, support requests, and website visits.", "privacy", document(documents["privacy"])),
+        "privacy.html": page(context, context["privacyTitle"], f"How {name} handles session state, desktop interaction, support requests, and website visits.", "privacy", document(documents["privacy"])),
         "index.html": page(context, f"{name} support", f"Support and privacy information for {name} for Mac.", "support", '<p><a href="/support">Visit support</a> or read our <a href="/privacy">privacy policy</a>.</p>'),
         "404.html": page(context, "Page not found", f"Find support and privacy information for {name}.", "404", '<p>This page could not be found. <a href="/support">Visit support</a> or read the <a href="/privacy">privacy policy</a>.</p>'),
     }

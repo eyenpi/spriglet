@@ -1,6 +1,6 @@
 # Changelog and release publishing
 
-[`Sources/Spriglet/Resources/Changelog.json`](../../Sources/Spriglet/Resources/Changelog.json) is the source of truth for every version. The generator produces [`CHANGELOG.md`](../../CHANGELOG.md), the release body, and the changelog files attached to each new GitHub release. Xcode also bundles the same JSON as `Changelog.json`, ready for a future in-app What's New view.
+[`Sources/Spriglet/Resources/Changelog.json`](../../Sources/Spriglet/Resources/Changelog.json) is the source of truth for every version. The generator produces [`CHANGELOG.md`](../../CHANGELOG.md), the release body, and the changelog files attached to each new GitHub release. Xcode also bundles the same JSON as `Changelog.json`, as an offline release record. Mallow has no release-notes window.
 
 ## Record a version
 
@@ -8,7 +8,7 @@ Add a release to the start of `releases`, preserving existing published entries.
 
 Schema 1 uses plain strings and arrays so an app can decode it without parsing Markdown. Supported categories are `added`, `changed`, `deprecated`, `removed`, `fixed`, and `security`. Empty categories are omitted from the rendered notes. `knownLimitations` is separate from completed changes.
 
-Use `X.Y.Z-preview.N` with channel `preview` for previews, or `X.Y.Z` with channel `stable` for stable releases. Tags have a `v` prefix. The app version is numeric, such as `0.2.0`; the preview suffix belongs in the release version, not Apple's `CFBundleShortVersionString`. Update both Xcode build configurations' `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` to match the newest entry.
+Use `X.Y.Z-preview.N` with channel `preview` for previews, or `X.Y.Z` with channel `stable` for stable releases. Tags have a `v` prefix. The app version is numeric, such as `0.3.0`; the preview suffix belongs in the release version, not Apple's `CFBundleShortVersionString`. Update both Xcode build configurations' `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` to match the newest entry.
 
 ```sh
 python3 tools/ReleaseNotes/release_notes.py render
@@ -19,7 +19,7 @@ python3 -m unittest discover -s tools/ReleaseNotes -p 'test_*.py'
 Preview the notes for an existing entry:
 
 ```sh
-python3 tools/ReleaseNotes/release_notes.py notes v0.2.0-preview.1
+python3 tools/ReleaseNotes/release_notes.py notes v0.3.0-preview.1
 ```
 
 The check rejects malformed data, duplicate versions/builds, incorrect ordering, stale Markdown, and disagreement with the Xcode version. CI also verifies the exact JSON bytes and version information inside both built app configurations.
