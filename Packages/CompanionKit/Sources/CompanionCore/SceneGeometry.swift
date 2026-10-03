@@ -6,6 +6,11 @@ public struct SceneGeometry: Equatable, Sendable {
     public let scale: Double
     public let hasHardwareNotch: Bool
     public var homeFeet: Point { Point(x: home.midX, y: home.maxY + 60 * scale) }
+    /// Free motion keeps enough of the body below the display and housing to
+    /// remain reachable. The resting peek can be grabbed without a position jump.
+    public var ceiling: Double {
+        min(homeFeet.y - 30 * scale, max(bounds.minY + 60 * scale, home.maxY + 12 * scale))
+    }
     public var leftLimit: Double { bounds.minX + min(55 * scale, bounds.width / 4) }
     public var rightLimit: Double { bounds.maxX - min(55 * scale, bounds.width / 4) }
     public init(bounds: Rect, home: Rect, floor: Double, scale: Double = 1, hasHardwareNotch: Bool = true) {

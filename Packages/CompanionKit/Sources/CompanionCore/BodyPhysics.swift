@@ -54,7 +54,7 @@ struct BodyPhysics: Sendable {
         }
         phase = .held; isWalking = false; jumpTarget = nil; flight = nil
         let feet = Point(x: clamp(target.x, scene.leftLimit, scene.rightLimit),
-                         y: clamp(target.y + SimulationTuning.grabWeightOffset * scene.scale, scene.bounds.minY, scene.floor))
+                         y: clamp(target.y + SimulationTuning.grabWeightOffset * scene.scale, scene.ceiling, scene.floor))
         if let previous = lastDrag, time > previous.time {
             let elapsed = max(time - previous.time, SimulationTuning.step)
             let estimate = (feet - previous.feet) * (1 / elapsed)
@@ -133,6 +133,26 @@ struct BodyPhysics: Sendable {
         catchX.speed = momentum.x; catchY.speed = momentum.y
         position = incomingPosition - swingOffset; velocity = momentum
     }
+    /// Preserve free momentum until an actual scene contact. Walls stop only
+    /// outward horizontal motion; vertical contacts give a soft, bounded rebound.
+    @discardableResult private mutating func resolveSceneContacts() -> Bool {
+        let bounded = Point(x: clamp(position.x, scene.leftLimit, scene.rightLimit),
+                            y: clamp(position.y, scene.ceiling, scene.floor))
+        guard bounded != position else { return false }
+        if (position.x < scene.leftLimit && velocity.x < 0) || (position.x > scene.rightLimit && velocity.x > 0) {
+            velocity.x = 0
+        }
+        if bounded.y != position.y {
+            let direction = position.y < scene.ceiling ? 1.0 : -1.0
+            let impactSpeed = -velocity.y * direction
+            if impactSpeed > 0 {
+                compression.impulse(-min(8, max(0.8, impactSpeed / 140)))
+                velocity.y = direction * min(95, impactSpeed * 0.11)
+            }
+        }
+        position = bounded
+        return true
+    }
     mutating func step(_ dt: Double, at time: Double, walkingAmount: Double) {
         compression.step(dt)
         if phase == .hanging { swing.step(dt) }
@@ -151,7 +171,7 @@ struct BodyPhysics: Sendable {
                 velocity = velocity + acceleration * dt
                 position = position + velocity * dt
                 let bounded = Point(x: clamp(position.x, scene.leftLimit, scene.rightLimit),
-                                    y: clamp(position.y, scene.bounds.minY, scene.floor))
+                                    y: clamp(position.y, scene.ceiling, scene.floor))
                 if bounded.x != position.x { velocity.x = 0 }
                 if bounded.y != position.y { velocity.y = 0 }
                 position = bounded
@@ -160,6 +180,10 @@ struct BodyPhysics: Sendable {
             catchX.step(dt); catchY.step(dt)
             position = scene.homeFeet + Point(x: catchX.value, y: catchY.value)
             velocity = Point(x: catchX.speed, y: catchY.speed)
+            if resolveSceneContacts() {
+                catchX.value = position.x - scene.homeFeet.x; catchY.value = position.y - scene.homeFeet.y
+                catchX.speed = velocity.x; catchY.speed = velocity.y
+            }
             if hypot(catchX.value, catchY.value) < 0.5 && hypot(catchX.speed, catchY.speed) < 6 { settleAtHome() }
         case .preparingJump:
             anticipation -= dt
@@ -173,7 +197,12 @@ struct BodyPhysics: Sendable {
                 position.y = scene.floor
                 compression.impulse(-min(8, max(0.8, velocity.y / 140)))
                 velocity = .zero; phase = .grounded; landingCount += 1
+                resolveSceneContacts()
                 beginJump(to: scene.homeFeet, home: true)
+            } else if resolveSceneContacts() {
+                // The old Hermite path would leave the scene again. Join a new
+                // finite flight from the contact position and remaining momentum.
+                startFlight(launchVelocity: velocity)
             } else if flightAge >= flight.duration {
                 if jumpToHome { beginCatch() }
                 else {
@@ -193,7 +222,7 @@ struct BodyPhysics: Sendable {
             } else {
                 position.x += velocity.x * dt; position.y = nextY; velocity.y += SimulationTuning.gravity * dt
             }
-            position.x = clamp(position.x, scene.leftLimit, scene.rightLimit)
+            resolveSceneContacts()
         case .grounded:
             if isWalking {
                 let low = scene.leftLimit + 32 * scene.scale, high = scene.rightLimit - 32 * scene.scale

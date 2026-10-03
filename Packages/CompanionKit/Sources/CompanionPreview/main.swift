@@ -45,13 +45,14 @@ import CompanionRendering
 }
 
 /// A closer 60 fps review of emergence, grabs, a regrab during catch and a
-/// reversed retreat. Uses the same input path and fixed simulation as the app.
+/// reversed retreat, upward throw and return during a horizontal reversal.
+/// Uses the same input path and fixed simulation as the app.
 @MainActor func exportTransitions(to folder: URL) throws {
     try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
     var engine = CompanionEngine(scene: .preview)
     let painter = ScenePreviewRenderer()
     var start = Point.zero, pointer = Point(x: 625, y: 190)
-    for index in 0..<384 {
+    for index in 0..<1080 {
         if index == 60 || index == 246 { engine.send(.activate) }
         if index == 72 || index == 108 {
             start = engine.snapshot.hitBounds.center
@@ -70,12 +71,27 @@ import CompanionRendering
         if index == 100 || index == 139 { engine.send(.pointerReleased(pointer)) }
         if index == 200 { engine.send(.command(.stretch)) }
         if index == 240 || index == 276 { engine.send(.outsidePressed) }
+        if index == 420 || index == 840 {
+            start = engine.snapshot.hitBounds.center
+            pointer = start; engine.send(.pointerPressed(pointer))
+        }
+        if index == 421 || index == 481 || index == 841 || index == 901 {
+            let offset: Point = switch index {
+            case 421: Point(x: 180, y: 300)
+            case 481: Point(x: 180, y: -70)
+            case 841: Point(x: -300, y: 150)
+            default: Point(x: 300, y: 150)
+            }
+            pointer = start + offset; engine.send(.pointerDragged(pointer))
+        }
+        if index == 484 { engine.send(.pointerReleased(pointer)) }
+        if index == 630 || index == 906 { engine.send(.command(.returnHome)) }
         engine.send(.pointerMoved(pointer))
         engine.advance(by: 1 / 60.0)
         try writeFrame(engine.snapshot, painter: painter, to: folder, index: index, pointer: pointer,
                        pressed: engine.hasPointerCapture)
     }
-    print("Rendered 384 transition frames at 60 fps using the production core and renderer.")
+    print("Rendered 1080 transition frames at 60 fps using the production core and renderer.")
 }
 
 @MainActor func exportIcons(to directory: URL) throws {
