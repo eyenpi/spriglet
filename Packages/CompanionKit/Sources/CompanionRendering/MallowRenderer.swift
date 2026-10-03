@@ -20,23 +20,29 @@ import CompanionCore
     ink.setStroke(); path.stroke()
 }
 
-@MainActor private func oval(_ rect: NSRect, fill: NSColor, outline: Bool = false) {
+@MainActor private func oval(_ rect: NSRect, fill: NSColor, outline: Bool = false, outlineWidth: CGFloat = 1.9) {
     let path = NSBezierPath(ovalIn: rect); fill.setFill(); path.fill()
-    if outline { stroke(path, 1.9) }
+    if outline { stroke(path, outlineWidth) }
 }
 
-/// Fixed geometry belongs to one renderer. Drawing never changes this path.
+@MainActor private func native(_ point: Point) -> NSPoint { NSPoint(x: point.x, y: point.y) }
+@MainActor private func native(_ rect: Rect) -> NSRect { NSRect(x: rect.x, y: rect.y, width: rect.width, height: rect.height) }
+@MainActor private func concatenate(_ transform: CharacterTransform) {
+    let affine = NSAffineTransform()
+    affine.translateX(by: transform.origin.x, yBy: transform.origin.y)
+    affine.rotate(byRadians: transform.rotation)
+    affine.scaleX(by: transform.scaleX, yBy: transform.scaleY); affine.concat()
+}
+
+/// The renderer caches a native path from the shared, immutable artwork.
 @MainActor private struct MallowArtwork {
     let body: NSBezierPath
     init() {
         let body = NSBezierPath()
-        body.move(to: NSPoint(x: -49, y: 0))
-        body.curve(to: NSPoint(x: -61, y: -31), controlPoint1: NSPoint(x: -66, y: -1), controlPoint2: NSPoint(x: -66, y: -16))
-        body.curve(to: NSPoint(x: -22, y: -77), controlPoint1: NSPoint(x: -57, y: -56), controlPoint2: NSPoint(x: -42, y: -76))
-        body.curve(to: NSPoint(x: 29, y: -74), controlPoint1: NSPoint(x: -4, y: -89), controlPoint2: NSPoint(x: 16, y: -85))
-        body.curve(to: NSPoint(x: 60, y: -30), controlPoint1: NSPoint(x: 46, y: -65), controlPoint2: NSPoint(x: 58, y: -48))
-        body.curve(to: NSPoint(x: 49, y: 0), controlPoint1: NSPoint(x: 67, y: -12), controlPoint2: NSPoint(x: 64, y: -1))
-        body.curve(to: NSPoint(x: -49, y: 0), controlPoint1: NSPoint(x: 23, y: 5), controlPoint2: NSPoint(x: -23, y: 5))
+        body.move(to: native(MallowGeometry.bodyCurves[0].start))
+        for curve in MallowGeometry.bodyCurves {
+            body.curve(to: native(curve.end), controlPoint1: native(curve.control1), controlPoint2: native(curve.control2))
+        }
         body.close()
         body.lineWidth = 2.3; body.lineCapStyle = .round; body.lineJoinStyle = .round
         self.body = body
@@ -45,28 +51,17 @@ import CompanionCore
 
 @MainActor private func drawMallow(_ pose: CharacterPose, artwork: MallowArtwork, time: Double, center: NSPoint, scale: CGFloat = 1, drawShadow: Bool = true, rotation: Double = 0, drawArms: Bool = true, clipFace: Bool = false) {
     NSGraphicsContext.saveGraphicsState()
-    let transform = NSAffineTransform()
-    transform.translateX(by: center.x, yBy: center.y)
-    transform.rotate(byRadians: rotation)
-    transform.scale(by: scale); transform.concat()
+    concatenate(CharacterTransform(origin: Point(x: center.x, y: center.y), rotation: rotation, scaleX: scale, scaleY: scale))
     if drawShadow {
         oval(NSRect(x: -49, y: -2, width: 98, height: 10), fill: MallowPalette.shadow)
     }
     // 60% of each stride is planted. During that phase, feet move backwards
     // relative to the body at the same speed as the desktop window moves forward.
-    for side in [-1.0, 1.0] {
-        let phase = (pose.gaitPhase + (side < 0 ? 0.5 : 0)).truncatingRemainder(dividingBy: 1)
-        let swing = max(0, (phase - 0.6) / 0.4)
-        let stepX = phase < 0.6 ? 11 - phase / 0.6 * 22 : -11 + (1 - cos(swing * .pi)) * 11
-        let x = side * (28 - abs(pose.facing) * 9) + stepX * pose.walk * pose.direction
-        let y = -sin(swing * .pi) * 10 * pose.walk
-        oval(NSRect(x: x - 10, y: y - 5, width: 20, height: 13), fill: MallowPalette.feet, outline: true)
+    for foot in MallowGeometry.feet(for: pose) {
+        oval(native(foot), fill: MallowPalette.feet, outline: true)
     }
     NSGraphicsContext.saveGraphicsState()
-    let bodyTransform = NSAffineTransform()
-    bodyTransform.translateX(by: pose.lean * 26, yBy: 0)
-    bodyTransform.rotate(byRadians: pose.lean)
-    bodyTransform.scaleX(by: pose.width * (1 - abs(pose.facing) * 0.07), yBy: pose.height); bodyTransform.concat()
+    concatenate(MallowGeometry.bodyTransform(for: pose))
     let body = artwork.body
     MallowPalette.bodyGradient.draw(in: body, angle: 90)
     MallowPalette.ink.setStroke(); body.stroke()
@@ -140,35 +135,12 @@ import CompanionCore
         NSGraphicsContext.restoreGraphicsState()
     }
     private func drawHands(_ frame: CompanionSnapshot) {
-        let s = frame.scene.scale, pose = frame.pose, grip = frame.homeGrip
-        let reveal = (frame.openness - 0.6) / 0.4
-        let emergence = reveal * reveal * (3 - 2 * reveal)
-        func blend(_ free: Point, _ home: Point) -> Point { free + (home - free) * grip }
-        func bodyPoint(_ x: Double, _ y: Double) -> Point {
-            let scaled = Point(x: x * pose.width * (1 - abs(pose.facing) * 0.07), y: y * pose.height)
-            let leaned = Point(x: scaled.x * cos(pose.lean) - scaled.y * sin(pose.lean) + pose.lean * 26,
-                               y: scaled.x * sin(pose.lean) + scaled.y * cos(pose.lean))
-            return frame.feet + Point(x: leaned.x * cos(frame.rotation) - leaned.y * sin(frame.rotation),
-                                      y: leaned.x * sin(frame.rotation) + leaned.y * cos(frame.rotation) - 7) * s
-        }
-        func native(_ point: Point) -> NSPoint { NSPoint(x: point.x, y: point.y) }
-        for side in [-1.0, 1.0] {
-            let gait = sin(pose.gaitPhase * 2 * .pi + (side < 0 ? .pi : 0)) * pose.walk * 6
-            let raise = pose.arm * (side > 0 ? 29 : 12) + gait
-            let homeShoulder = bodyPoint(side * 47, -29)
-            let wave = side > 0 ? max(0, pose.arm - 0.4) * 28 * emergence : 0
-            let homeHand = Point(x: frame.scene.home.midX + side * 43 * s,
-                                 y: frame.scene.home.maxY + (-8 + emergence * 10 + wave) * s)
-            let shoulder = blend(bodyPoint(side * 47, -29 - raise), homeShoulder)
-            let hand = blend(bodyPoint(side * 34, -15 - raise * 0.6), homeHand)
-            let control1 = blend(bodyPoint(side * (56 + pose.arm * 6), -14 - raise),
-                                 homeShoulder + Point(x: side * 8 * s, y: -9 * s))
-            let control2 = blend(bodyPoint(side * 46, -9 - raise * 0.5),
-                                 homeHand + Point(x: side * 6 * s, y: 12 * s))
-            let arm = NSBezierPath(); arm.move(to: native(shoulder))
-            arm.curve(to: native(hand), controlPoint1: native(control1), controlPoint2: native(control2))
+        let s = frame.scene.scale
+        for hand in frame.geometry.hands {
+            let arm = NSBezierPath(); arm.move(to: native(hand.arm.start))
+            arm.curve(to: native(hand.arm.end), controlPoint1: native(hand.arm.control1), controlPoint2: native(hand.arm.control2))
             stroke(arm, 2 * s)
-            oval(NSRect(x: hand.x - 5 * s, y: hand.y - 3 * s, width: 10 * s, height: 8 * s), fill: MallowPalette.feet, outline: true)
+            oval(native(hand.palm), fill: MallowPalette.feet, outline: true, outlineWidth: 1.9 * s)
         }
     }
 }

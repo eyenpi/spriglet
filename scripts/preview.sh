@@ -6,5 +6,6 @@ task_output="${1:-$task_root/.build/preview/frames}"
 case "${2:-}" in
     "") swift run --package-path "$task_root/Packages/CompanionKit" companion-preview "$task_output" ;;
     --transitions) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --transitions "$task_output" ;;
-    *) print -u2 "Usage: ./scripts/preview.sh [OUTPUT_DIRECTORY] [--transitions]"; exit 2 ;;
+    --interaction) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --interaction "$task_output" ;;
+    *) print -u2 "Usage: ./scripts/preview.sh [OUTPUT_DIRECTORY] [--transitions|--interaction]"; exit 2 ;;
 esac

@@ -8,6 +8,7 @@ python3 - "$task_root" <<'PY'
 import hashlib,json,pathlib,shutil,sys
 root=pathlib.Path(sys.argv[1])
 source_names=['Packages/CompanionKit/Sources/CompanionRendering/MallowRenderer.swift',
+              'Packages/CompanionKit/Sources/CompanionCore/MallowGeometry.swift',
               'Packages/CompanionKit/Sources/CompanionCore/CharacterPose.swift']
 icons=root/'Sources/Spriglet/Assets.xcassets/AppIcon.appiconset'
 provenance={'schemaVersion':2,'character':'Mallow','method':'native-vector','license':'MIT',

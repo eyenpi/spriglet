@@ -4,6 +4,57 @@ import Testing
 @testable import CompanionRendering
 
 @Suite("Production vector rendering") @MainActor struct RendererTests {
+    @Test("Picking agrees with painted pixels through peek, stretch, rotation and walking", arguments: [0, 1, 2, 3, 4])
+    func paintedSilhouette(variant: Int) throws {
+        let scene = SceneGeometry.preview
+        var pose = CharacterPose()
+        if variant == 1 { pose.height = 1.3; pose.width = 1 / pose.height; pose.lean = -0.12; pose.arm = 0.85 }
+        if variant == 2 { pose.height = 0.7; pose.width = 1 / pose.height; pose.arm = 0.9 }
+        if variant == 3 { pose.walk = 1; pose.gaitPhase = 0.8; pose.facing = -0.8; pose.direction = -1 }
+        let frame = variant == 0 ? CompanionEngine(scene: scene).snapshot : CompanionSnapshot(
+            scene: scene, presence: .playing, phase: .held, pose: pose,
+            feet: variant == 4 ? Point(x: scene.home.midX, y: scene.home.maxY + 55) : Point(x: 360, y: 250),
+            windowAnchor: scene.homeFeet, rotation: variant == 2 ? 0.5 : -0.15,
+            openness: variant == 4 ? 0.85 : 1, homeGrip: variant == 4 ? 0.75 : 0,
+            time: 0, gesture: nil, canCatch: false)
+        let image = try characterImage(frame)
+        var missedInterior = 0, emptyHits = 0, paintedHits = 0
+        let bounds = frame.hitBounds
+        for y in stride(from: max(0, Int(bounds.minY) - 4), to: min(image.pixelsHigh, Int(bounds.maxY) + 5), by: 2) {
+            for x in stride(from: max(0, Int(bounds.minX) - 4), to: min(image.pixelsWide, Int(bounds.maxX) + 5), by: 2) {
+                let hit = frame.contains(Point(x: Double(x) + 0.5, y: Double(y) + 0.5))
+                let alpha = image.colorAt(x: x, y: y)?.alphaComponent ?? 0
+                // Pixel coverage varies at antialiased edges; interior and wholly
+                // empty neighborhoods must still agree with the vector hit shape.
+                if alpha > 0.99 && !hit { missedInterior += 1 }
+                if hit {
+                    paintedHits += 1
+                    let nearby = (-1...1).contains { dy in (-1...1).contains { dx in
+                        let px = x + dx, py = y + dy
+                        return px >= 0 && px < image.pixelsWide && py >= 0 && py < image.pixelsHigh
+                            && (image.colorAt(x: px, y: py)?.alphaComponent ?? 0) > 0.05
+                    } }
+                    if !nearby { emptyHits += 1 }
+                }
+            }
+        }
+        #expect(paintedHits > 400)
+        #expect(missedInterior == 0)
+        #expect(emptyHits == 0)
+    }
+    private func characterImage(_ frame: CompanionSnapshot) throws -> NSBitmapImageRep {
+        let bitmap = try #require(NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 720, pixelsHigh: 420,
+                                                  bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                                  colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
+        let context = try #require(NSGraphicsContext(bitmapImageRep: bitmap))
+        NSGraphicsContext.saveGraphicsState()
+        defer { NSGraphicsContext.restoreGraphicsState() }
+        context.cgContext.clear(CGRect(x: 0, y: 0, width: 720, height: 420))
+        context.cgContext.translateBy(x: 0, y: 420); context.cgContext.scaleBy(x: 1, y: -1)
+        NSGraphicsContext.current = NSGraphicsContext(cgContext: context.cgContext, flipped: true)
+        MallowRenderer().draw(frame)
+        return bitmap
+    }
     @Test("Oversized scenes are rejected before integer conversion or bitmap allocation")
     func oversizedScene() {
         let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 1e100, height: 420),
@@ -64,7 +115,7 @@ import Testing
             let feet = fixedFeet ?? scene.homeFeet - Point(x: 0, y: (1 - open) * 75 * scene.scale)
             return CompanionSnapshot(scene: scene, presence: .engaged, phase: .hanging, pose: pose,
                                      feet: feet, windowAnchor: scene.homeFeet, rotation: 0, openness: open,
-                                     homeGrip: 1, time: 0, gesture: nil, hitBounds: scene.home)
+                                     homeGrip: 1, time: 0, gesture: nil, canCatch: false)
         }
         let before = try painter.image(frame(open: 0.7799))
         let after = try painter.image(frame(open: 0.7801))

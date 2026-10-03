@@ -1,6 +1,6 @@
 # Mallow app icon
 
-The icon is rendered from the production vector character in `CompanionRendering/MallowRenderer.swift`. There is no separate image prompt, manual bitmap retouching or image resizing pipeline.
+The icon is rendered from the shared curves and transforms in `CompanionCore/MallowGeometry.swift` and the production artwork in `CompanionRendering/MallowRenderer.swift`. There is no separate image prompt, manual bitmap retouching or image resizing pipeline.
 
 ```sh
 art/app-icon/export_icon_catalog.sh
