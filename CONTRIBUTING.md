@@ -10,7 +10,7 @@ Read the architecture section in [README.md](README.md). Keep `CompanionCore` in
 
 ## Validation
 
-Use the full Xcode toolchain. Run `./scripts/test.sh`, `./scripts/build.sh Debug` and `./scripts/build.sh Release`. Test meaningful behavior changes; avoid tests that only repeat implementation details. Use `./scripts/preview.sh` to render the production simulation and renderer, then inspect the changed transitions. Native launch, drag/catch, focus and energy checks remain separate from unit tests and compilation.
+Use the full Xcode toolchain. Run `./scripts/test.sh`, `./scripts/build.sh Debug` and `./scripts/build.sh Release`. Test meaningful behavior changes; avoid tests that only repeat implementation details. Use `./scripts/preview.sh` to render the production simulation and renderer, then inspect the changed transitions. Run `./scripts/test-desktop.sh` for native lifecycle regressions on a logged-in Mac with a display. Follow [desktop acceptance](tools/LifecycleValidation/README.md) for physical sleep/lock, fullscreen, Spaces, displays and launch checks. Native drag/catch, focus and energy acceptance remain separate from unit tests and compilation.
 
 For bug reports, include the app version, macOS version, display arrangement, triggering interaction and whether Reduce Motion or Low Power Mode is active. Keep unrelated apps and private desktop content out of screenshots.
 

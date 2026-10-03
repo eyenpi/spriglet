@@ -1,6 +1,6 @@
 # {{privacyTitle}}
 
-Effective date: October 2, 2026.
+Effective date: October 3, 2026.
 
 {{appName}} is a local desktop companion developed by {{publisher}}. This policy describes the current Mallow preview.
 
@@ -9,6 +9,8 @@ Effective date: October 2, 2026.
 The app has no accounts, advertising, analytics, remote assistant service or server connection. It does not capture the screen, inspect other applications, read documents, record audio or monitor global keyboard events. No plugins are active in this preview.
 
 Character state is held in memory for the current session. The rewrite does not read or migrate the old companion's saved preferences and does not delete those preferences. It does not register a login item.
+
+The app creates an empty lock file in its local Application Support directory to prevent overlapping launches from creating duplicate companions. It contains no personal data or interaction history; macOS releases the lock when the app exits, including after a crash.
 
 ## Desktop interaction
 

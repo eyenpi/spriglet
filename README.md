@@ -21,7 +21,7 @@ Select the full Xcode 26 toolchain, then:
 ./scripts/run.sh
 ```
 
-Builds live under `.build/xcode/Build/Products/`. Reopening the app from Finder activates its ordinary app menu; Command-Q quits. Launch and character interaction do not steal keyboard focus. Right-click returns Mallow home. Escape also returns it home when this app receives keyboard input.
+Builds live under `.build/xcode/Build/Products/`. Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens a small menu with Quit Spriglet. Launch, recovery and character interaction preserve keyboard focus. Escape returns it home when this app receives keyboard input. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
 
 For a finite, reproducible animation preview using the production code:
 
@@ -60,13 +60,15 @@ A capability requests a `CompanionCommand` through `CompanionRuntime.perform(_:)
 
 ### Lifecycle and resources
 
-The host renders deliberate motion at up to 60 fps and quiet peeking/grounded breathing at 30 fps. Low Power Mode caps cadence at 30 fps; Reduce Motion or serious thermal pressure cap it at 15 fps. Display sleep, inactive sessions and critical thermal pressure suspend the clock and hide the panel. Suspension cancels pointer capture; waking resumes without simulating the time spent asleep. Reduce Motion preserves blinking while limiting decorative movement and return flights.
+The host renders deliberate motion at up to 60 fps and quiet peeking/grounded breathing at 30 fps. Low Power Mode caps cadence at 30 fps; Reduce Motion or serious thermal pressure cap it at 15 fps. System/display sleep, screen lock, inactive sessions and critical thermal pressure suspend the clock and hide the panel. Each suspension reason is tracked independently. Recovery samples current display measurements, resets the character to its resting home and rebuilds the screen-bound clock without simulating time spent asleep. Spaces and fullscreen transitions also return Mallow home without activating the app. The panel cannot become a key or main window and stays out of window cycling. Reduce Motion preserves blinking while limiting decorative movement and return flights.
 
-Mallow only occupies a small transparent panel. Empty margins pass clicks through; a drag retains capture until release or cancellation. The floor clears macOS-reported reserved space. Other app windows and the exact Dock icon shelf are not inspected.
+Home stays on the initial primary display as focus moves between apps. If that display disconnects, Mallow uses the current primary display until its original display returns. Resolution, scaling and reserved-space changes recompute home. If no display is available, the host and clock are closed until one returns. Unchanged screen notifications preserve an active interaction.
+
+Mallow only occupies a small transparent panel. Empty margins pass clicks through; a drag retains capture until release or cancellation. While captured, the runtime samples the left mouse button so a lost mouse-up cannot leave a stuck drag. The floor clears macOS-reported reserved space. Other app windows and the exact Dock icon shelf are not inspected.
 
 ## Verification
 
-`./scripts/test.sh` checks dependency boundaries, core interactions, trajectory/contact behavior, pose continuity, lifecycle policy, coordinate compensation and native rendered pixels. Debug and Release Xcode builds use Swift 6 with strict concurrency and warnings as errors.
+`./scripts/test.sh` checks dependency boundaries, core interactions, trajectory/contact behavior, pose continuity, lifecycle policy, coordinate compensation and native rendered pixels. Debug and Release Xcode builds use Swift 6 with strict concurrency and warnings as errors. `./scripts/test-desktop.sh` separately compiles the production macOS adapters into a finite regression runner; it needs a logged-in Mac with a display. It exercises real panels and display links with injected notifications and display inventories, including repeated starts/stops and launch locks. See [desktop acceptance](tools/LifecycleValidation/README.md) for the physical-device matrix and the distinction between simulated and real system transitions.
 
 The PR workflow retains owner approval before runner allocation and its security checks. It runs the same new tests, renders a production preview, checks shared content, validates both app builds and rehearses unsigned packaging. CI compilation is separate from live interaction and visual acceptance.
 
