@@ -8,10 +8,10 @@ public struct CompanionSnapshot: Sendable {
     public let windowAnchor: Point
     public let rotation: Double
     public let openness: Double
+    /// Continuous attachment of the hands to the home edge, independent of phase.
+    public let homeGrip: Double
     public let time: Double
     public let gesture: CharacterGesture?
-    public let gestureAge: Double
     public let hitBounds: Rect
-    public var clipsAtHome: Bool { phase == .hanging }
-    public func contains(_ point: Point) -> Bool { hitBounds.contains(point) }
+    public func contains(_ point: Point) -> Bool { hitBounds.contains(point) && !scene.home.contains(point) }
 }

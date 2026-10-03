@@ -3,14 +3,16 @@ public enum ThermalPressure: Sendable { case normal, serious, critical }
 
 /// The platform adapter reports conditions; a pure policy decides frame cadence.
 public struct RuntimeConditions: Equatable, Sendable {
+    public var systemAwake = true
     public var displayAwake = true
     public var sessionActive = true
+    public var screenUnlocked = true
     public var lowPower = false
     public var reduceMotion = false
     public var thermal = ThermalPressure.normal
     public init() {}
     public var maximumFrameRate: Float {
-        guard displayAwake && sessionActive && thermal != .critical else { return 0 }
+        guard systemAwake && displayAwake && sessionActive && screenUnlocked && thermal != .critical else { return 0 }
         if thermal == .serious || reduceMotion { return 15 }
         return lowPower ? 30 : 60
     }

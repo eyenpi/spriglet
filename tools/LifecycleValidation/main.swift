@@ -1,0 +1,300 @@
+import AppKit
+import CompanionCore
+import Darwin
+
+struct ValidationFailure: Error, CustomStringConvertible {
+    let description: String
+}
+
+@MainActor final class ValidationDelegate: NSObject, NSApplicationDelegate {
+    let validate: () -> Void
+    init(validate: @escaping () -> Void) { self.validate = validate; super.init() }
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        DispatchQueue.main.async { self.validate() }
+    }
+}
+
+@MainActor @main enum LifecycleValidation {
+    static func require(_ condition: @autoclosure () throws -> Bool, _ message: String) throws {
+        if try !condition() { throw ValidationFailure(description: message) }
+    }
+    static func pump(_ seconds: Double = 0.05) { RunLoop.main.run(until: Date().addingTimeInterval(seconds)) }
+    static func visiblePanel() throws -> NSWindow {
+        let windows = NSApp.windows.filter { $0.contentView is CompanionView && $0.isVisible }
+        try require(windows.count == 1, "Expected one visible companion, found \(windows.count)")
+        return windows[0]
+    }
+    static func view(_ window: NSWindow) -> CompanionView { window.contentView as! CompanionView }
+    static func assertHome(_ window: NSWindow) throws {
+        let snapshot = view(window).snapshot
+        try require(snapshot.presence == .peek && snapshot.phase == .hanging, "Recovery did not return to resting home")
+        try require(snapshot.windowAnchor == snapshot.scene.homeFeet, "Recovery left an old display anchor")
+        try require(snapshot.openness == 0.6 && snapshot.gesture == nil, "Recovery retained an interrupted gesture")
+        try require(!window.isKeyWindow && !window.canBecomeKey && !window.canBecomeMain, "Companion can take keyboard focus")
+        try require(window.collectionBehavior.contains([.canJoinAllSpaces, .canJoinAllApplications, .fullScreenAuxiliary, .ignoresCycle]),
+                    "Companion cannot join Spaces/fullscreen or is in window cycling")
+    }
+    static func beginDrag(host: CompanionWindowHost, window: NSWindow, clock: ScreenFrameClock) {
+        host.onInput?(.pointerPressed(view(window).snapshot.hitBounds.center))
+        host.onInput?(.pointerDragged(Point(x: 500, y: 250)))
+        clock.onTick?(0.05)
+    }
+    static func nativeLifecycle(screen: NSScreen) throws {
+        let application = NotificationCenter(), workspace = NotificationCenter(), locks = NotificationCenter()
+        let original = DisplayContext(screen: screen)
+        let fallbackScene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 1024, height: 768),
+                                          home: Rect(x: 794, y: 4, width: 180, height: 20), floor: 720, hasHardwareNotch: false)
+        let fallback = DisplayContext(screen: screen, id: original.id &+ 1,
+                                      frame: Rect(x: -1024, y: -200, width: 1024, height: 768), scene: fallbackScene)
+        let resizedScene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 1280, height: 800),
+                                         home: Rect(x: 545, y: 0, width: 190, height: 32), floor: 750)
+        let resized = DisplayContext(screen: screen, id: original.id,
+                                     frame: Rect(x: 0, y: 0, width: 1280, height: 800), scene: resizedScene)
+        var available = [original, fallback]
+        var buttonDown = true
+        let environment = DesktopEnvironment(applicationCenter: application, workspaceCenter: workspace,
+                                             lockCenter: locks, displays: { available })
+        let clock = ScreenFrameClock(), host = CompanionWindowHost()
+        let runtime = CompanionRuntime(environment: environment, clock: clock, host: host, leftButtonIsDown: { buttonDown })
+        let delegate = AppDelegate(runtime: runtime)
+        defer { runtime.stop() }
+        let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        runtime.start(); runtime.start()
+        var window = try visiblePanel()
+        try assertHome(window)
+        let originalWindow = window
+        beginDrag(host: host, window: window, clock: clock)
+        try require(view(window).snapshot.phase == .held && !window.ignoresMouseEvents, "Drag did not capture the pointer")
+
+        // A notification for another display must not reset a live drag or
+        // make home follow a different primary/focused display.
+        available = [fallback, original]
+        application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        try require(try visiblePanel() === originalWindow, "Unchanged layout recreated the host")
+        try require(view(window).snapshot.phase == .held, "Unrelated screen notification cancelled a drag")
+        buttonDown = false; clock.onTick?(0.02)
+        try assertHome(window)
+        try require(window.ignoresMouseEvents == !view(window).snapshot.contains(original.point(NSEvent.mouseLocation)),
+                    "Lost release left whole-panel mouse capture enabled")
+        host.onInput?(.pointerReleased(Point(x: 500, y: 250)))
+        try assertHome(window)
+        buttonDown = true
+
+        for _ in 0..<3 {
+            beginDrag(host: host, window: window, clock: clock)
+            workspace.post(name: NSWorkspace.willSleepNotification, object: nil)
+            try require(!window.isVisible, "System sleep did not hide the panel")
+            let suspendedTime = view(window).snapshot.time
+            clock.onTick?(3600); host.onInput?(.activate)
+            try require(view(window).snapshot.time == suspendedTime, "Suspended input/tick changed simulation")
+            try assertHome(window)
+            workspace.post(name: NSWorkspace.screensDidSleepNotification, object: nil)
+            locks.post(name: DesktopEnvironment.screenLocked, object: nil)
+            workspace.post(name: NSWorkspace.didWakeNotification, object: nil)
+            try require(!window.isVisible, "System wake bypassed display sleep/lock")
+            workspace.post(name: NSWorkspace.screensDidWakeNotification, object: nil)
+            try require(!window.isVisible, "Display wake bypassed screen lock")
+            workspace.post(name: NSWorkspace.sessionDidResignActiveNotification, object: nil)
+            locks.post(name: DesktopEnvironment.screenUnlocked, object: nil)
+            try require(!window.isVisible, "Unlock bypassed inactive session")
+            workspace.post(name: NSWorkspace.sessionDidBecomeActiveNotification, object: nil)
+            window = try visiblePanel(); try assertHome(window)
+            let time = view(window).snapshot.time
+            pump(0.2)
+            try require(view(window).snapshot.time > time && view(window).snapshot.time - time < 0.3, "Recovered display clock stalled or simulated sleep time")
+            workspace.post(name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
+            try assertHome(window)
+            beginDrag(host: host, window: window, clock: clock)
+            workspace.post(name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
+            try assertHome(window)
+            host.onInput?(.pointerDragged(Point(x: 600, y: 300)))
+            host.onInput?(.pointerReleased(Point(x: 600, y: 300)))
+            try assertHome(window)
+        }
+
+        beginDrag(host: host, window: window, clock: clock)
+        available = [fallback]
+        application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        try require(!window.isVisible, "Unplug left the old host visible")
+        window = try visiblePanel(); try assertHome(window)
+        try require(view(window).context.id == fallback.id && view(window).snapshot.scene == fallbackScene, "Unplug failed to choose fallback home")
+        available = []
+        application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        try require(!window.isVisible, "No displays left a stale host visible")
+        workspace.post(name: NSWorkspace.didWakeNotification, object: nil)
+        try require(NSApp.windows.allSatisfy { !($0.contentView is CompanionView) || !$0.isVisible }, "Wake with no display resurrected a host")
+        available = [fallback, original]
+        application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        window = try visiblePanel(); try assertHome(window)
+        try require(view(window).context.id == original.id, "Reconnect forgot the original home display")
+        beginDrag(host: host, window: window, clock: clock)
+        available = [resized, fallback]
+        application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        window = try visiblePanel(); try assertHome(window)
+        try require(view(window).snapshot.scene == resizedScene, "Resolution change kept stale geometry")
+        workspace.post(name: NSWorkspace.screensDidSleepNotification, object: nil)
+        available = [fallback]
+        application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        try require(NSApp.windows.allSatisfy { !($0.contentView is CompanionView) || !$0.isVisible }, "Display change during sleep flashed a host")
+        workspace.post(name: NSWorkspace.screensDidWakeNotification, object: nil)
+        window = try visiblePanel(); try assertHome(window)
+
+        for _ in 0..<5 {
+            beginDrag(host: host, window: window, clock: clock)
+            try require(delegate.applicationShouldHandleReopen(NSApp, hasVisibleWindows: true), "Reopen was not handled")
+            try require(try visiblePanel() === window, "Reopen duplicated the host")
+            try assertHome(window)
+        }
+        try require(NSWorkspace.shared.frontmostApplication?.processIdentifier == frontmost, "Launch/recovery/reopen stole application focus")
+        runtime.stop(); runtime.stop()
+        try require(!window.isVisible && host.onInput == nil && clock.onTick == nil, "Stop leaked a host or input callbacks")
+        workspace.post(name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
+        runtime.start(); window = try visiblePanel()
+        try assertHome(window)
+        workspace.post(name: NSWorkspace.willSleepNotification, object: nil)
+        runtime.stop(); runtime.start(); window = try visiblePanel()
+        try assertHome(window)
+        print("Native runtime passed: ordered sleep/wake/lock/session cycles, Spaces, lost release, display fallback/reconnect/resize, reopen and restart.")
+    }
+    static func observationLifetime() throws {
+        let center = NotificationCenter()
+        let environment = DesktopEnvironment(applicationCenter: center, workspaceCenter: center, lockCenter: center, displays: { [] })
+        var recoveries = 0
+        environment.onRecoveryNeeded = { recoveries += 1 }
+        for _ in 0..<4 {
+            environment.start(); environment.start()
+            let before = recoveries
+            center.post(name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
+            try require(recoveries == before + 1, "Repeated start duplicated observers")
+            environment.stop(); environment.stop()
+            center.post(name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
+            try require(recoveries == before + 1, "Stopped environment retained observers")
+        }
+        // Register/unregister the real distributed center without sending system
+        // lock broadcasts to other applications or locking this Mac.
+        let realEnvironment = DesktopEnvironment()
+        realEnvironment.start(); realEnvironment.stop()
+        print("Observation lifetime passed: repeated start/stop and real distributed lock registration.")
+    }
+    static func instanceLease() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        var first = try AppInstanceLease.acquire(directory: directory)
+        try require(first != nil, "First launch did not acquire a lease")
+        for _ in 0..<5 {
+            try require(try AppInstanceLease.acquire(directory: directory) == nil, "Duplicate launch acquired a second lease")
+        }
+        func probe(_ expected: Int32) throws {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
+            process.arguments = ["--lease-probe", directory.path]
+            try process.run(); process.waitUntilExit()
+            try require(process.terminationStatus == expected, "Separate process did not respect the launch lease")
+        }
+        try probe(2)
+        first = nil
+        try probe(0)
+        let next = try AppInstanceLease.acquire(directory: directory)
+        try require(next != nil, "Exit left a stale launch lock")
+        withExtendedLifetime(next) {}
+        let invalid = directory.appendingPathComponent("file")
+        try Data().write(to: invalid)
+        do {
+            _ = try AppInstanceLease.acquire(directory: invalid)
+            throw ValidationFailure(description: "Unwritable launch storage was silently ignored")
+        } catch is ValidationFailure { throw ValidationFailure(description: "Invalid launch storage did not report an error") }
+        catch { /* Expected filesystem error. */ }
+        print("Launch lease passed: duplicate rejection, release and filesystem failure.")
+    }
+    static func waitUntil(_ message: String, timeout: Double = 5, _ condition: () -> Bool) throws {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition() && Date() < deadline { pump() }
+        try require(condition(), message)
+    }
+    /// Optional real WindowServer test. Owns a blank fixture window, enters and
+    /// leaves its fullscreen Space, then restores the previously focused app.
+    static func fullscreenTransition() throws {
+        let previousApp = NSWorkspace.shared.frontmostApplication
+        let fixture = NSWindow(contentRect: NSRect(x: 200, y: 200, width: 640, height: 400),
+                               styleMask: [.titled, .closable, .resizable], backing: .buffered, defer: false)
+        fixture.title = "Mallow fullscreen acceptance fixture"
+        fixture.isReleasedWhenClosed = false; fixture.collectionBehavior = [.fullScreenPrimary]
+        let runtime = CompanionRuntime()
+        defer {
+            runtime.stop(); fixture.orderOut(nil); fixture.close()
+            if let previousApp { NSApp.yieldActivation(to: previousApp) }
+            NSApp.setActivationPolicy(.accessory)
+            previousApp?.activate()
+        }
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(); fixture.makeKeyAndOrderFront(nil)
+        try waitUntil("Fullscreen fixture could not acquire focus; click its blank window and rerun", timeout: 30) { fixture.isKeyWindow }
+        runtime.start()
+        try require(fixture.isKeyWindow, "Mallow launch took the fixture's keyboard focus")
+        fixture.toggleFullScreen(nil)
+        do {
+            try waitUntil("Fixture failed to enter its fullscreen Space", timeout: 8) { fixture.styleMask.contains(.fullScreen) }
+            pump(1)
+            let panel = try visiblePanel()
+            try require(panel.isOnActiveSpace && panel.occlusionState.contains(.visible), "Mallow did not join the real fullscreen Space")
+            try require(fixture.isKeyWindow && !panel.isKeyWindow, "Fullscreen recovery took the fixture's keyboard focus")
+            try require(view(panel).snapshot.phase == .hanging && view(panel).snapshot.presence == .peek, "Fullscreen transition lost home")
+            runtime.reopen()
+            try require(fixture.isKeyWindow, "Reopening Mallow took fullscreen keyboard focus")
+        } catch {
+            if fixture.styleMask.contains(.fullScreen) {
+                fixture.toggleFullScreen(nil)
+                try? waitUntil("Fixture failed to leave fullscreen", timeout: 8) { !fixture.styleMask.contains(.fullScreen) }
+                pump(1)
+            }
+            throw error
+        }
+        fixture.toggleFullScreen(nil)
+        try waitUntil("Fixture failed to return to the desktop Space", timeout: 8) { !fixture.styleMask.contains(.fullScreen) }
+        pump(1)
+        let panel = try visiblePanel()
+        try require(panel.isOnActiveSpace && fixture.isKeyWindow && !panel.isKeyWindow, "Returning from fullscreen lost home or focus")
+        print("Real fullscreen/Spaces fixture passed: entry, visible nonkey companion, reopen and desktop return.")
+    }
+    static func validate(bundledFullscreen: Bool) -> Int32 {
+        let resultURL = Bundle.main.bundleURL.deletingLastPathComponent().appendingPathComponent("fullscreen-result.txt")
+        var outcome = "Fullscreen fixture did not finish."
+        defer { if bundledFullscreen { try? outcome.write(to: resultURL, atomically: true, encoding: .utf8) } }
+        do {
+            if bundledFullscreen {
+                try fullscreenTransition()
+                outcome = "Passed: real fullscreen/Spaces fixture retained keyboard focus and a visible home on entry, reopen and exit."
+            } else {
+                guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Native validation requires a logged-in Mac with a display") }
+                try nativeLifecycle(screen: screen)
+                try observationLifetime()
+                try instanceLease()
+                print("Desktop lifecycle validation passed. Notifications/display inventory are simulated; physical lock/sleep/fullscreen transitions require device acceptance.")
+            }
+            return EXIT_SUCCESS
+        } catch {
+            outcome = "Failed: \(error)"
+            FileHandle.standardError.write(Data("Desktop lifecycle validation failed: \(error)\n".utf8))
+            return EXIT_FAILURE
+        }
+    }
+    static func main() {
+        if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--lease-probe" {
+            do {
+                let lease = try AppInstanceLease.acquire(directory: URL(fileURLWithPath: CommandLine.arguments[2]))
+                let status: Int32 = lease == nil ? 2 : 0
+                withExtendedLifetime(lease) { exit(status) }
+            } catch { exit(EXIT_FAILURE) }
+        }
+        let app = NSApplication.shared
+        app.setActivationPolicy(.accessory)
+        if Bundle.main.bundleIdentifier == "dev.spriglet.lifecycle-validation.fullscreen" {
+            let delegate = ValidationDelegate { exit(validate(bundledFullscreen: true)) }
+            app.delegate = delegate
+            withExtendedLifetime(delegate) { app.run() }
+        } else {
+            app.finishLaunching()
+            exit(validate(bundledFullscreen: false))
+        }
+    }
+}

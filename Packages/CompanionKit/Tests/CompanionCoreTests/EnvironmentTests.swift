@@ -27,6 +27,23 @@ import Testing
         policy.thermal = .serious; #expect(policy.maximumFrameRate == 15)
         policy.thermal = .normal; policy.lowPower = true; #expect(policy.maximumFrameRate == 30)
     }
+    @Test("Wake and unlock cannot override another suspension reason")
+    func independentSuspensionReasons() {
+        var policy = RuntimeConditions()
+        policy.systemAwake = false; policy.displayAwake = false
+        policy.screenUnlocked = false; policy.sessionActive = false
+        policy.systemAwake = true
+        #expect(policy.isSuspended)
+        policy.displayAwake = true
+        #expect(policy.isSuspended)
+        policy.screenUnlocked = true
+        #expect(policy.isSuspended)
+        policy.sessionActive = true
+        #expect(!policy.isSuspended)
+        policy.thermal = .critical; policy.screenUnlocked = false
+        policy.screenUnlocked = true
+        #expect(policy.isSuspended)
+    }
     @Test("Reduce Motion keeps the face alive and returns without a flight")
     func reducedMotion() {
         var engine = CompanionEngine(scene: .preview)
@@ -37,6 +54,8 @@ import Testing
         drag(&engine, to: Point(x: 520, y: 200)); advance(&engine, seconds: 3)
         engine.send(.command(.returnHome))
         #expect(engine.snapshot.phase == .hanging && engine.snapshot.presence == .peek)
+        #expect(abs(engine.snapshot.feet.x - engine.snapshot.scene.homeFeet.x) < 0.000001)
+        #expect(engine.snapshot.feet.y <= engine.snapshot.scene.homeFeet.y)
         var didBlink = false
         for _ in 0..<1200 { engine.advance(by: 1 / 120.0); didBlink = didBlink || engine.snapshot.pose.eyes < 0.1 }
         #expect(didBlink)
@@ -58,6 +77,48 @@ import Testing
         engine.send(.cancelInteraction)
         #expect(!engine.hasPointerCapture && engine.snapshot.phase == .hanging)
         #expect(engine.snapshot.presence == .peek)
+    }
+    @Test("Interrupted swing recovery clears deformation, gesture and hover")
+    func cleanRecovery() {
+        var engine = CompanionEngine(scene: .preview)
+        tap(&engine); advance(&engine, seconds: 1)
+        tap(&engine); advance(&engine, seconds: 0.1)
+        #expect(engine.snapshot.rotation != 0)
+        engine.send(.pointerMoved(engine.snapshot.hitBounds.center))
+        let time = engine.time
+        engine.send(.cancelInteraction)
+        let resting = CompanionEngine(scene: .preview).snapshot
+        #expect(engine.time == time)
+        #expect(engine.snapshot.openness == 0.6 && engine.snapshot.gesture == nil)
+        #expect(engine.snapshot.rotation == 0 && engine.snapshot.pose == resting.pose)
+        #expect(engine.snapshot.feet == resting.feet)
+        advance(&engine, seconds: 1)
+        #expect(engine.snapshot.openness == 0.6)
+    }
+    @Test("Unplug or resize during a grab discards stale drag and release events", arguments: [
+        SceneGeometry(bounds: Rect(x: 0, y: 0, width: 1024, height: 768),
+                      home: Rect(x: 794, y: 4, width: 180, height: 20), floor: 720, hasHardwareNotch: false),
+        SceneGeometry(bounds: Rect(x: 0, y: 0, width: 1280, height: 800),
+                      home: Rect(x: 545, y: 0, width: 190, height: 32), floor: 750),
+        SceneGeometry(bounds: Rect(x: 0, y: 0, width: 3440, height: 1440),
+                      home: Rect(x: 3210, y: 4, width: 180, height: 20), floor: 1380, hasHardwareNotch: false),
+    ])
+    func interruptedDisplayChange(scene: SceneGeometry) {
+        var engine = CompanionEngine(scene: .preview)
+        engine.send(.pointerPressed(engine.snapshot.hitBounds.center))
+        engine.send(.pointerDragged(Point(x: 500, y: 250)))
+        advance(&engine, seconds: 0.5)
+        #expect(engine.snapshot.phase == .held && engine.hasPointerCapture)
+        engine.reconfigure(scene: scene)
+        engine.send(.pointerDragged(Point(x: 650, y: 300)))
+        engine.send(.pointerReleased(scene.homeFeet))
+        #expect(!engine.hasPointerCapture && !engine.isDragging)
+        #expect(engine.snapshot.windowAnchor == scene.homeFeet)
+        #expect(engine.snapshot.phase == .hanging && engine.snapshot.presence == .peek)
+        #expect(engine.snapshot.openness == 0.6 && engine.snapshot.rotation == 0)
+        // A fresh interaction still works after recovery.
+        tap(&engine)
+        #expect(engine.snapshot.presence == .engaged && !engine.hasPointerCapture)
     }
     @Test("Quiet presence reduces redraws without stopping animation")
     func restingCadence() {

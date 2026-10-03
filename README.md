@@ -21,15 +21,16 @@ Select the full Xcode 26 toolchain, then:
 ./scripts/run.sh
 ```
 
-Builds live under `.build/xcode/Build/Products/`. Reopening the app from Finder activates its ordinary app menu; Command-Q quits. Launch and character interaction do not steal keyboard focus. Right-click returns Mallow home. Escape also returns it home when this app receives keyboard input.
+Builds live under `.build/xcode/Build/Products/`. Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens a small menu with Quit Spriglet. Launch, recovery and character interaction preserve keyboard focus. Escape returns it home when this app receives keyboard input. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
 
 For a finite, reproducible animation preview using the production code:
 
 ```sh
 ./scripts/preview.sh .build/preview/frames
+./scripts/preview.sh .build/preview/transitions --transitions
 ```
 
-The exporter writes PNG frames locally. It runs no assistant service and reads no desktop content.
+The exporter writes PNG frames locally. The transition sequence renders at 60 fps and covers emergence, grabbing during emergence, regrabbing a catch, reversing a retreat, a rapid upward throw and returning during a horizontal reversal. It runs no assistant service and reads no desktop content.
 
 ## Architecture
 
@@ -48,7 +49,13 @@ There is one production simulation and one renderer. The preview exporter uses t
 
 ### Changing behavior
 
-Add a semantic input or command in `CompanionInput.swift`. Interaction transitions belong in `InteractionState.swift` and `CompanionEngine.swift`; trajectories, contact and weight belong in `BodyPhysics.swift`; authored pose targets belong in `MotionAnimator.swift`. Preserve the existing pose when a motion changes. Keep scene measurements and coordinate conversion outside behavior code.
+Add a semantic input or command in `CompanionInput.swift`. Interaction transitions belong in `InteractionState.swift` and `CompanionEngine.swift`; trajectories, contact and weight belong in `BodyPhysics.swift`; authored pose targets belong in `MotionAnimator.swift`. `PoseDynamics.swift` carries silhouette and limb velocity across target changes and derives width from height to conserve body area. `JumpTrajectory.swift` joins flight endpoints with matching velocities. Preserve the existing pose and momentum when a motion changes. Keep scene measurements and coordinate conversion outside behavior code.
+
+Hands use one continuous attachment value in the snapshot. The renderer blends free and home hand positions and lets the home housing occlude them as they emerge; it has no reveal threshold or gesture-triggered arm switch.
+
+Home retraction advances independently of the physics phase. Grabs transfer its visible position and velocity to the held body; catches start their retreat from the current offset instead of applying a hidden part of the peek all at once.
+
+Free motion respects the scene ceiling, floor and side limits. Momentum continues until contact: vertical impacts produce a damped rebound, catch springs retain their corrected state, and return trajectories rejoin home from the contact position and remaining velocity. The ceiling keeps the body reachable while allowing a grab to begin at the visible resting peek.
 
 ### Changing the character
 
@@ -60,13 +67,15 @@ A capability requests a `CompanionCommand` through `CompanionRuntime.perform(_:)
 
 ### Lifecycle and resources
 
-The host renders deliberate motion at up to 60 fps, resting peeks at 20 fps and grounded walking/breathing at 30 fps. Low Power Mode uses 15 fps for resting peeks and caps deliberate motion at 30 fps; Reduce Motion or serious thermal pressure cap cadence at 15 fps. Display sleep, inactive sessions and critical thermal pressure suspend the clock and hide the panel. Suspension cancels pointer capture; waking resumes without simulating the time spent asleep. Reduce Motion preserves blinking while limiting decorative movement and return flights. The renderer reuses its fixed body geometry and colors while continuing to draw immutable snapshots.
+The host renders deliberate motion at up to 60 fps, resting peeks at 20 fps and grounded walking/breathing at 30 fps. Low Power Mode uses 15 fps for resting peeks and caps deliberate motion at 30 fps; Reduce Motion or serious thermal pressure cap cadence at 15 fps. System/display sleep, screen lock, inactive sessions and critical thermal pressure suspend the clock and hide the panel. Each suspension reason is tracked independently. Recovery samples current display measurements, resets the character to its resting home and rebuilds the screen-bound clock without simulating time spent asleep. Spaces and fullscreen transitions also return Mallow home without activating the app. The panel cannot become a key or main window and stays out of window cycling. Reduce Motion preserves blinking while limiting decorative movement and return flights. The renderer reuses its fixed body geometry and colors while continuing to draw immutable snapshots.
 
-Mallow only occupies a small transparent panel. Empty margins pass clicks through; a drag retains capture until release or cancellation. The floor clears macOS-reported reserved space. Other app windows and the exact Dock icon shelf are not inspected.
+Home stays on the initial primary display as focus moves between apps. If that display disconnects, Mallow uses the current primary display until its original display returns. Resolution, scaling and reserved-space changes recompute home. If no display is available, the host and clock are closed until one returns. Unchanged screen notifications preserve an active interaction.
+
+Mallow only occupies a small transparent panel. Empty margins pass clicks through; a drag retains capture until release or cancellation. While captured, the runtime samples the left mouse button so a lost mouse-up cannot leave a stuck drag. The floor clears macOS-reported reserved space. Other app windows and the exact Dock icon shelf are not inspected.
 
 ## Verification
 
-`./scripts/test.sh` checks dependency boundaries, core interactions, trajectory/contact behavior, pose continuity, lifecycle policy, coordinate compensation and native rendered pixels. Debug and Release Xcode builds use Swift 6 with strict concurrency and warnings as errors.
+`./scripts/test.sh` checks dependency boundaries, core interactions, trajectory/contact behavior, pose continuity, lifecycle policy, coordinate compensation and native rendered pixels. Debug and Release Xcode builds use Swift 6 with strict concurrency and warnings as errors. `./scripts/test-desktop.sh` separately compiles the production macOS adapters into a finite regression runner; it needs a logged-in Mac with a display. It exercises real panels and display links with injected notifications and display inventories, including repeated starts/stops and launch locks. See [desktop acceptance](tools/LifecycleValidation/README.md) for the physical-device matrix and the distinction between simulated and real system transitions.
 
 The PR workflow retains owner approval before runner allocation and its security checks. It runs the same new tests, renders a production preview, checks shared content, validates both app builds and rehearses unsigned packaging. CI compilation is separate from live interaction and visual acceptance.
 

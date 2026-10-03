@@ -125,30 +125,48 @@ import CompanionCore
     public func draw(_ frame: CompanionSnapshot) {
         let scene = frame.scene, scale = scene.scale
         NSGraphicsContext.saveGraphicsState()
-        if frame.clipsAtHome {
-            NSBezierPath(rect: NSRect(x: scene.bounds.minX, y: scene.home.maxY,
-                                     width: scene.bounds.width, height: scene.bounds.height)).addClip()
-        }
+        // The home housing occludes the same pixels through every phase.
+        // A grab must not suddenly expose the portion still behind the notch.
+        let visible = NSBezierPath(rect: NSRect(x: scene.bounds.x, y: scene.bounds.y,
+                                              width: scene.bounds.width, height: scene.bounds.height))
+        visible.appendRect(NSRect(x: scene.home.x, y: scene.home.y,
+                                  width: scene.home.width, height: scene.home.height))
+        visible.windingRule = .evenOdd; visible.addClip()
         drawMallow(frame.pose, artwork: artwork, time: frame.time,
                    center: NSPoint(x: frame.feet.x, y: frame.feet.y - 7 * scale), scale: scale,
                    drawShadow: frame.phase == .grounded, rotation: frame.rotation,
-                   drawArms: !frame.clipsAtHome, clipFace: true)
-        if frame.clipsAtHome && frame.openness > 0.78 { drawGrips(frame) }
+                   drawArms: false, clipFace: true)
+        drawHands(frame)
         NSGraphicsContext.restoreGraphicsState()
     }
-    private func drawGrips(_ frame: CompanionSnapshot) {
-        let s = frame.scene.scale
+    private func drawHands(_ frame: CompanionSnapshot) {
+        let s = frame.scene.scale, pose = frame.pose, grip = frame.homeGrip
+        let reveal = (frame.openness - 0.6) / 0.4
+        let emergence = reveal * reveal * (3 - 2 * reveal)
+        func blend(_ free: Point, _ home: Point) -> Point { free + (home - free) * grip }
+        func bodyPoint(_ x: Double, _ y: Double) -> Point {
+            let scaled = Point(x: x * pose.width * (1 - abs(pose.facing) * 0.07), y: y * pose.height)
+            let leaned = Point(x: scaled.x * cos(pose.lean) - scaled.y * sin(pose.lean) + pose.lean * 26,
+                               y: scaled.x * sin(pose.lean) + scaled.y * cos(pose.lean))
+            return frame.feet + Point(x: leaned.x * cos(frame.rotation) - leaned.y * sin(frame.rotation),
+                                      y: leaned.x * sin(frame.rotation) + leaned.y * cos(frame.rotation) - 7) * s
+        }
+        func native(_ point: Point) -> NSPoint { NSPoint(x: point.x, y: point.y) }
         for side in [-1.0, 1.0] {
-            let waving = side > 0 && frame.gesture == .hello
-            let hand = NSPoint(x: frame.scene.home.midX + side * 43 * s,
-                               y: frame.scene.home.maxY + (waving ? 14 + sin(frame.gestureAge * 8) * 7 : 2) * s)
-            let dx = side * 47 * s * frame.pose.width, dy = (-29 * frame.pose.height - 7) * s
-            let angle = frame.rotation
-            let shoulder = NSPoint(x: frame.feet.x + dx * cos(angle) - dy * sin(angle),
-                                   y: frame.feet.y + dy * cos(angle) + dx * sin(angle))
-            let arm = NSBezierPath(); arm.move(to: shoulder)
-            arm.curve(to: hand, controlPoint1: NSPoint(x: shoulder.x + side * 8 * s, y: shoulder.y - 9 * s),
-                      controlPoint2: NSPoint(x: hand.x + side * 6 * s, y: hand.y + 12 * s))
+            let gait = sin(pose.gaitPhase * 2 * .pi + (side < 0 ? .pi : 0)) * pose.walk * 6
+            let raise = pose.arm * (side > 0 ? 29 : 12) + gait
+            let homeShoulder = bodyPoint(side * 47, -29)
+            let wave = side > 0 ? max(0, pose.arm - 0.4) * 28 * emergence : 0
+            let homeHand = Point(x: frame.scene.home.midX + side * 43 * s,
+                                 y: frame.scene.home.maxY + (-8 + emergence * 10 + wave) * s)
+            let shoulder = blend(bodyPoint(side * 47, -29 - raise), homeShoulder)
+            let hand = blend(bodyPoint(side * 34, -15 - raise * 0.6), homeHand)
+            let control1 = blend(bodyPoint(side * (56 + pose.arm * 6), -14 - raise),
+                                 homeShoulder + Point(x: side * 8 * s, y: -9 * s))
+            let control2 = blend(bodyPoint(side * 46, -9 - raise * 0.5),
+                                 homeHand + Point(x: side * 6 * s, y: 12 * s))
+            let arm = NSBezierPath(); arm.move(to: native(shoulder))
+            arm.curve(to: native(hand), controlPoint1: native(control1), controlPoint2: native(control2))
             stroke(arm, 2 * s)
             oval(NSRect(x: hand.x - 5 * s, y: hand.y - 3 * s, width: 10 * s, height: 8 * s), fill: MallowPalette.feet, outline: true)
         }
