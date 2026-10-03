@@ -4,6 +4,7 @@ import CompanionCore
 /// Native window mechanics only. Has no behavioral state machine or clock.
 @MainActor final class CompanionWindowHost {
     var onInput: ((CompanionInput) -> Void)?
+    var onDraw: ((Double) -> Void)?
     private var panel: NSPanel?
     private var view: CompanionView?
     private var requestedOrigin: Point?
@@ -11,6 +12,7 @@ import CompanionCore
         close()
         let view = CompanionView(context: context, snapshot: snapshot)
         view.onInput = { [weak self] input in self?.onInput?(input) }
+        view.onDraw = onDraw
         let panel = NSPanel(contentRect: view.bounds, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.isOpaque = false; panel.backgroundColor = .clear; panel.hasShadow = false
         panel.hidesOnDeactivate = false; panel.isReleasedWhenClosed = false

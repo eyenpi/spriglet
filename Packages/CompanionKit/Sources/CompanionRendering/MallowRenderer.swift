@@ -2,6 +2,10 @@ import AppKit
 import CompanionCore
 
 @MainActor private enum MallowPalette {
+    static let ink = color(0x252647)
+    static let feet = color(0xDFD3F7)
+    static let blush = color(0xE8AABD, alpha: 0.35)
+    static let shadow = color(0x9182BD, alpha: 0.13)
     static let bodyGradient = NSGradient(starting: color(0xEEE5FF), ending: color(0xCBB8EF))!
 }
 
@@ -11,7 +15,7 @@ import CompanionCore
             blue: CGFloat(hex & 255) / 255, alpha: alpha)
 }
 
-@MainActor private func stroke(_ path: NSBezierPath, _ width: CGFloat = 2.3, _ ink: NSColor = color(0x252647)) {
+@MainActor private func stroke(_ path: NSBezierPath, _ width: CGFloat = 2.3, _ ink: NSColor = MallowPalette.ink) {
     path.lineWidth = width; path.lineCapStyle = .round; path.lineJoinStyle = .round
     ink.setStroke(); path.stroke()
 }
@@ -21,14 +25,32 @@ import CompanionCore
     if outline { stroke(path, 1.9) }
 }
 
-@MainActor private func drawMallow(_ pose: CharacterPose, time: Double, center: NSPoint, scale: CGFloat = 1, drawShadow: Bool = true, rotation: Double = 0, drawArms: Bool = true, clipFace: Bool = false) {
+/// Fixed geometry belongs to one renderer. Drawing never changes this path.
+@MainActor private struct MallowArtwork {
+    let body: NSBezierPath
+    init() {
+        let body = NSBezierPath()
+        body.move(to: NSPoint(x: -49, y: 0))
+        body.curve(to: NSPoint(x: -61, y: -31), controlPoint1: NSPoint(x: -66, y: -1), controlPoint2: NSPoint(x: -66, y: -16))
+        body.curve(to: NSPoint(x: -22, y: -77), controlPoint1: NSPoint(x: -57, y: -56), controlPoint2: NSPoint(x: -42, y: -76))
+        body.curve(to: NSPoint(x: 29, y: -74), controlPoint1: NSPoint(x: -4, y: -89), controlPoint2: NSPoint(x: 16, y: -85))
+        body.curve(to: NSPoint(x: 60, y: -30), controlPoint1: NSPoint(x: 46, y: -65), controlPoint2: NSPoint(x: 58, y: -48))
+        body.curve(to: NSPoint(x: 49, y: 0), controlPoint1: NSPoint(x: 67, y: -12), controlPoint2: NSPoint(x: 64, y: -1))
+        body.curve(to: NSPoint(x: -49, y: 0), controlPoint1: NSPoint(x: 23, y: 5), controlPoint2: NSPoint(x: -23, y: 5))
+        body.close()
+        body.lineWidth = 2.3; body.lineCapStyle = .round; body.lineJoinStyle = .round
+        self.body = body
+    }
+}
+
+@MainActor private func drawMallow(_ pose: CharacterPose, artwork: MallowArtwork, time: Double, center: NSPoint, scale: CGFloat = 1, drawShadow: Bool = true, rotation: Double = 0, drawArms: Bool = true, clipFace: Bool = false) {
     NSGraphicsContext.saveGraphicsState()
     let transform = NSAffineTransform()
     transform.translateX(by: center.x, yBy: center.y)
     transform.rotate(byRadians: rotation)
     transform.scale(by: scale); transform.concat()
     if drawShadow {
-        oval(NSRect(x: -49, y: -2, width: 98, height: 10), fill: color(0x9182BD, alpha: 0.13))
+        oval(NSRect(x: -49, y: -2, width: 98, height: 10), fill: MallowPalette.shadow)
     }
     // 60% of each stride is planted. During that phase, feet move backwards
     // relative to the body at the same speed as the desktop window moves forward.
@@ -38,24 +60,16 @@ import CompanionCore
         let stepX = phase < 0.6 ? 11 - phase / 0.6 * 22 : -11 + (1 - cos(swing * .pi)) * 11
         let x = side * (28 - abs(pose.facing) * 9) + stepX * pose.walk * pose.direction
         let y = -sin(swing * .pi) * 10 * pose.walk
-        oval(NSRect(x: x - 10, y: y - 5, width: 20, height: 13), fill: color(0xDFD3F7), outline: true)
+        oval(NSRect(x: x - 10, y: y - 5, width: 20, height: 13), fill: MallowPalette.feet, outline: true)
     }
     NSGraphicsContext.saveGraphicsState()
     let bodyTransform = NSAffineTransform()
     bodyTransform.translateX(by: pose.lean * 26, yBy: 0)
     bodyTransform.rotate(byRadians: pose.lean)
     bodyTransform.scaleX(by: pose.width * (1 - abs(pose.facing) * 0.07), yBy: pose.height); bodyTransform.concat()
-    let body = NSBezierPath()
-    body.move(to: NSPoint(x: -49, y: 0))
-    body.curve(to: NSPoint(x: -61, y: -31), controlPoint1: NSPoint(x: -66, y: -1), controlPoint2: NSPoint(x: -66, y: -16))
-    body.curve(to: NSPoint(x: -22, y: -77), controlPoint1: NSPoint(x: -57, y: -56), controlPoint2: NSPoint(x: -42, y: -76))
-    body.curve(to: NSPoint(x: 29, y: -74), controlPoint1: NSPoint(x: -4, y: -89), controlPoint2: NSPoint(x: 16, y: -85))
-    body.curve(to: NSPoint(x: 60, y: -30), controlPoint1: NSPoint(x: 46, y: -65), controlPoint2: NSPoint(x: 58, y: -48))
-    body.curve(to: NSPoint(x: 49, y: 0), controlPoint1: NSPoint(x: 67, y: -12), controlPoint2: NSPoint(x: 64, y: -1))
-    body.curve(to: NSPoint(x: -49, y: 0), controlPoint1: NSPoint(x: 23, y: 5), controlPoint2: NSPoint(x: -23, y: 5))
-    body.close()
+    let body = artwork.body
     MallowPalette.bodyGradient.draw(in: body, angle: 90)
-    stroke(body)
+    MallowPalette.ink.setStroke(); body.stroke()
     // Separate arms can gesture while the body continues to breathe.
     for side in (drawArms ? [-1.0, 1.0] : []) {
         let armSwing = sin(pose.gaitPhase * 2 * .pi + (side < 0 ? .pi : 0)) * pose.walk * 6
@@ -79,11 +93,11 @@ import CompanionCore
             let lid = NSBezierPath()
             lid.move(to: NSPoint(x: x - 4, y: -47))
             lid.curve(to: NSPoint(x: x + 4, y: -47), controlPoint1: NSPoint(x: x - 2, y: -44), controlPoint2: NSPoint(x: x + 2, y: -44))
-            stroke(lid, 2.5, color(0x252647, alpha: eyeAlpha))
+            stroke(lid, 2.5, MallowPalette.ink.withAlphaComponent(eyeAlpha))
         } else {
-            oval(NSRect(x: x - 3.4, y: -47 - 4.1 * pose.eyes, width: 6.8, height: 8.2 * pose.eyes), fill: color(0x252647, alpha: eyeAlpha))
+            oval(NSRect(x: x - 3.4, y: -47 - 4.1 * pose.eyes, width: 6.8, height: 8.2 * pose.eyes), fill: MallowPalette.ink.withAlphaComponent(eyeAlpha))
         }
-        oval(NSRect(x: side * 25 + faceX - 5, y: -37, width: 10, height: 4), fill: color(0xE8AABD, alpha: 0.35))
+        oval(NSRect(x: side * 25 + faceX - 5, y: -37, width: 10, height: 4), fill: MallowPalette.blush)
     }
     let smile = NSBezierPath()
     smile.move(to: NSPoint(x: faceX - 4, y: -37))
@@ -106,6 +120,7 @@ import CompanionCore
 
 /// Stateless vector rendering. Owns no timers, behavior or native windows.
 @MainActor public struct MallowRenderer {
+    private let artwork = MallowArtwork()
     public init() {}
     public func draw(_ frame: CompanionSnapshot) {
         let scene = frame.scene, scale = scene.scale
@@ -114,7 +129,7 @@ import CompanionCore
             NSBezierPath(rect: NSRect(x: scene.bounds.minX, y: scene.home.maxY,
                                      width: scene.bounds.width, height: scene.bounds.height)).addClip()
         }
-        drawMallow(frame.pose, time: frame.time,
+        drawMallow(frame.pose, artwork: artwork, time: frame.time,
                    center: NSPoint(x: frame.feet.x, y: frame.feet.y - 7 * scale), scale: scale,
                    drawShadow: frame.phase == .grounded, rotation: frame.rotation,
                    drawArms: !frame.clipsAtHome, clipFace: true)
@@ -135,13 +150,14 @@ import CompanionCore
             arm.curve(to: hand, controlPoint1: NSPoint(x: shoulder.x + side * 8 * s, y: shoulder.y - 9 * s),
                       controlPoint2: NSPoint(x: hand.x + side * 6 * s, y: hand.y + 12 * s))
             stroke(arm, 2 * s)
-            oval(NSRect(x: hand.x - 5 * s, y: hand.y - 3 * s, width: 10 * s, height: 8 * s), fill: color(0xDFD3F7), outline: true)
+            oval(NSRect(x: hand.x - 5 * s, y: hand.y - 3 * s, width: 10 * s, height: 8 * s), fill: MallowPalette.feet, outline: true)
         }
     }
 }
 
 /// The app icon shares the character's vector source; no second asset pipeline.
 @MainActor public struct MallowIconRenderer {
+    private let artwork = MallowArtwork()
     public init() {}
     public func image(pixels: Int) throws -> NSBitmapImageRep {
         guard pixels > 0 && pixels <= 4096 else { throw BitmapRenderingError.invalidSize }
@@ -154,7 +170,7 @@ import CompanionCore
         NSGraphicsContext.current = NSGraphicsContext(cgContext: context.cgContext, flipped: true)
         color(0xEEE5FF).setFill(); NSRect(x: 0, y: 0, width: 1024, height: 1024).fill()
         NSGradient(starting: color(0xF5F0FF), ending: color(0xD5C5F0))!.draw(in: NSRect(x: 0, y: 0, width: 1024, height: 1024), angle: 90)
-        drawMallow(CharacterPose(), time: 0, center: NSPoint(x: 512, y: 780), scale: 6.7, drawShadow: true)
+        drawMallow(CharacterPose(), artwork: artwork, time: 0, center: NSPoint(x: 512, y: 780), scale: 6.7, drawShadow: true)
         NSGraphicsContext.restoreGraphicsState()
         // Core Graphics draws into 32-bit surfaces. Convert the result to a
         // no-alpha RGB image for the icon PNGs after rendering succeeds.

@@ -60,7 +60,7 @@ A capability requests a `CompanionCommand` through `CompanionRuntime.perform(_:)
 
 ### Lifecycle and resources
 
-The host renders deliberate motion at up to 60 fps and quiet peeking/grounded breathing at 30 fps. Low Power Mode caps cadence at 30 fps; Reduce Motion or serious thermal pressure cap it at 15 fps. Display sleep, inactive sessions and critical thermal pressure suspend the clock and hide the panel. Suspension cancels pointer capture; waking resumes without simulating the time spent asleep. Reduce Motion preserves blinking while limiting decorative movement and return flights.
+The host renders deliberate motion at up to 60 fps, resting peeks at 20 fps and grounded walking/breathing at 30 fps. Low Power Mode uses 15 fps for resting peeks and caps deliberate motion at 30 fps; Reduce Motion or serious thermal pressure cap cadence at 15 fps. Display sleep, inactive sessions and critical thermal pressure suspend the clock and hide the panel. Suspension cancels pointer capture; waking resumes without simulating the time spent asleep. Reduce Motion preserves blinking while limiting decorative movement and return flights. The renderer reuses its fixed body geometry and colors while continuing to draw immutable snapshots.
 
 Mallow only occupies a small transparent panel. Empty margins pass clicks through; a drag retains capture until release or cancellation. The floor clears macOS-reported reserved space. Other app windows and the exact Dock icon shelf are not inspected.
 
@@ -81,6 +81,8 @@ python3 scripts/check-public-files.py --working-tree
 App text, help, privacy and prepared website/store content are generated from `Configuration/Shared`. Edit those sources and run the synchronizer. Nothing in a normal build publishes the website or uploads the app.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [asset provenance](ASSETS.md), [privacy](PRIVACY.md), [release tooling](tools/ReleaseValidation/README.md) and [CI approval](tools/CI/README.md). Retired implementations and authored artwork remain recoverable in Git history rather than in the active codebase.
+
+For repeatable CPU, redraw and live-allocation measurements, use [idle energy profiling](tools/EnergyProfile/README.md). Its finite native session and accelerated frame workload distinguish wall-clock memory soaks from simulated rendering hours.
 
 ## Release process and next steps
 
