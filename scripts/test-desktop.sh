@@ -1,0 +1,54 @@
+#!/bin/zsh
+# Compiles the production macOS adapters into a finite native regression runner.
+set -euo pipefail
+if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" ]]; then
+  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen]"
+  exit 2
+fi
+task_root="${0:A:h:h}"
+task_package="$task_root/Packages/CompanionKit"
+task_scratch="$task_root/.build/lifecycle-package"
+swift build --scratch-path "$task_scratch" --package-path "$task_package" -Xswiftc -warnings-as-errors
+task_binary="$(swift build --scratch-path "$task_scratch" --package-path "$task_package" --show-bin-path)"
+if [[ -d "$task_binary/Modules" ]]; then
+  task_modules="$task_binary/Modules"
+  task_objects=("$task_binary"/CompanionCore.build/*.swift.o "$task_binary"/CompanionRendering.build/*.swift.o)
+else
+  # Recent Xcode toolchains use the Xcode build system for Swift packages.
+  task_modules="$task_binary"
+  task_objects=("$task_binary/CompanionCore.o" "$task_binary/CompanionRendering.o")
+fi
+task_output="$task_root/.build/lifecycle-validation"
+mkdir -p "$task_output"
+swiftc -swift-version 6 -strict-concurrency=complete -warnings-as-errors -parse-as-library \
+  -target arm64-apple-macos26.0 -I "$task_modules" "${task_objects[@]}" \
+  "$task_root"/Sources/Spriglet/Environment/*.swift \
+  "$task_root"/Sources/Spriglet/Desktop/*.swift \
+  "$task_root"/Sources/Spriglet/Runtime/*.swift \
+  "$task_root/Sources/Spriglet/App/AppDelegate.swift" \
+  "$task_root/Sources/Spriglet/App/AppInstanceLease.swift" \
+  "$task_root/Sources/Spriglet/App/SharedContent.generated.swift" \
+  "$task_root/tools/LifecycleValidation/main.swift" -o "$task_output/lifecycle-validation"
+if [[ "${1:-}" == "--prepare-fullscreen" ]]; then
+  python3 - "$task_output" <<'PY'
+from pathlib import Path
+import plistlib
+import shutil
+import sys
+
+output = Path(sys.argv[1])
+contents = output / "FullscreenFixture.app/Contents"
+(contents / "MacOS").mkdir(parents=True, exist_ok=True)
+shutil.copy2(output / "lifecycle-validation", contents / "MacOS/lifecycle-validation")
+with (contents / "Info.plist").open("wb") as file:
+    plistlib.dump({"CFBundleIdentifier": "dev.spriglet.lifecycle-validation.fullscreen",
+                  "CFBundleExecutable": "lifecycle-validation", "CFBundleName": "Mallow Lifecycle Fixture",
+                  "CFBundlePackageType": "APPL", "NSPrincipalClass": "NSApplication", "LSUIElement": True}, file)
+(output / "fullscreen-result.txt").unlink(missing_ok=True)
+PY
+  codesign --force --sign - "$task_output/FullscreenFixture.app"
+  print "Open $task_output/FullscreenFixture.app and click its blank window to run real fullscreen acceptance."
+  print "The outcome is saved in $task_output/fullscreen-result.txt."
+else
+  "$task_output/lifecycle-validation"
+fi

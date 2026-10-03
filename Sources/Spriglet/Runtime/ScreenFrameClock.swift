@@ -25,7 +25,10 @@ import QuartzCore
     func stop() { link?.invalidate(); link = nil; previousTime = nil }
     @objc private func tick(_ link: CADisplayLink) {
         let now = CACurrentMediaTime()
-        if let previousTime { onTick?(max(0, now - previousTime)) }
+        let previous = previousTime
         self.previousTime = now
+        // Set the baseline before invoking the runtime, which may pause/rebind
+        // this clock from inside its callback.
+        if let previous { onTick?(max(0, now - previous)) }
     }
 }

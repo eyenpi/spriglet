@@ -3,12 +3,15 @@ import CompanionCore
 
 struct DisplayContext {
     let screen: NSScreen
+    let id: CGDirectDisplayID
     let frame: Rect
     let scene: SceneGeometry
+    private let backingScale: CGFloat
+    private let maximumFrameRate: Int
     init(screen: NSScreen) {
-        self.screen = screen
+        let id = (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
         let f = screen.frame, visible = screen.visibleFrame
-        frame = Rect(x: f.minX, y: f.minY, width: f.width, height: f.height)
+        let frame = Rect(x: f.minX, y: f.minY, width: f.width, height: f.height)
         let notch = screen.safeAreaInsets.top > 0
         let home: Rect
         if notch {
@@ -23,8 +26,18 @@ struct DisplayContext {
         }
         let reservedBottom = visible.minY - f.minY
         let floor = max(home.maxY + 80, f.height - reservedBottom - 12)
-        scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: f.width, height: f.height), home: home,
+        let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: f.width, height: f.height), home: home,
                               floor: min(f.height, floor), hasHardwareNotch: notch)
+        self.init(screen: screen, id: id, frame: frame, scene: scene)
+    }
+    init(screen: NSScreen, id: CGDirectDisplayID, frame: Rect, scene: SceneGeometry) {
+        self.screen = screen; self.id = id; self.frame = frame; self.scene = scene
+        backingScale = screen.backingScaleFactor; maximumFrameRate = screen.maximumFramesPerSecond
+    }
+    /// Compare measurements, not NSScreen object identity or the focused app's screen.
+    func hasSameLayout(as other: DisplayContext) -> Bool {
+        id == other.id && frame == other.frame && scene == other.scene
+            && backingScale == other.backingScale && maximumFrameRate == other.maximumFrameRate
     }
     func point(_ p: NSPoint) -> Point { WindowGeometry.scenePoint(global: Point(x: p.x, y: p.y), display: frame) }
 }
