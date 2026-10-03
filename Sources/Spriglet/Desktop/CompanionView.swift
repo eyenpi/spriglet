@@ -51,5 +51,13 @@ import CompanionRendering
     override func mouseDown(with event: NSEvent) { onInput?(.pointerPressed(point(event))) }
     override func mouseDragged(with event: NSEvent) { onInput?(.pointerDragged(point(event))) }
     override func mouseUp(with event: NSEvent) { onInput?(.pointerReleased(point(event))) }
-    override func rightMouseDown(with event: NSEvent) { onInput?(.command(.returnHome)) }
+    override func rightMouseDown(with event: NSEvent) {
+        onInput?(.command(.returnHome))
+        // Quitting remains reachable without activating the app on reopen or
+        // making this panel key. AppKit restores focus after the transient menu.
+        let menu = NSMenu()
+        let quit = NSMenuItem(title: AppText.quitApp, action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+        quit.target = NSApp; menu.addItem(quit)
+        NSMenu.popUpContextMenu(menu, with: event, for: self)
+    }
 }

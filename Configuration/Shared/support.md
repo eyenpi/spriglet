@@ -14,11 +14,11 @@ On a notched display, Mallow uses the actual housing geometry reported by macOS.
 
 ## Keeping your work clear
 
-Mallow stays in the resting peek until invited and returns after you leave it alone. The transparent margins of its window pass clicks through. Reduce Motion limits decorative movement; Low Power Mode and thermal pressure lower animation cadence. Animation stops while the display sleeps, the session is inactive or thermal pressure is critical.
+Mallow stays in the resting peek until invited and returns after you leave it alone. The transparent margins of its window pass clicks through. Reduce Motion limits decorative movement; Low Power Mode and thermal pressure lower animation cadence. Animation stops during system or display sleep, screen lock, an inactive session or critical thermal pressure. Waking, unlocking and changing Spaces return Mallow to its resting home. Home stays on the initial primary display as you move between apps; unplugging it uses the current primary display until the original returns.
 
 ## Quitting
 
-Open {{appName}} again from Finder to activate its ordinary app menu, then choose {{quitApp}} or press Command-Q. There is no permanent menu-bar item, action card, settings window or Dock icon.
+Right-click Mallow to bring it home and open its small menu, then choose {{quitApp}}. Reopening {{appName}} from Finder returns it home while keeping keyboard focus in your current app. There is no permanent menu-bar item, action card, settings window or Dock icon.
 
 ## Local preview and troubleshooting
 

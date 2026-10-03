@@ -1,6 +1,12 @@
 import AppKit
 import CompanionCore
 
+/// Nonactivation alone still permits some panels to take keyboard focus.
+@MainActor private final class CompanionPanel: NSPanel {
+    override var canBecomeKey: Bool { false }
+    override var canBecomeMain: Bool { false }
+}
+
 /// Native window mechanics only. Has no behavioral state machine or clock.
 @MainActor final class CompanionWindowHost {
     var onInput: ((CompanionInput) -> Void)?
@@ -11,14 +17,15 @@ import CompanionCore
         close()
         let view = CompanionView(context: context, snapshot: snapshot)
         view.onInput = { [weak self] input in self?.onInput?(input) }
-        let panel = NSPanel(contentRect: view.bounds, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+        let panel = CompanionPanel(contentRect: view.bounds, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.isOpaque = false; panel.backgroundColor = .clear; panel.hasShadow = false
         panel.hidesOnDeactivate = false; panel.isReleasedWhenClosed = false
-        panel.level = .floating; panel.collectionBehavior = [.canJoinAllSpaces, .canJoinAllApplications, .stationary]
+        panel.level = .floating
+        panel.collectionBehavior = [.canJoinAllSpaces, .canJoinAllApplications, .fullScreenAuxiliary, .stationary, .ignoresCycle]
+        panel.becomesKeyOnlyIfNeeded = true; panel.isMovable = false; panel.isMovableByWindowBackground = false
         panel.title = AppText.companionName; panel.contentView = view; panel.ignoresMouseEvents = true
         self.panel = panel; self.view = view
         update(snapshot: snapshot, capturesPointer: false, pointer: context.point(NSEvent.mouseLocation))
-        panel.orderFrontRegardless()
     }
     func update(snapshot: CompanionSnapshot, capturesPointer: Bool, pointer: Point) {
         guard let panel, let view else { return }

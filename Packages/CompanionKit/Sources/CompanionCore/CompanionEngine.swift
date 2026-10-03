@@ -20,10 +20,11 @@ public struct CompanionEngine: Sendable {
     public init(scene: SceneGeometry) { body = BodyPhysics(scene: scene) }
     public mutating func reconfigure(scene: SceneGeometry) {
         body = BodyPhysics(scene: scene); interaction = InteractionState()
+        animator = MotionAnimator(); presentation = PoseDynamics()
         reveal = Spring(value: 0.6, frequency: 12, damping: 0.9); gaze = Spring(frequency: 10, damping: 1)
         homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
         homeGrip = Spring(value: 1, frequency: 14, damping: 1)
-        remainder = 0
+        pointer = Point(x: -1000, y: -1000); remainder = 0
     }
     public mutating func setMotionPolicy(_ policy: MotionPolicy) {
         motionPolicy = policy
@@ -58,7 +59,7 @@ public struct CompanionEngine: Sendable {
             if dragged { body.release() }
             else if point.isFinite && snapshot.contains(point) { activate() }
         case .cancelInteraction:
-            interaction.clearPress(); interaction.rest(); body.returnHome(immediately: true)
+            reconfigure(scene: body.scene)
         case .outsidePressed:
             if !hasPointerCapture { returnHome() }
         case .activate: activate()
