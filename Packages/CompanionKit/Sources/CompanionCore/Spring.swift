@@ -20,7 +20,8 @@ struct SimulationTuning: Sendable {
     static let step = 1 / 120.0
     static let maximumCatchUp = 0.25
     static let gravity = 1150.0
-    static let dragFollowRate = 20.0
+    static let dragFrequency = 20.0
+    static let dragDamping = 0.9
     static let grabWeightOffset = 18.0
     static let jumpAnticipation = 0.24
     static let walkingStride = 0.72

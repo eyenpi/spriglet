@@ -37,6 +37,8 @@ import Testing
         drag(&engine, to: Point(x: 520, y: 200)); advance(&engine, seconds: 3)
         engine.send(.command(.returnHome))
         #expect(engine.snapshot.phase == .hanging && engine.snapshot.presence == .peek)
+        #expect(abs(engine.snapshot.feet.x - engine.snapshot.scene.homeFeet.x) < 0.000001)
+        #expect(engine.snapshot.feet.y <= engine.snapshot.scene.homeFeet.y)
         var didBlink = false
         for _ in 0..<1200 { engine.advance(by: 1 / 120.0); didBlink = didBlink || engine.snapshot.pose.eyes < 0.1 }
         #expect(didBlink)

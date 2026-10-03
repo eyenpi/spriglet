@@ -2,6 +2,15 @@ import AppKit
 import CompanionCore
 import CompanionRendering
 
+@MainActor func writeFrame(_ frame: CompanionSnapshot, painter: ScenePreviewRenderer, to folder: URL,
+                          index: Int, pointer: Point, pressed: Bool) throws {
+    try autoreleasepool {
+        let png = try painter.image(frame, pointer: pointer, pressed: pressed)
+        guard let data = png.representation(using: .png, properties: [:]) else { throw BitmapRenderingError.encodingFailure }
+        try data.write(to: folder.appendingPathComponent(String(format: "%04d.png", index)))
+    }
+}
+
 @MainActor func export(to folder: URL) throws {
     try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
     var engine = CompanionEngine(scene: .preview)
@@ -29,13 +38,44 @@ import CompanionRendering
         }
         if index == 450 { engine.send(.pointerReleased(pointer)) }
         engine.advance(by: 1 / 30.0)
-        try autoreleasepool {
-            let png = try painter.image(engine.snapshot, pointer: pointer, pressed: (240..<300).contains(index) || (420..<450).contains(index))
-            guard let data = png.representation(using: .png, properties: [:]) else { throw BitmapRenderingError.encodingFailure }
-            try data.write(to: folder.appendingPathComponent(String(format: "%04d.png", index)))
-        }
+        try writeFrame(engine.snapshot, painter: painter, to: folder, index: index, pointer: pointer,
+                       pressed: (240..<300).contains(index) || (420..<450).contains(index))
     }
     print("Rendered 480 frames using the production core and renderer.")
+}
+
+/// A closer 60 fps review of emergence, grabs, a regrab during catch and a
+/// reversed retreat. Uses the same input path and fixed simulation as the app.
+@MainActor func exportTransitions(to folder: URL) throws {
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    var engine = CompanionEngine(scene: .preview)
+    let painter = ScenePreviewRenderer()
+    var start = Point.zero, pointer = Point(x: 625, y: 190)
+    for index in 0..<384 {
+        if index == 60 || index == 246 { engine.send(.activate) }
+        if index == 72 || index == 108 {
+            start = engine.snapshot.hitBounds.center
+            pointer = start; engine.send(.pointerPressed(pointer))
+        }
+        if (73..<100).contains(index) {
+            let u = Double(index - 72) / 27
+            pointer = start + Point(x: 24 * u, y: 10 * u)
+            engine.send(.pointerDragged(pointer))
+        }
+        if (109..<139).contains(index) {
+            let u = Double(index - 108) / 30
+            pointer = start + Point(x: 30 * sin(u * .pi), y: 12 * sin(u * .pi))
+            engine.send(.pointerDragged(pointer))
+        }
+        if index == 100 || index == 139 { engine.send(.pointerReleased(pointer)) }
+        if index == 200 { engine.send(.command(.stretch)) }
+        if index == 240 || index == 276 { engine.send(.outsidePressed) }
+        engine.send(.pointerMoved(pointer))
+        engine.advance(by: 1 / 60.0)
+        try writeFrame(engine.snapshot, painter: painter, to: folder, index: index, pointer: pointer,
+                       pressed: engine.hasPointerCapture)
+    }
+    print("Rendered 384 transition frames at 60 fps using the production core and renderer.")
 }
 
 @MainActor func exportIcons(to directory: URL) throws {
@@ -57,10 +97,12 @@ let args = CommandLine.arguments
 do {
 if args.count == 3 && args[1] == "--icons" {
     try exportIcons(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--transitions" {
+    try exportTransitions(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 2 {
     try export(to: URL(fileURLWithPath: args[1]))
 } else {
-    print("Usage: companion-preview OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
+    print("Usage: companion-preview OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
 }
 
 } catch {
