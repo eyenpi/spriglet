@@ -1,73 +1,31 @@
-import SwiftUI
+import AppKit
 
-@main
-struct SprigletApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
-
-    var body: some Scene {
-        MenuBarExtra {
-            PetMenu(runtime: delegate.runtime, presentation: delegate.presentation)
-        } label: {
-            SprigletMenuLabel(runtime: delegate.runtime, presentation: delegate.presentation)
-        }
-        Settings {
-            SprigletSettingsView(runtime: delegate.runtime, login: delegate.login)
-        }
-        .windowResizability(.contentSize)
-        .commands { CompanionCommands(runtime: delegate.runtime, presentation: delegate.presentation) }
-        Window(AppText.supportTitle, id: "support") {
-            AppDocumentView(title: AppText.supportTitle, resource: "Support", fileExtension: "md", onlineURL: AppLinks.support)
-        }
-        .defaultSize(width: 620, height: 600)
-        .defaultLaunchBehavior(.suppressed)
-        .restorationBehavior(.disabled)
-        Window(AppText.privacyTitle, id: "privacy") {
-            AppDocumentView(title: AppText.privacyTitle, resource: "PrivacyPolicy", fileExtension: "md", onlineURL: AppLinks.privacy)
-        }
-        .defaultSize(width: 580, height: 600)
-        .defaultLaunchBehavior(.suppressed)
-        .restorationBehavior(.disabled)
-        Window(AppText.licenseTitle, id: "license") {
-            AppDocumentView(title: AppText.licenseTitle, resource: "License", fileExtension: "txt", onlineURL: nil)
-        }
-        .defaultSize(width: 580, height: 500)
-        .defaultLaunchBehavior(.suppressed)
-        .restorationBehavior(.disabled)
-        Window("Welcome to Spriglet", id: "welcome") {
-            WelcomeView(runtime: delegate.runtime)
-        }
-        .windowResizability(.contentSize)
-        .defaultLaunchBehavior(.suppressed)
-        .restorationBehavior(.disabled)
-        Window("Developer Diagnostics", id: "diagnostics") {
-            if delegate.presentation.developerToolsAvailable {
-                DiagnosticsView(runtime: delegate.runtime)
-            }
-        }
-        .windowResizability(.contentSize)
-        .defaultLaunchBehavior(.suppressed)
-        .restorationBehavior(.disabled)
-        .commandsRemoved()
+@main enum SprigletApp {
+    @MainActor static func main() {
+        let app = NSApplication.shared
+        app.setActivationPolicy(.accessory)
+        let delegate = AppDelegate()
+        app.delegate = delegate
+        withExtendedLifetime(delegate) { app.run() }
     }
 }
 
-@MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
-    let runtime = PetRuntime()
-    let login = LoginItemService()
-    let presentation = AppPresentation()
-    private var acceptanceRecorder: DesktopAcceptanceRecorder?
-
+@MainActor final class AppDelegate: NSObject, NSApplicationDelegate {
+    private let runtime = CompanionRuntime()
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let menu = NSMenu(), root = NSMenuItem(), appMenu = NSMenu()
+        menu.addItem(root); root.submenu = appMenu
+        let quit = NSMenuItem(title: AppText.quitApp, action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenu.addItem(quit); NSApp.mainMenu = menu
         runtime.start()
-        if let output = DesktopAcceptanceRecorder.outputURL {
-            acceptanceRecorder = DesktopAcceptanceRecorder(runtime: runtime, output: output)
-            acceptanceRecorder?.start()
-        }
     }
-
-    func applicationWillTerminate(_ notification: Notification) {
-        acceptanceRecorder?.stop()
-        runtime.stop()
+    func applicationWillTerminate(_ notification: Notification) { runtime.stop() }
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        runtime.perform(.returnHome)
+        // A deliberate reopen exposes the ordinary app menu for Command-Q.
+        // Launch and companion touches never activate or steal keyboard focus.
+        NSApp.activate()
+        return true
     }
 }

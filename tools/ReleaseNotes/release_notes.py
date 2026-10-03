@@ -118,7 +118,7 @@ def check_bundle(app, root=ROOT):
 
 def notes(feed, tag):
     release = select_release(feed, tag)
-    return release_markdown(release) + f"\n[Build instructions]({REPOSITORY}/blob/{tag}/README.md#try-the-public-preview) · [Full changelog]({REPOSITORY}/blob/{tag}/CHANGELOG.md)\n"
+    return release_markdown(release) + f"\n[Build instructions]({REPOSITORY}/blob/{tag}/README.md#build-and-run) · [Full changelog]({REPOSITORY}/blob/{tag}/CHANGELOG.md)\n"
 
 
 def git(*arguments):

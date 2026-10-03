@@ -68,54 +68,36 @@ class ReleaseValidationTests(unittest.TestCase):
         with self.assertRaises(release.ValidationError):
             release.validate_signature_details("CodeDirectory flags=0x10000(runtime)\nAuthority=Developer ID Application: Fixture\n", entitlements, "local-preview")
 
-    def test_unsafe_or_escaping_resource_paths_are_rejected(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory) / "assets"
-            root.mkdir()
-            for name in ("../outside.png", "/outside.png", "a//b.png", "a/./b.png", "a\\b.png", "https:asset.png", "asset.jpg"):
-                with self.subTest(name=name), self.assertRaises(release.ValidationError):
-                    release.resource_path(root, name)
-            (root / "linked.png").symlink_to(Path(directory) / "outside.png")
-            with self.assertRaises(release.ValidationError):
-                release.resource_path(root, "linked.png")
-
     def test_resource_inventory_and_bytes_are_verified(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            source = root / "Sources/Spriglet/Resources/AcornHopper"
+            source = root / "Sources/Spriglet/Resources"
             app = root / "Spriglet.app"
-            destination = app / "Contents/Resources/AcornHopper"
-            clips = ("idle", "walkLeft", "walkRight", "pet", "settle", "fallAsleep", "wakeUp")
-            names = {"rest.png", "sleep.png"} | {name + ".png" for name in clips}
-            metadata = {"schemaVersion": 2, "canvasPixels": {"width": 448, "height": 448},
-                        "displaySizePoints": {"width": 96, "height": 96},
-                        "restFrame": "rest.png", "sleepFrame": "sleep.png",
-                        "clips": {name: {"frames": [{"file": name + ".png"}]} for name in clips}}
-            png = b"\x89PNG\r\n\x1a\n" + struct.pack(">I", 13) + b"IHDR" + struct.pack(">II", 448, 448)
+            destination = app / "Contents/Resources"
             for folder in (source, destination):
                 folder.mkdir(parents=True)
-                (folder / "manifest.json").write_text(json.dumps(metadata))
-                for name in names:
-                    (folder / name).write_bytes(png)
+                for name in ("PrivacyPolicy.md", "Support.md", "License.txt", "Changelog.json"):
+                    (folder / name).write_text("Fixture " + name)
             privacy = plistlib.dumps({"NSPrivacyTracking": False})
             (root / "Sources/Spriglet/PrivacyInfo.xcprivacy").write_bytes(privacy)
-            (app / "Contents/Resources/PrivacyInfo.xcprivacy").write_bytes(privacy)
-            self.assertEqual(release.verify_resources(app, root)["pngCount"], 9)
-            excluded = app / "Contents/Resources/SproutSample"
-            excluded.mkdir()
+            (destination / "PrivacyInfo.xcprivacy").write_bytes(privacy)
+            self.assertEqual(release.verify_resources(app, root)["documentCount"], 4)
+            for name in ("AcornHopper", "SproutSample", "MossMouse", "PetSounds"):
+                excluded = destination / name
+                excluded.mkdir()
+                with self.assertRaises(release.ValidationError):
+                    release.verify_resources(app, root)
+                excluded.rmdir()
+            (destination / "Support.md").write_text("Stale")
             with self.assertRaises(release.ValidationError):
                 release.verify_resources(app, root)
-            excluded.rmdir()
-            (destination / "rest.png").write_bytes(png + b"changed")
-            with self.assertRaises(release.ValidationError):
-                release.verify_resources(app, root)
-            (destination / "rest.png").write_bytes(png)
-            (destination / "unreferenced.png").write_bytes(png)
+            (destination / "Support.md").write_text((source / "Support.md").read_text())
+            (destination / "unreferenced.png").write_bytes(b"fixture")
             with self.assertRaises(release.ValidationError):
                 release.verify_resources(app, root)
             (destination / "unreferenced.png").unlink()
-            (destination / "sleep.png").unlink()
-            with self.assertRaises(OSError):
+            (destination / "License.txt").unlink()
+            with self.assertRaises(release.ValidationError):
                 release.verify_resources(app, root)
 
     def test_architecture_and_macho_minimum_os_must_match(self):

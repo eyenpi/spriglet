@@ -4,6 +4,42 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
+## 0.3.0-preview.1 — Mallow, rebuilt from the interaction up
+
+2026-10-03 · App 0.3.0 · Build 5
+
+A fresh native vector companion with a visible resting peek, direct character interaction, soft physics and a separated simulation, renderer and macOS host.
+
+Download the LOCAL-UNSIGNED DMG or ZIP for Apple silicon Macs running macOS 26 or later. This early preview has an ad hoc signature, no Developer ID certificate and no Apple notarization; macOS may block downloaded builds. Xcode is needed only to build from source.
+
+### Added
+
+- Mallow rests beneath the real notch with its face visible; displays without a notch use an upper-right home.
+- Hover, touch, drag, release-to-catch, soft gravity and outside-click return use the character directly.
+- A deterministic Swift simulation, immutable render snapshots and typed commands provide the extension boundary for future capabilities.
+- Display/session suspension, Reduce Motion, Low Power Mode and thermal cadence policy are handled by the macOS host.
+
+### Changed
+
+- The actual application now uses the approved Mallow interaction instead of a separate motion lab.
+- Build, preview, tests, packaging checks and shared help describe the new runtime.
+
+### Removed
+
+- Retired 3D models, Blender exports, sprite characters, frame packs, sound/login services, settings screens and duplicate prototype runtimes.
+
+### Fixed
+
+- Preview rendering rejects oversized dimensions before allocating a bitmap.
+- Help, security, support, release and website documentation now describe the current Mallow interaction and architecture.
+
+### Known limitations
+
+- Plugins and assistant services are not implemented in this preview.
+- Other application windows and the exact Dock icon shelf are not inspected.
+- The local build uses ad hoc signing and is not Apple-notarized.
+- Sustained battery use, VoiceOver speech and physical sleep/wake across display arrangements need wider device testing.
+
 ## 0.2.0-preview.2 — Acorn Hopper download
 
 2026-09-15 · App 0.2.0 · Build 4

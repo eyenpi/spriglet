@@ -41,9 +41,10 @@ def create(args):
         + "Requires an Apple silicon Mac and macOS 26 or later.\n\n"
         "1. Drag Spriglet.app to Applications.\n"
         "2. Eject this disk image.\n"
-        "3. Open Spriglet from Applications. Look for the leaf in your menu bar; "
-        "Spriglet does not show a Dock icon.\n\n"
-        "Use the leaf menu to show the pet, open Settings, or quit.\n"
+        "3. Open Spriglet from Applications. Mallow appears below the notch, or "
+        "at the upper-right edge on a display without a notch.\n\n"
+        "Hover, click or drag Mallow. Click elsewhere to return it home.\n"
+        "Reopen Spriglet from Finder to activate its app menu, then Command-Q to quit.\n"
         "Downloads and source: https://github.com/eyenpi/spriglet/releases\n"
         f"Help: {website}/support\n"
         f"Privacy: {website}/privacy\n")

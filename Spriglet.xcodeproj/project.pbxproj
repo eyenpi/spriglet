@@ -7,23 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000000000000000000022 /* SprigletCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000021 /* SprigletCore */; };
+		A10000000000000000000031 /* CompanionRendering in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000032 /* CompanionRendering */; };
+		A10000000000000000000022 /* CompanionCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000021 /* CompanionCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A10000000000000000000006 /* Spriglet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spriglet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		A10000000000000000000023 /* Historical character fixture */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (Resources/SproutSample, );
-			target = A10000000000000000000002 /* Spriglet */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A10000000000000000000004 /* Sources/Spriglet */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A10000000000000000000023, ); explicitFileTypes = {}; explicitFolders = (Resources/AcornHopper, Resources/SproutSample, Resources/PetSounds, ); path = Sources/Spriglet; sourceTree = "<group>"; };
+		A10000000000000000000004 /* Sources/Spriglet */ = {isa = PBXFileSystemSynchronizedRootGroup;  explicitFileTypes = {}; explicitFolders = (); path = Sources/Spriglet; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,7 +24,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000000000000000000022 /* SprigletCore in Frameworks */,
+				A10000000000000000000022 /* CompanionCore in Frameworks */,
+				A10000000000000000000031 /* CompanionRendering in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,7 +69,8 @@
 			);
 			name = Spriglet;
 			packageProductDependencies = (
-				A10000000000000000000021 /* SprigletCore */,
+				A10000000000000000000021 /* CompanionCore */,
+				A10000000000000000000032 /* CompanionRendering */,
 			);
 			productName = Spriglet;
 			productReference = A10000000000000000000006 /* Spriglet.app */;
@@ -107,7 +102,7 @@
 			mainGroup = A10000000000000000000003;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A10000000000000000000020 /* XCLocalSwiftPackageReference "Packages/SprigletCore" */,
+				A10000000000000000000020 /* XCLocalSwiftPackageReference "Packages/CompanionKit" */,
 			);
 			productRefGroup = A10000000000000000000005 /* Products */;
 			projectDirPath = "";
@@ -192,7 +187,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -202,7 +197,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.spriglet.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -223,7 +218,7 @@
 				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -233,7 +228,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.spriglet.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -268,17 +263,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		A10000000000000000000020 /* XCLocalSwiftPackageReference "Packages/SprigletCore" */ = {
+		A10000000000000000000020 /* XCLocalSwiftPackageReference "Packages/CompanionKit" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/SprigletCore;
+			relativePath = Packages/CompanionKit;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A10000000000000000000021 /* SprigletCore */ = {
+		A10000000000000000000021 /* CompanionCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = SprigletCore;
+			productName = CompanionCore;
 		};
+		A10000000000000000000032 /* CompanionRendering */ = {
+            isa = XCSwiftPackageProductDependency;
+            package = A10000000000000000000020 /* XCLocalSwiftPackageReference "Packages/CompanionKit" */;
+            productName = CompanionRendering;
+        };
 /* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A10000000000000000000001 /* Project object */;

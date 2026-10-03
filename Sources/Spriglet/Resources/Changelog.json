@@ -2,6 +2,41 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "0.3.0-preview.1",
+      "appVersion": "0.3.0",
+      "build": 5,
+      "date": "2026-10-03",
+      "channel": "preview",
+      "title": "Mallow, rebuilt from the interaction up",
+      "summary": "A fresh native vector companion with a visible resting peek, direct character interaction, soft physics and a separated simulation, renderer and macOS host.",
+      "distribution": "Download the LOCAL-UNSIGNED DMG or ZIP for Apple silicon Macs running macOS 26 or later. This early preview has an ad hoc signature, no Developer ID certificate and no Apple notarization; macOS may block downloaded builds. Xcode is needed only to build from source.",
+      "changes": {
+        "added": [
+          "Mallow rests beneath the real notch with its face visible; displays without a notch use an upper-right home.",
+          "Hover, touch, drag, release-to-catch, soft gravity and outside-click return use the character directly.",
+          "A deterministic Swift simulation, immutable render snapshots and typed commands provide the extension boundary for future capabilities.",
+          "Display/session suspension, Reduce Motion, Low Power Mode and thermal cadence policy are handled by the macOS host."
+        ],
+        "changed": [
+          "The actual application now uses the approved Mallow interaction instead of a separate motion lab.",
+          "Build, preview, tests, packaging checks and shared help describe the new runtime."
+        ],
+        "removed": [
+          "Retired 3D models, Blender exports, sprite characters, frame packs, sound/login services, settings screens and duplicate prototype runtimes."
+        ],
+        "fixed": [
+          "Preview rendering rejects oversized dimensions before allocating a bitmap.",
+          "Help, security, support, release and website documentation now describe the current Mallow interaction and architecture."
+        ]
+      },
+      "knownLimitations": [
+        "Plugins and assistant services are not implemented in this preview.",
+        "Other application windows and the exact Dock icon shelf are not inspected.",
+        "The local build uses ad hoc signing and is not Apple-notarized.",
+        "Sustained battery use, VoiceOver speech and physical sleep/wake across display arrangements need wider device testing."
+      ]
+    },
+    {
       "version": "0.2.0-preview.2",
       "appVersion": "0.2.0",
       "build": 4,

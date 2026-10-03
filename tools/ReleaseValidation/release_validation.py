@@ -8,7 +8,6 @@ import os
 from pathlib import Path
 import plistlib
 import re
-import struct
 import subprocess
 import sys
 
@@ -56,18 +55,6 @@ def validate_info(info, version, build, bundle_id):
         require(info.get(key) == value, f"Bundle metadata mismatch: {key}.")
 
 
-def resource_path(root, relative):
-    require(isinstance(relative, str), "A sample asset path is not a string.")
-    parts = relative.split("/")
-    require(relative.endswith(".png") and all(part not in {"", ".", ".."} for part in parts)
-            and not any(character in relative for character in ("\\", ":", "\x00")),
-            "Unsafe sample asset path.")
-    result = root.joinpath(*parts)
-    require(not result.is_symlink() and result.resolve().is_relative_to(root.resolve()),
-            "An asset resolves outside its resource directory.")
-    return result
-
-
 def digest(path):
     checksum = hashlib.sha256()
     with Path(path).open("rb") as stream:
@@ -77,36 +64,21 @@ def digest(path):
 
 
 def verify_resources(app, source_root):
-    source = source_root / "Sources/Spriglet/Resources/AcornHopper"
-    packaged = app / "Contents/Resources/AcornHopper"
-    require(not (app / "Contents/Resources/SproutSample").exists()
-            and not (app / "Contents/Resources/MossMouse").exists(), "Only Acorn Hopper should ship in this release.")
-    metadata_path = source / "manifest.json"
-    require(digest(metadata_path) == digest(packaged / "manifest.json"), "Packaged character manifest differs from source.")
-    metadata = json.loads(metadata_path.read_text())
-    require(metadata.get("schemaVersion") == 2, "Unsupported character manifest version.")
-    require(metadata.get("displaySizePoints") == {"width": 96, "height": 96}, "Incorrect Acorn native size.")
-    require(metadata.get("canvasPixels") == {"width": 448, "height": 448}, "Unexpected sample canvas.")
-    require(set(metadata["clips"]) == {"idle", "walkLeft", "walkRight", "pet", "settle", "fallAsleep", "wakeUp"}, "Missing character clip.")
-    names = {metadata["restFrame"], metadata["sleepFrame"]}
-    for clip in metadata["clips"].values():
-        require(0 < len(clip["frames"]) <= 600, "Invalid character clip frame count.")
-        names.update(frame["file"] for frame in clip["frames"])
-    for name in sorted(names):
-        original = resource_path(source, name)
-        archived = resource_path(packaged, name)
-        require(digest(original) == digest(archived), "A packaged character frame is missing or changed.")
-        with archived.open("rb") as stream:
-            header = stream.read(24)
-        require(len(header) == 24 and header[:8] == b"\x89PNG\r\n\x1a\n"
-                and header[12:16] == b"IHDR" and struct.unpack(">II", header[16:24]) == (448, 448),
-                "A packaged character PNG has invalid dimensions or a wrong format.")
-    actual = {str(path.relative_to(packaged)) for path in packaged.rglob("*.png")}
-    require(actual == names, "Packaged sample contains missing or unreferenced PNGs.")
+    """Mallow is drawn in code; shipping old frame packs is a regression."""
+    resources = app / "Contents/Resources"
+    for obsolete in ("AcornHopper", "SproutSample", "MossMouse", "PetSounds"):
+        require(not (resources / obsolete).exists(), "Retired companion resources must not ship.")
+    require(not list(resources.rglob("*.png")), "Unexpected raster frames in the vector companion bundle.")
+    names = ("PrivacyPolicy.md", "Support.md", "License.txt", "Changelog.json")
+    for name in names:
+        source = source_root / "Sources/Spriglet/Resources" / name
+        target = resources / name
+        require(target.is_file() and not target.is_symlink(), f"Missing bundled document: {name}.")
+        require(digest(source) == digest(target), f"Stale bundled document: {name}.")
     privacy_source = source_root / "Sources/Spriglet/PrivacyInfo.xcprivacy"
-    privacy_app = app / "Contents/Resources/PrivacyInfo.xcprivacy"
+    privacy_app = resources / "PrivacyInfo.xcprivacy"
     require(read_plist(privacy_source) == read_plist(privacy_app), "Privacy manifest is missing or changed.")
-    return {"pngCount": len(names), "manifestSHA256": digest(metadata_path),
+    return {"rendering": "native-vector", "documentCount": len(names),
             "privacyManifestSHA256": digest(privacy_app)}
 
 

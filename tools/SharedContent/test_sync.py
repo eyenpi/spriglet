@@ -32,13 +32,13 @@ class SharedContentTests(unittest.TestCase):
     def test_support_and_action_label_edit_reaches_both_surfaces(self):
         source = self.root / "Configuration/Shared/en-US.json"
         labels = json.loads(source.read_text())
-        labels["playWithFirefly"] = "Play with a Glow"
+        labels["interactionHelp"] = "Touch Mallow to say hello."
         source.write_text(json.dumps(labels))
         sync.synchronize(self.root)
         for path in ("Sources/Spriglet/App/SharedContent.generated.swift", "Sources/Spriglet/Resources/Support.md",
                      "tools/AppStore/website/public/support.html", "tools/AppStore/metadata/en-US.json"):
-            self.assertIn("Play with a Glow", self.text(path))
-            self.assertNotIn("Play with Firefly", self.text(path))
+            self.assertIn("Touch Mallow to say hello.", self.text(path))
+            self.assertNotIn("Hover to get a reaction.", self.text(path))
 
     def test_contact_change_reaches_all_published_outputs(self):
         source = self.root / "Configuration/Shared/brand.json"
@@ -46,7 +46,7 @@ class SharedContentTests(unittest.TestCase):
         brand.update(websiteURL="https://companion.example", supportEmail="help@companion.example")
         source.write_text(json.dumps(brand))
         sync.synchronize(self.root)
-        for path in ("Sources/Spriglet/App/SharedContent.generated.swift", "PRIVACY.md", "Sources/Spriglet/Resources/Support.md",
+        for path in ("PRIVACY.md", "Sources/Spriglet/Resources/Support.md",
                      "tools/AppStore/metadata/en-US.json", "tools/AppStore/website/public/privacy.html", "tools/AppStore/website/public/support.html"):
             self.assertIn("help@companion.example", self.text(path))
             self.assertNotIn("meetspriglet.com", self.text(path))

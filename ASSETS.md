@@ -1,15 +1,9 @@
-# Code and artwork license
+# Artwork and license
 
-The [MIT license](LICENSE) applies to the Spriglet code, documentation, original character concepts, editable Blender models and rigs, generated animation frames, app icon, original sound cues, and demo media included in this repository.
+Mallow is original artwork for Spriglet under the repository's MIT license. The lavender companion direction was explored with generated concept imagery; those exploratory files are not part of the active tree, and the production character is native vector drawing code, not a generated sprite pack or third-party model.
 
-Sprout is an original character developed for this project. Its initial concept exploration used AI-generated imagery; the editable geometry, groom, materials, rig, and animation pipeline were built in Blender. The source `.blend` files have no external texture or add-on dependencies. The demo uses the same rendered frames and motion metadata as the app.
+The documentation animation at `art/mallow/demo.gif` is a finite export of the production simulation and renderer on a simulated desktop, encoded with FFmpeg. Regenerate PNG frames with `./scripts/preview.sh`; it is documentation media, not an app asset. The live character, preview and app icon share `Packages/CompanionKit/Sources/CompanionRendering/MallowRenderer.swift` and the core pose contract. Code-generated shapes, gradients, expression, limbs and motion have no external fonts, textures, recordings or model dependencies.
 
-The [current app icon](art/app-icon/README.md) is an original AI-generated interpretation of Sprout, with rounded leaf ears, a cream face, and a welcoming wave. It was created with the built-in image generation tool and packaged with macOS `sips`. Its original image, exact prompt, approved master, and provenance hashes are included in `art/app-icon/`. It uses no third-party character artwork. The earlier Blender icon remains in `art/sprout/public-preview/` as historical source material.
+The icon catalog contains ten opaque RGB PNG exports of the same vector character. `art/app-icon/provenance.json` records source and export hashes. Regenerate it with `art/app-icon/export_icon_catalog.sh` and verify with `art/app-icon/verify_icon.py`.
 
-The [Acorn Hopper and Moss Mouse models](art/candidates/README.md) are additional original characters under the same MIT license. Their concepts used AI-generated images; their editable meshes, materials, small rigs, shape keys, finite idle/locomotion/affection animations, sleep/wake transitions, and held sleep poses were authored in Blender without third-party 3D assets. The current refinement and original proof are both retained. Acorn Hopper is the only pet bundled by current source, using exact Blender PNGs and a [96-point normalized manifest](tools/CharacterAssets/README.md). Moss Mouse remains a future candidate; Sprout remains historical artwork and a compatibility fixture. There is no character selection UI.
-
-The optional `greeting.wav` and `play.wav` chimes in `Sources/Spriglet/Resources/PetSounds/` are original synthesized tones created for Spriglet. They use deterministic sine partials and finite attack/decay envelopes, with no sampled recording or third-party sound asset. Their [generator](tools/EverydayServicesValidation/generate_chimes.py) and [provenance](tools/EverydayServicesValidation/chime-provenance.json) reproduce and identify the bundled files.
-
-Blender, Xcode, Swift, GitHub Copilot, FFmpeg, and other authoring tools are not included in or relicensed by this repository. System fonts and SF Symbols are supplied by macOS at runtime; their source assets are not bundled here.
-
-Keep the MIT copyright and license notice with copies or substantial portions of the code or artwork.
+Retired Sprout, Acorn Hopper and Moss Mouse sprite/model pipelines are removed from the active tree. Their historical source and provenance remain in Git history. They are not bundled by the Mallow rewrite. No audio assets are shipped.

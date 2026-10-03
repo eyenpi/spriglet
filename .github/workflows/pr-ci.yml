@@ -44,11 +44,7 @@ jobs:
         run: ./scripts/test.sh
       - name: Validator regression tests
         run: |
-          python3 -m unittest discover -s tools/CharacterSampleValidation -p 'test_*.py'
-          python3 -m unittest discover -s tools/CandidateReview -p 'test_*.py'
-          python3 -m unittest discover -s tools/CharacterAssets -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseValidation -p 'test_*.py'
-          python3 -m unittest discover -s tools/EverydayServicesValidation -p 'test_*.py'
           python3 -m unittest discover -s tools/ReleaseNotes -p 'test_*.py'
           python3 -m unittest discover -s tools/AppStore -p 'test_*.py'
           python3 -m unittest discover -s tools/SharedContent -p 'test_*.py'
@@ -59,12 +55,8 @@ jobs:
           sh -n scripts/deploy-website.sh
           scripts/archive-app-store.sh --unsigned --check
           python3 tools/AppStore/website/build.py --check
-      - name: Character assets and grounded motion
-        run: |
-          mkdir -p .build
-          python3 tools/CharacterSampleValidation/validate_assets.py Sources/Spriglet/Resources/SproutSample/manifest.json --contacts art/sprout/sample-v01/contact-samples.json --output .build/ci-assets.json
-          python3 tools/CandidateReview/verify_assets.py --output .build/ci-candidate-assets.json
-          python3 tools/CharacterAssets/export_acorn.py --check
+      - name: Production scene preview
+        run: ./scripts/preview.sh .build/ci-preview/frames
       - name: App icon artwork and catalog
         run: python3 art/app-icon/verify_icon.py
       - name: Debug and Release builds
@@ -79,18 +71,6 @@ jobs:
         run: python3 tools/ReleaseValidation/package_preview.py --app .build/ci-xcode/Build/Products/Release/Spriglet.app --output .build/preview-packages
       - name: App Store archive rehearsal (unsigned, no upload)
         run: scripts/archive-app-store.sh --unsigned --output .build/app-store/ci-rehearsal
-      - name: Native personality harness (build only)
-        run: bash tools/PersonalityValidation/build.sh
-      - name: Native candidate comparison (build only)
-        run: bash tools/CandidateReview/build.sh
-      - name: Everyday native harness (build only)
-        run: bash tools/EverydayExperienceValidation/build.sh
-      - name: Desktop interaction harness (build only)
-        run: bash tools/DesktopAcceptanceValidation/build-interaction-check.sh
-      - name: Silent sound and login adapter checks
-        run: |
-          bash tools/EverydayServicesValidation/build.sh
-          tools/EverydayServicesValidation/.build/EverydayServicesCheck --resources Sources/Spriglet/Resources/PetSounds --output .build/everyday-services.json
       - name: Publish the generated static website artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

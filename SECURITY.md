@@ -8,10 +8,10 @@ The maintainer reviews reports and coordinates fixes through the private advisor
 
 ## Supported versions
 
-Spriglet is currently a source preview. Security fixes target the latest development source on `main`; older preview tags are not maintained separately. Signed App Store distribution is pending. Once released, install the latest available App Store update.
+Spriglet ships early GitHub previews. Security fixes target the latest development source on `main`; older preview tags are not maintained separately. Install the latest Mallow preview from [GitHub releases](https://github.com/eyenpi/spriglet/releases), or build the current source. No App Store release is available.
 
 ## Security boundaries
 
-The app is sandboxed and stores its preferences locally. It has no account, analytics SDK, or application backend. Reassess these statements before adding a service or dependency. See [the privacy policy](PRIVACY.md).
+The app is sandboxed and holds companion state in memory for the current session. It does not read or migrate the previous companion’s saved preferences. It has no account, analytics SDK, or application backend. Reassess these statements before adding a service or dependency. Outside mouse clicks are observed only to return Mallow home; clicked content and global keyboard events are not read. See [the privacy policy](PRIVACY.md).
 
 Pull request code must never receive Cloudflare deployment or Apple signing credentials. Review changes to workflows, deployment tools, shared policies, and signing configuration carefully. Public artifacts and logs must not contain credentials or private diagnostics. Report an exposed credential immediately so its owner can revoke it.
