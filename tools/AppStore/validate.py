@@ -61,7 +61,7 @@ def validate_privacy(value):
 def validate_store_info(info):
     require(info.get("LSApplicationCategoryType") == CATEGORY, "Missing Entertainment category.")
     require(info.get("ITSAppUsesNonExemptEncryption") is False, "Encryption declaration needs review.")
-    require(info.get("LSUIElement") is True, "Review notes assume a menu-bar app.")
+    require(info.get("LSUIElement") is True, "Review notes assume an accessory app without a Dock icon.")
     require(bool(info.get("NSHumanReadableCopyright")), "Missing copyright.")
 
 
