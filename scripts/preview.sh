@@ -3,4 +3,8 @@
 set -euo pipefail
 task_root="${0:A:h:h}"
 task_output="${1:-$task_root/.build/preview/frames}"
-swift run --package-path "$task_root/Packages/CompanionKit" companion-preview "$task_output"
+case "${2:-}" in
+    "") swift run --package-path "$task_root/Packages/CompanionKit" companion-preview "$task_output" ;;
+    --transitions) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --transitions "$task_output" ;;
+    *) print -u2 "Usage: ./scripts/preview.sh [OUTPUT_DIRECTORY] [--transitions]"; exit 2 ;;
+esac

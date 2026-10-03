@@ -4,8 +4,8 @@
   "method": "native-vector",
   "license": "MIT",
   "sourceFiles": {
-    "Packages/CompanionKit/Sources/CompanionRendering/MallowRenderer.swift": "85324939993664125b772ee3cb4e83eea82d25971b44aba7cca8f1a491620176",
-    "Packages/CompanionKit/Sources/CompanionCore/CharacterPose.swift": "b87c54970cc6a15ca8525da65910b9d1bac523fd7c786da62a8e22919fff088f"
+    "Packages/CompanionKit/Sources/CompanionRendering/MallowRenderer.swift": "7c4c95ad7bb57824368c6d418681c87ad1b38ddb99e03938b7100cd08937da89",
+    "Packages/CompanionKit/Sources/CompanionCore/CharacterPose.swift": "549e66514346995402cd89566f20fa3adf6408269a997e72829d804dbb32d0ca"
   },
   "catalogImages": {
     "icon_128x128@1x.png": "7669800f25ba62e35ed0197652766673a9ed2d038caa2c9c28d50719f8b8e3e9",

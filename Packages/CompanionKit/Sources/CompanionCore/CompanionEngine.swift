@@ -6,8 +6,10 @@ public struct CompanionEngine: Sendable {
     private var body: BodyPhysics
     private var interaction = InteractionState()
     private var animator = MotionAnimator()
-    private var presentedPose = CharacterPose()
+    private var presentation = PoseDynamics()
     private var reveal = Spring(value: 0.6, frequency: 12, damping: 0.9)
+    private var homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
+    private var homeGrip = Spring(value: 1, frequency: 14, damping: 1)
     private var gaze = Spring(frequency: 10, damping: 1)
     private var pointer = Point(x: -1000, y: -1000)
     private var remainder = 0.0
@@ -18,8 +20,10 @@ public struct CompanionEngine: Sendable {
     public init(scene: SceneGeometry) { body = BodyPhysics(scene: scene) }
     public mutating func reconfigure(scene: SceneGeometry) {
         body = BodyPhysics(scene: scene); interaction = InteractionState()
-        animator = MotionAnimator(); presentedPose = CharacterPose()
+        animator = MotionAnimator(); presentation = PoseDynamics()
         reveal = Spring(value: 0.6, frequency: 12, damping: 0.9); gaze = Spring(frequency: 10, damping: 1)
+        homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
+        homeGrip = Spring(value: 1, frequency: 14, damping: 1)
         pointer = Point(x: -1000, y: -1000); remainder = 0
     }
     public mutating func setMotionPolicy(_ policy: MotionPolicy) {
@@ -43,7 +47,12 @@ public struct CompanionEngine: Sendable {
             guard point.isFinite, let start = interaction.press else { return }; pointer = point
             guard interaction.dragging || point.distance(to: start) > 4 else { return }
             interaction.dragging = true; interaction.play()
-            body.grab(visibleFeet: snapshot.feet, target: point - interaction.dragOffset, at: time)
+            var velocity = body.renderedVelocity
+            velocity.y -= homeRetraction.speed * body.scene.scale
+            body.grab(visibleFeet: snapshot.feet, visibleVelocity: velocity,
+                      target: point - interaction.dragOffset, at: time)
+            // The visible offset and its velocity now belong to the held body.
+            homeRetraction.value = 0; homeRetraction.speed = 0
         case .pointerReleased(let point):
             guard interaction.press != nil else { return }
             let dragged = interaction.dragging; interaction.clearPress()
@@ -98,10 +107,12 @@ public struct CompanionEngine: Sendable {
     private mutating func step(_ dt: Double) {
         time += dt
         if interaction.step(dt, at: time, pointerOver: snapshot.contains(pointer)) { returnHome() }
-        body.step(dt, at: time, walkingAmount: presentedPose.walk)
+        body.step(dt, at: time, walkingAmount: presentation.pose.walk)
         if body.phase == .hanging && interaction.presence == .playing { interaction.rest() }
         let openTarget = body.phase != .hanging || interaction.presence != .peek ? 1.0 : interaction.hoverAge > 0.35 ? 0.66 : 0.6
         reveal.step(dt, target: openTarget)
+        homeRetraction.step(dt, target: body.phase == .hanging ? (1 - openTarget) * 75 : 0)
+        homeGrip.step(dt, target: body.phase == .hanging || body.phase == .catching ? 1 : 0)
         let nearby = pointer.distance(to: snapshot.feet) < 260 * body.scene.scale
         let look = nearby && motionPolicy == .full ? clamp((pointer.x - snapshot.feet.x) / 35, -5, 5) : 0
         gaze.step(dt, target: look)
@@ -115,52 +126,52 @@ public struct CompanionEngine: Sendable {
         } else if body.isWalking && body.phase == .grounded { desired = body.direction > 0 ? .walkRight : .walkLeft }
         if motionPolicy == .reduced { desired = .idle }
         if animator.motion != desired { animator.select(desired, at: time) }
-        animator.advance(to: time, dt: dt)
-        presentedPose.approach(targetPose, dt: dt)
-        presentedPose.gaitPhase = animator.pose.gaitPhase
-        presentedPose.eyes = animator.pose.eyes
+        animator.advance(to: time, dt: dt, walkingAmount: presentation.pose.walk)
+        presentation.step(toward: targetPose, dt: dt)
     }
     private var targetPose: CharacterPose {
-        var pose = animator.pose
+        var pose = animator.targetPose
         switch body.phase {
         case .hanging:
             pose.arm = interaction.gesture == .hello ? pose.arm : 0.4
             pose.facing = 0; pose.lean += sin(time * 2) * 0.015
         case .preparingJump:
-            pose.width = 1 + body.anticipationProgress * 0.17; pose.height = 1 - body.anticipationProgress * 0.19
+            pose.height = 1 - body.anticipationProgress * 0.19
         case .jumping, .falling:
             let stretch = min(abs(body.velocity.y) / 1400, 1)
-            pose.width = 1 - stretch * 0.09; pose.height = 1 + stretch * 0.13
+            pose.height = 1 + stretch * 0.13
             pose.arm = 0.55; pose.lean = clamp(body.velocity.x / 1800, -0.08, 0.08)
-        case .held: pose.height = 1.13; pose.width = 1 / pose.height; pose.arm = 0.7
-        case .catching: pose.height = 1.08; pose.width = 1 / pose.height; pose.arm = 0.9
+        case .held: pose.height = 1.13; pose.arm = 0.7
+        case .catching: pose.height = 1.08; pose.arm = 0.9
         case .grounded: break
         }
+        pose.width = 1 / pose.height
         return pose
     }
     public var snapshot: CompanionSnapshot {
         let open = clamp(reveal.value, 0.6, 1), scene = body.scene
-        var feet = body.renderedFeet
-        if body.phase == .hanging { feet.y -= (1 - open) * 75 * scene.scale }
-        var pose = presentedPose
-        if body.phase == .hanging {
-            pose.lookY += min(28, (1 - open) * 75)
-            let squish = sin((1 - open) * .pi) * 0.1
-            pose.width *= 1 + squish; pose.height *= 1 - squish
-        }
+        var feet = body.renderedFeet - Point(x: 0, y: homeRetraction.value * scene.scale)
+        var pose = presentation.pose
+        // Reveal keeps evolving after a grab; removing this deformation at the
+        // phase boundary would instantly change the silhouette and face height.
+        pose.lookY += min(28, (1 - open) * 75)
+        let squish = sin((1 - open) * .pi) * 0.1
+        pose.width *= 1 + squish; pose.height /= 1 + squish
         let deformation = clamp(body.compression.value, -0.38, 0.2)
         pose.height *= 1 + deformation; pose.width /= 1 + deformation
+        // Stretch the crown without pulling the eyes back behind the housing.
+        pose.lookY += max(0, 47 * (1 - 1 / pose.height))
         pose.look += gaze.value
         if motionPolicy == .reduced {
             pose.width = 1; pose.height = 1; pose.lean = 0; pose.look = 0
             pose.arm = 0; pose.sparkle = 0
-            feet = body.phase == .hanging ? Point(x: scene.homeFeet.x, y: scene.homeFeet.y - (1 - open) * 75 * scene.scale) : feet
+            feet = body.phase == .hanging ? Point(x: scene.homeFeet.x, y: scene.homeFeet.y - homeRetraction.value * scene.scale) : feet
         }
         let top = body.phase == .hanging ? max(scene.home.maxY, feet.y - 86 * scene.scale) : feet.y - 86 * scene.scale
         let hit = Rect(x: feet.x - 67 * scene.scale, y: top, width: 134 * scene.scale, height: max(0, feet.y + 10 * scene.scale - top))
         return CompanionSnapshot(scene: scene, presence: interaction.presence, phase: body.phase, pose: pose,
                                  feet: feet, windowAnchor: body.renderedFeet, rotation: motionPolicy == .full ? body.rotation : 0,
-                                 openness: open, time: time, gesture: interaction.gesture,
-                                 gestureAge: time - interaction.gestureStarted, hitBounds: hit)
+                                 openness: open, homeGrip: clamp(homeGrip.value, 0, 1), time: time, gesture: interaction.gesture,
+                                 hitBounds: hit)
     }
 }

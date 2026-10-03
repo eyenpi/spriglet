@@ -27,9 +27,10 @@ For a finite, reproducible animation preview using the production code:
 
 ```sh
 ./scripts/preview.sh .build/preview/frames
+./scripts/preview.sh .build/preview/transitions --transitions
 ```
 
-The exporter writes PNG frames locally. It runs no assistant service and reads no desktop content.
+The exporter writes PNG frames locally. The transition sequence renders at 60 fps and covers emergence, grabbing during emergence, regrabbing a catch, reversing a retreat, a rapid upward throw and returning during a horizontal reversal. It runs no assistant service and reads no desktop content.
 
 ## Architecture
 
@@ -48,7 +49,13 @@ There is one production simulation and one renderer. The preview exporter uses t
 
 ### Changing behavior
 
-Add a semantic input or command in `CompanionInput.swift`. Interaction transitions belong in `InteractionState.swift` and `CompanionEngine.swift`; trajectories, contact and weight belong in `BodyPhysics.swift`; authored pose targets belong in `MotionAnimator.swift`. Preserve the existing pose when a motion changes. Keep scene measurements and coordinate conversion outside behavior code.
+Add a semantic input or command in `CompanionInput.swift`. Interaction transitions belong in `InteractionState.swift` and `CompanionEngine.swift`; trajectories, contact and weight belong in `BodyPhysics.swift`; authored pose targets belong in `MotionAnimator.swift`. `PoseDynamics.swift` carries silhouette and limb velocity across target changes and derives width from height to conserve body area. `JumpTrajectory.swift` joins flight endpoints with matching velocities. Preserve the existing pose and momentum when a motion changes. Keep scene measurements and coordinate conversion outside behavior code.
+
+Hands use one continuous attachment value in the snapshot. The renderer blends free and home hand positions and lets the home housing occlude them as they emerge; it has no reveal threshold or gesture-triggered arm switch.
+
+Home retraction advances independently of the physics phase. Grabs transfer its visible position and velocity to the held body; catches start their retreat from the current offset instead of applying a hidden part of the peek all at once.
+
+Free motion respects the scene ceiling, floor and side limits. Momentum continues until contact: vertical impacts produce a damped rebound, catch springs retain their corrected state, and return trajectories rejoin home from the contact position and remaining velocity. The ceiling keeps the body reachable while allowing a grab to begin at the visible resting peek.
 
 ### Changing the character
 
