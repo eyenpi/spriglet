@@ -123,11 +123,64 @@ import Testing
     @Test("Quiet presence reduces redraws without stopping animation")
     func restingCadence() {
         var conditions = RuntimeConditions()
-        #expect(conditions.frameRate(presence: .peek, phase: .hanging) == 30)
+        #expect(conditions.frameRate(presence: .peek, phase: .hanging) == 20)
         #expect(conditions.frameRate(presence: .engaged, phase: .hanging) == 60)
         #expect(conditions.frameRate(presence: .playing, phase: .grounded) == 30)
+        #expect(conditions.frameRate(presence: .peek, phase: .falling) == 60)
+        #expect(conditions.frameRate(presence: .peek, phase: .held) == 60)
+        conditions.lowPower = true
+        #expect(conditions.frameRate(presence: .peek, phase: .hanging) == 15)
+        #expect(conditions.frameRate(presence: .engaged, phase: .hanging) == 30)
+        #expect(conditions.frameRate(presence: .playing, phase: .falling) == 30)
+        conditions.thermal = .serious
+        #expect(conditions.frameRate(presence: .engaged, phase: .hanging) == 15)
         conditions.displayAwake = false
         #expect(conditions.frameRate(presence: .playing, phase: .held) == 0)
+    }
+    @Test("Idle cadence preserves visible blinks and the breathing range", arguments: [15.0, 20.0], [0.0, 1 / 120.0, 1 / 60.0, 1 / 30.0, 1 / 24.0])
+    func idleExpression(fps: Double, offset: Double) {
+        var engine = CompanionEngine(scene: .preview)
+        engine.advance(by: offset)
+        var closedFrames = 0, minimumHeight = Double.infinity, maximumHeight = 0.0
+        for _ in 0..<Int(fps * 90) {
+            engine.advance(by: 1 / fps)
+            let pose = engine.snapshot.pose
+            if pose.eyes < 0.12 { closedFrames += 1 }
+            minimumHeight = min(minimumHeight, pose.height)
+            maximumHeight = max(maximumHeight, pose.height)
+        }
+        #expect(closedFrames >= 15)
+        #expect(maximumHeight - minimumHeight > 0.025)
+        #expect(engine.snapshot.hitBounds.height > 25)
+    }
+    @Test("Low Power Mode preserves gesture, swing and return timing")
+    func lowPowerFeel() {
+        var normal = CompanionEngine(scene: .preview), lowPower = normal
+        var conditions = RuntimeConditions(); conditions.lowPower = true
+        for command in [CompanionCommand.greet, .swing, .stretch, .returnHome] {
+            normal.send(.command(command)); lowPower.send(.command(command))
+            // Supply the same semantic input and compare every half second, not
+            // just final resting states where a timing error could be hidden.
+            for _ in 0..<8 {
+                let referenceRate = RuntimeConditions().frameRate(presence: normal.snapshot.presence, phase: normal.snapshot.phase)
+                let lowPowerRate = conditions.frameRate(presence: lowPower.snapshot.presence, phase: lowPower.snapshot.phase)
+                advance(&normal, seconds: 0.5, fps: Double(referenceRate))
+                // Fifteen fps cannot divide half a second; use elapsed chunks
+                // that still finish at exactly the comparison time.
+                var remaining = 0.5
+                while remaining > 0.000001 {
+                    let step = min(remaining, 1 / Double(lowPowerRate))
+                    lowPower.advance(by: step); remaining -= step
+                }
+                #expect(abs(normal.time - lowPower.time) < 0.000001)
+                #expect(normal.snapshot.phase == lowPower.snapshot.phase)
+                #expect(normal.snapshot.gesture == lowPower.snapshot.gesture)
+                #expect(normal.snapshot.feet.distance(to: lowPower.snapshot.feet) < 0.000001)
+                #expect(abs(normal.snapshot.rotation - lowPower.snapshot.rotation) < 0.000001)
+                #expect(abs(normal.snapshot.pose.arm - lowPower.snapshot.pose.arm) < 0.000001)
+                #expect(abs(normal.snapshot.pose.height - lowPower.snapshot.pose.height) < 0.000001)
+            }
+        }
     }
     @Test("Every command is bounded when delivered while playing or at home", arguments: CompanionCommand.allCases)
     func commandBoundary(command: CompanionCommand) {

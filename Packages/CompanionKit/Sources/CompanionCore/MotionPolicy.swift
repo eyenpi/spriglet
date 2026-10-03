@@ -18,7 +18,11 @@ public struct RuntimeConditions: Equatable, Sendable {
     }
     public var isSuspended: Bool { maximumFrameRate == 0 }
     public func frameRate(presence: Presence, phase: BodyPhase) -> Float {
-        // Quiet breathing needs fewer redraws; deliberate motion keeps 60 fps.
-        min(maximumFrameRate, presence == .peek || phase == .grounded ? 30 : 60)
+        // A resting peek has slow breathing. Keep flights and grabs smooth even
+        // when presence has already returned to peek. Grounded walking keeps 30.
+        if presence == .peek && phase == .hanging {
+            return min(maximumFrameRate, lowPower ? 15 : 20)
+        }
+        return min(maximumFrameRate, phase == .grounded ? 30 : 60)
     }
 }

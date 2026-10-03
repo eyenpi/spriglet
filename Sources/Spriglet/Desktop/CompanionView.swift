@@ -1,9 +1,12 @@
 import AppKit
+import QuartzCore
 import CompanionCore
 import CompanionRendering
 
 @MainActor final class CompanionView: NSView {
     var onInput: ((CompanionInput) -> Void)?
+    /// Optional instrumentation owned by the finite profiling tool.
+    var onDraw: ((Double) -> Void)?
     var context: DisplayContext
     var snapshot: CompanionSnapshot
     var drawingOrigin = Point.zero
@@ -20,10 +23,12 @@ import CompanionRendering
     override var isOpaque: Bool { false }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     override func draw(_ dirtyRect: NSRect) {
+        let started = onDraw == nil ? nil : CACurrentMediaTime()
         NSGraphicsContext.saveGraphicsState()
         let transform = NSAffineTransform(); transform.translateX(by: drawingOrigin.x, yBy: drawingOrigin.y); transform.concat()
         renderer.draw(snapshot)
         NSGraphicsContext.restoreGraphicsState()
+        if let started { onDraw?(CACurrentMediaTime() - started) }
     }
     override func hitTest(_ point: NSPoint) -> NSView? {
         let p = convert(point, from: superview)

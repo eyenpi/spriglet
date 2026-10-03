@@ -38,6 +38,24 @@ import Testing
         for _ in 0..<3 { _ = try painter.image(engine.snapshot) }
         #expect(engine.time == before.time && engine.snapshot.feet == before.feet && engine.snapshot.pose == before.pose)
     }
+    @Test("Reusing artwork across deformations cannot change later frames")
+    func reusableArtwork() throws {
+        var engine = CompanionEngine(scene: .preview)
+        let resting = engine.snapshot
+        engine.send(.command(.greet)); engine.advance(by: 0.25)
+        let waving = engine.snapshot
+        engine.send(.pointerPressed(engine.snapshot.hitBounds.center))
+        engine.send(.pointerDragged(Point(x: 520, y: 200))); engine.advance(by: 0.25)
+        let held = engine.snapshot
+        engine.send(.pointerReleased(Point(x: 520, y: 200))); engine.advance(by: 0.25)
+        let falling = engine.snapshot
+        let reused = ScenePreviewRenderer()
+        for snapshot in [resting, waving, held, falling, resting] {
+            let sharedImage = try reused.image(snapshot).representation(using: .png, properties: [:])
+            let freshImage = try ScenePreviewRenderer().image(snapshot).representation(using: .png, properties: [:])
+            #expect(sharedImage != nil && sharedImage == freshImage)
+        }
+    }
     @Test("Hands emerge continuously across the former reveal threshold")
     func continuousHands() throws {
         let painter = ScenePreviewRenderer(), scene = SceneGeometry.preview
