@@ -15,7 +15,7 @@ import CompanionCore
     private var displays: [HomeDisplay] = []
     private(set) var preferences: CompanionPreferences
     var onSettingsChanged: ((SettingsState) -> Void)?
-    var onShowSettings: (() -> Void)?
+    var onControlAction: ((AppControlAction) -> Void)?
     var settingsState: SettingsState { SettingsState(preferences: preferences, displays: displays, controls: controlState) }
     private var context: DisplayContext?
     private var engine: CompanionEngine?
@@ -48,8 +48,7 @@ import CompanionCore
         guard !running else { return }; running = true
         host.onInput = { [weak self] input in self?.send(input) }
         host.makeContextMenu = makeContextMenu
-        host.onShowSettings = { [weak self] in self?.onShowSettings?() }
-        host.onShowIntroduction = { [weak self] in self?.showIntroduction() }
+        host.onControlAction = { [weak self] in self?.onControlAction?($0) }
         introductionHost.onStepSelected = { [weak self] step in self?.selectIntroductionStep(step) }
         introductionHost.onDismiss = { [weak self] in self?.dismissIntroduction() }
         clock.onTick = { [weak self] elapsed in self?.tick(elapsed) }
@@ -71,7 +70,7 @@ import CompanionCore
     func stop() {
         guard running else { return }; running = false
         clock.stop(); environment.stop(); host.close(); introductionHost.close()
-        host.onInput = nil; host.makeContextMenu = nil; host.onShowSettings = nil; host.onShowIntroduction = nil; clock.onTick = nil
+        host.onInput = nil; host.makeContextMenu = nil; host.onControlAction = nil; clock.onTick = nil
         introductionHost.onStepSelected = nil; introductionHost.onDismiss = nil; introduction = nil
         environment.onDisplayChanged = nil; environment.onDisplaysChanged = nil
         environment.onConditionsChanged = nil; environment.onRecoveryNeeded = nil
@@ -207,7 +206,7 @@ import CompanionCore
             else if rate != cadence { clock.setRate(rate); cadence = rate }
         } else { clock.stop(); cadence = nil }
         host.update(snapshot: frame, capturesPointer: engine.hasPointerCapture,
-                    pointer: context.point(NSEvent.mouseLocation), acceptsInput: isAnimating)
+                    pointer: context.point(NSEvent.mouseLocation), acceptsInput: isAnimating, isPaused: paused)
         host.setVisible(controlState.isVisible)
         if let introduction { introductionHost.update(introduction) }
     }

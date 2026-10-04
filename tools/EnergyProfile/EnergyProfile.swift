@@ -18,17 +18,19 @@ private struct Options {
     let duration: Double
     let lowPower: Bool
     let rate: Float?
+    let controls: Bool
     init(_ arguments: [String]) throws {
         guard arguments.count >= 2, ["--native", "--workload"].contains(arguments[0]),
               let duration = Double(arguments[1]), duration.isFinite, duration >= 1, duration <= 86_400 else {
             throw ProfileError.usage
         }
         native = arguments[0] == "--native"; self.duration = duration
-        var lowPower = false, rate: Float?
+        var lowPower = false, controls = false, rate: Float?
         var index = 2
         while index < arguments.count {
             switch arguments[index] {
             case "--low-power": lowPower = true
+            case "--controls": controls = true
             case "--rate":
                 index += 1
                 guard index < arguments.count, let value = Float(arguments[index]),
@@ -38,7 +40,8 @@ private struct Options {
             }
             index += 1
         }
-        self.lowPower = lowPower; self.rate = rate
+        guard !controls || (native && !lowPower && rate == nil) else { throw ProfileError.usage }
+        self.lowPower = lowPower; self.rate = rate; self.controls = controls
     }
     func cadence(for snapshot: CompanionSnapshot) -> Float {
         var conditions = RuntimeConditions()
@@ -181,17 +184,94 @@ private struct Options {
     }
 }
 
+/// Profiles the complete production runtime and its controls in a disposable
+/// preference domain. The finite tool owns all sampling and scripted input.
+@MainActor private final class ControlsSession: NSObject, NSApplicationDelegate {
+    private let options: Options
+    private let suite = "dev.spriglet.controls-profile.\(UUID().uuidString)"
+    private var controls: AppDelegate?
+    private var runtime: CompanionRuntime?
+    private let host = CompanionWindowHost()
+    private let clock = ScreenFrameClock()
+    private var metrics: Measurements?
+    private var timer: Timer?
+    private var began: ContinuousClock.Instant?
+    private var nextSample = 10.0
+    private var phase = 0
+    private let previousApp = NSWorkspace.shared.frontmostApplication
+    init(options: Options) { self.options = options }
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        guard let defaults = UserDefaults(suiteName: suite) else { exit(1) }
+        do {
+            let metrics = try Measurements(); self.metrics = metrics
+            host.onDraw = { [weak metrics] in metrics?.drew(in: $0) }
+            let introduction = IntroductionPreferences(defaults: defaults); introduction.recordDismissal()
+            let runtime = CompanionRuntime(clock: clock, host: host, introductionPreferences: introduction,
+                                           preferenceStore: PreferenceStore(defaults: defaults))
+            let controls = AppDelegate(runtime: runtime)
+            self.runtime = runtime; self.controls = controls
+            controls.applicationWillFinishLaunching(Notification(name: NSApplication.willFinishLaunchingNotification))
+            controls.applicationDidFinishLaunching(notification)
+            let runtimeTick = clock.onTick
+            clock.onTick = { [weak metrics] elapsed in metrics?.frames += 1; runtimeTick?(elapsed) }
+            began = .now
+            FileHandle.standardError.write(Data("Controls profile: 30-second phases of idle, Settings, paused, hidden, recovered and repeated controls. System power/motion policy stays live; login registration is only read.\n".utf8))
+            timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(sample), userInfo: nil, repeats: true)
+        } catch { fail(error) }
+    }
+    @objc private func sample() {
+        guard let began else { return }
+        let now = began.elapsedSeconds
+        if now >= nextSample || now >= options.duration {
+            let simulationTime = NSApp.windows.compactMap { ($0.contentView as? CompanionView)?.snapshot.time }.first ?? 0
+            do { try metrics?.sample(simulationTime: simulationTime) } catch { fail(error); return }
+            nextSample = now + 10
+        }
+        if now >= options.duration { NSApp.terminate(nil); return }
+        let nextPhase = Int(now / 30) % 6
+        guard nextPhase != phase else { return }; phase = nextPhase
+        switch phase {
+        case 0: controls?.perform(.bringHome); runtime?.setPaused(false)
+        case 1: controls?.perform(.settings)
+        case 2: runtime?.setPaused(true)
+        case 3: runtime?.setVisible(false)
+        case 4:
+            NSApp.windows.first { $0.title == AppText.settingsTitle }?.close()
+            controls?.perform(.bringHome); runtime?.setPaused(false)
+        default:
+            for _ in 0..<20 {
+                controls?.perform(.settings)
+                NSApp.windows.first { $0.title == AppText.settingsTitle }?.close()
+                runtime?.setPaused(true); runtime?.setVisible(false)
+                controls?.perform(.bringHome); runtime?.setPaused(false)
+            }
+        }
+        FileHandle.standardError.write(Data("Controls profile phase \(phase) at \(Int(now))s\n".utf8))
+    }
+    func applicationWillTerminate(_ notification: Notification) {
+        timer?.invalidate(); timer = nil
+        controls?.applicationWillTerminate(notification); controls = nil; runtime = nil; metrics = nil
+        UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
+        if let previousApp { NSApp.yieldActivation(to: previousApp); previousApp.activate() }
+    }
+    private func fail(_ error: Error) {
+        FileHandle.standardError.write(Data("Controls profile failed: \(error)\n".utf8))
+        applicationWillTerminate(Notification(name: NSApplication.willTerminateNotification)); exit(1)
+    }
+}
+
 @main private enum EnergyProfile {
     @MainActor static func main() {
         do {
             let options = try Options(Array(CommandLine.arguments.dropFirst()))
             let app = NSApplication.shared; app.setActivationPolicy(.accessory)
             if options.native {
-                let session = NativeSession(options: options); app.delegate = session
+                let session: any NSApplicationDelegate = options.controls ? ControlsSession(options: options) : NativeSession(options: options)
+                app.delegate = session
                 withExtendedLifetime(session) { app.run() }
             } else { try workload(options) }
         } catch {
-            FileHandle.standardError.write(Data("Usage: companion-energy --native WALL_SECONDS | --workload SIMULATED_SECONDS [--low-power] [--rate FPS]\nError: \(error)\n".utf8))
+            FileHandle.standardError.write(Data("Usage: companion-energy --native WALL_SECONDS [--controls] | --workload SIMULATED_SECONDS [--low-power] [--rate FPS]\nError: \(error)\n".utf8))
             exit(2)
         }
     }

@@ -1,9 +1,5 @@
 import AppKit
 
-enum AppControlAction: Int, CaseIterable {
-    case toggleVisibility, togglePause, bringHome, toggleLaunchAtLogin, openLoginItemsSettings, settings, introduction, help, quit
-}
-
 /// Owns the persistent recovery entry and the menus shared by all app controls.
 /// Actions carry values; registration and character behavior stay with their owners.
 @MainActor final class MenuBarController: NSObject, NSMenuDelegate {
@@ -81,8 +77,16 @@ enum AppControlAction: Int, CaseIterable {
             case .help: AppText.supportTitle
             case .quit: AppText.quitApp
             }
-            let key = action == .settings ? "," : action == .quit ? "q" : ""
+            let key = switch action {
+            case .settings: ","
+            case .quit: "q"
+            case .bringHome: "h"
+            case .togglePause: "p"
+            case .toggleVisibility: "m"
+            default: ""
+            }
             let item = NSMenuItem(title: title, action: #selector(chooseAction(_:)), keyEquivalent: key)
+            if [.bringHome, .togglePause, .toggleVisibility].contains(action) { item.keyEquivalentModifierMask = [.command, .shift] }
             item.target = self; item.tag = action.rawValue
             if action == .toggleVisibility { item.isEnabled = controls.canShow }
             if action == .toggleLaunchAtLogin {

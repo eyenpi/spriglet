@@ -1,6 +1,6 @@
 import AppKit
 
-@MainActor private final class SettingsCheckbox: NSButton {
+@MainActor private final class SettingsCheckbox: KeyboardButton {
     override func accessibilityPerformPress() -> Bool {
         guard isEnabled, let action else { return false }
         // Use the same action boundary as mouse/keyboard input. The runtime
@@ -17,10 +17,10 @@ import AppKit
     var onRefreshLoginState: (() -> Void)?
     private var preferences = CompanionPreferences()
     private var displayIDs: [String?] = []
-    private let size = NSPopUpButton()
-    private let movement = NSPopUpButton()
-    private let display = NSPopUpButton()
-    private let location = NSPopUpButton()
+    private let size = KeyboardPopUpButton()
+    private let movement = KeyboardPopUpButton()
+    private let display = KeyboardPopUpButton()
+    private let location = KeyboardPopUpButton()
     private let visibility = SettingsCheckbox(checkboxWithTitle: AppText.showMallow, target: nil, action: nil)
     private let animation = SettingsCheckbox(checkboxWithTitle: AppText.animateMallow, target: nil, action: nil)
     private let login = SettingsCheckbox(checkboxWithTitle: AppText.launchAtLogin, target: nil, action: nil)
@@ -28,7 +28,7 @@ import AppKit
     private let loginFailure = NSTextField(wrappingLabelWithString: "")
 
     init(state: SettingsState, loginState: LaunchAtLoginState) {
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 460, height: 500),
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 460, height: 560),
                               styleMask: [.titled, .closable], backing: .buffered, defer: false)
         window.title = AppText.settingsTitle; window.isReleasedWhenClosed = false
         super.init(window: window)
@@ -56,14 +56,16 @@ import AppKit
         sessionControls.orientation = .horizontal; sessionControls.spacing = 24
         login.target = self; login.action = #selector(toggleLaunchAtLogin); login.allowsMixedState = true
         login.setAccessibilityLabel(AppText.launchAtLogin)
-        let loginSettings = NSButton(title: AppText.openLoginItemsSettings, target: self, action: #selector(openLoginItemsSettings))
+        let loginSettings = KeyboardButton(title: AppText.openLoginItemsSettings, target: self, action: #selector(openLoginItemsSettings))
         loginSettings.bezelStyle = .rounded
+        let home = KeyboardButton(title: AppText.bringHome, target: self, action: #selector(bringHome))
+        home.bezelStyle = .rounded
         loginStatus.font = .systemFont(ofSize: NSFont.smallSystemFontSize); loginStatus.textColor = .secondaryLabelColor
         loginFailure.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
         loginFailure.maximumNumberOfLines = 3; loginFailure.lineBreakMode = .byTruncatingTail
         let loginControls = NSStackView(views: [login, loginStatus, loginFailure, loginSettings])
         loginControls.orientation = .vertical; loginControls.alignment = .leading; loginControls.spacing = 8
-        let stack = NSStackView(views: [grid, sessionControls, loginControls, note])
+        let stack = NSStackView(views: [grid, sessionControls, home, loginControls, note])
         stack.orientation = .vertical; stack.alignment = .leading; stack.spacing = 22
         stack.translatesAutoresizingMaskIntoConstraints = false
         guard let content = window.contentView else { return }
@@ -78,6 +80,10 @@ import AppKit
             loginStatus.widthAnchor.constraint(equalTo: stack.widthAnchor),
             loginFailure.widthAnchor.constraint(equalTo: stack.widthAnchor),
         ])
+        let keyViews: [NSView] = [size, movement, display, location, visibility, animation, home, login, loginSettings]
+        window.autorecalculatesKeyViewLoop = false
+        for (index, view) in keyViews.enumerated() { view.nextKeyView = keyViews[(index + 1) % keyViews.count] }
+        window.initialFirstResponder = size
         window.center(); update(state); updateLoginState(loginState)
     }
     required init?(coder: NSCoder) { fatalError("Use init(state:loginState:)") }
@@ -124,6 +130,7 @@ import AppKit
     @objc private func openLoginItemsSettings() { onAction?(.openLoginItemsSettings) }
     @objc private func toggleVisibility() { onAction?(.toggleVisibility) }
     @objc private func togglePause() { onAction?(.togglePause) }
+    @objc private func bringHome() { onAction?(.bringHome) }
     @objc private func sizeChanged() {
         preferences.characterSize = CharacterSize.allCases[size.indexOfSelectedItem]; onChange?(preferences)
     }

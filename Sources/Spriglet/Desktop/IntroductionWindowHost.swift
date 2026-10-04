@@ -119,7 +119,7 @@ import CompanionRendering
         }
     }
     private func button(_ title: String, action: Selector) -> NSButton {
-        let button = NSButton(title: title, target: self, action: action)
+        let button = KeyboardButton(title: title, target: self, action: action)
         button.bezelStyle = .rounded; return button
     }
     private func label(_ text: String, size: CGFloat, weight: NSFont.Weight = .regular) -> NSTextField {
@@ -178,6 +178,10 @@ import CompanionRendering
         let motionNote = label(AppText.introductionReducedMotion, size: 11)
         motionNote.textColor = .secondaryLabelColor; stack.addArrangedSubview(motionNote)
         motionNote.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+        let keyViews: [NSView] = stepButtons + [skip, back, next]
+        panel.autorecalculatesKeyViewLoop = false
+        for (index, view) in keyViews.enumerated() { view.nextKeyView = keyViews[(index + 1) % keyViews.count] }
+        panel.initialFirstResponder = stepButtons.first
         self.panel = panel; self.demoView = demoView; headingLabel = heading; instructionLabel = instruction
         self.motionNote = motionNote; backButton = back; nextButton = next
     }

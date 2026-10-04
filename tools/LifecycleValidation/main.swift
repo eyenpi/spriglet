@@ -366,6 +366,10 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         try require(!help.canBecomeKey && !help.canBecomeMain, "Offline Help can take keyboard focus")
         try press(AppText.introductionMenu, in: help)
         replayWindow = try introductionWindow()
+        // Explicit native button interaction may give the introduction keyboard
+        // focus. Measure passive recovery against the state after that input,
+        // independently of the first-launch nonactivation assertion above.
+        let recoveryFrontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
         let replayDemo = try introductionView(replayWindow)
         let pausedTime = replayDemo.snapshot.time
         clock.onTick?(3600)
@@ -397,11 +401,11 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                     "Display reconnect reset Hide or advanced the introduction")
         runtime.reopen(); clock.onTick?(0.1)
         try require(runtime.controlState.isVisible && replayDemo.snapshot.time > hiddenTime, "Finder recovery failed to resume an unpaused introduction")
-        try require(NSWorkspace.shared.frontmostApplication?.processIdentifier == frontmost, "Help replay or recovery took application focus")
+        try require(NSWorkspace.shared.frontmostApplication?.processIdentifier == recoveryFrontmost, "Passive introduction recovery took application focus")
         help.close()
         runtime.showIntroduction(); replayWindow = try introductionWindow()
         runtime.stop()
-        try require(!replayWindow.isVisible && introductionHost.onDismiss == nil && introductionHost.onStepSelected == nil && host.onShowIntroduction == nil,
+        try require(!replayWindow.isVisible && introductionHost.onDismiss == nil && introductionHost.onStepSelected == nil && host.onControlAction == nil,
                     "Stop retained introduction resources or callbacks")
         try require(!preferences.shouldPresentOnLaunch, "Stopping reset persisted dismissal")
         print("Native introduction passed: first launch, shared clock, navigation, Hide/Pause, saved edits, sleep/display recovery, persisted dismissal, Help replay and cleanup.")
@@ -489,7 +493,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         try require(settings.canBecomeKey && !help.canBecomeKey && !help.canBecomeMain,
                     "Settings lost native keyboard support or Help can take focus")
         // Character, accessibility and Command-comma all route to this same window.
-        host.onShowSettings?(); pump(0.05)
+        host.onControlAction?(.settings); pump(0.05)
         let mainSettings = NSApp.mainMenu!.items[0].submenu!.items.first { $0.keyEquivalent == "," }!
         NSApp.sendAction(mainSettings.action!, to: mainSettings.target, from: mainSettings)
         pump(0.05)
@@ -590,14 +594,16 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         print("Menu-bar controls passed: state labels, Settings/Help, freeze/capture, Hide/recovery, lifecycle choices, focus and cleanup.")
     }
     static func quitControl() throws {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
-        process.arguments = ["--quit-probe"]
-        try process.run()
-        // The child's main-queue watchdog cannot run if launch or AppKit stalls.
-        try waitForSubprocessExit(process, timeout: 5)
-        try require(process.terminationStatus == EXIT_SUCCESS, "Menu-bar Quit did not terminate the fixture")
-        print("Menu-bar Quit passed: a separate native app exited through its real menu target.")
+        for mode in ["resting", "held", "falling", "catching", "paused", "hidden", "introduction", "settings"] {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
+            process.arguments = ["--quit-probe", mode]
+            try process.run()
+            // The child's main-queue watchdog cannot run if launch or AppKit stalls.
+            try waitForSubprocessExit(process, timeout: 5)
+            try require(process.terminationStatus == EXIT_SUCCESS, "Menu-bar Quit failed during \(mode)")
+        }
+        print("Menu-bar Quit passed: real menu target and resource cleanup during rest, grab, fall, catch, pause, hide, introduction and Settings.")
     }
     static func waitForSubprocessExit(_ process: Process, timeout: Double) throws {
         func wait(_ seconds: Double) -> Bool {
@@ -800,6 +806,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                 try nativeLifecycle(screen: screen)
                 try nativeIntroduction(screen: screen)
                 try menuBarControls(screen: screen)
+                try AccessibilityValidation.run(screen: screen)
                 try observationLifetime()
                 try launchAtLogin()
                 try loginSettings()
@@ -863,29 +870,34 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         }
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
-        if Bundle.main.bundleIdentifier == "dev.spriglet.lifecycle-validation.introduction" {
+        if ["dev.spriglet.lifecycle-validation.introduction", "dev.spriglet.lifecycle-validation.daily-use"].contains(Bundle.main.bundleIdentifier ?? "") {
             let suite = "dev.spriglet.introduction-preview.\(UUID().uuidString)"
             guard let defaults = UserDefaults(suiteName: suite) else { exit(EXIT_FAILURE) }
-            let runtime = CompanionRuntime(introductionPreferences: IntroductionPreferences(defaults: defaults),
+            let introduction = IntroductionPreferences(defaults: defaults)
+            if Bundle.main.bundleIdentifier?.hasSuffix("daily-use") == true { introduction.recordDismissal() }
+            let runtime = CompanionRuntime(introductionPreferences: introduction,
                                            preferenceStore: PreferenceStore(defaults: defaults))
             let delegate = AppDelegate(runtime: runtime, launchAtLogin: LaunchAtLoginController(service: FakeLoginService()))
             app.delegate = delegate
             let cleanup = NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: app, queue: .main) { _ in
                 UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 120) { app.terminate(nil) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 300) { app.terminate(nil) }
             withExtendedLifetime((delegate, cleanup)) { app.run() }
             NotificationCenter.default.removeObserver(cleanup)
             defaults.removePersistentDomain(forName: suite)
             return
         }
-        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--quit-probe" {
+        if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--quit-probe" {
+            let mode = CommandLine.arguments[2]
             let suite = "dev.spriglet.quit-validation.\(UUID().uuidString)"
             guard let defaults = UserDefaults(suiteName: suite) else { exit(EXIT_FAILURE) }
             let introductionPreferences = IntroductionPreferences(defaults: defaults)
             introductionPreferences.recordDismissal()
-            let controls = AppDelegate(runtime: CompanionRuntime(introductionPreferences: introductionPreferences,
-                                                                preferenceStore: PreferenceStore(defaults: defaults)),
+            let host = CompanionWindowHost(), clock = ScreenFrameClock()
+            let runtime = CompanionRuntime(clock: clock, host: host, introductionPreferences: introductionPreferences,
+                                           preferenceStore: PreferenceStore(defaults: defaults), leftButtonIsDown: { true })
+            let controls = AppDelegate(runtime: runtime,
                                        launchAtLogin: LaunchAtLoginController(service: FakeLoginService()))
             let cleanup = NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: app, queue: .main) { _ in
                 UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
@@ -896,6 +908,25 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             controls.applicationWillFinishLaunching(Notification(name: NSApplication.willFinishLaunchingNotification))
             controls.applicationDidFinishLaunching(Notification(name: NSApplication.didFinishLaunchingNotification))
             DispatchQueue.main.async {
+                do {
+                    let panel = try visiblePanel()
+                    if ["held", "falling", "catching", "paused"].contains(mode) {
+                        let start = view(panel).snapshot.hitBounds.center
+                        let destination = mode == "catching" ? start + Point(x: 20, y: 10) : Point(x: 500, y: 250)
+                        host.onInput?(.pointerPressed(start)); host.onInput?(.pointerDragged(destination)); clock.onTick?(0.05)
+                        try require(view(panel).snapshot.phase == .held, "Quit fixture did not grab Mallow")
+                        if mode == "falling" || mode == "catching" {
+                            host.onInput?(.pointerReleased(destination))
+                            try require(view(panel).snapshot.phase == (mode == "catching" ? .catching : .falling), "Quit fixture has the wrong release phase")
+                        }
+                    }
+                    if mode == "paused" { runtime.setPaused(true) }
+                    if mode == "hidden" { runtime.setVisible(false) }
+                    if mode == "introduction" { controls.perform(.introduction) }
+                    if mode == "settings" { controls.perform(.settings) }
+                } catch {
+                    FileHandle.standardError.write(Data("Quit fixture failed: \(error)\n".utf8)); exit(EXIT_FAILURE)
+                }
                 guard let menu = controls.menuBar?.menu,
                       let quit = menu.items.first(where: { !$0.isSeparatorItem && $0.tag == AppControlAction.quit.rawValue }) else {
                     exit(EXIT_FAILURE)
@@ -904,6 +935,8 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { exit(EXIT_FAILURE) }
             withExtendedLifetime((controls, cleanup)) { app.run() }
+            guard controls.menuBar == nil, host.onInput == nil, host.onControlAction == nil, clock.onTick == nil,
+                  NSApp.windows.allSatisfy({ !$0.isVisible }) else { exit(EXIT_FAILURE) }
             NotificationCenter.default.removeObserver(cleanup)
             defaults.removePersistentDomain(forName: suite)
             return
