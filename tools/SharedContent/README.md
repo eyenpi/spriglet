@@ -1,6 +1,6 @@
 # Shared product content
 
-`Configuration/Shared` is the source for the app identity, accessible character labels, menu-bar and Settings labels, offline help, privacy, product description and prepared store metadata. The menu and session Settings share these labels and describe the same runtime controls.
+`Configuration/Shared` is the source for the app identity, accessible character labels, menu-bar and native Settings labels, help, privacy, product description and prepared store metadata. The menu and native Settings window share labels for the same runtime controls. Saved preferences and offline Help use these sources too.
 
 ```sh
 python3 tools/SharedContent/sync.py

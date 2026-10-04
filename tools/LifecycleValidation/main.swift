@@ -89,7 +89,11 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         let environment = DesktopEnvironment(applicationCenter: application, workspaceCenter: workspace,
                                              lockCenter: locks, displays: { available })
         let clock = ScreenFrameClock(), host = CompanionWindowHost()
-        let runtime = CompanionRuntime(environment: environment, clock: clock, host: host, leftButtonIsDown: { buttonDown })
+        let suite = "dev.spriglet.lifecycle-validation.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let runtime = CompanionRuntime(environment: environment, clock: clock, host: host,
+                                       preferenceStore: PreferenceStore(defaults: defaults), leftButtonIsDown: { buttonDown })
         let delegate = AppDelegate(runtime: runtime)
         defer { runtime.stop() }
         let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
@@ -197,21 +201,35 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         let environment = DesktopEnvironment(applicationCenter: application, workspaceCenter: workspace,
                                              lockCenter: locks, displays: { available })
         let host = CompanionWindowHost(), clock = ScreenFrameClock()
-        let runtime = CompanionRuntime(environment: environment, clock: clock, host: host, leftButtonIsDown: { true })
+        let suite = "dev.spriglet.menu-settings.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = PreferenceStore(defaults: defaults)
+        let runtime = CompanionRuntime(environment: environment, clock: clock, host: host,
+                                       preferenceStore: store, leftButtonIsDown: { true })
         let delegate = AppDelegate(runtime: runtime)
         let previousMenu = NSApp.mainMenu
-        let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        let previousApp = NSWorkspace.shared.frontmostApplication
+        var expectedFrontmost = previousApp?.processIdentifier
+        var expectedKeyWindow = NSApp.keyWindow
         delegate.applicationWillFinishLaunching(Notification(name: NSApplication.willFinishLaunchingNotification))
         delegate.applicationDidFinishLaunching(Notification(name: NSApplication.didFinishLaunchingNotification))
         defer {
             delegate.applicationWillTerminate(Notification(name: NSApplication.willTerminateNotification))
             NSApp.mainMenu = previousMenu
+            if let previousApp { NSApp.yieldActivation(to: previousApp); previousApp.activate() }
         }
         guard let menuBar = delegate.menuBar else { throw ValidationFailure(description: "Menu bar was not installed") }
         let menu = menuBar.menu
         func item(_ action: AppControlAction) -> NSMenuItem { menu.items.first { !$0.isSeparatorItem && $0.tag == action.rawValue }! }
         func choose(_ action: AppControlAction) throws {
             menu.performActionForItem(at: menu.index(of: item(action)))
+            if action == .settings {
+                // Settings is the one explicit action that requests activation.
+                pump(0.05)
+                expectedFrontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
+                expectedKeyWindow = NSApp.keyWindow
+            }
             try checkFocus()
         }
         func checkLabels() throws {
@@ -228,10 +246,11 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             return matches[0]
         }
         func checkFocus() throws {
-            try require(NSWorkspace.shared.frontmostApplication?.processIdentifier == frontmost,
-                        "A menu-bar action changed the frontmost app")
-            try require(NSApp.windows.allSatisfy { !$0.isKeyWindow && !$0.isMainWindow },
-                        "A companion/control panel took keyboard focus")
+            try require(NSWorkspace.shared.frontmostApplication?.processIdentifier == expectedFrontmost,
+                        "A control/recovery action changed the frontmost app")
+            try require(NSApp.keyWindow === expectedKeyWindow, "A control/recovery action changed keyboard focus")
+            try require(NSApp.windows.filter { $0.contentView is CompanionView || $0.title == AppText.supportTitle }
+                        .allSatisfy { !$0.isKeyWindow && !$0.isMainWindow }, "The companion or Help took keyboard focus")
         }
         func checkPanelLayout(_ window: NSWindow) throws {
             let content = window.contentView!
@@ -267,11 +286,19 @@ enum SubprocessFailure: Error, CustomStringConvertible {
 
         try choose(.settings); try choose(.settings); try choose(.help); try choose(.help)
         let settings = try panel(AppText.settingsTitle), help = try panel(AppText.supportTitle)
-        try require(!settings.canBecomeKey && !help.canBecomeKey && !settings.canBecomeMain && !help.canBecomeMain,
-                    "Settings/Help can take keyboard focus")
+        try require(settings.canBecomeKey && !help.canBecomeKey && !help.canBecomeMain,
+                    "Settings lost native keyboard support or Help can take focus")
+        // Character, accessibility and Command-comma all route to this same window.
+        host.onShowSettings?(); pump(0.05)
+        let mainSettings = NSApp.mainMenu!.items[0].submenu!.items.first { $0.keyEquivalent == "," }!
+        NSApp.sendAction(mainSettings.action!, to: mainSettings.target, from: mainSettings)
+        pump(0.05)
+        try require(try panel(AppText.settingsTitle) === settings, "Settings entry points opened unrelated windows")
+        expectedFrontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        expectedKeyWindow = NSApp.keyWindow
         try checkPanelLayout(settings); try checkPanelLayout(help)
-        let stack = settings.contentView!.subviews.compactMap { $0 as? NSStackView }.first!
-        let buttons = stack.views.compactMap { $0 as? NSButton }
+        func descendants(of view: NSView) -> [NSView] { view.subviews.flatMap { [$0] + descendants(of: $0) } }
+        let buttons = descendants(of: settings.contentView!).compactMap { $0 as? NSButton }
         let visibility = buttons.first { $0.title == AppText.showMallow }!
         let animation = buttons.first { $0.title == AppText.animateMallow }!
         try require(visibility.state == .on && animation.state == .off, "Settings do not reflect paused visible state")
@@ -282,10 +309,25 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         workspace.post(name: NSWorkspace.willSleepNotification, object: nil)
         workspace.post(name: NSWorkspace.didWakeNotification, object: nil)
         try require(!window.isVisible && runtime.controlState.isPaused, "Lifecycle recovery overrode Hide/Pause")
+        let popups = descendants(of: settings.contentView!).compactMap { $0 as? NSPopUpButton }
+        var edited = runtime.preferences
+        for (label, selection) in [(AppText.characterSize, 0), (AppText.movementIntensity, 2), (AppText.homeLocation, 1)] {
+            let popup = popups.first { $0.accessibilityLabel() == label }!
+            popup.selectItem(at: selection)
+            NSApp.sendAction(popup.action!, to: popup.target, from: popup)
+        }
+        edited.characterSize = .small; edited.movementIntensity = .lively; edited.homeLocation = .left
+        try require(runtime.preferences == edited && store.load() == edited, "Menu Settings did not apply and save preferences")
+        try require(!runtime.controlState.isVisible && runtime.controlState.isPaused && visibility.state == .off && animation.state == .off,
+                    "Saved edits overrode Hide/Pause or left stale Settings controls")
+        try require(NSApp.windows.allSatisfy { !($0.contentView is CompanionView) || !$0.isVisible },
+                    "Hidden preference edit made Mallow visible")
         try checkLabels()
         try choose(.bringHome)
         window = try visiblePanel(); try assertHome(window)
         try require(runtime.controlState.isPaused && animation.state == .off, "Bring Home cleared Pause")
+        try require(view(window).snapshot.scene.scale == 0.8 && view(window).snapshot.scene.home.minX == 20,
+                    "Recovery discarded saved size/home")
         let homeTime = view(window).snapshot.time
         pump(0.12)
         try require(view(window).snapshot.time == homeTime, "Bring Home restarted paused animation")
@@ -329,6 +371,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
         try checkLabels()
         try require(!visibility.isEnabled, "Settings permit Show without a display")
+        try require(!visibility.accessibilityPerformPress(), "Accessible Show bypassed missing display protection")
         available = [context]
         application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
         try require(!runtime.controlState.isVisible && runtime.controlState.isPaused, "Display reconnect overrode Hide/Pause")
@@ -337,6 +380,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         try checkLabels(); try checkFocus()
 
         settings.close(); help.close()
+        expectedKeyWindow = NSApp.keyWindow
         try choose(.settings); try choose(.help)
         _ = try panel(AppText.settingsTitle); _ = try panel(AppText.supportTitle)
         try checkFocus()
@@ -443,7 +487,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
             process.arguments = ["--lease-probe", directory.path]
-            try process.run(); process.waitUntilExit()
+            try process.run(); try waitForSubprocessExit(process, timeout: 5)
             try require(process.terminationStatus == expected, "Separate process did not respect the launch lease")
         }
         try probe(2)
@@ -526,6 +570,9 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                 try menuBarControls(screen: screen)
                 try observationLifetime()
                 try instanceLease()
+                try SettingsValidation.preferences()
+                try SettingsValidation.runtime(screen: screen)
+                try SettingsValidation.window(screen: screen)
                 try subprocessTimeoutValidation()
                 try quitControl()
                 print("Desktop lifecycle validation passed. Notifications/display inventory are simulated; physical lock/sleep/fullscreen transitions require device acceptance.")
@@ -538,6 +585,17 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         }
     }
     static func main() {
+        if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--preferences-probe" {
+            guard let defaults = UserDefaults(suiteName: CommandLine.arguments[2]) else { exit(EXIT_FAILURE) }
+            exit(PreferenceStore(defaults: defaults).load() == SettingsValidation.savedPreferences ? EXIT_SUCCESS : EXIT_FAILURE)
+        }
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-preferences" {
+            do { try SettingsValidation.preferences(); exit(EXIT_SUCCESS) }
+            catch {
+                FileHandle.standardError.write(Data("Preferences validation failed: \(error)\n".utf8))
+                exit(EXIT_FAILURE)
+            }
+        }
         // These fixtures stay headless, including while another app is fullscreen.
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--quit-wait-fixture" {
             if CommandLine.arguments[2] == "exit" { exit(EXIT_SUCCESS) }

@@ -6,7 +6,7 @@ Meet Mallow, a soft lavender companion that peeks out beneath your Mac's notch. 
 
 {{appName}} is a native, local app for Apple silicon Macs running macOS 26 or later. This is an early Mallow preview.
 
-### Play through the character
+### Everything happens through the character
 
 {{interactionHelp}}
 
@@ -14,7 +14,11 @@ A second touch brings a wave or a gentle swing. Release near the notch to let Ma
 
 ### Controls within reach
 
-{{menuControlsHelp}} Hidden Mallow is always recoverable from the menu bar or by reopening the app from Finder. Settings and offline Help preserve keyboard focus in your current app.
+{{menuControlsHelp}} Hidden Mallow is recoverable from the menu bar or by reopening the app from Finder. Offline Help preserves keyboard focus in your current app.
+
+### Your choice of home
+
+Open {{settingsMenu}} from the leaf menu or by right-clicking Mallow. Settings opens with keyboard focus. Choose character size, movement intensity and a home display/location. Changes apply immediately and are remembered on this Mac.
 
 ### Quiet by default
 

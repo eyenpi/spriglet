@@ -49,7 +49,7 @@ enum AppControlAction: Int, CaseIterable {
             case .toggleVisibility: state.isVisible ? AppText.hideMallow : AppText.showMallow
             case .togglePause: state.isPaused ? AppText.resumeMallow : AppText.pauseMallow
             case .bringHome: AppText.bringHome
-            case .settings: AppText.settings
+            case .settings: AppText.settingsMenu
             case .help: AppText.supportTitle
             case .quit: AppText.quitApp
             }
