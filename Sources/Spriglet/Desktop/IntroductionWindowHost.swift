@@ -62,6 +62,12 @@ import CompanionRendering
         if visible { panel?.orderFrontRegardless() } else { panel?.orderOut(nil) }
     }
     func update(_ demo: IntroductionDemo) {
+        // AppKit toggles a selected button before invoking its action. Restore
+        // selection from the demo even when replaying the same step.
+        for button in stepButtons {
+            let selection: NSControl.StateValue = button.tag == demo.step.rawValue ? .on : .off
+            if button.state != selection { button.state = selection }
+        }
         let presentationChanged = step != demo.step || motionNote?.isHidden != (demo.motionPolicy == .full)
         if demo.motionPolicy == .full || presentationChanged {
             demoView?.update(snapshot: demo.snapshot, pointer: demo.pointer, pressed: demo.pressed)
@@ -71,7 +77,6 @@ import CompanionRendering
         headingLabel?.stringValue = title(for: step)
         instructionLabel?.stringValue = instruction(for: step)
         motionNote?.isHidden = demo.motionPolicy == .full
-        for button in stepButtons { button.state = button.tag == step.rawValue ? .on : .off }
         backButton?.isEnabled = step != .hover
         nextButton?.title = step == .returnHome ? AppText.introductionDone : AppText.introductionNext
         demoView?.setAccessibilityHelp(instruction(for: step))

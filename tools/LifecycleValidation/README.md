@@ -13,7 +13,7 @@ The native runner compiles the production environment, runtime, window host, vie
 
 Checks cover native body picking, transparent-corner click-through and drag capture across empty pixels; ordered and repeated system/display sleep, lock and session transitions; suspension-time input; Spaces recovery; missed mouse-up; unchanged display notifications; disconnect, no-display, reconnect and resolution fallback; repeated reopen/start/stop; observer cleanup; and exclusive launch lease release/error handling. Synthetic secondary displays exercise negative global coordinates and both notched and unnotched homes. Unit tests also cover compact and ultrawide scene geometry, stale drag events, gesture/deformation cleanup and independent suspension reasons.
 
-Introduction checks use an isolated preferences suite and cover first launch without activation, shared-clock playback, Next/Back/direct navigation, unambiguous layout, live Reduce Motion changes, suspension and display loss, remembered dismissal, Help replay, Done/close/app-scoped Escape and shutdown cleanup. To review the actual introduction window without changing the ordinary app's preferences:
+Introduction checks use an isolated preferences suite and cover first launch without activation, shared-clock playback, Next/Back/direct navigation, repeated selection of the current step in normal and reduced motion, unambiguous layout, live Reduce Motion changes, suspension and display loss, remembered dismissal, Help replay, Done/close/app-scoped Escape and shutdown cleanup. To review the actual introduction window without changing the ordinary app's preferences:
 
 ```sh
 ./scripts/test-desktop.sh --prepare-introduction

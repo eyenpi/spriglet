@@ -201,6 +201,15 @@ struct ValidationFailure: Error, CustomStringConvertible {
         }
         button.performClick(nil)
     }
+    static let introductionTabTitles = [AppText.introductionHoverTab, AppText.introductionInviteTab, AppText.introductionDragTab,
+                                        AppText.introductionCatchTab, AppText.introductionHomeTab]
+    static func assertIntroductionSelection(_ step: IntroductionStep, in window: NSWindow) throws {
+        let buttons = window.contentView.map { descendants(of: $0).compactMap { $0 as? NSButton }.filter { introductionTabTitles.contains($0.title) } } ?? []
+        try require(buttons.count == IntroductionStep.allCases.count && buttons.allSatisfy {
+            $0.state == ($0.tag == step.rawValue ? .on : .off)
+        }, "Introduction selection does not match the displayed step \(step)")
+        try require(window.title.hasSuffix("\(step.rawValue + 1) / \(IntroductionStep.allCases.count)"), "Introduction title and selected step disagree")
+    }
     static func nativeIntroduction(screen: NSScreen) throws {
         let suite = "dev.spriglet.introduction-validation.\(UUID().uuidString)"
         guard let defaults = UserDefaults(suiteName: suite) else { throw ValidationFailure(description: "Could not isolate introduction preferences") }
@@ -230,6 +239,29 @@ struct ValidationFailure: Error, CustomStringConvertible {
             content.layoutSubtreeIfNeeded()
             try require(descendants(of: content).allSatisfy { !$0.hasAmbiguousLayout }, "Introduction layout is ambiguous at step \(step)")
         }
+        var conditions = RuntimeConditions()
+        for policy in [MotionPolicy.full, .reduced] {
+            conditions.reduceMotion = policy == .reduced
+            environment.onConditionsChanged?(conditions)
+            for step in IntroductionStep.allCases {
+                try press(introductionTabTitles[step.rawValue], in: window)
+                try assertIntroductionSelection(step, in: window)
+                for _ in 0..<2 {
+                    // AppKit toggles a push-on/push-off button before its action.
+                    // Reselect through the real control, not the host callback.
+                    try press(introductionTabTitles[step.rawValue], in: window)
+                    try assertIntroductionSelection(step, in: window)
+                    let replayTime = demo.snapshot.time
+                    for _ in 0..<4 {
+                        clock.onTick?(0.05)
+                        try assertIntroductionSelection(step, in: window)
+                    }
+                    try require(policy == .full ? demo.snapshot.time > replayTime : demo.snapshot.time == replayTime,
+                                "Reselecting a step changed its playback policy")
+                }
+            }
+        }
+        conditions.reduceMotion = false; environment.onConditionsChanged?(conditions)
         introductionHost.onStepSelected?(.hover)
         let before = demo.snapshot.time
         clock.onTick?(0.1)
@@ -241,7 +273,7 @@ struct ValidationFailure: Error, CustomStringConvertible {
         try press(AppText.introductionCatchTab, in: window)
         clock.onTick?(0.1)
         try require(window.title.hasSuffix("4 / 5"), "Direct step selection failed")
-        var conditions = RuntimeConditions(); conditions.reduceMotion = true
+        conditions.reduceMotion = true
         environment.onConditionsChanged?(conditions)
         let stillTime = demo.snapshot.time
         clock.onTick?(0.2)
