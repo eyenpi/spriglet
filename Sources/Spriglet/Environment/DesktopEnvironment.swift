@@ -13,7 +13,7 @@ import CompanionCore
     var onConditionsChanged: ((RuntimeConditions) -> Void)?
     var onRecoveryNeeded: (() -> Void)?
     var onOutsidePressed: (() -> Void)?
-    var onReturnHome: (() -> Void)?
+    var onEscapePressed: (() -> Void)?
     private let applicationCenter: NotificationCenter
     private let workspaceCenter: NotificationCenter
     private let lockCenter: NotificationCenter
@@ -53,7 +53,7 @@ import CompanionCore
         }
         localKeys = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self, self.running else { return event }
-            if event.keyCode == 53 { self.onReturnHome?(); return nil }
+            if event.keyCode == 53 { self.onEscapePressed?(); return nil }
             return event
         }
         let session = CGSessionCopyCurrentDictionary() as? [String: Any]

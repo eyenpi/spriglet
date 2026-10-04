@@ -179,6 +179,123 @@ struct ValidationFailure: Error, CustomStringConvertible {
         try assertHome(window)
         print("Native runtime passed: ordered sleep/wake/lock/session cycles, Spaces, lost release, display fallback/reconnect/resize, reopen and restart.")
     }
+    static func descendants(of view: NSView) -> [NSView] {
+        [view] + view.subviews.flatMap { descendants(of: $0) }
+    }
+    static func introductionWindow() throws -> NSWindow {
+        let windows = NSApp.windows.filter {
+            $0.isVisible && $0.contentView.map { descendants(of: $0).contains { $0 is IntroductionDemoView } } == true
+        }
+        try require(windows.count == 1, "Expected one introduction, found \(windows.count)")
+        return windows[0]
+    }
+    static func introductionView(_ window: NSWindow) throws -> IntroductionDemoView {
+        guard let view = window.contentView.flatMap({ descendants(of: $0).compactMap { $0 as? IntroductionDemoView }.first }) else {
+            throw ValidationFailure(description: "Introduction demo view missing")
+        }
+        return view
+    }
+    static func press(_ title: String, in window: NSWindow) throws {
+        guard let button = window.contentView.flatMap({ descendants(of: $0).compactMap { $0 as? NSButton }.first { $0.title == title } }) else {
+            throw ValidationFailure(description: "Introduction control missing: \(title)")
+        }
+        button.performClick(nil)
+    }
+    static func nativeIntroduction(screen: NSScreen) throws {
+        let suite = "dev.spriglet.introduction-validation.\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: suite) else { throw ValidationFailure(description: "Could not isolate introduction preferences") }
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let preferences = IntroductionPreferences(defaults: defaults)
+        let application = NotificationCenter(), workspace = NotificationCenter(), locks = NotificationCenter()
+        let original = DisplayContext(screen: screen)
+        var displays = [original]
+        let environment = DesktopEnvironment(applicationCenter: application, workspaceCenter: workspace, lockCenter: locks, displays: { displays })
+        let clock = ScreenFrameClock(), host = CompanionWindowHost(), introductionHost = IntroductionWindowHost()
+        let runtime = CompanionRuntime(environment: environment, clock: clock, host: host,
+                                       introductionHost: introductionHost, introductionPreferences: preferences)
+        let delegate = AppDelegate(runtime: runtime)
+        let previousMenu = NSApp.mainMenu, previousHelp = NSApp.helpMenu
+        defer { runtime.stop(); NSApp.mainMenu = previousMenu; NSApp.helpMenu = previousHelp }
+        let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        delegate.applicationWillFinishLaunching(Notification(name: NSApplication.willFinishLaunchingNotification))
+        delegate.applicationDidFinishLaunching(Notification(name: NSApplication.didFinishLaunchingNotification))
+        let companion = try visiblePanel(), window = try introductionWindow(), demo = try introductionView(window)
+        try require(preferences.shouldPresentOnLaunch, "Showing an introduction incorrectly persisted dismissal")
+        try require(!window.isKeyWindow && window.styleMask.contains(.nonactivatingPanel), "First-launch introduction acquired keyboard focus")
+        try require(NSWorkspace.shared.frontmostApplication?.processIdentifier == frontmost, "Introduction activated the app")
+        try assertHome(companion)
+        for step in IntroductionStep.allCases {
+            introductionHost.onStepSelected?(step)
+            guard let content = window.contentView else { throw ValidationFailure(description: "Introduction content missing") }
+            content.layoutSubtreeIfNeeded()
+            try require(descendants(of: content).allSatisfy { !$0.hasAmbiguousLayout }, "Introduction layout is ambiguous at step \(step)")
+        }
+        introductionHost.onStepSelected?(.hover)
+        let before = demo.snapshot.time
+        clock.onTick?(0.1)
+        try require(demo.snapshot.time > before, "Introduction did not share the runtime clock")
+        try press(AppText.introductionNext, in: window)
+        try require(window.title.hasSuffix("2 / 5"), "Next did not navigate the introduction")
+        try press(AppText.introductionBack, in: window)
+        try require(window.title.hasSuffix("1 / 5"), "Back did not navigate the introduction")
+        try press(AppText.introductionCatchTab, in: window)
+        clock.onTick?(0.1)
+        try require(window.title.hasSuffix("4 / 5"), "Direct step selection failed")
+        var conditions = RuntimeConditions(); conditions.reduceMotion = true
+        environment.onConditionsChanged?(conditions)
+        let stillTime = demo.snapshot.time
+        clock.onTick?(0.2)
+        try require(demo.snapshot.canCatch && demo.snapshot.time == stillTime,
+                    "Reduce Motion did not replace the current demo with a useful still")
+        conditions.reduceMotion = false; environment.onConditionsChanged?(conditions)
+        try require(demo.snapshot.time < stillTime, "Disabling Reduce Motion retained a frozen demo")
+        workspace.post(name: NSWorkspace.willSleepNotification, object: nil)
+        try require(!window.isVisible && !companion.isVisible, "Sleep did not hide both windows")
+        let suspended = demo.snapshot.time
+        clock.onTick?(3600)
+        try require(demo.snapshot.time == suspended, "Suspended introduction advanced")
+        workspace.post(name: NSWorkspace.didWakeNotification, object: nil)
+        try require(try introductionWindow() === window && demo.snapshot.time == suspended, "Wake duplicated or fast-forwarded the introduction")
+        displays = []
+        application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        try require(!window.isVisible, "No-display state retained the introduction")
+        displays = [original]
+        application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        try require(try introductionWindow() === window, "Display recovery duplicated the introduction")
+        runtime.showIntroduction(); runtime.showIntroduction()
+        try require(try introductionWindow() === window && window.title.hasSuffix("1 / 5"), "Replay duplicated the window or retained progress")
+        try press(AppText.introductionSkip, in: window)
+        try require(!window.isVisible && !preferences.shouldPresentOnLaunch, "Skip failed to close and persist dismissal")
+        try require(!IntroductionPreferences(defaults: defaults).shouldPresentOnLaunch, "A new launch would forget dismissal")
+        runtime.showIntroductionIfNeeded()
+        try require(!introductionHost.isVisible, "Later launch reopened a dismissed introduction")
+        guard let replay = NSApp.helpMenu?.items.first, let action = replay.action else { throw ValidationFailure(description: "Help replay action missing") }
+        try require(NSApp.sendAction(action, to: replay.target, from: replay), "Help replay action could not be delivered")
+        var replayWindow = try introductionWindow()
+        try press(AppText.introductionHomeTab, in: replayWindow)
+        try press(AppText.introductionDone, in: replayWindow)
+        try require(!replayWindow.isVisible, "Done did not dismiss")
+        view(try visiblePanel()).onShowIntroduction?()
+        replayWindow = try introductionWindow(); replayWindow.performClose(nil)
+        try require(!replayWindow.isVisible, "Window close did not dismiss")
+        runtime.showIntroduction(); replayWindow = try introductionWindow()
+        guard let escape = replayWindow.contentView.flatMap({ descendants(of: $0).compactMap { $0 as? NSButton }.first { $0.keyEquivalent == "\u{1b}" } }) else {
+            throw ValidationFailure(description: "Escape dismissal missing")
+        }
+        escape.performClick(nil)
+        try require(!replayWindow.isVisible, "Escape-bound action did not dismiss")
+        runtime.showIntroduction(); replayWindow = try introductionWindow()
+        environment.onEscapePressed?()
+        try require(!replayWindow.isVisible, "App-scoped Escape monitor did not dismiss")
+        host.onInput?(.activate); environment.onEscapePressed?()
+        try require(view(try visiblePanel()).snapshot.presence == .peek, "Escape stopped returning the everyday character home")
+        runtime.showIntroduction(); replayWindow = try introductionWindow()
+        runtime.stop()
+        try require(!replayWindow.isVisible && introductionHost.onDismiss == nil && introductionHost.onStepSelected == nil && host.onShowIntroduction == nil,
+                    "Stop retained introduction resources or callbacks")
+        try require(!preferences.shouldPresentOnLaunch, "Stopping reset persisted dismissal")
+        print("Native introduction passed: first launch, shared clock, navigation, sleep/display recovery, persisted dismissal, Help replay and cleanup.")
+    }
     static func observationLifetime() throws {
         let center = NotificationCenter()
         let environment = DesktopEnvironment(applicationCenter: center, workspaceCenter: center, lockCenter: center, displays: { [] })
@@ -291,6 +408,7 @@ struct ValidationFailure: Error, CustomStringConvertible {
                 guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Native validation requires a logged-in Mac with a display") }
                 try nativePicking(screen: screen)
                 try nativeLifecycle(screen: screen)
+                try nativeIntroduction(screen: screen)
                 try observationLifetime()
                 try instanceLease()
                 print("Desktop lifecycle validation passed. Notifications/display inventory are simulated; physical lock/sleep/fullscreen transitions require device acceptance.")
@@ -312,6 +430,21 @@ struct ValidationFailure: Error, CustomStringConvertible {
         }
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
+        if Bundle.main.bundleIdentifier == "dev.spriglet.lifecycle-validation.introduction" {
+            let suite = "dev.spriglet.introduction-preview.\(UUID().uuidString)"
+            guard let defaults = UserDefaults(suiteName: suite) else { exit(EXIT_FAILURE) }
+            let runtime = CompanionRuntime(introductionPreferences: IntroductionPreferences(defaults: defaults))
+            let delegate = AppDelegate(runtime: runtime)
+            app.delegate = delegate
+            let cleanup = NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: app, queue: .main) { _ in
+                UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 120) { app.terminate(nil) }
+            withExtendedLifetime((delegate, cleanup)) { app.run() }
+            NotificationCenter.default.removeObserver(cleanup)
+            defaults.removePersistentDomain(forName: suite)
+            return
+        }
         if Bundle.main.bundleIdentifier == "dev.spriglet.lifecycle-validation.fullscreen" {
             let delegate = ValidationDelegate { exit(validate(bundledFullscreen: true)) }
             app.delegate = delegate

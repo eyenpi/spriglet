@@ -11,8 +11,15 @@ import AppKit
         let menu = NSMenu(), root = NSMenuItem(), appMenu = NSMenu()
         menu.addItem(root); root.submenu = appMenu
         let quit = NSMenuItem(title: AppText.quitApp, action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        appMenu.addItem(quit); NSApp.mainMenu = menu
+        appMenu.addItem(quit)
+        let help = NSMenuItem(title: AppText.helpMenu, action: nil, keyEquivalent: "")
+        let helpMenu = NSMenu(title: AppText.helpMenu)
+        let introduction = NSMenuItem(title: AppText.introductionMenu, action: #selector(showIntroduction(_:)), keyEquivalent: "")
+        introduction.target = self; helpMenu.addItem(introduction); help.submenu = helpMenu; menu.addItem(help)
+        NSApp.mainMenu = menu; NSApp.helpMenu = helpMenu
+        runtime.showIntroductionIfNeeded()
     }
+    @objc private func showIntroduction(_ sender: Any?) { runtime.showIntroduction() }
     func applicationWillTerminate(_ notification: Notification) { runtime.stop() }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {

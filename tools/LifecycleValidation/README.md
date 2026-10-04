@@ -13,6 +13,14 @@ The native runner compiles the production environment, runtime, window host, vie
 
 Checks cover native body picking, transparent-corner click-through and drag capture across empty pixels; ordered and repeated system/display sleep, lock and session transitions; suspension-time input; Spaces recovery; missed mouse-up; unchanged display notifications; disconnect, no-display, reconnect and resolution fallback; repeated reopen/start/stop; observer cleanup; and exclusive launch lease release/error handling. Synthetic secondary displays exercise negative global coordinates and both notched and unnotched homes. Unit tests also cover compact and ultrawide scene geometry, stale drag events, gesture/deformation cleanup and independent suspension reasons.
 
+Introduction checks use an isolated preferences suite and cover first launch without activation, shared-clock playback, Next/Back/direct navigation, unambiguous layout, live Reduce Motion changes, suspension and display loss, remembered dismissal, Help replay, Done/close/app-scoped Escape and shutdown cleanup. To review the actual introduction window without changing the ordinary app's preferences:
+
+```sh
+./scripts/test-desktop.sh --prepare-introduction
+```
+
+Open the resulting `.build/lifecycle-validation/IntroductionFixture.app`. It uses the production app delegate and runtime with an isolated preferences suite, which is removed on ordinary exit; the fixture exits after two minutes. For PNG frames of the animated input scripts, use `./scripts/preview.sh .build/preview/introduction --introduction`.
+
 For an actual fullscreen Space transition, run:
 
 ```sh
@@ -37,6 +45,7 @@ Automated notification injection verifies recovery logic, not delivery by macOS 
 | Repeated launches | Open the same build repeatedly from Finder, then launch its executable concurrently. Finder reopen returns home without requesting focus; overlapping executable launches exit without a second companion. Quit from Mallow's right-click menu and relaunch. Force-quit once and relaunch to verify kernel lock release. Quit an older pre-lock preview before testing. |
 | Character picking and catch | Click each transparent corner and the area behind home; clicks reach the app underneath and cannot grab Mallow. Grab the visible outline, feet and palms, then drag beyond the silhouette without losing capture. Move slowly into and out of catch range: the upward look/reach appears near home, fades away outside, and release catches only in range. Repeat with Reduce Motion and both notched and unnotched displays. |
 | Quit and focus | Right-click Mallow, dismiss its transient menu, then type in the previous app. Choose Quit Spriglet and verify the panel disappears and the next launch succeeds. |
+| Introduction | With a fresh local preference domain, launch and check that Meet Mallow appears without taking focus. Browse all five demos, dismiss with Skip, Done, Escape and close, then relaunch and check it stays dismissed. Replay from Help in Mallow's right-click menu. Repeat with Reduce Motion, VoiceOver, fullscreen and display unplug/replug; check all controls and text remain reachable and the everyday character stays free of instructions. |
 
 Record hardware, macOS version, display arrangement, Reduce Motion/Low Power Mode and observed results in ignored `.build/` or `docs/`, not in the public source tree. Physical display removal, actual lock/unlock, sleep/wake, third-party fullscreen behavior and sustained energy use require device acceptance even when all regression checks pass.
 

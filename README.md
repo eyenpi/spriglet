@@ -4,6 +4,8 @@ A soft, local desktop companion for Apple silicon Macs running macOS 26 or later
 
 Hover for a small reaction. Click to invite it out; touch again for a wave or swing. Drag to pick it up. While held close enough to catch home, Mallow looks up and reaches slightly; release there to let it catch, or away from home for gravity and a squishy landing. Click elsewhere to return it to its resting peek. On a display without a notch, it rests at the upper right edge below the menu bar.
 
+On first launch, Meet Mallow opens a separate introduction with five short, looping demonstrations of those interactions, using the actual character engine and renderer. Browse with Next, Back or the step buttons; Skip introduction, Done, Escape or the close button dismiss it and remember that choice locally. Right-click Mallow and choose Help → Meet Mallow to replay; it is also in the app's Help menu. Reduce Motion shows representative stills. The everyday character has no instructional overlays.
+
 This is the first Mallow release, `v0.3.0-preview.1` (app 0.3.0, build 5). Downloads are on [GitHub releases](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1); choose the `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP. macOS may block an unsigned download. Plugins and assistant services are not implemented. The local app uses ad hoc signing; it has not been Apple-notarized or submitted to the App Store.
 
 ![Mallow peeking, reacting and playing](art/mallow/demo.gif)
@@ -21,7 +23,7 @@ Select the full Xcode 26 toolchain, then:
 ./scripts/run.sh
 ```
 
-Builds live under `.build/xcode/Build/Products/`. Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens a small menu with Quit Spriglet. Launch, recovery and character interaction preserve keyboard focus. Escape returns it home when this app receives keyboard input. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
+Builds live under `.build/xcode/Build/Products/`. Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens a small menu with Help and Quit Spriglet. Launch, recovery and character interaction preserve keyboard focus. The introduction opens without activation; clicking its controls allows keyboard navigation. Escape dismisses an open introduction, or returns Mallow home, when this app receives keyboard input. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
 
 For a finite, reproducible animation preview using the production code:
 
@@ -29,9 +31,10 @@ For a finite, reproducible animation preview using the production code:
 ./scripts/preview.sh .build/preview/frames
 ./scripts/preview.sh .build/preview/transitions --transitions
 ./scripts/preview.sh .build/preview/interaction --interaction
+./scripts/preview.sh .build/preview/introduction --introduction
 ```
 
-The exporter writes PNG frames locally. The transition sequence renders at 60 fps and covers emergence, grabbing during emergence, regrabbing a catch, reversing a retreat, a rapid upward throw and returning during a horizontal reversal. The interaction sequence covers a transparent-corner press, dragging away, returning into catch range, the upward look and release. It runs no assistant service and reads no desktop content.
+The exporter writes PNG frames locally. The transition sequence renders at 60 fps and covers emergence, grabbing during emergence, regrabbing a catch, reversing a retreat, a rapid upward throw and returning during a horizontal reversal. The interaction sequence covers a transparent-corner press, dragging away, returning into catch range, the upward look and release. The introduction sequence exports each five-second demo into its own numbered folder. It runs no assistant service and reads no desktop content.
 
 ## Architecture
 
@@ -42,11 +45,13 @@ There is one production simulation and one renderer. The preview exporter uses t
 | Core | `Packages/CompanionKit/Sources/CompanionCore` | Geometry, interaction state, fixed-step physics, pose blending, frame policy and typed commands. Pure Swift values; no AppKit, timers, files or networking. |
 | Rendering | `Packages/CompanionKit/Sources/CompanionRendering` | Draw immutable snapshots as vector artwork. No engine references, events, window ownership or clocks. |
 | macOS environment | `Sources/Spriglet/Environment` | Convert real display measurements and lifecycle signals into core values. Observe outside clicks without reading clicked content. |
-| Desktop host | `Sources/Spriglet/Desktop` | Transparent nonactivating panel, actual-frame coordinate compensation, hit testing and accessible character actions. |
+| Desktop host | `Sources/Spriglet/Desktop` | Transparent nonactivating companion panel, coordinate compensation, hit testing and accessible actions; a separate introduction panel with native navigation and a demo view. |
 | Runtime | `Sources/Spriglet/Runtime` | Wire the three boundaries together and own the single screen-bound animation clock. |
 | App | `Sources/Spriglet/App` | Launch, shutdown and generated shared text. |
 
-`CompanionRuntime` is the composition root. It owns a `CompanionEngine`, `DesktopEnvironment`, `CompanionWindowHost` and `ScreenFrameClock`. Adapters report to the runtime; they never call one another. Core state is held in a session value and advances in 120 Hz simulation steps, independently of display cadence. The renderer receives a `CompanionSnapshot` and cannot mutate the model.
+`CompanionRuntime` is the composition root. It owns a `CompanionEngine`, `DesktopEnvironment`, `CompanionWindowHost`, `IntroductionWindowHost`, `IntroductionPreferences` and `ScreenFrameClock`. Adapters report to the runtime; they never call one another. Core state is held in a session value and advances in 120 Hz simulation steps, independently of display cadence. The renderer receives a `CompanionSnapshot` and cannot mutate the model.
+
+`IntroductionDemo` scripts semantic pointer inputs into a separate `CompanionEngine`, with no platform dependencies or clock. The runtime owns the selected demo and advances it with the existing display clock at up to 30 fps; closing the introduction restores the everyday cadence. The introduction host draws the same character through `ScenePreviewRenderer` and reports navigation or dismissal. Only the dismissal flag is saved in local preferences. Suspension hides both panels and freezes the demo; recovery restores the same step without simulating elapsed sleep time.
 
 ### Changing behavior
 

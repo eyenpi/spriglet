@@ -12,6 +12,10 @@ Mallow starts with its face visible below the notch. A short hover gives a small
 
 On a notched display, Mallow uses the actual housing geometry reported by macOS. Displays without a notch use a small resting place near the upper right edge, below the menu bar. The bottom resting surface clears the space reserved by macOS. The app does not inspect other windows or assume it knows the exact Dock icon shelf.
 
+## Meeting Mallow
+
+On first launch, a separate introduction shows five short demos with the actual character: hovering, inviting, dragging, catching home and returning to a quiet peek. Choose Next or a step to browse, Back to revisit, or Skip introduction to dismiss. Done, the close button and Escape also dismiss it. Your dismissal is remembered locally, so later launches stay quiet. Right-click Mallow and choose Help → Meet Mallow to replay it. The character on your desktop has no instructional overlays. With Reduce Motion enabled, each demo shows a representative still instead of looping movement.
+
 ## Keeping your work clear
 
 Mallow stays in the resting peek until invited and returns after you leave it alone. The transparent margins of its window pass clicks through. Reduce Motion limits decorative movement; Low Power Mode and thermal pressure lower animation cadence. Animation stops during system or display sleep, screen lock, an inactive session or critical thermal pressure. Waking, unlocking and changing Spaces return Mallow to its resting home. Home stays on the initial primary display as you move between apps; unplugging it uses the current primary display until the original returns.
