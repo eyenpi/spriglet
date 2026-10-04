@@ -17,6 +17,7 @@ import AppKit
         let menuBar = MenuBarController(state: { [runtime] in runtime.controlState },
                                         onAction: { [weak self] in self?.perform($0) })
         self.menuBar = menuBar; help = CompanionHelpPanel()
+        help?.onShowIntroduction = { [weak self] in self?.runtime.showIntroduction() }
         runtime.onControlStateChanged = { [weak self] state in
             self?.menuBar?.update(state); self?.settings?.updateControls(state)
         }
@@ -26,11 +27,19 @@ import AppKit
         let settings = NSMenuItem(title: AppText.settingsMenu, action: #selector(showSettings), keyEquivalent: ",")
         settings.target = self; appMenu.addItem(settings); appMenu.addItem(.separator())
         let quit = NSMenuItem(title: AppText.quitApp, action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        appMenu.addItem(quit); NSApp.mainMenu = menu
+        appMenu.addItem(quit)
+        let helpItem = NSMenuItem(title: AppText.helpMenu, action: nil, keyEquivalent: "")
+        let helpMenu = NSMenu(title: AppText.helpMenu)
+        let introduction = NSMenuItem(title: AppText.introductionMenu, action: #selector(showIntroduction(_:)), keyEquivalent: "")
+        introduction.target = self; helpMenu.addItem(introduction)
+        let support = NSMenuItem(title: AppText.supportTitle, action: #selector(showHelp), keyEquivalent: "")
+        support.target = self; helpMenu.addItem(support); helpItem.submenu = helpMenu; menu.addItem(helpItem)
+        NSApp.mainMenu = menu; NSApp.helpMenu = helpMenu
+        runtime.showIntroductionIfNeeded()
     }
     func applicationWillTerminate(_ notification: Notification) {
         settings?.close(); settings?.onChange = nil; settings?.onAction = nil; settings = nil
-        menuBar?.stop(); help?.close(); menuBar = nil; help = nil
+        menuBar?.stop(); help?.close(); help?.onShowIntroduction = nil; menuBar = nil; help = nil
         runtime.onShowSettings = nil; runtime.onSettingsChanged = nil
         runtime.onControlStateChanged = nil; runtime.stop()
     }
@@ -44,6 +53,8 @@ import AppKit
         case .quit: NSApp.terminate(nil)
         }
     }
+    @objc private func showIntroduction(_ sender: Any?) { runtime.showIntroduction() }
+    @objc private func showHelp() { help?.present() }
     @objc private func showSettings() {
         if settings == nil {
             let controller = SettingsWindowController(state: runtime.settingsState)

@@ -1,12 +1,14 @@
 import AppKit
 import CompanionCore
 
-/// Composition root. Routes inputs, snapshots and lifecycle; the three owned
+/// Composition root. Routes inputs, snapshots and lifecycle; the owned
 /// adapters never call one another and the core never retains an adapter.
 @MainActor final class CompanionRuntime {
     private let environment: DesktopEnvironment
     private let clock: ScreenFrameClock
     private let host: CompanionWindowHost
+    private let introductionHost: IntroductionWindowHost
+    private let introductionPreferences: IntroductionPreferences
     private let leftButtonIsDown: () -> Bool
     private let preferenceStore: PreferenceStore
     private var displays: [HomeDisplay] = []
@@ -19,6 +21,7 @@ import CompanionCore
     private var conditions = RuntimeConditions()
     private var running = false
     private var cadence: Float?
+    private var introduction: IntroductionDemo?
     private var hidden = false
     private var paused = false
     private var publishedControlState: CompanionControlState?
@@ -31,9 +34,12 @@ import CompanionCore
 
     init(environment: DesktopEnvironment = DesktopEnvironment(), clock: ScreenFrameClock = ScreenFrameClock(),
          host: CompanionWindowHost = CompanionWindowHost(),
+         introductionHost: IntroductionWindowHost = IntroductionWindowHost(),
+         introductionPreferences: IntroductionPreferences = IntroductionPreferences(),
          preferenceStore: PreferenceStore = PreferenceStore(),
          leftButtonIsDown: @escaping () -> Bool = { NSEvent.pressedMouseButtons & 1 != 0 }) {
         self.environment = environment; self.clock = clock; self.host = host
+        self.introductionHost = introductionHost; self.introductionPreferences = introductionPreferences
         self.leftButtonIsDown = leftButtonIsDown
         self.preferenceStore = preferenceStore; preferences = preferenceStore.load()
     }
@@ -41,6 +47,9 @@ import CompanionCore
         guard !running else { return }; running = true
         host.onInput = { [weak self] input in self?.send(input) }
         host.onShowSettings = { [weak self] in self?.onShowSettings?() }
+        host.onShowIntroduction = { [weak self] in self?.showIntroduction() }
+        introductionHost.onStepSelected = { [weak self] step in self?.selectIntroductionStep(step) }
+        introductionHost.onDismiss = { [weak self] in self?.dismissIntroduction() }
         clock.onTick = { [weak self] elapsed in self?.tick(elapsed) }
         environment.onDisplayChanged = { [weak self] context in self?.bind(context) }
         environment.onDisplaysChanged = { [weak self] displays in
@@ -50,16 +59,21 @@ import CompanionCore
         environment.onConditionsChanged = { [weak self] conditions in self?.apply(conditions) }
         environment.onRecoveryNeeded = { [weak self] in self?.recover() }
         environment.onOutsidePressed = { [weak self] in self?.send(.outsidePressed) }
-        environment.onReturnHome = { [weak self] in self?.send(.command(.returnHome)) }
+        environment.onEscapePressed = { [weak self] in
+            guard let self else { return }
+            if self.introduction != nil { self.dismissIntroduction() }
+            else { self.send(.command(.returnHome)) }
+        }
         environment.configureHome(preferences); environment.start()
     }
     func stop() {
         guard running else { return }; running = false
-        clock.stop(); environment.stop(); host.close()
-        host.onInput = nil; host.onShowSettings = nil; clock.onTick = nil
+        clock.stop(); environment.stop(); host.close(); introductionHost.close()
+        host.onInput = nil; host.onShowSettings = nil; host.onShowIntroduction = nil; clock.onTick = nil
+        introductionHost.onStepSelected = nil; introductionHost.onDismiss = nil; introduction = nil
         environment.onDisplayChanged = nil; environment.onDisplaysChanged = nil
         environment.onConditionsChanged = nil; environment.onRecoveryNeeded = nil
-        environment.onOutsidePressed = nil; environment.onReturnHome = nil
+        environment.onOutsidePressed = nil; environment.onEscapePressed = nil
         displays = []
         engine = nil; context = nil; cadence = nil; conditions = RuntimeConditions()
         hidden = false; paused = false; publishControlState()
@@ -90,6 +104,26 @@ import CompanionCore
     }
     /// Future capabilities enter through this action boundary, not adapter access.
     func perform(_ command: CompanionCommand) { send(.command(command)) }
+    func showIntroductionIfNeeded() {
+        if introductionPreferences.shouldPresentOnLaunch { showIntroduction() }
+    }
+    func showIntroduction() {
+        guard running else { return }
+        selectIntroductionStep(.hover)
+        presentIntroduction()
+    }
+    private func selectIntroductionStep(_ step: IntroductionStep) {
+        introduction = IntroductionDemo(step: step, motionPolicy: conditions.reduceMotion ? .reduced : .full)
+        refresh()
+    }
+    private func dismissIntroduction() {
+        introductionPreferences.recordDismissal()
+        introduction = nil; introductionHost.close(); refresh()
+    }
+    private func presentIntroduction() {
+        guard let context, let introduction, !conditions.isSuspended else { return }
+        introductionHost.present(on: context.screen, demo: introduction)
+    }
     func updatePreferences(_ preferences: CompanionPreferences) {
         guard self.preferences != preferences else { return }
         self.preferences = preferences; preferenceStore.save(preferences)
@@ -106,7 +140,7 @@ import CompanionCore
         guard let context else {
             engine?.send(.cancelInteraction)
             self.context = nil; cadence = nil
-            clock.stop(); host.close()
+            clock.stop(); host.close(); introductionHost.setVisible(false)
             publishControlState()
             return
         }
@@ -119,11 +153,14 @@ import CompanionCore
         guard let engine else { return }
         host.attach(context: context, snapshot: engine.snapshot)
         resumeClock(); refresh()
+        introductionHost.setVisible(false); presentIntroduction()
     }
     private func apply(_ conditions: RuntimeConditions) {
         let changedSuspension = self.conditions.isSuspended != conditions.isSuspended
+        let changedMotion = self.conditions.reduceMotion != conditions.reduceMotion
         self.conditions = conditions
         engine?.setMotionPolicy(conditions.reduceMotion ? .reduced : .full)
+        if changedMotion, let introduction { selectIntroductionStep(introduction.step) }
         if changedSuspension { recover() }
         else { refresh() }
     }
@@ -136,13 +173,14 @@ import CompanionCore
         // Reassert ordering after lifecycle transitions even when AppKit still
         // reports the panel as visible. Normal frames do not reorder windows.
         host.setVisible(controlState.isVisible, restoringOrder: true)
+        introductionHost.setVisible(false); presentIntroduction()
     }
     private func resumeClock() {
         guard isAnimating, let context, let engine else {
             clock.stop(); cadence = nil; return
         }
         let frame = engine.snapshot
-        let rate = conditions.frameRate(presence: frame.presence, phase: frame.phase)
+        let rate = frameRate(for: frame)
         clock.bind(to: context.screen, rate: rate); cadence = rate
     }
     private func tick(_ elapsed: Double) {
@@ -151,20 +189,25 @@ import CompanionCore
         // Sample button state only while captured, never other apps' event content.
         if engine?.hasPointerCapture == true && !leftButtonIsDown() { engine?.send(.cancelInteraction) }
         engine?.send(.pointerMoved(context.point(NSEvent.mouseLocation)))
-        engine?.advance(by: elapsed); refresh()
+        engine?.advance(by: elapsed); introduction?.advance(by: elapsed); refresh()
+    }
+    private func frameRate(for snapshot: CompanionSnapshot) -> Float {
+        let companionRate = conditions.frameRate(presence: snapshot.presence, phase: snapshot.phase)
+        return introduction?.motionPolicy == .full ? max(companionRate, min(30, conditions.maximumFrameRate)) : companionRate
     }
     private func refresh() {
         defer { publishControlState() }
         guard let engine, let context else { return }
         let frame = engine.snapshot
         if isAnimating {
-            let rate = conditions.frameRate(presence: frame.presence, phase: frame.phase)
+            let rate = frameRate(for: frame)
             if cadence == nil { resumeClock() }
             else if rate != cadence { clock.setRate(rate); cadence = rate }
         } else { clock.stop(); cadence = nil }
         host.update(snapshot: frame, capturesPointer: engine.hasPointerCapture,
                     pointer: context.point(NSEvent.mouseLocation), acceptsInput: isAnimating)
         host.setVisible(controlState.isVisible)
+        if let introduction { introductionHost.update(introduction) }
     }
     private func publishControlState() {
         let state = controlState

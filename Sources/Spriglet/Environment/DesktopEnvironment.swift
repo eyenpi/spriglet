@@ -14,7 +14,7 @@ import CompanionCore
     var onConditionsChanged: ((RuntimeConditions) -> Void)?
     var onRecoveryNeeded: (() -> Void)?
     var onOutsidePressed: (() -> Void)?
-    var onReturnHome: (() -> Void)?
+    var onEscapePressed: (() -> Void)?
     private let applicationCenter: NotificationCenter
     private let workspaceCenter: NotificationCenter
     private let lockCenter: NotificationCenter
@@ -60,7 +60,7 @@ import CompanionCore
             guard let self, self.running else { return event }
             // Key-capable native windows handle Escape themselves (including
             // dismissing Settings popups); character recovery must not consume it.
-            if event.keyCode == 53 && event.window?.canBecomeKey != true { self.onReturnHome?(); return nil }
+            if event.keyCode == 53 && event.window?.canBecomeKey != true { self.onEscapePressed?(); return nil }
             return event
         }
         let session = CGSessionCopyCurrentDictionary() as? [String: Any]

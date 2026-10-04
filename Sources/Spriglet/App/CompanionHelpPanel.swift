@@ -16,21 +16,25 @@ import AppKit
 }
 
 /// Presents offline guidance without retaining companion state or taking focus.
-@MainActor final class CompanionHelpPanel {
+@MainActor final class CompanionHelpPanel: NSObject {
+    var onShowIntroduction: (() -> Void)?
     private var panel: NSPanel?
 
     func present() {
         if panel == nil {
-            let help = HelpPanel(title: AppText.supportTitle, size: NSSize(width: 440, height: 340))
+            let help = HelpPanel(title: AppText.supportTitle, size: NSSize(width: 440, height: 390))
             let heading = label(AppText.companionName)
             heading.font = .boldSystemFont(ofSize: 20)
+            let introduction = NSButton(title: AppText.introductionMenu, target: self, action: #selector(showIntroduction))
+            introduction.bezelStyle = .rounded
             install([heading, label(AppText.interactionHelp), label(AppText.menuControlsHelp),
-                     label(AppText.recoveryHelp), label(AppText.localHelp)], in: help)
+                     label(AppText.recoveryHelp), introduction, label(AppText.localHelp)], in: help)
             panel = help
         }
         panel?.orderFrontRegardless()
     }
     func close() { panel?.close(); panel = nil }
+    @objc private func showIntroduction() { onShowIntroduction?() }
     private func label(_ text: String) -> NSTextField {
         let label = NSTextField(wrappingLabelWithString: text)
         label.font = .systemFont(ofSize: NSFont.systemFontSize)

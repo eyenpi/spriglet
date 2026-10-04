@@ -5,6 +5,7 @@ import CompanionRendering
 
 @MainActor final class CompanionView: NSView {
     var onInput: ((CompanionInput) -> Void)?
+    var onShowIntroduction: (() -> Void)?
     var onShowSettings: (() -> Void)?
     /// Optional instrumentation owned by the finite profiling tool.
     var onDraw: ((Double) -> Void)?
@@ -69,11 +70,17 @@ import CompanionRendering
         // Quitting remains reachable without activating the app on reopen or
         // making this panel key. AppKit restores focus after the transient menu.
         let menu = NSMenu()
+        let help = NSMenuItem(title: AppText.helpMenu, action: nil, keyEquivalent: "")
+        let helpMenu = NSMenu(title: AppText.helpMenu)
+        let introduction = NSMenuItem(title: AppText.introductionMenu, action: #selector(showIntroduction(_:)), keyEquivalent: "")
+        introduction.target = self; helpMenu.addItem(introduction); help.submenu = helpMenu
+        menu.addItem(help); menu.addItem(.separator())
         let settings = NSMenuItem(title: AppText.settingsMenu, action: #selector(showSettings), keyEquivalent: "")
         settings.target = self; menu.addItem(settings); menu.addItem(.separator())
         let quit = NSMenuItem(title: AppText.quitApp, action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         quit.target = NSApp; menu.addItem(quit)
         NSMenu.popUpContextMenu(menu, with: event, for: self)
     }
+    @objc private func showIntroduction(_ sender: Any?) { onShowIntroduction?() }
     @objc private func showSettings() { onShowSettings?() }
 }
