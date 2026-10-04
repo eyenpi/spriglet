@@ -24,17 +24,22 @@ import AppKit
     }
     func applicationDidFinishLaunching(_ notification: Notification) {
         help = CompanionHelpPanel()
+        help?.onShowIntroduction = { [weak self] in self?.perform(.introduction) }
         runtime.onControlStateChanged = { [weak self] state in
             self?.menuBar?.update(state); self?.settings?.updateControls(state)
         }
         menuBar?.start()
         let menu = NSMenu(), root = NSMenuItem()
         menu.addItem(root); root.submenu = menuBar?.makeMenu()
-        NSApp.mainMenu = menu
+        let helpItem = NSMenuItem(title: AppText.helpMenu, action: nil, keyEquivalent: "")
+        let helpMenu = menuBar?.makeHelpMenu()
+        helpItem.submenu = helpMenu; menu.addItem(helpItem)
+        NSApp.mainMenu = menu; NSApp.helpMenu = helpMenu
+        runtime.showIntroductionIfNeeded()
     }
     func applicationWillTerminate(_ notification: Notification) {
         settings?.close(); settings?.onChange = nil; settings?.onAction = nil; settings?.onRefreshLoginState = nil; settings = nil
-        menuBar?.stop(); help?.close(); menuBar = nil; help = nil
+        menuBar?.stop(); help?.close(); help?.onShowIntroduction = nil; menuBar = nil; help = nil
         runtime.onShowSettings = nil; runtime.onSettingsChanged = nil
         runtime.onControlStateChanged = nil; runtime.makeContextMenu = nil; runtime.stop()
         launchAtLogin.onStateChanged = nil
@@ -49,6 +54,7 @@ import AppKit
             presentLoginFeedback(launchAtLogin.setEnabled(!current.isRegistered))
         case .openLoginItemsSettings: launchAtLogin.openSystemSettings()
         case .settings: showSettings()
+        case .introduction: runtime.showIntroduction()
         case .help: help?.present()
         case .quit: NSApp.terminate(nil)
         }

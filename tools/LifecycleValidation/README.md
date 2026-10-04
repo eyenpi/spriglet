@@ -11,7 +11,7 @@ Run these checks on a logged-in Apple silicon Mac with the full Xcode toolchain:
 
 The native runner compiles the production app controls, environment, runtime, window host, view and display clock. It creates real nonactivating companion/Help panels and an ordinary native Settings window and advances real display links while supplying isolated notification centers, display measurements and mouse-button state. It does not lock the Mac, sleep its displays, broadcast synthetic lock events to other apps or change display settings. The ordinary app and its saved files are not used by the runner.
 
-`./scripts/test-desktop.sh --app-only`, also included by `./scripts/test.sh`, runs registration, menus, accessible login Settings layout, isolated preference restoration and launch-lease checks without showing windows or creating a status item. All registration tests inject a fake service and never change macOS login items.
+`./scripts/test-desktop.sh --app-only`, also included by `./scripts/test.sh`, runs registration, menus, accessible login Settings layout, isolated preference restoration and launch-lease checks without showing windows or creating a status item. Every app delegate fixture and all registration tests inject a fake service and never change macOS login items.
 
 Checks cover native body picking, transparent-corner click-through and drag capture across empty pixels; ordered and repeated system/display sleep, lock and session transitions; suspension-time input; Spaces recovery; missed mouse-up; unchanged display notifications; disconnect, no-display, reconnect and resolution fallback; repeated reopen/start/stop; observer cleanup; exclusive launch lease release/error handling, eight simultaneous contenders and recovery after killing the owner; default-off startup, external login changes, approval, failed registration/removal and live Settings status; first-launch and malformed preferences; fresh-process persistence; saved home selection and live edits during drag/sleep; disconnected display fallback/reconnect across display-number changes; and accessible native Settings controls and close/reopen. Menu-bar checks cover synchronized labels and Settings, pause-time freeze and click-through, retained Hide/Pause across suspension and display loss, saved edits while hidden/paused, one keyboard-capable Settings window, nonkey Help, unclipped layout, accessible checkbox actions and status/window shutdown cleanup. A separate finite AppKit process exercises the real menu-bar Quit target. Preferences use disposable suites, never the app’s production defaults. Synthetic secondary displays exercise negative global coordinates and both notched and unnotched homes. Unit tests also cover compact and ultrawide scene geometry, stale drag events, gesture/deformation cleanup and independent suspension reasons.
 
@@ -28,6 +28,20 @@ Preferences can also be validated headlessly, including a fresh process that res
 ```sh
 ./scripts/test-desktop.sh --test-preferences
 ```
+
+Introduction checks use an isolated preferences suite and cover first launch without activation, shared-clock playback, Next/Back/direct navigation, repeated selection of the current step in normal and reduced motion, unambiguous layout, live Reduce Motion changes, suspension and display loss, remembered dismissal, Help replay while hidden/paused, saved edits and recovery without resuming playback, Done/close/app-scoped Escape and shutdown cleanup. To run only introduction integration checks without activating the app or opening Settings:
+
+```sh
+./scripts/test-desktop.sh --test-introduction
+```
+
+This path creates nonactivating panels and a temporary status item. To review the actual introduction window without changing the ordinary app's preferences:
+
+```sh
+./scripts/test-desktop.sh --prepare-introduction
+```
+
+Open the resulting `.build/lifecycle-validation/IntroductionFixture.app`. It uses the production app delegate and runtime with an isolated preferences suite, which is removed on ordinary exit; the fixture exits after two minutes. For PNG frames of the animated input scripts, use `./scripts/preview.sh .build/preview/introduction --introduction`.
 
 For an actual fullscreen Space transition, run:
 
@@ -56,6 +70,7 @@ Automated notification injection verifies recovery logic, not delivery by macOS 
 | Settings and restoration | Open Settings from the leaf menu, character menu, Command-comma or VoiceOver. Verify one window after repeated opens; change every size, intensity, display and location; quit/relaunch and check restoration. Unplug the chosen display with Settings open, edit size/location, then reconnect. Repeat with Reduce Motion, sleep and mirrored displays. The saved display remains selected while absent and closing Settings leaves Mallow running. |
 | Menu-bar controls | Use Show/Hide and Pause/Resume in the leaf menu and Settings; labels and checkboxes stay synchronized. Hide through sleep, lock, Space switches and display reconnect, then recover with Show, Bring Home and Finder reopen. Pause while dragging releases capture. Open and close Settings/Help repeatedly; Settings takes keyboard focus explicitly, while Help and recovery leave it unchanged. The leaf stays available when Mallow is hidden. |
 | Quit and focus | Right-click Mallow, dismiss its transient menu, then type in the previous app. Choose Quit Spriglet from both menus and verify the panel disappears and the next launch succeeds. |
+| Introduction | With a fresh local preference domain, launch and check that Meet Mallow appears without taking focus. Browse all five demos, dismiss with Skip, Done, Escape and close, then relaunch and check it stays dismissed. Replay from Meet Mallow in the leaf menu or Mallow's right-click menu, the native Help menu and the Help panel. Repeat with Reduce Motion, VoiceOver, fullscreen and display unplug/replug; check all controls and text remain reachable and the everyday character stays free of instructions. |
 
 Record hardware, macOS version, display arrangement, Reduce Motion/Low Power Mode and observed results in ignored `.build/` or `docs/`, not in the public source tree. Physical display removal, actual lock/unlock, sleep/wake, third-party fullscreen behavior and sustained energy use require device acceptance even when all regression checks pass.
 

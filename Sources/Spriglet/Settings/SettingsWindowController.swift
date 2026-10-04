@@ -117,7 +117,7 @@ import AppKit
         if let failure = state.failure, let title = state.failureTitle {
             loginFailure.stringValue = AppText.loginLastAttempt + " " + title + "\n" + failure.message
             loginFailure.toolTip = failure.message
-        } else { loginFailure.stringValue = "" }
+        } else { loginFailure.stringValue = ""; loginFailure.toolTip = nil }
     }
     func windowDidBecomeKey(_ notification: Notification) { onRefreshLoginState?() }
     @objc private func toggleLaunchAtLogin() { onAction?(.toggleLaunchAtLogin) }

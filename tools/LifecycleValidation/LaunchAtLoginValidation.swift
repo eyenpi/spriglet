@@ -37,6 +37,31 @@ extension LifecycleValidation {
         })
     }
     static func launchAtLogin() throws {
+        // App, status and character menus share the same action owner. Replay
+        // and Help remain reachable without invoking windows or registration.
+        let menuService = FakeLoginService(), menuLogin = LaunchAtLoginController(service: menuService)
+        var actions: [AppControlAction] = []
+        let shared = MenuBarController(state: { CompanionControlState(isVisible: true, isPaused: false, canShow: true) },
+                                       loginState: { menuLogin.refresh() }, onAction: { actions.append($0) })
+        for menu in [shared.menu, shared.makeMenu(), shared.makeMenu()] {
+            let items = menu.items.filter { $0.action != nil }
+            try require(items.count == AppControlAction.allCases.count && Set(items.map(\.tag)).count == items.count,
+                        "Shared menus duplicated or omitted a typed control")
+            for action in [AppControlAction.settings, .introduction, .help] {
+                guard let item = items.first(where: { $0.tag == action.rawValue }) else {
+                    throw ValidationFailure(description: "Shared menu omitted Settings, introduction or Help")
+                }
+                menu.performActionForItem(at: menu.index(of: item))
+                try require(actions.last == action, "Shared menu routed the wrong action")
+            }
+        }
+        let help = shared.makeHelpMenu()
+        try require(help.items.map(\.tag) == [AppControlAction.introduction.rawValue, AppControlAction.help.rawValue],
+                    "Native Help menu lost replay or existing Help guidance")
+        for index in help.items.indices { help.performActionForItem(at: index) }
+        try require(actions.suffix(2) == [.introduction, .help] && menuService.registrations == 0,
+                    "Help menu bypassed typed actions or changed login registration")
+
         let states: [(SMAppService.Status?, LaunchAtLoginRegistration, NSControl.StateValue, String)] = [
             (.notRegistered, .notRegistered, .off, AppText.loginNotRegistered),
             (.enabled, .enabled, .on, AppText.loginEnabled),

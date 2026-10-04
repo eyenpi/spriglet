@@ -11,6 +11,7 @@ import CompanionCore
 @MainActor final class CompanionWindowHost {
     var onInput: ((CompanionInput) -> Void)?
     var makeContextMenu: (() -> NSMenu)?
+    var onShowIntroduction: (() -> Void)?
     var onShowSettings: (() -> Void)?
     var onDraw: ((Double) -> Void)?
     private var panel: NSPanel?
@@ -21,6 +22,7 @@ import CompanionCore
         let view = CompanionView(context: context, snapshot: snapshot)
         view.onInput = { [weak self] input in self?.onInput?(input) }
         view.makeContextMenu = makeContextMenu
+        view.onShowIntroduction = { [weak self] in self?.onShowIntroduction?() }
         view.onShowSettings = { [weak self] in self?.onShowSettings?() }
         view.onDraw = onDraw
         let panel = CompanionPanel(contentRect: view.bounds, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)

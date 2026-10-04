@@ -6,6 +6,8 @@ Its curious peek stays in place. Breathing gently changes pace and depth; blinks
 
 Hover for a small reaction. Click to invite it out; touch again for a wave or swing. Drag to pick it up. While held close enough to catch home, Mallow looks up and reaches slightly; release there to let it catch, or away from home for gravity and a squishy landing. Click elsewhere to return it to its resting peek. On a display without a notch, it rests at the upper right edge below the menu bar.
 
+On first launch, Meet Mallow opens a separate introduction with five short, looping demonstrations of those interactions, using the actual character engine and renderer. Browse with Next, Back or the step buttons; Skip introduction, Done, Escape or the close button dismiss it and remember that choice locally. Right-click Mallow and choose Meet Mallow to replay; it is also in the app's Help menu. Reduce Motion shows representative stills. The everyday character has no instructional overlays.
+
 This is the first Mallow release, `v0.3.0-preview.1` (app 0.3.0, build 5). Downloads are on [GitHub releases](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1); choose the `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP. macOS may block an unsigned download. Plugins and assistant services are not implemented. The local app uses ad hoc signing; it has not been Apple-notarized or submitted to the App Store.
 
 ![Mallow peeking, reacting and playing](art/mallow/demo.gif)
@@ -25,9 +27,9 @@ Select the full Xcode 26 toolchain, then:
 
 Builds live under `.build/xcode/Build/Products/`.
 
-The leaf menu offers Show/Hide Mallow, Pause/Resume Mallow, Bring Home, Settings, Help and Quit. Settings exposes the same Show and Animate controls alongside saved preferences; Help works offline. Hide and Pause apply for the running session. Pause freezes Mallow and lets clicks pass through, releasing an active drag safely. Hide stops animation and survives sleep, lock, Spaces and display changes. Show, Bring Home and reopening from Finder recover hidden Mallow at its resting home without clearing Pause. Visibility labels reflect actual presentation, with Show unavailable during suspension or without a display. Pause/Resume reflects the user’s animation choice.
+The leaf menu offers Show/Hide Mallow, Pause/Resume Mallow, Bring Home, launch at login, Settings, Meet Mallow, Help and Quit. Settings exposes the same Show and Animate controls alongside saved preferences; Help works offline. Hide and Pause apply for the running session. Pause freezes Mallow and lets clicks pass through, releasing an active drag safely. Hide stops animation and survives sleep, lock, Spaces and display changes. Show, Bring Home and reopening from Finder recover hidden Mallow at its resting home without clearing Pause. Visibility labels reflect actual presentation, with Show unavailable during suspension or without a display. Pause/Resume reflects the user’s animation choice.
 
-Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens a small menu with Settings and Quit Spriglet. Settings also has a Command-comma shortcut while the app is active and a VoiceOver custom action on the character. Opening Settings explicitly activates its ordinary native window; closing it keeps Mallow running. Help, visibility/animation controls, launch, recovery and character interaction preserve keyboard focus. Escape returns it home when this app receives keyboard input outside Settings; native Settings controls keep their usual keyboard behavior. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
+Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens the same controls as the leaf menu, including Settings, Meet Mallow, login status and Quit Spriglet. Settings also has a Command-comma shortcut while the app is active and a VoiceOver custom action on the character. Opening Settings explicitly activates its ordinary native window; closing it keeps Mallow running. Help, visibility/animation controls, launch, recovery and character interaction preserve keyboard focus. The introduction opens without activation; clicking its controls allows keyboard navigation. Escape dismisses the introduction when it has keyboard focus, or returns Mallow home outside native windows; native Settings controls keep their usual keyboard behavior. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
 
 Launch at login is optional and off for a new installation. Enable it from the shared menus or Settings. The checkmark means macOS reports `.enabled`; a dash means `.requiresApproval`, with login launch still off until you allow it in System Settings > General > Login Items & Extensions. Unavailable states and failed changes are shown explicitly, including the macOS error when a change fails. Menus re-read registration when opened; Settings refreshes on registration changes and when it regains focus and before each action, so changes in System Settings are reflected. Quitting leaves the registration intact; turning the option off unregisters future login launches while Mallow keeps running. Startup never registers automatically or restores an old preference.
 
@@ -37,10 +39,11 @@ For a finite, reproducible animation preview using the production code:
 ./scripts/preview.sh .build/preview/frames
 ./scripts/preview.sh .build/preview/transitions --transitions
 ./scripts/preview.sh .build/preview/interaction --interaction
+./scripts/preview.sh .build/preview/introduction --introduction
 ./scripts/preview.sh .build/preview/idle --idle
 ```
 
-The exporter writes PNG frames locally. The transition sequence renders at 60 fps and covers emergence, grabbing during emergence, regrabbing a catch, reversing a retreat, a rapid upward throw and returning during a horizontal reversal. The interaction sequence covers a transparent-corner press, dragging away, returning into catch range, the upward look and release. The idle sequence shows two uninterrupted minutes at the normal 20 fps resting cadence, with reproducible timing and no pointer overlay. It runs no assistant service and reads no desktop content.
+The exporter writes PNG frames locally. The transition sequence renders at 60 fps and covers emergence, grabbing during emergence, regrabbing a catch, reversing a retreat, a rapid upward throw and returning during a horizontal reversal. The interaction sequence covers a transparent-corner press, dragging away, returning into catch range, the upward look and release. The introduction sequence exports each five-second demo into its own numbered folder. The idle sequence shows two uninterrupted minutes at the normal 20 fps resting cadence, with reproducible timing and no pointer overlay. It runs no assistant service and reads no desktop content.
 
 ## Architecture
 
@@ -51,7 +54,7 @@ There is one production simulation and one renderer. The preview exporter uses t
 | Core | `Packages/CompanionKit/Sources/CompanionCore` | Geometry, interaction state, fixed-step physics, pose blending, frame policy and typed commands. Pure Swift values; no AppKit, timers, files or networking. |
 | Rendering | `Packages/CompanionKit/Sources/CompanionRendering` | Draw immutable snapshots as vector artwork. No engine references, events, window ownership or clocks. |
 | macOS environment | `Sources/Spriglet/Environment` | Convert real display measurements and lifecycle signals into core values. Observe outside clicks without reading clicked content. |
-| Desktop host | `Sources/Spriglet/Desktop` | Transparent nonactivating panel, actual-frame coordinate compensation, hit testing and accessible character actions. |
+| Desktop host | `Sources/Spriglet/Desktop` | Transparent nonactivating companion panel, coordinate compensation, hit testing and accessible actions; a separate introduction panel with native navigation and a demo view. |
 | Runtime | `Sources/Spriglet/Runtime` | Wire the three boundaries together and own the single screen-bound animation clock. |
 | Settings | `Sources/Spriglet/Settings` | Typed saved choices, isolated preference storage and one native Settings window. |
 | App | `Sources/Spriglet/App` | Launch, shutdown, shared typed menu commands, Settings presentation, live login registration, focus-preserving Help and generated shared text. |
@@ -60,7 +63,9 @@ There is one production simulation and one renderer. The preview exporter uses t
 
 `AppDelegate` owns login registration through `LaunchAtLoginController` and the `MainAppLoginService` adapter. `MenuBarController` creates the shared menus; Settings displays the same system-owned registration without saving a separate login boolean. The runtime only routes the menu factory to the desktop host.
 
-`CompanionRuntime` is the character composition root. It owns a `CompanionEngine`, `DesktopEnvironment`, `CompanionWindowHost` and `ScreenFrameClock`. Adapters report to the runtime; they never call one another. Core state is held in a session value and advances in 120 Hz simulation steps, independently of display cadence. The renderer receives a `CompanionSnapshot` and cannot mutate the model.
+`CompanionRuntime` is the composition root. It owns a `CompanionEngine`, `DesktopEnvironment`, `CompanionWindowHost`, `IntroductionWindowHost`, `IntroductionPreferences` and `ScreenFrameClock`. Adapters report to the runtime; they never call one another. Core state is held in a session value and advances in 120 Hz simulation steps, independently of display cadence. The renderer receives a `CompanionSnapshot` and cannot mutate the model.
+
+`IntroductionDemo` scripts semantic pointer inputs into a separate `CompanionEngine`, with no platform dependencies or clock. The runtime owns the selected demo and advances it with the existing display clock at up to 30 fps; closing the introduction restores the everyday cadence. The introduction host draws the same character through `ScenePreviewRenderer` and reports navigation or dismissal. Demo progress stays in memory; only its dismissal flag is saved alongside the independent character preferences. Hide and Pause also freeze demo playback without changing their session choices. Suspension hides both panels and freezes the demo; recovery restores the same step without simulating elapsed sleep time.
 
 ### Changing behavior
 

@@ -12,6 +12,10 @@ Mallow starts with its face visible below the notch. A short hover gives a small
 
 On a notched display, Mallow uses the actual housing geometry reported by macOS. Displays without a notch use a small resting place near the upper right edge, below the menu bar. The bottom resting surface clears the space reserved by macOS. The app does not inspect other windows or assume it knows the exact Dock icon shelf.
 
+## Meeting Mallow
+
+On first launch, a separate introduction shows five short demos with the actual character: hovering, inviting, dragging, catching home and returning to a quiet peek. Choose Next or a step to browse, Back to revisit, or Skip introduction to dismiss. Done, the close button and Escape also dismiss it. Your dismissal is remembered locally, so later launches stay quiet. Replay from the Help menu, the offline Help panel’s Meet Mallow button, or Meet Mallow in the leaf menu and Mallow’s right-click menu. Hide and Pause also freeze demo playback; replay keeps those choices. Show or resume Mallow to continue the animation. The character on your desktop has no instructional overlays. With Reduce Motion enabled, each demo shows a representative still instead of looping movement.
+
 ## Keeping your work clear
 
 Mallow stays in the resting peek until invited and returns after you leave it alone. The transparent margins of its window pass clicks through. Reduce Motion limits decorative movement; Low Power Mode and thermal pressure lower animation cadence. Animation stops during system or display sleep, screen lock, an inactive session or critical thermal pressure. Waking, unlocking and changing Spaces return Mallow to its resting home. Home stays on the initial primary display as you move between apps unless you choose another display in Settings. Unplugging the chosen display uses the current primary display while preserving your saved choice; Mallow returns when that display reconnects.
@@ -30,13 +34,13 @@ An unavailable state or failed change is shown separately from the actual regist
 
 ## Menu-bar controls and recovery
 
-Use the leaf in the menu bar to show or hide Mallow, pause or resume animation, bring it home, review Launch at Login, open Settings or Help, and quit Spriglet.
+Use the leaf in the menu bar to show or hide Mallow, pause or resume animation, bring it home, review Launch at Login, open Settings or Help, replay Meet Mallow, and quit Spriglet.
 
 Hidden Mallow stays hidden through sleep, lock and display changes. Choose Show Mallow or Bring Home, or reopen Spriglet from Finder to recover it. Bring Home and Finder recovery return it to its resting home and preserve Pause.
 
 Pause freezes the current pose and lets desktop clicks pass through; pausing an active drag releases it and returns Mallow home. Resume continues without simulating paused time. The visibility label reflects whether Mallow is actually visible; Show is unavailable while the display or session is suspended. Pause and Resume reflect your animation choice, independently of system suspension.
 
-Settings exposes the same Show and Animate controls for this session, alongside saved preferences. Help is available offline and preserves keyboard focus in your current app. Closing either window keeps Spriglet running. Right-click Mallow brings it home and opens the same typed controls as the leaf menu, including Settings, login status and Quit Spriglet. There is no Dock icon or action card.
+Settings exposes the same Show and Animate controls for this session, alongside saved preferences. Help is available offline and preserves keyboard focus in your current app. Closing either window keeps Spriglet running. Right-click Mallow brings it home and opens the same typed controls as the leaf menu, including Settings, Meet Mallow, login status and Quit Spriglet. There is no Dock icon or action card.
 
 ## Local preview and troubleshooting
 

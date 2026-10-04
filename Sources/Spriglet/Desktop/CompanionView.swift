@@ -6,6 +6,7 @@ import CompanionRendering
 @MainActor final class CompanionView: NSView {
     var onInput: ((CompanionInput) -> Void)?
     var makeContextMenu: (() -> NSMenu)?
+    var onShowIntroduction: (() -> Void)?
     var onShowSettings: (() -> Void)?
     /// Optional instrumentation owned by the finite profiling tool.
     var onDraw: ((Double) -> Void)?
@@ -46,6 +47,9 @@ import CompanionRendering
         [NSAccessibilityCustomAction(name: AppText.settingsMenu) { [weak self] in
             guard let self else { return false }
             self.onShowSettings?(); return true
+        }, NSAccessibilityCustomAction(name: AppText.introductionMenu) { [weak self] in
+            guard let self else { return false }
+            self.onShowIntroduction?(); return true
         }]
     }
     func refresh(snapshot: CompanionSnapshot) {

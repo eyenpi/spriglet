@@ -1,8 +1,8 @@
 #!/bin/zsh
 # Compiles the production macOS adapters into a finite native regression runner.
 set -euo pipefail
-if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" && "${1:-}" != "--test-quit-timeout" && "${1:-}" != "--test-preferences" && "${1:-}" != "--app-only" ]]; then
-  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen|--test-quit-timeout|--test-preferences|--app-only]"
+if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" && "${1:-}" != "--prepare-introduction" && "${1:-}" != "--test-quit-timeout" && "${1:-}" != "--test-preferences" && "${1:-}" != "--test-introduction" && "${1:-}" != "--app-only" ]]; then
+  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen|--prepare-introduction|--test-quit-timeout|--test-preferences|--test-introduction|--app-only]"
   exit 2
 fi
 task_root="${0:A:h:h}"
@@ -34,27 +34,35 @@ swiftc -swift-version 6 -strict-concurrency=complete -warnings-as-errors -parse-
   "$task_root/Sources/Spriglet/App/CompanionHelpPanel.swift" \
   "$task_root/Sources/Spriglet/App/SharedContent.generated.swift" \
   "$task_root"/tools/LifecycleValidation/*.swift -o "$task_output/lifecycle-validation"
-if [[ "${1:-}" == "--prepare-fullscreen" ]]; then
-  python3 - "$task_output" <<'PY'
+if [[ "${1:-}" == --prepare-* ]]; then
+  task_fixture="${1#--prepare-}"
+  python3 - "$task_output" "$task_fixture" <<'PY'
 from pathlib import Path
 import plistlib
 import shutil
 import sys
 
 output = Path(sys.argv[1])
-contents = output / "FullscreenFixture.app/Contents"
+fixture = sys.argv[2]
+contents = output / (fixture.title() + "Fixture.app/Contents")
 (contents / "MacOS").mkdir(parents=True, exist_ok=True)
 shutil.copy2(output / "lifecycle-validation", contents / "MacOS/lifecycle-validation")
 with (contents / "Info.plist").open("wb") as file:
-    plistlib.dump({"CFBundleIdentifier": "dev.spriglet.lifecycle-validation.fullscreen",
+    plistlib.dump({"CFBundleIdentifier": "dev.spriglet.lifecycle-validation." + fixture,
                   "CFBundleExecutable": "lifecycle-validation", "CFBundleName": "Mallow Lifecycle Fixture",
                   "CFBundlePackageType": "APPL", "NSPrincipalClass": "NSApplication", "LSUIElement": True}, file)
-(output / "fullscreen-result.txt").unlink(missing_ok=True)
+if fixture == "fullscreen":
+    (output / "fullscreen-result.txt").unlink(missing_ok=True)
 PY
-  codesign --force --sign - "$task_output/FullscreenFixture.app"
-  print "Open $task_output/FullscreenFixture.app and click its blank window to run real fullscreen acceptance."
-  print "The outcome is saved in $task_output/fullscreen-result.txt."
-elif [[ "${1:-}" == "--test-quit-timeout" || "${1:-}" == "--test-preferences" ]]; then
+  task_fixture_app="$task_output/${(C)task_fixture}Fixture.app"
+  codesign --force --sign - "$task_fixture_app"
+  if [[ "$task_fixture" == "fullscreen" ]]; then
+    print "Open $task_fixture_app and click its blank window to run real fullscreen acceptance."
+    print "The outcome is saved in $task_output/fullscreen-result.txt."
+  else
+    print "Open $task_fixture_app to review the introduction with isolated preferences. It exits after two minutes."
+  fi
+elif [[ "${1:-}" == "--test-quit-timeout" || "${1:-}" == "--test-preferences" || "${1:-}" == "--test-introduction" ]]; then
   "$task_output/lifecycle-validation" "$1"
 else
   "$task_output/lifecycle-validation" "$@"

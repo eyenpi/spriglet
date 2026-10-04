@@ -158,6 +158,21 @@ import CompanionRendering
     print("Exported ten opaque RGB icon sizes from the production vector artwork.")
 }
 
+/// The exact input scripts shown in the first-launch introduction.
+@MainActor func exportIntroduction(to directory: URL) throws {
+    let painter = ScenePreviewRenderer()
+    for step in IntroductionStep.allCases {
+        let folder = directory.appendingPathComponent("\(step.rawValue + 1)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        var demo = IntroductionDemo(step: step)
+        for index in 0..<Int(IntroductionDemo.duration * 30) {
+            try writeFrame(demo.snapshot, painter: painter, to: folder, index: index, pointer: demo.pointer, pressed: demo.pressed)
+            demo.advance(by: 1 / 30)
+        }
+    }
+    print("Rendered five introduction demos using the production input scripts, core and renderer.")
+}
+
 _ = NSApplication.shared
 let args = CommandLine.arguments
 do {
@@ -167,12 +182,14 @@ if args.count == 3 && args[1] == "--icons" {
     try exportTransitions(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--interaction" {
     try exportInteraction(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--introduction" {
+    try exportIntroduction(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--idle" {
     try exportIdle(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 2 {
     try export(to: URL(fileURLWithPath: args[1]))
 } else {
-    print("Usage: companion-preview OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
+    print("Usage: companion-preview OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --introduction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
 }
 
 } catch {

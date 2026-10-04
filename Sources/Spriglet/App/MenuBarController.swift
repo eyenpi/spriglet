@@ -1,7 +1,7 @@
 import AppKit
 
 enum AppControlAction: Int, CaseIterable {
-    case toggleVisibility, togglePause, bringHome, toggleLaunchAtLogin, openLoginItemsSettings, settings, help, quit
+    case toggleVisibility, togglePause, bringHome, toggleLaunchAtLogin, openLoginItemsSettings, settings, introduction, help, quit
 }
 
 /// Owns the persistent recovery entry and the menus shared by all app controls.
@@ -21,6 +21,7 @@ enum AppControlAction: Int, CaseIterable {
     }
     func start() {
         guard statusItem == nil else { return }
+        populate(menu)
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let image = NSImage(systemSymbolName: "leaf.fill", accessibilityDescription: AppText.appName) {
             image.isTemplate = true; item.button?.image = image
@@ -38,6 +39,15 @@ enum AppControlAction: Int, CaseIterable {
     func makeMenu() -> NSMenu {
         let menu = NSMenu()
         populate(menu)
+        return menu
+    }
+    func makeHelpMenu() -> NSMenu {
+        let menu = NSMenu(title: AppText.helpMenu)
+        menu.autoenablesItems = false
+        for (action, title) in [(AppControlAction.introduction, AppText.introductionMenu), (.help, AppText.supportTitle)] {
+            let item = NSMenuItem(title: title, action: #selector(chooseAction(_:)), keyEquivalent: "")
+            item.target = self; item.tag = action.rawValue; menu.addItem(item)
+        }
         return menu
     }
     func menuNeedsUpdate(_ menu: NSMenu) { populate(menu) }
@@ -67,6 +77,7 @@ enum AppControlAction: Int, CaseIterable {
             case .toggleLaunchAtLogin: AppText.launchAtLogin
             case .openLoginItemsSettings: AppText.openLoginItemsSettings
             case .settings: AppText.settingsMenu
+            case .introduction: AppText.introductionMenu
             case .help: AppText.supportTitle
             case .quit: AppText.quitApp
             }
