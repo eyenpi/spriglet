@@ -95,3 +95,13 @@ Compare decoded pixels or PNG bytes across the whole preview sequence, and run
 `./scripts/test.sh`, both app build configurations and the public-file check.
 Store machine-specific findings locally; do not turn a single device result into
 a general energy guarantee.
+
+## Complete controls profile
+
+```sh
+./scripts/profile-energy.sh --native 180 --controls > .build/energy/controls.csv
+```
+
+This finite run uses the complete production app delegate, runtime, environment, clock, menu bar, Settings and character with disposable preferences. Its six 30-second phases are idle, Settings open, paused, hidden, recovered, and 20 repeated Settings open/close and pause/hide/recover cycles. It restores the previous app after shutdown and removes its preferences. Login registration is read but never changed. Expect Settings to request activation during its explicit phase; use a quiet desktop and avoid other interactions during measurement. Keep actual system Reduce Motion and Low Power settings in the recorded device conditions. `--controls` cannot be combined with forced `--low-power` or `--rate`.
+
+CSV still distinguishes clock callbacks from actual character draws. Paused and hidden phases should have zero ongoing callbacks/draws after their transition frame. Inspect those rows directly: `summarize.py` deliberately excludes intervals without draws, so its overall CPU summary does not describe suspension. Compare idle, Settings and recovered phase intervals, and the retained footprint/heap after repeated controls. This short native check is neither sustained battery acceptance nor cumulative allocation-churn evidence. Store results separately from notification-injection regressions and physical acceptance.

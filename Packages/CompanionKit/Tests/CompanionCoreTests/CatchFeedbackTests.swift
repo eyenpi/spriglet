@@ -42,7 +42,9 @@ import Testing
         else { #expect(ready.snapshot.pose.arm == 0) }
         let before = ready.snapshot
         ready.send(.pointerDragged(start + Point(x: 240, y: 160)))
-        #expect(!ready.snapshot.canCatch && ready.snapshot.pose == before.pose)
+        #expect(!ready.snapshot.canCatch)
+        if policy == .full { #expect(ready.snapshot.pose == before.pose) }
+        else { #expect(ready.snapshot.pose.lookY == 0) }
         advance(&ready, seconds: 0.7)
         #expect(abs(ready.snapshot.pose.lookY - away.snapshot.pose.lookY) < 0.1)
         ready.send(.cancelInteraction)

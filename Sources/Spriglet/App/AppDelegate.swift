@@ -18,7 +18,7 @@ import AppKit
     }
     func applicationWillFinishLaunching(_ notification: Notification) {
         // Observe session inactivity before NSWorkspace's launch-time signal.
-        runtime.onShowSettings = { [weak self] in self?.showSettings() }
+        runtime.onControlAction = { [weak self] in self?.perform($0) }
         runtime.onSettingsChanged = { [weak self] state in self?.settings?.update(state) }
         runtime.start()
     }
@@ -29,8 +29,12 @@ import AppKit
             self?.menuBar?.update(state); self?.settings?.updateControls(state)
         }
         menuBar?.start()
-        let menu = NSMenu(), root = NSMenuItem()
+        let menu = NSMenu(), root = NSMenuItem(title: AppText.appName, action: nil, keyEquivalent: "")
         menu.addItem(root); root.submenu = menuBar?.makeMenu()
+        let windowItem = NSMenuItem(title: AppText.windowMenu, action: nil, keyEquivalent: "")
+        let windowMenu = NSMenu(title: AppText.windowMenu)
+        windowMenu.addItem(NSMenuItem(title: AppText.closeWindow, action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w"))
+        windowItem.submenu = windowMenu; menu.addItem(windowItem)
         let helpItem = NSMenuItem(title: AppText.helpMenu, action: nil, keyEquivalent: "")
         let helpMenu = menuBar?.makeHelpMenu()
         helpItem.submenu = helpMenu; menu.addItem(helpItem)
@@ -40,7 +44,7 @@ import AppKit
     func applicationWillTerminate(_ notification: Notification) {
         settings?.close(); settings?.onChange = nil; settings?.onAction = nil; settings?.onRefreshLoginState = nil; settings = nil
         menuBar?.stop(); help?.close(); help?.onShowIntroduction = nil; menuBar = nil; help = nil
-        runtime.onShowSettings = nil; runtime.onSettingsChanged = nil
+        runtime.onControlAction = nil; runtime.onSettingsChanged = nil
         runtime.onControlStateChanged = nil; runtime.makeContextMenu = nil; runtime.stop()
         launchAtLogin.onStateChanged = nil
     }

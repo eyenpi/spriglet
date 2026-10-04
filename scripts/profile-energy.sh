@@ -16,10 +16,16 @@ mkdir -p "$task_root/.build/energy"
 xcrun swiftc -O -g -parse-as-library -swift-version 6 -warnings-as-errors \
   -I "$task_modules" "${task_objects[@]}" \
   "$task_root"/Sources/Spriglet/Desktop/*.swift \
-  "$task_root/Sources/Spriglet/Environment/DisplayContext.swift" \
-  "$task_root/Sources/Spriglet/Settings/CompanionPreferences.swift" \
-  "$task_root/Sources/Spriglet/Runtime/ScreenFrameClock.swift" \
+  "$task_root"/Sources/Spriglet/Environment/*.swift \
+  "$task_root"/Sources/Spriglet/Settings/*.swift \
+  "$task_root"/Sources/Spriglet/Runtime/*.swift \
+  "$task_root/Sources/Spriglet/App/AppDelegate.swift" \
+  "$task_root/Sources/Spriglet/App/MenuBarController.swift" \
+  "$task_root/Sources/Spriglet/App/LaunchAtLogin.swift" \
+  "$task_root/Sources/Spriglet/App/LaunchAtLoginPresentation.swift" \
+  "$task_root/Sources/Spriglet/App/CompanionHelpPanel.swift" \
   "$task_root/Sources/Spriglet/App/SharedContent.generated.swift" \
+  "$task_root/Sources/Spriglet/App/AppControlAction.swift" \
   "$task_root"/tools/EnergyProfile/*.swift \
   -o "$task_root/.build/energy/companion-energy"
 exec "$task_root/.build/energy/companion-energy" "$@"

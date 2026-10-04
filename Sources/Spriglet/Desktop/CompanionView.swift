@@ -6,8 +6,7 @@ import CompanionRendering
 @MainActor final class CompanionView: NSView {
     var onInput: ((CompanionInput) -> Void)?
     var makeContextMenu: (() -> NSMenu)?
-    var onShowIntroduction: (() -> Void)?
-    var onShowSettings: (() -> Void)?
+    var onControlAction: ((AppControlAction) -> Void)?
     /// Optional instrumentation owned by the finite profiling tool.
     var onDraw: ((Double) -> Void)?
     var context: DisplayContext
@@ -15,12 +14,15 @@ import CompanionRendering
     var drawingOrigin = Point.zero
     private let renderer = MallowRenderer()
     private var presenceDescription = ""
+    private var acceptsInput = true
+    private var isPaused = false
     init(context: DisplayContext, snapshot: CompanionSnapshot) {
         self.context = context; self.snapshot = snapshot
         super.init(frame: NSRect(x: 0, y: 0, width: WindowGeometry.width * context.scene.scale,
                                 height: WindowGeometry.height * context.scene.scale))
         setAccessibilityElement(true); setAccessibilityRole(.button)
-        setAccessibilityLabel(AppText.companionName); setAccessibilityHelp(AppText.interactionHelp)
+        setAccessibilityLabel(AppText.companionName); setAccessibilityHelp(AppText.accessibleCharacterHelp)
+        refresh(snapshot: snapshot)
     }
     required init?(coder: NSCoder) { fatalError("Use init(context:snapshot:)") }
     override var isFlipped: Bool { true }
@@ -42,24 +44,51 @@ import CompanionRendering
         let hit = snapshot.hitBounds
         return NSRect(x: context.frame.minX + hit.minX, y: context.frame.maxY - hit.maxY, width: hit.width, height: hit.height)
     }
-    override func accessibilityPerformPress() -> Bool { onInput?(.activate); return true }
-    override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
-        [NSAccessibilityCustomAction(name: AppText.settingsMenu) { [weak self] in
-            guard let self else { return false }
-            self.onShowSettings?(); return true
-        }, NSAccessibilityCustomAction(name: AppText.introductionMenu) { [weak self] in
-            guard let self else { return false }
-            self.onShowIntroduction?(); return true
-        }]
+    override func accessibilityPerformPress() -> Bool {
+        guard acceptsInput, let onInput else { return false }
+        onInput(.activate); return true
     }
-    func refresh(snapshot: CompanionSnapshot) {
-        self.snapshot = snapshot
-        let description = switch snapshot.presence {
-        case .peek: AppText.restingPresence
-        case .engaged: AppText.engagedPresence
-        case .playing: AppText.playingPresence
+    override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
+        var actions: [NSAccessibilityCustomAction] = []
+        if acceptsInput {
+            actions.append(NSAccessibilityCustomAction(name: AppText.inviteMallow) { [weak self] in
+                guard let self, self.acceptsInput, let onInput = self.onInput else { return false }
+                onInput(.command(.greet)); return true
+            })
         }
-        if description != presenceDescription { presenceDescription = description; setAccessibilityValue(description) }
+        for (action, title) in [(AppControlAction.bringHome, AppText.bringHome),
+                                (.togglePause, isPaused ? AppText.resumeMallow : AppText.pauseMallow),
+                                (.toggleVisibility, AppText.hideMallow), (.settings, AppText.settingsMenu),
+                                (.introduction, AppText.introductionMenu), (.help, AppText.supportTitle)] {
+            actions.append(NSAccessibilityCustomAction(name: title) { [weak self] in
+                guard let onControlAction = self?.onControlAction else { return false }
+                onControlAction(action); return true
+            })
+        }
+        return actions
+    }
+    func refresh(snapshot: CompanionSnapshot, acceptsInput: Bool = true, isPaused: Bool = false) {
+        self.snapshot = snapshot; self.acceptsInput = acceptsInput; self.isPaused = isPaused
+        let description: String
+        if isPaused { description = AppText.pausedPresence }
+        else {
+            description = switch snapshot.phase {
+            case .held: snapshot.canCatch ? AppText.catchReadyPresence : AppText.heldPresence
+            case .falling, .jumping, .preparingJump: AppText.movingPresence
+            case .catching: AppText.returningPresence
+            case .grounded: AppText.groundedPresence
+            case .hanging:
+                switch snapshot.presence {
+                case .peek: AppText.restingPresence
+                case .engaged: AppText.engagedPresence
+                case .playing: AppText.playingPresence
+                }
+            }
+        }
+        if description != presenceDescription {
+            presenceDescription = description; setAccessibilityValue(description)
+            if window != nil { NSAccessibility.post(element: self, notification: .valueChanged) }
+        }
         needsDisplay = true
     }
     private func point(_ event: NSEvent) -> Point {

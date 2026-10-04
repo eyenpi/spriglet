@@ -1,8 +1,8 @@
 #!/bin/zsh
 # Compiles the production macOS adapters into a finite native regression runner.
 set -euo pipefail
-if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" && "${1:-}" != "--prepare-introduction" && "${1:-}" != "--test-quit-timeout" && "${1:-}" != "--test-preferences" && "${1:-}" != "--test-introduction" && "${1:-}" != "--app-only" ]]; then
-  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen|--prepare-introduction|--test-quit-timeout|--test-preferences|--test-introduction|--app-only]"
+if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" && "${1:-}" != "--prepare-introduction" && "${1:-}" != "--prepare-daily-use" && "${1:-}" != "--test-quit-timeout" && "${1:-}" != "--test-preferences" && "${1:-}" != "--test-introduction" && "${1:-}" != "--app-only" ]]; then
+  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen|--prepare-introduction|--prepare-daily-use|--test-quit-timeout|--test-preferences|--test-introduction|--app-only]"
   exit 2
 fi
 task_root="${0:A:h:h}"
@@ -27,6 +27,7 @@ swiftc -swift-version 6 -strict-concurrency=complete -warnings-as-errors -parse-
   "$task_root"/Sources/Spriglet/Runtime/*.swift \
   "$task_root"/Sources/Spriglet/Settings/*.swift \
   "$task_root/Sources/Spriglet/App/AppDelegate.swift" \
+  "$task_root/Sources/Spriglet/App/AppControlAction.swift" \
   "$task_root/Sources/Spriglet/App/AppInstanceLease.swift" \
   "$task_root/Sources/Spriglet/App/MenuBarController.swift" \
   "$task_root/Sources/Spriglet/App/LaunchAtLogin.swift" \
@@ -60,7 +61,7 @@ PY
     print "Open $task_fixture_app and click its blank window to run real fullscreen acceptance."
     print "The outcome is saved in $task_output/fullscreen-result.txt."
   else
-    print "Open $task_fixture_app to review the introduction with isolated preferences. It exits after two minutes."
+    print "Open $task_fixture_app to review native controls with isolated preferences and fake login registration. It exits after five minutes."
   fi
 elif [[ "${1:-}" == "--test-quit-timeout" || "${1:-}" == "--test-preferences" || "${1:-}" == "--test-introduction" ]]; then
   "$task_output/lifecycle-validation" "$1"

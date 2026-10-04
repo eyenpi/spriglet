@@ -34,10 +34,17 @@ public struct CompanionEngine: Sendable {
         pointer = Point(x: -1000, y: -1000); remainder = 0
     }
     public mutating func setMotionPolicy(_ policy: MotionPolicy) {
+        guard motionPolicy != policy else { return }
         motionPolicy = policy
         if policy == .reduced {
             body.swing.value = 0; body.swing.speed = 0
-            if body.isReturningHome { body.returnHome(immediately: true) }
+            // Keep a deliberate grab, but stop autonomous walking, hopping,
+            // falling, catch settling and residual pendulum motion immediately.
+            if body.phase != .held {
+                body = BodyPhysics(scene: body.scene)
+                if interaction.presence == .playing { interaction.rest() }
+            }
+            updateHomePresentation(SimulationTuning.step)
         }
     }
     /// Amplitude of authored motion, independent of native settings/storage.
@@ -74,7 +81,10 @@ public struct CompanionEngine: Sendable {
         case .pointerReleased(let point):
             guard interaction.press != nil else { return }
             let dragged = interaction.dragging; interaction.clearPress()
-            if dragged { body.release() }
+            if dragged {
+                if motionPolicy == .reduced { returnHome() }
+                else { body.release() }
+            }
             else if point.isFinite && snapshot.contains(point) { activate() }
         case .cancelInteraction:
             reconfigure(scene: body.scene)
@@ -83,6 +93,7 @@ public struct CompanionEngine: Sendable {
         case .activate: activate()
         case .command(let command): perform(command)
         }
+        if motionPolicy == .reduced { updateHomePresentation(SimulationTuning.step) }
     }
     private mutating func activate() {
         switch interaction.presence {
@@ -92,7 +103,7 @@ public struct CompanionEngine: Sendable {
             interaction.react(gesture, at: time)
             if gesture == .swing && motionPolicy == .full { body.swing.impulse(1.8 * movementAmount) }
             body.compression.impulse(-1.2 * movementAmount)
-        case .playing: returnHome()
+        case .playing: interaction.clearPress(); returnHome()
         }
     }
     private mutating func returnHome() {
@@ -105,8 +116,10 @@ public struct CompanionEngine: Sendable {
         switch command {
         case .returnHome: interaction.clearPress(); returnHome()
         case .greet:
+            interaction.clearPress()
             body.returnHome(immediately: motionPolicy == .reduced); interaction.engage(at: time)
         case .swing, .stretch:
+            interaction.clearPress()
             body.returnHome(immediately: motionPolicy == .reduced); interaction.engage(at: time)
             interaction.react(command == .swing ? .swing : .stretch, at: time)
             if command == .swing && body.phase == .hanging && motionPolicy == .full { body.swing.impulse(1.8 * movementAmount) }
@@ -127,10 +140,7 @@ public struct CompanionEngine: Sendable {
         if interaction.step(dt, at: time, pointerOver: snapshot.contains(pointer)) { returnHome() }
         body.step(dt, at: time, walkingAmount: presentation.pose.walk)
         if body.phase == .hanging && interaction.presence == .playing { interaction.rest() }
-        let openTarget = body.phase != .hanging || interaction.presence != .peek ? 1.0 : interaction.hoverAge > 0.35 ? 0.66 : 0.6
-        reveal.step(dt, target: openTarget)
-        homeRetraction.step(dt, target: body.phase == .hanging ? (1 - openTarget) * 75 : 0)
-        homeGrip.step(dt, target: body.phase == .hanging || body.phase == .catching ? 1 : 0)
+        updateHomePresentation(dt)
         let nearby = pointer.distance(to: snapshot.feet) < 260 * body.scene.scale
         idle.step(dt, quiet: body.phase == .hanging && interaction.presence == .peek && !hasPointerCapture && !nearby,
                   policy: motionPolicy)
@@ -148,6 +158,20 @@ public struct CompanionEngine: Sendable {
         if animator.motion != desired { animator.select(desired, at: time) }
         animator.advance(to: time, dt: dt, walkingAmount: presentation.pose.walk, idlePose: idle.pose)
         presentation.step(toward: targetPose, dt: dt)
+    }
+    private mutating func updateHomePresentation(_ dt: Double) {
+        let openTarget = body.phase != .hanging || interaction.presence != .peek ? 1.0 : interaction.hoverAge > 0.35 ? 0.66 : 0.6
+        let retractionTarget = body.phase == .hanging ? (1 - openTarget) * 75 : 0
+        let gripTarget = body.phase == .hanging || body.phase == .catching ? 1.0 : 0
+        if motionPolicy == .reduced {
+            reveal.value = openTarget; reveal.speed = 0
+            homeRetraction.value = retractionTarget; homeRetraction.speed = 0
+            homeGrip.value = gripTarget; homeGrip.speed = 0
+        } else {
+            reveal.step(dt, target: openTarget)
+            homeRetraction.step(dt, target: retractionTarget)
+            homeGrip.step(dt, target: gripTarget)
+        }
     }
     private var targetPose: CharacterPose {
         var pose = animator.targetPose
@@ -190,6 +214,8 @@ public struct CompanionEngine: Sendable {
         if motionPolicy == .reduced {
             pose.width = 1; pose.height = 1; pose.lean = 0; pose.look = 0
             pose.arm = 0; pose.sparkle = 0
+            pose.walk = 0; pose.facing = 0; pose.gaitPhase = 0; pose.direction = 1
+            pose.lookY = min(28, (1 - open) * 75) + (body.canCatch ? -5 : 0)
             feet = body.phase == .hanging ? Point(x: scene.homeFeet.x, y: scene.homeFeet.y - homeRetraction.value * scene.scale) : feet
         }
         return CompanionSnapshot(scene: scene, presence: interaction.presence, phase: body.phase, pose: pose,

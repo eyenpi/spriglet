@@ -22,13 +22,13 @@ import AppKit
 
     func present() {
         if panel == nil {
-            let help = HelpPanel(title: AppText.supportTitle, size: NSSize(width: 440, height: 390))
+            let help = HelpPanel(title: AppText.supportTitle, size: NSSize(width: 440, height: 560))
             let heading = label(AppText.companionName)
             heading.font = .boldSystemFont(ofSize: 20)
             let introduction = NSButton(title: AppText.introductionMenu, target: self, action: #selector(showIntroduction))
             introduction.bezelStyle = .rounded
             install([heading, label(AppText.interactionHelp), label(AppText.menuControlsHelp),
-                     label(AppText.recoveryHelp), introduction, label(AppText.localHelp)], in: help)
+                     label(AppText.recoveryHelp), label(AppText.keyboardHelp), introduction, label(AppText.localHelp)], in: help)
             panel = help
         }
         panel?.orderFrontRegardless()

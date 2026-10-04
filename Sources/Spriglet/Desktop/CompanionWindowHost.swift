@@ -11,8 +11,7 @@ import CompanionCore
 @MainActor final class CompanionWindowHost {
     var onInput: ((CompanionInput) -> Void)?
     var makeContextMenu: (() -> NSMenu)?
-    var onShowIntroduction: (() -> Void)?
-    var onShowSettings: (() -> Void)?
+    var onControlAction: ((AppControlAction) -> Void)?
     var onDraw: ((Double) -> Void)?
     private var panel: NSPanel?
     private var view: CompanionView?
@@ -22,8 +21,7 @@ import CompanionCore
         let view = CompanionView(context: context, snapshot: snapshot)
         view.onInput = { [weak self] input in self?.onInput?(input) }
         view.makeContextMenu = makeContextMenu
-        view.onShowIntroduction = { [weak self] in self?.onShowIntroduction?() }
-        view.onShowSettings = { [weak self] in self?.onShowSettings?() }
+        view.onControlAction = { [weak self] in self?.onControlAction?($0) }
         view.onDraw = onDraw
         let panel = CompanionPanel(contentRect: view.bounds, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.isOpaque = false; panel.backgroundColor = .clear; panel.hasShadow = false
@@ -35,7 +33,7 @@ import CompanionCore
         self.panel = panel; self.view = view
         update(snapshot: snapshot, capturesPointer: false, pointer: context.point(NSEvent.mouseLocation))
     }
-    func update(snapshot: CompanionSnapshot, capturesPointer: Bool, pointer: Point, acceptsInput: Bool = true) {
+    func update(snapshot: CompanionSnapshot, capturesPointer: Bool, pointer: Point, acceptsInput: Bool = true, isPaused: Bool = false) {
         guard let panel, let view else { return }
         let frame = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: view.context.frame,
                                                scale: snapshot.scene.scale, visibleBounds: snapshot.hitBounds)
@@ -52,11 +50,14 @@ import CompanionCore
         )
         let passThrough = !acceptsInput || (!capturesPointer && !snapshot.contains(pointer))
         if panel.ignoresMouseEvents != passThrough { panel.ignoresMouseEvents = passThrough }
-        view.refresh(snapshot: snapshot)
+        view.refresh(snapshot: snapshot, acceptsInput: acceptsInput, isPaused: isPaused)
     }
     func setVisible(_ visible: Bool, restoringOrder: Bool = false) {
         guard let panel, restoringOrder || panel.isVisible != visible else { return }
         if visible { panel.orderFrontRegardless() } else { panel.orderOut(nil) }
     }
-    func close() { panel?.orderOut(nil); panel?.close(); panel = nil; view = nil; requestedFrame = nil }
+    func close() {
+        view?.onInput = nil; view?.makeContextMenu = nil; view?.onControlAction = nil; view?.onDraw = nil
+        panel?.orderOut(nil); panel?.close(); panel = nil; view = nil; requestedFrame = nil
+    }
 }
