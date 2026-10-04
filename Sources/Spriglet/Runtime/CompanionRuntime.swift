@@ -90,7 +90,7 @@ import CompanionCore
         }
         if let current = self.context, current.hasSameLayout(as: context) { return }
         self.context = context
-        if engine == nil { engine = CompanionEngine(scene: context.scene) }
+        if engine == nil { engine = CompanionEngine(scene: context.scene, idleSeed: UInt64.random(in: .min ... .max)) }
         else { engine?.reconfigure(scene: context.scene) }
         engine?.setMotionPolicy(conditions.reduceMotion ? .reduced : .full)
         guard let engine else { return }

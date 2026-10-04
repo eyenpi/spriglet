@@ -6,6 +6,7 @@ public struct CompanionEngine: Sendable {
     private var body: BodyPhysics
     private var interaction = InteractionState()
     private var animator = MotionAnimator()
+    private var idle: IdleAnimation
     private var presentation = PoseDynamics()
     private var reveal = Spring(value: 0.6, frequency: 12, damping: 0.9)
     private var homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
@@ -17,10 +18,15 @@ public struct CompanionEngine: Sendable {
     public private(set) var motionPolicy = MotionPolicy.full
     public var isDragging: Bool { interaction.dragging }
     public var hasPointerCapture: Bool { interaction.press != nil }
-    public init(scene: SceneGeometry) { body = BodyPhysics(scene: scene) }
+    /// Hosts may supply a fresh session seed; previews and tests default to a
+    /// repeatable sequence. The seed is the only external source of randomness.
+    public init(scene: SceneGeometry, idleSeed: UInt64 = 0x4D414C4C4F57) {
+        body = BodyPhysics(scene: scene); idle = IdleAnimation(seed: idleSeed)
+    }
     public mutating func reconfigure(scene: SceneGeometry) {
         body = BodyPhysics(scene: scene); interaction = InteractionState()
         animator = MotionAnimator(); presentation = PoseDynamics()
+        idle.reset()
         reveal = Spring(value: 0.6, frequency: 12, damping: 0.9); gaze = Spring(frequency: 10, damping: 1)
         homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
         homeGrip = Spring(value: 1, frequency: 14, damping: 1)
@@ -114,6 +120,8 @@ public struct CompanionEngine: Sendable {
         homeRetraction.step(dt, target: body.phase == .hanging ? (1 - openTarget) * 75 : 0)
         homeGrip.step(dt, target: body.phase == .hanging || body.phase == .catching ? 1 : 0)
         let nearby = pointer.distance(to: snapshot.feet) < 260 * body.scene.scale
+        idle.step(dt, quiet: body.phase == .hanging && interaction.presence == .peek && !hasPointerCapture && !nearby,
+                  policy: motionPolicy)
         let look = nearby && motionPolicy == .full ? clamp((pointer.x - snapshot.feet.x) / 35, -5, 5) : 0
         gaze.step(dt, target: look)
         var desired = Motion.idle
@@ -126,7 +134,7 @@ public struct CompanionEngine: Sendable {
         } else if body.isWalking && body.phase == .grounded { desired = body.direction > 0 ? .walkRight : .walkLeft }
         if motionPolicy == .reduced { desired = .idle }
         if animator.motion != desired { animator.select(desired, at: time) }
-        animator.advance(to: time, dt: dt, walkingAmount: presentation.pose.walk)
+        animator.advance(to: time, dt: dt, walkingAmount: presentation.pose.walk, idlePose: idle.pose)
         presentation.step(toward: targetPose, dt: dt)
     }
     private var targetPose: CharacterPose {
@@ -134,7 +142,7 @@ public struct CompanionEngine: Sendable {
         switch body.phase {
         case .hanging:
             pose.arm = interaction.gesture == .hello ? pose.arm : 0.4
-            pose.facing = 0; pose.lean += sin(time * 2) * 0.015
+            pose.facing = 0
         case .preparingJump:
             pose.height = 1 - body.anticipationProgress * 0.19
         case .jumping, .falling:
