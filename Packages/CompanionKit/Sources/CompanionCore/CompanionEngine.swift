@@ -141,7 +141,9 @@ public struct CompanionEngine: Sendable {
             let stretch = min(abs(body.velocity.y) / 1400, 1)
             pose.height = 1 + stretch * 0.13
             pose.arm = 0.55; pose.lean = clamp(body.velocity.x / 1800, -0.08, 0.08)
-        case .held: pose.height = 1.13; pose.arm = 0.7
+        case .held:
+            pose.height = 1.13; pose.arm = body.canCatch ? 0.85 : 0.7
+            pose.lookY = body.canCatch ? -5 : 0
         case .catching: pose.height = 1.08; pose.arm = 0.9
         case .grounded: break
         }
@@ -167,11 +169,9 @@ public struct CompanionEngine: Sendable {
             pose.arm = 0; pose.sparkle = 0
             feet = body.phase == .hanging ? Point(x: scene.homeFeet.x, y: scene.homeFeet.y - homeRetraction.value * scene.scale) : feet
         }
-        let top = body.phase == .hanging ? max(scene.home.maxY, feet.y - 86 * scene.scale) : feet.y - 86 * scene.scale
-        let hit = Rect(x: feet.x - 67 * scene.scale, y: top, width: 134 * scene.scale, height: max(0, feet.y + 10 * scene.scale - top))
         return CompanionSnapshot(scene: scene, presence: interaction.presence, phase: body.phase, pose: pose,
                                  feet: feet, windowAnchor: body.renderedFeet, rotation: motionPolicy == .full ? body.rotation : 0,
                                  openness: open, homeGrip: clamp(homeGrip.value, 0, 1), time: time, gesture: interaction.gesture,
-                                 hitBounds: hit)
+                                 canCatch: body.canCatch)
     }
 }

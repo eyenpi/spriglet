@@ -2,7 +2,7 @@
 
 A soft, local desktop companion for Apple silicon Macs running macOS 26 or later. Mallow rests beneath the notch with its face visible, blinking and breathing while you work. It has no action cards, settings window or permanent menu-bar controls.
 
-Hover for a small reaction. Click to invite it out; touch again for a wave or swing. Drag to pick it up. Release near home to let it catch, or away from home for gravity and a squishy landing. Click elsewhere to return it to its resting peek. On a display without a notch, it rests at the upper right edge below the menu bar.
+Hover for a small reaction. Click to invite it out; touch again for a wave or swing. Drag to pick it up. While held close enough to catch home, Mallow looks up and reaches slightly; release there to let it catch, or away from home for gravity and a squishy landing. Click elsewhere to return it to its resting peek. On a display without a notch, it rests at the upper right edge below the menu bar.
 
 This is the first Mallow release, `v0.3.0-preview.1` (app 0.3.0, build 5). Downloads are on [GitHub releases](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1); choose the `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP. macOS may block an unsigned download. Plugins and assistant services are not implemented. The local app uses ad hoc signing; it has not been Apple-notarized or submitted to the App Store.
 
@@ -28,9 +28,10 @@ For a finite, reproducible animation preview using the production code:
 ```sh
 ./scripts/preview.sh .build/preview/frames
 ./scripts/preview.sh .build/preview/transitions --transitions
+./scripts/preview.sh .build/preview/interaction --interaction
 ```
 
-The exporter writes PNG frames locally. The transition sequence renders at 60 fps and covers emergence, grabbing during emergence, regrabbing a catch, reversing a retreat, a rapid upward throw and returning during a horizontal reversal. It runs no assistant service and reads no desktop content.
+The exporter writes PNG frames locally. The transition sequence renders at 60 fps and covers emergence, grabbing during emergence, regrabbing a catch, reversing a retreat, a rapid upward throw and returning during a horizontal reversal. The interaction sequence covers a transparent-corner press, dragging away, returning into catch range, the upward look and release. It runs no assistant service and reads no desktop content.
 
 ## Architecture
 
@@ -53,13 +54,15 @@ Add a semantic input or command in `CompanionInput.swift`. Interaction transitio
 
 Hands use one continuous attachment value in the snapshot. The renderer blends free and home hand positions and lets the home housing occlude them as they emerge; it has no reveal threshold or gesture-triggered arm switch.
 
+`MallowGeometry.swift` supplies the shared body curves, pose transforms, gait feet and hand paths. Picking follows that painted silhouette, including outlines, rotation and deformation; the housing and display bounds clip both rendering and picking. Shadows and sparkles stay decorative. `hitBounds` is only a bounding rectangle for accessibility. Catch readiness comes from the same held target used on release and drives the upward gaze through the normal pose blending, including with Reduce Motion.
+
 Home retraction advances independently of the physics phase. Grabs transfer its visible position and velocity to the held body; catches start their retreat from the current offset instead of applying a hidden part of the peek all at once.
 
 Free motion respects the scene ceiling, floor and side limits. Momentum continues until contact: vertical impacts produce a damped rebound, catch springs retain their corrected state, and return trajectories rejoin home from the contact position and remaining velocity. The ceiling keeps the body reachable while allowing a grab to begin at the visible resting peek.
 
 ### Changing the character
 
-Edit `MallowRenderer.swift` and the pose contract. The app, preview and icon share the same vector source. Regenerate icons with `art/app-icon/export_icon_catalog.sh` and run the rendering tests. No spritesheet, frame decoder or separate character manifest is required.
+Edit `MallowGeometry.swift` for the silhouette and limb geometry, `MallowRenderer.swift` for facial artwork and styling, and the pose contract for expressions. The app, preview, picking and icon share the same vector source. Regenerate icons with `art/app-icon/export_icon_catalog.sh` and run the rendering tests. No spritesheet, frame decoder or separate character manifest is required.
 
 ### Future capabilities
 
@@ -71,7 +74,7 @@ The host renders deliberate motion at up to 60 fps, resting peeks at 20 fps and 
 
 Home stays on the initial primary display as focus moves between apps. If that display disconnects, Mallow uses the current primary display until its original display returns. Resolution, scaling and reserved-space changes recompute home. If no display is available, the host and clock are closed until one returns. Unchanged screen notifications preserve an active interaction.
 
-Mallow only occupies a small transparent panel. Empty margins pass clicks through; a drag retains capture until release or cancellation. While captured, the runtime samples the left mouse button so a lost mouse-up cannot leave a stuck drag. The floor clears macOS-reported reserved space. Other app windows and the exact Dock icon shelf are not inspected.
+Mallow only occupies a small transparent panel. Empty margins and transparent corners pass clicks through; a drag retains capture until release or cancellation. While captured, the runtime samples the left mouse button so a lost mouse-up cannot leave a stuck drag. The floor clears macOS-reported reserved space. Other app windows and the exact Dock icon shelf are not inspected.
 
 ## Verification
 

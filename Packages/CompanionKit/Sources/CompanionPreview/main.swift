@@ -94,6 +94,43 @@ import CompanionRendering
     print("Rendered 1080 transition frames at 60 fps using the production core and renderer.")
 }
 
+/// Review transparent-corner input, departure, upward catch feedback and release.
+@MainActor func exportInteraction(to folder: URL) throws {
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    var engine = CompanionEngine(scene: .preview)
+    let painter = ScenePreviewRenderer()
+    var start = Point.zero, pointer = Point(x: 625, y: 190)
+    for index in 0..<420 {
+        if (20..<50).contains(index) {
+            let bounds = engine.snapshot.hitBounds
+            pointer = Point(x: bounds.maxX - 1, y: bounds.maxY - 1)
+        }
+        if index == 25 { engine.send(.pointerPressed(pointer)) }
+        if index == 26 { engine.send(.pointerDragged(pointer + Point(x: 6, y: 0))) }
+        if index == 27 { engine.send(.pointerReleased(pointer)) }
+        if index == 60 { engine.send(.activate) }
+        if index == 120 {
+            start = engine.snapshot.hitBounds.center; pointer = start
+            engine.send(.pointerPressed(pointer))
+        }
+        if (121..<160).contains(index) {
+            let u = Double(index - 120) / 39
+            pointer = start + Point(x: 150 * u, y: 100 * u)
+            engine.send(.pointerDragged(pointer))
+        }
+        if (200..<240).contains(index) {
+            let u = Double(index - 200) / 39
+            pointer = start + Point(x: 150 - 125 * u, y: 100 - 90 * u)
+            engine.send(.pointerDragged(pointer))
+        }
+        if index == 280 { engine.send(.pointerReleased(pointer)) }
+        engine.send(.pointerMoved(pointer)); engine.advance(by: 1 / 60.0)
+        try writeFrame(engine.snapshot, painter: painter, to: folder, index: index,
+                       pointer: pointer, pressed: engine.hasPointerCapture)
+    }
+    print("Rendered 420 interaction frames at 60 fps using the production core and renderer.")
+}
+
 @MainActor func exportIcons(to directory: URL) throws {
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let renderer = MallowIconRenderer()
@@ -115,10 +152,12 @@ if args.count == 3 && args[1] == "--icons" {
     try exportIcons(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--transitions" {
     try exportTransitions(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--interaction" {
+    try exportInteraction(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 2 {
     try export(to: URL(fileURLWithPath: args[1]))
 } else {
-    print("Usage: companion-preview OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
+    print("Usage: companion-preview OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
 }
 
 } catch {

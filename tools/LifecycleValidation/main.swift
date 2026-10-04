@@ -39,6 +39,29 @@ struct ValidationFailure: Error, CustomStringConvertible {
         host.onInput?(.pointerDragged(Point(x: 500, y: 250)))
         clock.onTick?(0.05)
     }
+    static func nativePicking(screen: NSScreen) throws {
+        let context = DisplayContext(screen: screen), host = CompanionWindowHost()
+        let frame = CompanionEngine(scene: context.scene).snapshot
+        host.attach(context: context, snapshot: frame); host.setVisible(true)
+        defer { host.close() }
+        let panel = try visiblePanel(), character = view(panel), bounds = frame.hitBounds
+        let body = bounds.center, corner = Point(x: bounds.minX + 1, y: bounds.maxY - 1)
+        // NSView.hitTest receives its point in the superview's coordinate space.
+        func hitTestPoint(_ point: Point) -> NSPoint {
+            character.convert(NSPoint(x: point.x + character.drawingOrigin.x, y: point.y + character.drawingOrigin.y),
+                              to: character.superview)
+        }
+        host.update(snapshot: frame, capturesPointer: false, pointer: body)
+        try require(!panel.ignoresMouseEvents && character.hitTest(hitTestPoint(body)) === character, "Visible body was not pickable in the compensated view")
+        // Check view-level picking even before the next host pointer sample.
+        try require(character.hitTest(hitTestPoint(corner)) == nil, "Transparent corner accepted a stale-sample press")
+        host.update(snapshot: frame, capturesPointer: false, pointer: corner)
+        try require(panel.ignoresMouseEvents, "Transparent corner did not enable native click-through")
+        host.update(snapshot: frame, capturesPointer: true, pointer: corner)
+        try require(!panel.ignoresMouseEvents, "Dragging through a transparent corner lost native capture")
+        host.update(snapshot: frame, capturesPointer: false, pointer: corner)
+        try require(panel.ignoresMouseEvents, "Release retained whole-panel capture")
+    }
     static func nativeLifecycle(screen: NSScreen) throws {
         let application = NotificationCenter(), workspace = NotificationCenter(), locks = NotificationCenter()
         let original = DisplayContext(screen: screen)
@@ -266,6 +289,7 @@ struct ValidationFailure: Error, CustomStringConvertible {
                 outcome = "Passed: real fullscreen/Spaces fixture retained keyboard focus and a visible home on entry, reopen and exit."
             } else {
                 guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Native validation requires a logged-in Mac with a display") }
+                try nativePicking(screen: screen)
                 try nativeLifecycle(screen: screen)
                 try observationLifetime()
                 try instanceLease()

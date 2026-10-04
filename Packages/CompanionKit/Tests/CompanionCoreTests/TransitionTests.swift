@@ -42,7 +42,7 @@ import Testing
         let pointer = engine.snapshot.hitBounds.center
         engine.send(.pointerPressed(pointer)); engine.send(.pointerDragged(pointer + Point(x: 6, y: 0)))
         let hidden = Point(x: engine.snapshot.feet.x, y: engine.snapshot.scene.home.maxY - 4)
-        #expect(engine.snapshot.hitBounds.contains(hidden))
+        #expect(engine.snapshot.geometry.contains(hidden))
         #expect(!engine.snapshot.contains(hidden))
         #expect(engine.snapshot.contains(pointer))
     }
