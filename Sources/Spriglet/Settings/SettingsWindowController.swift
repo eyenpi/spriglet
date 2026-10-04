@@ -11,9 +11,10 @@ import AppKit
 
 /// Owns one ordinary native window and emits complete value changes. It never
 /// reads storage, samples displays or retains the simulation/runtime.
-@MainActor final class SettingsWindowController: NSWindowController {
+@MainActor final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     var onChange: ((CompanionPreferences) -> Void)?
     var onAction: ((AppControlAction) -> Void)?
+    var onRefreshLoginState: (() -> Void)?
     private var preferences = CompanionPreferences()
     private var displayIDs: [String?] = []
     private let size = NSPopUpButton()
@@ -22,12 +23,16 @@ import AppKit
     private let location = NSPopUpButton()
     private let visibility = SettingsCheckbox(checkboxWithTitle: AppText.showMallow, target: nil, action: nil)
     private let animation = SettingsCheckbox(checkboxWithTitle: AppText.animateMallow, target: nil, action: nil)
+    private let login = SettingsCheckbox(checkboxWithTitle: AppText.launchAtLogin, target: nil, action: nil)
+    private let loginStatus = NSTextField(wrappingLabelWithString: "")
+    private let loginFailure = NSTextField(wrappingLabelWithString: "")
 
-    init(state: SettingsState) {
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 420, height: 320),
+    init(state: SettingsState, loginState: LaunchAtLoginState) {
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 460, height: 500),
                               styleMask: [.titled, .closable], backing: .buffered, defer: false)
         window.title = AppText.settingsTitle; window.isReleasedWhenClosed = false
         super.init(window: window)
+        window.delegate = self
         size.addItems(withTitles: [AppText.sizeSmall, AppText.sizeMedium, AppText.sizeLarge])
         movement.addItems(withTitles: [AppText.movementGentle, AppText.movementStandard, AppText.movementLively])
         location.addItems(withTitles: [AppText.homeAutomatic, AppText.homeLeft, AppText.homeCenter, AppText.homeRight])
@@ -49,7 +54,16 @@ import AppKit
         animation.target = self; animation.action = #selector(togglePause)
         let sessionControls = NSStackView(views: [visibility, animation])
         sessionControls.orientation = .horizontal; sessionControls.spacing = 24
-        let stack = NSStackView(views: [grid, sessionControls, note])
+        login.target = self; login.action = #selector(toggleLaunchAtLogin); login.allowsMixedState = true
+        login.setAccessibilityLabel(AppText.launchAtLogin)
+        let loginSettings = NSButton(title: AppText.openLoginItemsSettings, target: self, action: #selector(openLoginItemsSettings))
+        loginSettings.bezelStyle = .rounded
+        loginStatus.font = .systemFont(ofSize: NSFont.smallSystemFontSize); loginStatus.textColor = .secondaryLabelColor
+        loginFailure.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        loginFailure.maximumNumberOfLines = 3; loginFailure.lineBreakMode = .byTruncatingTail
+        let loginControls = NSStackView(views: [login, loginStatus, loginFailure, loginSettings])
+        loginControls.orientation = .vertical; loginControls.alignment = .leading; loginControls.spacing = 8
+        let stack = NSStackView(views: [grid, sessionControls, loginControls, note])
         stack.orientation = .vertical; stack.alignment = .leading; stack.spacing = 22
         stack.translatesAutoresizingMaskIntoConstraints = false
         guard let content = window.contentView else { return }
@@ -60,10 +74,13 @@ import AppKit
             stack.topAnchor.constraint(equalTo: content.topAnchor, constant: 24),
             stack.bottomAnchor.constraint(lessThanOrEqualTo: content.bottomAnchor, constant: -24),
             note.widthAnchor.constraint(equalTo: stack.widthAnchor),
+            loginControls.widthAnchor.constraint(equalTo: stack.widthAnchor),
+            loginStatus.widthAnchor.constraint(equalTo: stack.widthAnchor),
+            loginFailure.widthAnchor.constraint(equalTo: stack.widthAnchor),
         ])
-        window.center(); update(state)
+        window.center(); update(state); updateLoginState(loginState)
     }
-    required init?(coder: NSCoder) { fatalError("Use init(state:)") }
+    required init?(coder: NSCoder) { fatalError("Use init(state:loginState:)") }
 
     func present() {
         // Only an explicit Settings action activates the accessory app.
@@ -92,6 +109,19 @@ import AppKit
         visibility.isEnabled = state.canShow
         animation.state = state.isPaused ? .off : .on
     }
+    func updateLoginState(_ state: LaunchAtLoginState) {
+        login.state = state.checkmark; login.isEnabled = state.registration != .unknown
+        login.setAccessibilityHelp(state.statusText)
+        loginStatus.stringValue = state.statusText
+        loginFailure.isHidden = state.failure == nil
+        if let failure = state.failure, let title = state.failureTitle {
+            loginFailure.stringValue = AppText.loginLastAttempt + " " + title + "\n" + failure.message
+            loginFailure.toolTip = failure.message
+        } else { loginFailure.stringValue = ""; loginFailure.toolTip = nil }
+    }
+    func windowDidBecomeKey(_ notification: Notification) { onRefreshLoginState?() }
+    @objc private func toggleLaunchAtLogin() { onAction?(.toggleLaunchAtLogin) }
+    @objc private func openLoginItemsSettings() { onAction?(.openLoginItemsSettings) }
     @objc private func toggleVisibility() { onAction?(.toggleVisibility) }
     @objc private func togglePause() { onAction?(.togglePause) }
     @objc private func sizeChanged() {

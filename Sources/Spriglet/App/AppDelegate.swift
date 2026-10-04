@@ -2,11 +2,20 @@ import AppKit
 
 @MainActor final class AppDelegate: NSObject, NSApplicationDelegate {
     private let runtime: CompanionRuntime
+    private let launchAtLogin: LaunchAtLoginController
     private var settings: SettingsWindowController?
     private(set) var menuBar: MenuBarController?
     private var help: CompanionHelpPanel?
 
-    init(runtime: CompanionRuntime = CompanionRuntime()) { self.runtime = runtime; super.init() }
+    init(runtime: CompanionRuntime = CompanionRuntime(), launchAtLogin: LaunchAtLoginController = LaunchAtLoginController()) {
+        self.runtime = runtime; self.launchAtLogin = launchAtLogin
+        super.init()
+        menuBar = MenuBarController(state: { [runtime] in runtime.controlState },
+                                    loginState: { [launchAtLogin] in launchAtLogin.refresh() },
+                                    onAction: { [weak self] in self?.perform($0) })
+        runtime.makeContextMenu = { [weak self] in self?.menuBar?.makeMenu() ?? NSMenu() }
+        launchAtLogin.onStateChanged = { [weak self] in self?.settings?.updateLoginState($0) }
+    }
     func applicationWillFinishLaunching(_ notification: Notification) {
         // Observe session inactivity before NSWorkspace's launch-time signal.
         runtime.onShowSettings = { [weak self] in self?.showSettings() }
@@ -14,55 +23,65 @@ import AppKit
         runtime.start()
     }
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let menuBar = MenuBarController(state: { [runtime] in runtime.controlState },
-                                        onAction: { [weak self] in self?.perform($0) })
-        self.menuBar = menuBar; help = CompanionHelpPanel()
-        help?.onShowIntroduction = { [weak self] in self?.runtime.showIntroduction() }
+        help = CompanionHelpPanel()
+        help?.onShowIntroduction = { [weak self] in self?.perform(.introduction) }
         runtime.onControlStateChanged = { [weak self] state in
             self?.menuBar?.update(state); self?.settings?.updateControls(state)
         }
-        menuBar.start()
-        let menu = NSMenu(), root = NSMenuItem(), appMenu = NSMenu()
-        menu.addItem(root); root.submenu = appMenu
-        let settings = NSMenuItem(title: AppText.settingsMenu, action: #selector(showSettings), keyEquivalent: ",")
-        settings.target = self; appMenu.addItem(settings); appMenu.addItem(.separator())
-        let quit = NSMenuItem(title: AppText.quitApp, action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        appMenu.addItem(quit)
+        menuBar?.start()
+        let menu = NSMenu(), root = NSMenuItem()
+        menu.addItem(root); root.submenu = menuBar?.makeMenu()
         let helpItem = NSMenuItem(title: AppText.helpMenu, action: nil, keyEquivalent: "")
-        let helpMenu = NSMenu(title: AppText.helpMenu)
-        let introduction = NSMenuItem(title: AppText.introductionMenu, action: #selector(showIntroduction(_:)), keyEquivalent: "")
-        introduction.target = self; helpMenu.addItem(introduction)
-        let support = NSMenuItem(title: AppText.supportTitle, action: #selector(showHelp), keyEquivalent: "")
-        support.target = self; helpMenu.addItem(support); helpItem.submenu = helpMenu; menu.addItem(helpItem)
+        let helpMenu = menuBar?.makeHelpMenu()
+        helpItem.submenu = helpMenu; menu.addItem(helpItem)
         NSApp.mainMenu = menu; NSApp.helpMenu = helpMenu
         runtime.showIntroductionIfNeeded()
     }
     func applicationWillTerminate(_ notification: Notification) {
-        settings?.close(); settings?.onChange = nil; settings?.onAction = nil; settings = nil
+        settings?.close(); settings?.onChange = nil; settings?.onAction = nil; settings?.onRefreshLoginState = nil; settings = nil
         menuBar?.stop(); help?.close(); help?.onShowIntroduction = nil; menuBar = nil; help = nil
         runtime.onShowSettings = nil; runtime.onSettingsChanged = nil
-        runtime.onControlStateChanged = nil; runtime.stop()
+        runtime.onControlStateChanged = nil; runtime.makeContextMenu = nil; runtime.stop()
+        launchAtLogin.onStateChanged = nil
     }
     func perform(_ action: AppControlAction) {
         switch action {
         case .toggleVisibility: runtime.setVisible(!runtime.controlState.isVisible)
         case .togglePause: runtime.setPaused(!runtime.controlState.isPaused)
         case .bringHome: runtime.bringHome()
+        case .toggleLaunchAtLogin:
+            let current = launchAtLogin.refresh().registration
+            presentLoginFeedback(launchAtLogin.setEnabled(!current.isRegistered))
+        case .openLoginItemsSettings: launchAtLogin.openSystemSettings()
         case .settings: showSettings()
+        case .introduction: runtime.showIntroduction()
         case .help: help?.present()
         case .quit: NSApp.terminate(nil)
         }
     }
-    @objc private func showIntroduction(_ sender: Any?) { runtime.showIntroduction() }
-    @objc private func showHelp() { help?.present() }
     @objc private func showSettings() {
         if settings == nil {
-            let controller = SettingsWindowController(state: runtime.settingsState)
+            let controller = SettingsWindowController(state: runtime.settingsState, loginState: launchAtLogin.refresh())
             controller.onChange = { [weak self] preferences in self?.runtime.updatePreferences(preferences) }
             controller.onAction = { [weak self] action in self?.perform(action) }
+            controller.onRefreshLoginState = { [weak self] in self?.launchAtLogin.refresh() }
             settings = controller
         }
-        settings?.update(runtime.settingsState); settings?.present()
+        settings?.update(runtime.settingsState); settings?.updateLoginState(launchAtLogin.refresh()); settings?.present()
+    }
+    func applicationDidBecomeActive(_ notification: Notification) { launchAtLogin.refresh() }
+    private func presentLoginFeedback(_ state: LaunchAtLoginState) {
+        guard state.failure != nil || state.registration == .requiresApproval else { return }
+        let alert = NSAlert()
+        if let failure = state.failure {
+            alert.alertStyle = .warning; alert.messageText = state.failureTitle ?? AppText.loginEnableFailed
+            alert.informativeText = failure.message + "\n\n" + state.statusText
+        } else {
+            alert.messageText = AppText.loginRequiresApproval; alert.informativeText = AppText.loginApprovalHelp
+        }
+        alert.addButton(withTitle: AppText.dismissLoginFeedback)
+        alert.addButton(withTitle: AppText.openLoginItemsSettings)
+        if alert.runModal() == .alertSecondButtonReturn { launchAtLogin.openSystemSettings() }
     }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {

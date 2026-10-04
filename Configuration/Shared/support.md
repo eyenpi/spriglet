@@ -14,7 +14,7 @@ On a notched display, Mallow uses the actual housing geometry reported by macOS.
 
 ## Meeting Mallow
 
-On first launch, a separate introduction shows five short demos with the actual character: hovering, inviting, dragging, catching home and returning to a quiet peek. Choose Next or a step to browse, Back to revisit, or Skip introduction to dismiss. Done, the close button and Escape also dismiss it. Your dismissal is remembered locally, so later launches stay quiet. Replay from the Help menu, the offline Help panel’s Meet Mallow button, or Help → Meet Mallow in Mallow’s right-click menu. Hide and Pause also freeze demo playback; replay keeps those choices. Show or resume Mallow to continue the animation. The character on your desktop has no instructional overlays. With Reduce Motion enabled, each demo shows a representative still instead of looping movement.
+On first launch, a separate introduction shows five short demos with the actual character: hovering, inviting, dragging, catching home and returning to a quiet peek. Choose Next or a step to browse, Back to revisit, or Skip introduction to dismiss. Done, the close button and Escape also dismiss it. Your dismissal is remembered locally, so later launches stay quiet. Replay from the Help menu, the offline Help panel’s Meet Mallow button, or Meet Mallow in the leaf menu and Mallow’s right-click menu. Hide and Pause also freeze demo playback; replay keeps those choices. Show or resume Mallow to continue the animation. The character on your desktop has no instructional overlays. With Reduce Motion enabled, each demo shows a representative still instead of looping movement.
 
 ## Keeping your work clear
 
@@ -26,6 +26,12 @@ Open the small native Settings window from the leaf menu or by right-clicking Ma
 
 Settings can also be opened with Command-comma when {{appName}} is active or through Mallow’s VoiceOver custom action. Opening Settings gives its window keyboard focus; closing the window leaves Mallow running.
 
+## Launch at login
+
+Choose {{launchAtLogin}} from the leaf menu, Mallow’s right-click menu or Settings to start {{appName}} when you sign in. It is off by default on a new installation. Menus read the current macOS registration each time they open. Settings refreshes when it regains focus or the registration changes. A checkmark means macOS reports it as enabled. A dash means it is registered but needs approval; it will not launch at login yet. Choose {{openLoginItemsSettings}} to review approval in System Settings > General > Login Items & Extensions. Turn off {{launchAtLogin}} to cancel a pending registration or disable future login launches.
+
+An unavailable state or failed change is shown separately from the actual registration. Failed changes display the macOS error immediately; the last failure also remains in the menu for the running session. Reopening the menu reflects changes made in System Settings. Startup never re-registers the app or overrides your macOS choice. Repeated Finder or login launches share the same instance lock, so only one companion can start in the app’s container. Quitting leaves login registration as you chose it; disabling it keeps the current companion running.
+
 ## Menu-bar controls and recovery
 
 {{menuControlsHelp}}
@@ -34,7 +40,7 @@ Settings can also be opened with Command-comma when {{appName}} is active or thr
 
 Pause freezes the current pose and lets desktop clicks pass through; pausing an active drag releases it and returns Mallow home. Resume continues without simulating paused time. The visibility label reflects whether Mallow is actually visible; Show is unavailable while the display or session is suspended. Pause and Resume reflect your animation choice, independently of system suspension.
 
-Settings exposes the same Show and Animate controls for this session, alongside saved preferences. Help is available offline and preserves keyboard focus in your current app. Closing either window keeps {{appName}} running. Right-click Mallow still brings it home and offers Settings, Help → Meet Mallow and {{quitApp}}. There is no Dock icon or action card.
+Settings exposes the same Show and Animate controls for this session, alongside saved preferences. Help is available offline and preserves keyboard focus in your current app. Closing either window keeps {{appName}} running. Right-click Mallow brings it home and opens the same typed controls as the leaf menu, including Settings, Meet Mallow, login status and {{quitApp}}. There is no Dock icon or action card.
 
 ## Local preview and troubleshooting
 

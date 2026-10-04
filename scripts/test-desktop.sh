@@ -1,8 +1,8 @@
 #!/bin/zsh
 # Compiles the production macOS adapters into a finite native regression runner.
 set -euo pipefail
-if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" && "${1:-}" != "--prepare-introduction" && "${1:-}" != "--test-quit-timeout" && "${1:-}" != "--test-preferences" && "${1:-}" != "--test-introduction" ]]; then
-  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen|--prepare-introduction|--test-quit-timeout|--test-preferences|--test-introduction]"
+if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" && "${1:-}" != "--prepare-introduction" && "${1:-}" != "--test-quit-timeout" && "${1:-}" != "--test-preferences" && "${1:-}" != "--test-introduction" && "${1:-}" != "--app-only" ]]; then
+  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen|--prepare-introduction|--test-quit-timeout|--test-preferences|--test-introduction|--app-only]"
   exit 2
 fi
 task_root="${0:A:h:h}"
@@ -29,6 +29,8 @@ swiftc -swift-version 6 -strict-concurrency=complete -warnings-as-errors -parse-
   "$task_root/Sources/Spriglet/App/AppDelegate.swift" \
   "$task_root/Sources/Spriglet/App/AppInstanceLease.swift" \
   "$task_root/Sources/Spriglet/App/MenuBarController.swift" \
+  "$task_root/Sources/Spriglet/App/LaunchAtLogin.swift" \
+  "$task_root/Sources/Spriglet/App/LaunchAtLoginPresentation.swift" \
   "$task_root/Sources/Spriglet/App/CompanionHelpPanel.swift" \
   "$task_root/Sources/Spriglet/App/SharedContent.generated.swift" \
   "$task_root"/tools/LifecycleValidation/*.swift -o "$task_output/lifecycle-validation"
@@ -63,5 +65,5 @@ PY
 elif [[ "${1:-}" == "--test-quit-timeout" || "${1:-}" == "--test-preferences" || "${1:-}" == "--test-introduction" ]]; then
   "$task_output/lifecycle-validation" "$1"
 else
-  "$task_output/lifecycle-validation"
+  "$task_output/lifecycle-validation" "$@"
 fi

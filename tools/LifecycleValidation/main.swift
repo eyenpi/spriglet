@@ -94,7 +94,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         defer { defaults.removePersistentDomain(forName: suite) }
         let runtime = CompanionRuntime(environment: environment, clock: clock, host: host,
                                        preferenceStore: PreferenceStore(defaults: defaults), leftButtonIsDown: { buttonDown })
-        let delegate = AppDelegate(runtime: runtime)
+        let delegate = AppDelegate(runtime: runtime, launchAtLogin: LaunchAtLoginController(service: FakeLoginService()))
         defer { runtime.stop() }
         let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
         runtime.start(); runtime.start()
@@ -253,7 +253,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         let runtime = CompanionRuntime(environment: environment, clock: clock, host: host,
                                        introductionHost: introductionHost, introductionPreferences: preferences,
                                        preferenceStore: PreferenceStore(defaults: defaults))
-        let delegate = AppDelegate(runtime: runtime)
+        let delegate = AppDelegate(runtime: runtime, launchAtLogin: LaunchAtLoginController(service: FakeLoginService()))
         let previousMenu = NSApp.mainMenu, previousHelp = NSApp.helpMenu
         defer {
             delegate.applicationWillTerminate(Notification(name: NSApplication.willTerminateNotification))
@@ -341,7 +341,8 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         try press(AppText.introductionHomeTab, in: replayWindow)
         try press(AppText.introductionDone, in: replayWindow)
         try require(!replayWindow.isVisible, "Done did not dismiss")
-        view(try visiblePanel()).onShowIntroduction?()
+        let replayAction = view(try visiblePanel()).accessibilityCustomActions()?.first { $0.name == AppText.introductionMenu }
+        try require(replayAction?.handler?() == true, "Mallow has no accessible introduction replay action")
         replayWindow = try introductionWindow(); replayWindow.performClose(nil)
         try require(!replayWindow.isVisible, "Window close did not dismiss")
         runtime.showIntroduction(); replayWindow = try introductionWindow()
@@ -421,7 +422,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         let runtime = CompanionRuntime(environment: environment, clock: clock, host: host,
                                        introductionPreferences: introductionPreferences,
                                        preferenceStore: store, leftButtonIsDown: { true })
-        let delegate = AppDelegate(runtime: runtime)
+        let delegate = AppDelegate(runtime: runtime, launchAtLogin: LaunchAtLoginController(service: FakeLoginService()))
         let previousMenu = NSApp.mainMenu, previousHelp = NSApp.helpMenu
         let previousApp = NSWorkspace.shared.frontmostApplication
         var expectedFrontmost = previousApp?.processIdentifier
@@ -466,7 +467,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             try require(NSApp.windows.filter { $0.contentView is CompanionView || $0.title == AppText.supportTitle }
                         .allSatisfy { !$0.isKeyWindow && !$0.isMainWindow }, "The companion or Help took keyboard focus")
         }
-        try require(menu.items.filter { !$0.isSeparatorItem }.count == 6, "Menu is missing a required control")
+        try require(menu.items.filter { $0.action != nil }.count == AppControlAction.allCases.count, "Menu is missing a required control")
         try require(item(.quit).action != nil && item(.quit).target === menuBar, "Quit is not routed through the menu action boundary")
         try require(menuBar.statusItem != nil && !menuBar.statusItem!.behavior.contains(.removalAllowed),
                     "Recovery entry can be removed")
@@ -682,10 +683,10 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         for _ in 0..<5 {
             try require(try AppInstanceLease.acquire(directory: directory) == nil, "Duplicate launch acquired a second lease")
         }
-        func probe(_ expected: Int32) throws {
+        func probe(_ expected: Int32, storage: URL = directory) throws {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
-            process.arguments = ["--lease-probe", directory.path]
+            process.arguments = ["--lease-probe", storage.path]
             try process.run(); try waitForSubprocessExit(process, timeout: 5)
             try require(process.terminationStatus == expected, "Separate process did not respect the launch lease")
         }
@@ -695,6 +696,31 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         let next = try AppInstanceLease.acquire(directory: directory)
         try require(next != nil, "Exit left a stale launch lock")
         withExtendedLifetime(next) {}
+
+        let overlapping = directory.appendingPathComponent("overlapping", isDirectory: true)
+        let ready = overlapping.appendingPathComponent("ready")
+        let contenders = (0..<8).map { _ in Process() }
+        defer {
+            for process in contenders where process.isRunning { process.terminate(); try? waitForSubprocessExit(process, timeout: 2) }
+        }
+        for process in contenders {
+            process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
+            process.arguments = ["--lease-holder", overlapping.path]
+            try process.run()
+        }
+        try waitUntil("Overlapping launches did not elect exactly one owner") {
+            FileManager.default.fileExists(atPath: ready.path) && contenders.filter(\.isRunning).count == 1
+        }
+        for process in contenders where !process.isRunning {
+            try require(process.terminationStatus == 2, "Overlapping launch did not exit as a duplicate")
+        }
+        guard let owner = contenders.first(where: \.isRunning) else {
+            throw ValidationFailure(description: "Overlapping launch owner disappeared")
+        }
+        try probe(2, storage: overlapping)
+        try require(kill(owner.processIdentifier, SIGKILL) == 0, "Could not stop the fixture lock owner")
+        try waitForSubprocessExit(owner, timeout: 2)
+        try probe(0, storage: overlapping)
         let invalid = directory.appendingPathComponent("file")
         try Data().write(to: invalid)
         do {
@@ -702,7 +728,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             throw ValidationFailure(description: "Unwritable launch storage was silently ignored")
         } catch is ValidationFailure { throw ValidationFailure(description: "Invalid launch storage did not report an error") }
         catch { /* Expected filesystem error. */ }
-        print("Launch lease passed: duplicate rejection, release and filesystem failure.")
+        print("Launch lease passed: duplicate rejection, eight overlapping processes, crash recovery, release and filesystem failure.")
     }
     static func waitUntil(_ message: String, timeout: Double = 5, _ condition: () -> Bool) throws {
         let deadline = Date().addingTimeInterval(timeout)
@@ -754,7 +780,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         try require(panel.isOnActiveSpace && fixture.isKeyWindow && !panel.isKeyWindow, "Returning from fullscreen lost home or focus")
         print("Real fullscreen/Spaces fixture passed: entry, visible nonkey companion, reopen and desktop return.")
     }
-    static func validate(bundledFullscreen: Bool) -> Int32 {
+    static func validate(bundledFullscreen: Bool, appOnly: Bool = false) -> Int32 {
         let resultURL = Bundle.main.bundleURL.deletingLastPathComponent().appendingPathComponent("fullscreen-result.txt")
         var outcome = "Fullscreen fixture did not finish."
         defer { if bundledFullscreen { try? outcome.write(to: resultURL, atomically: true, encoding: .utf8) } }
@@ -762,6 +788,12 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             if bundledFullscreen {
                 try fullscreenTransition()
                 outcome = "Passed: real fullscreen/Spaces fixture retained keyboard focus and a visible home on entry, reopen and exit."
+            } else if appOnly {
+                try launchAtLogin()
+                try loginSettings()
+                try instanceLease()
+                try SettingsValidation.preferences()
+                print("App validation passed without showing windows, activating apps or changing macOS login registration.")
             } else {
                 guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Native validation requires a logged-in Mac with a display") }
                 try nativePicking(screen: screen)
@@ -769,6 +801,8 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                 try nativeIntroduction(screen: screen)
                 try menuBarControls(screen: screen)
                 try observationLifetime()
+                try launchAtLogin()
+                try loginSettings()
                 try instanceLease()
                 try SettingsValidation.preferences()
                 try SettingsValidation.runtime(screen: screen)
@@ -785,6 +819,14 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         }
     }
     static func main() {
+        if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--lease-holder" {
+            do {
+                let storage = URL(fileURLWithPath: CommandLine.arguments[2])
+                guard let lease = try AppInstanceLease.acquire(directory: storage) else { exit(2) }
+                try Data().write(to: storage.appendingPathComponent("ready"))
+                withExtendedLifetime(lease) { while true { Thread.sleep(forTimeInterval: 0.05) } }
+            } catch { exit(EXIT_FAILURE) }
+        }
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--preferences-probe" {
             guard let defaults = UserDefaults(suiteName: CommandLine.arguments[2]) else { exit(EXIT_FAILURE) }
             exit(PreferenceStore(defaults: defaults).load() == SettingsValidation.savedPreferences ? EXIT_SUCCESS : EXIT_FAILURE)
@@ -826,7 +868,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             guard let defaults = UserDefaults(suiteName: suite) else { exit(EXIT_FAILURE) }
             let runtime = CompanionRuntime(introductionPreferences: IntroductionPreferences(defaults: defaults),
                                            preferenceStore: PreferenceStore(defaults: defaults))
-            let delegate = AppDelegate(runtime: runtime)
+            let delegate = AppDelegate(runtime: runtime, launchAtLogin: LaunchAtLoginController(service: FakeLoginService()))
             app.delegate = delegate
             let cleanup = NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: app, queue: .main) { _ in
                 UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
@@ -843,7 +885,8 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             let introductionPreferences = IntroductionPreferences(defaults: defaults)
             introductionPreferences.recordDismissal()
             let controls = AppDelegate(runtime: CompanionRuntime(introductionPreferences: introductionPreferences,
-                                                                preferenceStore: PreferenceStore(defaults: defaults)))
+                                                                preferenceStore: PreferenceStore(defaults: defaults)),
+                                       launchAtLogin: LaunchAtLoginController(service: FakeLoginService()))
             let cleanup = NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: app, queue: .main) { _ in
                 UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
             }
@@ -882,7 +925,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             withExtendedLifetime(delegate) { app.run() }
         } else {
             app.finishLaunching()
-            exit(validate(bundledFullscreen: false))
+            exit(validate(bundledFullscreen: false, appOnly: CommandLine.arguments.contains("--app-only")))
         }
     }
 }

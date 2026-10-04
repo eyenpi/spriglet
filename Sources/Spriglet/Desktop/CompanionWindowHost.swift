@@ -10,6 +10,7 @@ import CompanionCore
 /// Native window mechanics only. Has no behavioral state machine or clock.
 @MainActor final class CompanionWindowHost {
     var onInput: ((CompanionInput) -> Void)?
+    var makeContextMenu: (() -> NSMenu)?
     var onShowIntroduction: (() -> Void)?
     var onShowSettings: (() -> Void)?
     var onDraw: ((Double) -> Void)?
@@ -20,6 +21,7 @@ import CompanionCore
         close()
         let view = CompanionView(context: context, snapshot: snapshot)
         view.onInput = { [weak self] input in self?.onInput?(input) }
+        view.makeContextMenu = makeContextMenu
         view.onShowIntroduction = { [weak self] in self?.onShowIntroduction?() }
         view.onShowSettings = { [weak self] in self?.onShowSettings?() }
         view.onDraw = onDraw

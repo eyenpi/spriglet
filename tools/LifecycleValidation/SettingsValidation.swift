@@ -126,7 +126,8 @@ import CompanionCore
         }
         let controller = SettingsWindowController(state: SettingsState(preferences: savedPreferences,
                                                                        displays: [HomeDisplay(id: savedDisplayID, name: "Test display")],
-                                                                       controls: CompanionControlState(isVisible: true, isPaused: false, canShow: true)))
+                                                                       controls: CompanionControlState(isVisible: true, isPaused: false, canShow: true)),
+                                                       loginState: LaunchAtLoginState(registration: .notRegistered, failure: nil))
         defer { controller.close() }
         func controls(in view: NSView) -> [NSPopUpButton] {
             view.subviews.flatMap { child in (child as? NSPopUpButton).map { [$0] } ?? controls(in: child) }

@@ -7,8 +7,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 CORE = ROOT / "Packages/CompanionKit/Sources/CompanionCore"
 RENDERING = ROOT / "Packages/CompanionKit/Sources/CompanionRendering"
-for directory, forbidden in ((CORE, r"\b(?:AppKit|QuartzCore|SwiftUI|CoreGraphics|NSScreen|NSWindow|NSEvent|NSView|UserDefaults|PreferenceStore|CompanionPreferences|SettingsState|CompanionControlState|AppControlAction|SettingsWindowController|Timer|URLSession)\b"),
-                              (RENDERING, r"\b(?:CompanionEngine|NSWindow|NSPanel|NSScreen|NSEvent|CADisplayLink|Timer|URLSession)\b")):
+for directory, forbidden in ((CORE, r"\b(?:AppKit|QuartzCore|SwiftUI|CoreGraphics|ServiceManagement|SMAppService|NSScreen|NSWindow|NSEvent|NSView|UserDefaults|PreferenceStore|CompanionPreferences|SettingsState|CompanionControlState|AppControlAction|SettingsWindowController|Timer|URLSession)\b"),
+                              (RENDERING, r"\b(?:CompanionEngine|ServiceManagement|SMAppService|NSWindow|NSPanel|NSScreen|NSEvent|CADisplayLink|Timer|URLSession)\b")):
     if not directory.is_dir(): sys.exit(f"Required source layer missing: {directory.relative_to(ROOT)}")
     for path in directory.rglob("*.swift"):
         # Documentation may describe a boundary; inspect actual code only.

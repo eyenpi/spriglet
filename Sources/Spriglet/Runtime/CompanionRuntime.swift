@@ -4,6 +4,7 @@ import CompanionCore
 /// Composition root. Routes inputs, snapshots and lifecycle; the owned
 /// adapters never call one another and the core never retains an adapter.
 @MainActor final class CompanionRuntime {
+    var makeContextMenu: (() -> NSMenu)?
     private let environment: DesktopEnvironment
     private let clock: ScreenFrameClock
     private let host: CompanionWindowHost
@@ -46,6 +47,7 @@ import CompanionCore
     func start() {
         guard !running else { return }; running = true
         host.onInput = { [weak self] input in self?.send(input) }
+        host.makeContextMenu = makeContextMenu
         host.onShowSettings = { [weak self] in self?.onShowSettings?() }
         host.onShowIntroduction = { [weak self] in self?.showIntroduction() }
         introductionHost.onStepSelected = { [weak self] step in self?.selectIntroductionStep(step) }
@@ -69,7 +71,7 @@ import CompanionCore
     func stop() {
         guard running else { return }; running = false
         clock.stop(); environment.stop(); host.close(); introductionHost.close()
-        host.onInput = nil; host.onShowSettings = nil; host.onShowIntroduction = nil; clock.onTick = nil
+        host.onInput = nil; host.makeContextMenu = nil; host.onShowSettings = nil; host.onShowIntroduction = nil; clock.onTick = nil
         introductionHost.onStepSelected = nil; introductionHost.onDismiss = nil; introduction = nil
         environment.onDisplayChanged = nil; environment.onDisplaysChanged = nil
         environment.onConditionsChanged = nil; environment.onRecoveryNeeded = nil
