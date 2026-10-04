@@ -30,7 +30,7 @@ import CompanionCore
         let process = Process()
         process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
         process.arguments = ["--preferences-probe", suite]
-        try process.run(); process.waitUntilExit()
+        try process.run(); try LifecycleValidation.waitForSubprocessExit(process, timeout: 5)
         try LifecycleValidation.require(process.terminationStatus == 0, "Fresh process did not restore saved preferences")
         store.save(CompanionPreferences())
         try LifecycleValidation.require(store.load().homeDisplayID == nil, "Automatic display retained a stale saved ID")

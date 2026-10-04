@@ -13,6 +13,20 @@ The native runner compiles the production environment, runtime, window host, vie
 
 Checks cover native body picking, transparent-corner click-through and drag capture across empty pixels; ordered and repeated system/display sleep, lock and session transitions; suspension-time input; Spaces recovery; missed mouse-up; unchanged display notifications; disconnect, no-display, reconnect and resolution fallback; repeated reopen/start/stop; observer cleanup; exclusive launch lease release/error handling; first-launch and malformed preferences; fresh-process persistence; saved home selection and live edits during drag/sleep; disconnected display fallback/reconnect across display-number changes; and accessible native Settings controls and close/reopen. Menu-bar checks cover synchronized labels and Settings, pause-time freeze and click-through, retained Hide/Pause across suspension and display loss, saved edits while hidden/paused, one keyboard-capable Settings window, nonkey Help, unclipped layout, accessible checkbox actions and status/window shutdown cleanup. A separate finite AppKit process exercises the real menu-bar Quit target. Preferences use disposable suites, never the app’s production defaults. Synthetic secondary displays exercise negative global coordinates and both notched and unnotched homes. Unit tests also cover compact and ultrawide scene geometry, stale drag events, gesture/deformation cleanup and independent suspension reasons.
 
+Quit, preference-restoration and launch-lease subprocesses have a five-second parent deadline. Quit is bounded independently of the child’s main-queue watchdog. On timeout the parent requests termination, then sends SIGKILL if the child remains running after 250 ms, and allows at most one further second for cleanup. A timeout fails validation. The runner also verifies normal subprocess exit and cleanup of a headless child that ignores SIGTERM.
+
+To check those subprocess bounds without opening panels, creating a status item or starting AppKit:
+
+```sh
+./scripts/test-desktop.sh --test-quit-timeout
+```
+
+Preferences can also be validated headlessly, including a fresh process that restores saved choices from a disposable suite:
+
+```sh
+./scripts/test-desktop.sh --test-preferences
+```
+
 For an actual fullscreen Space transition, run:
 
 ```sh

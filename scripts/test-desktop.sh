@@ -1,8 +1,8 @@
 #!/bin/zsh
 # Compiles the production macOS adapters into a finite native regression runner.
 set -euo pipefail
-if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" ]]; then
-  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen]"
+if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" && "${1:-}" != "--test-quit-timeout" && "${1:-}" != "--test-preferences" ]]; then
+  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen|--test-quit-timeout|--test-preferences]"
   exit 2
 fi
 task_root="${0:A:h:h}"
@@ -52,6 +52,8 @@ PY
   codesign --force --sign - "$task_output/FullscreenFixture.app"
   print "Open $task_output/FullscreenFixture.app and click its blank window to run real fullscreen acceptance."
   print "The outcome is saved in $task_output/fullscreen-result.txt."
+elif [[ "${1:-}" == "--test-quit-timeout" || "${1:-}" == "--test-preferences" ]]; then
+  "$task_output/lifecycle-validation" "$1"
 else
   "$task_output/lifecycle-validation"
 fi

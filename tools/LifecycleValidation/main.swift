@@ -6,6 +6,17 @@ struct ValidationFailure: Error, CustomStringConvertible {
     let description: String
 }
 
+enum SubprocessFailure: Error, CustomStringConvertible {
+    case timedOut(seconds: Double)
+    case cleanupFailed
+    var description: String {
+        switch self {
+        case .timedOut(let seconds): "Subprocess did not exit within \(seconds) seconds"
+        case .cleanupFailed: "Timed-out subprocess could not be stopped"
+        }
+    }
+}
+
 @MainActor final class ValidationDelegate: NSObject, NSApplicationDelegate {
     let validate: () -> Void
     init(validate: @escaping () -> Void) { self.validate = validate; super.init() }
@@ -382,9 +393,67 @@ struct ValidationFailure: Error, CustomStringConvertible {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
         process.arguments = ["--quit-probe"]
-        try process.run(); process.waitUntilExit()
+        try process.run()
+        // The child's main-queue watchdog cannot run if launch or AppKit stalls.
+        try waitForSubprocessExit(process, timeout: 5)
         try require(process.terminationStatus == EXIT_SUCCESS, "Menu-bar Quit did not terminate the fixture")
         print("Menu-bar Quit passed: a separate native app exited through its real menu target.")
+    }
+    static func waitForSubprocessExit(_ process: Process, timeout: Double) throws {
+        func wait(_ seconds: Double) -> Bool {
+            let deadline = ProcessInfo.processInfo.systemUptime + seconds
+            while process.isRunning {
+                let remaining = deadline - ProcessInfo.processInfo.systemUptime
+                guard remaining > 0 else { return false }
+                pump(min(0.02, remaining))
+            }
+            return true
+        }
+        guard !wait(timeout) else { return }
+        process.terminate()
+        if !wait(0.25) {
+            _ = kill(process.processIdentifier, SIGKILL)
+            guard wait(1) else { throw SubprocessFailure.cleanupFailed }
+        }
+        throw SubprocessFailure.timedOut(seconds: timeout)
+    }
+    static func subprocessTimeoutValidation() throws {
+        for mode in ["exit", "terminate", "stall"] {
+            let process = Process()
+            let readiness = Pipe()
+            process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
+            process.arguments = ["--quit-wait-fixture", mode]
+            process.standardOutput = readiness
+            try process.run()
+            defer {
+                try? readiness.fileHandleForWriting.close()
+                try? readiness.fileHandleForReading.close()
+                if process.isRunning { try? waitForSubprocessExit(process, timeout: 0.1) }
+            }
+            try readiness.fileHandleForWriting.close()
+            if mode == "exit" {
+                try waitForSubprocessExit(process, timeout: 2)
+                try require(process.terminationStatus == EXIT_SUCCESS, "Headless exit fixture failed")
+            } else {
+                // Wait for the SIGTERM policy before testing timeout cleanup.
+                // A bounded poll avoids another blocking wait in this fixture.
+                var descriptor = pollfd(fd: readiness.fileHandleForReading.fileDescriptor, events: Int16(POLLIN), revents: 0)
+                try require(poll(&descriptor, 1, 2_000) == 1 && descriptor.revents & Int16(POLLIN) != 0,
+                            "Headless timeout fixture did not become ready")
+                try require(readiness.fileHandleForReading.readData(ofLength: 1) == Data([1]), "Invalid headless readiness signal")
+                let started = ProcessInfo.processInfo.systemUptime
+                do {
+                    try waitForSubprocessExit(process, timeout: 0.1)
+                    throw ValidationFailure(description: "Stalled child bypassed the subprocess deadline")
+                } catch SubprocessFailure.timedOut {
+                    let expectedSignal = mode == "stall" ? SIGKILL : SIGTERM
+                    try require(!process.isRunning && process.terminationReason == .uncaughtSignal
+                                && process.terminationStatus == expectedSignal, "Timeout did not clean up its child")
+                    try require(ProcessInfo.processInfo.systemUptime - started < 3, "Subprocess timeout cleanup was not bounded")
+                }
+            }
+        }
+        print("Subprocess bounds passed: normal exit, timeout termination and SIGTERM-resistant cleanup.")
     }
     static func observationLifetime() throws {
         let center = NotificationCenter()
@@ -418,7 +487,7 @@ struct ValidationFailure: Error, CustomStringConvertible {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
             process.arguments = ["--lease-probe", directory.path]
-            try process.run(); process.waitUntilExit()
+            try process.run(); try waitForSubprocessExit(process, timeout: 5)
             try require(process.terminationStatus == expected, "Separate process did not respect the launch lease")
         }
         try probe(2)
@@ -504,6 +573,7 @@ struct ValidationFailure: Error, CustomStringConvertible {
                 try SettingsValidation.preferences()
                 try SettingsValidation.runtime(screen: screen)
                 try SettingsValidation.window(screen: screen)
+                try subprocessTimeoutValidation()
                 try quitControl()
                 print("Desktop lifecycle validation passed. Notifications/display inventory are simulated; physical lock/sleep/fullscreen transitions require device acceptance.")
             }
@@ -518,6 +588,29 @@ struct ValidationFailure: Error, CustomStringConvertible {
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--preferences-probe" {
             guard let defaults = UserDefaults(suiteName: CommandLine.arguments[2]) else { exit(EXIT_FAILURE) }
             exit(PreferenceStore(defaults: defaults).load() == SettingsValidation.savedPreferences ? EXIT_SUCCESS : EXIT_FAILURE)
+        }
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-preferences" {
+            do { try SettingsValidation.preferences(); exit(EXIT_SUCCESS) }
+            catch {
+                FileHandle.standardError.write(Data("Preferences validation failed: \(error)\n".utf8))
+                exit(EXIT_FAILURE)
+            }
+        }
+        // These fixtures stay headless, including while another app is fullscreen.
+        if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--quit-wait-fixture" {
+            if CommandLine.arguments[2] == "exit" { exit(EXIT_SUCCESS) }
+            let mode = CommandLine.arguments[2]
+            guard mode == "terminate" || mode == "stall" else { exit(EXIT_FAILURE) }
+            signal(SIGTERM, mode == "stall" ? SIG_IGN : SIG_DFL)
+            FileHandle.standardOutput.write(Data([1]))
+            while true { _ = pause() }
+        }
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-quit-timeout" {
+            do { try subprocessTimeoutValidation(); exit(EXIT_SUCCESS) }
+            catch {
+                FileHandle.standardError.write(Data("Subprocess timeout validation failed: \(error)\n".utf8))
+                exit(EXIT_FAILURE)
+            }
         }
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--lease-probe" {
             do {
