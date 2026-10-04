@@ -3,7 +3,7 @@ import CompanionCore
 import CompanionRendering
 
 @MainActor func writeFrame(_ frame: CompanionSnapshot, painter: ScenePreviewRenderer, to folder: URL,
-                          index: Int, pointer: Point, pressed: Bool) throws {
+                          index: Int, pointer: Point? = nil, pressed: Bool = false) throws {
     try autoreleasepool {
         let png = try painter.image(frame, pointer: pointer, pressed: pressed)
         guard let data = png.representation(using: .png, properties: [:]) else { throw BitmapRenderingError.encodingFailure }
@@ -131,6 +131,19 @@ import CompanionRendering
     print("Rendered 420 interaction frames at 60 fps using the production core and renderer.")
 }
 
+/// Two uninterrupted minutes at the normal resting cadence. Keep real timing
+/// so pauses between glances and settling can be judged alongside the motion.
+@MainActor func exportIdle(to folder: URL) throws {
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    var engine = CompanionEngine(scene: .preview)
+    let painter = ScenePreviewRenderer()
+    for index in 0..<2400 {
+        engine.advance(by: 1 / 20.0)
+        try writeFrame(engine.snapshot, painter: painter, to: folder, index: index)
+    }
+    print("Rendered two quiet minutes at 20 fps using the production core and renderer.")
+}
+
 @MainActor func exportIcons(to directory: URL) throws {
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let renderer = MallowIconRenderer()
@@ -154,10 +167,12 @@ if args.count == 3 && args[1] == "--icons" {
     try exportTransitions(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--interaction" {
     try exportInteraction(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--idle" {
+    try exportIdle(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 2 {
     try export(to: URL(fileURLWithPath: args[1]))
 } else {
-    print("Usage: companion-preview OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
+    print("Usage: companion-preview OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
 }
 
 } catch {

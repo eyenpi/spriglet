@@ -248,7 +248,8 @@ struct ValidationFailure: Error, CustomStringConvertible {
         try choose(.togglePause)
         let frozen = view(window).snapshot
         pump(0.12); clock.onTick?(3600); host.onInput?(.activate)
-        try require(view(window).snapshot.time == frozen.time && view(window).snapshot.presence == frozen.presence,
+        try require(view(window).snapshot.time == frozen.time && view(window).snapshot.presence == frozen.presence
+                    && view(window).snapshot.pose == frozen.pose && view(window).snapshot.feet == frozen.feet,
                     "Pause did not freeze animation and ignore interaction")
         try require(window.ignoresMouseEvents, "Paused Mallow intercepts desktop clicks")
         try checkLabels()
