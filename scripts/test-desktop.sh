@@ -28,6 +28,8 @@ swiftc -swift-version 6 -strict-concurrency=complete -warnings-as-errors -parse-
   "$task_root"/Sources/Spriglet/Settings/*.swift \
   "$task_root/Sources/Spriglet/App/AppDelegate.swift" \
   "$task_root/Sources/Spriglet/App/AppInstanceLease.swift" \
+  "$task_root/Sources/Spriglet/App/MenuBarController.swift" \
+  "$task_root/Sources/Spriglet/App/CompanionHelpPanel.swift" \
   "$task_root/Sources/Spriglet/App/SharedContent.generated.swift" \
   "$task_root"/tools/LifecycleValidation/*.swift -o "$task_output/lifecycle-validation"
 if [[ "${1:-}" == "--prepare-fullscreen" ]]; then

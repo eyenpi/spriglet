@@ -1,18 +1,30 @@
 import AppKit
 
+@MainActor private final class SettingsCheckbox: NSButton {
+    override func accessibilityPerformPress() -> Bool {
+        guard isEnabled, let action else { return false }
+        // Use the same action boundary as mouse/keyboard input. The runtime
+        // publishes the resulting state back to the controls.
+        return sendAction(action, to: target)
+    }
+}
+
 /// Owns one ordinary native window and emits complete value changes. It never
 /// reads storage, samples displays or retains the simulation/runtime.
 @MainActor final class SettingsWindowController: NSWindowController {
     var onChange: ((CompanionPreferences) -> Void)?
+    var onAction: ((AppControlAction) -> Void)?
     private var preferences = CompanionPreferences()
     private var displayIDs: [String?] = []
     private let size = NSPopUpButton()
     private let movement = NSPopUpButton()
     private let display = NSPopUpButton()
     private let location = NSPopUpButton()
+    private let visibility = SettingsCheckbox(checkboxWithTitle: AppText.showMallow, target: nil, action: nil)
+    private let animation = SettingsCheckbox(checkboxWithTitle: AppText.animateMallow, target: nil, action: nil)
 
     init(state: SettingsState) {
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 420, height: 260),
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 420, height: 320),
                               styleMask: [.titled, .closable], backing: .buffered, defer: false)
         window.title = AppText.settingsTitle; window.isReleasedWhenClosed = false
         super.init(window: window)
@@ -33,7 +45,11 @@ import AppKit
         grid.yPlacement = .center
         let note = NSTextField(wrappingLabelWithString: AppText.settingsNote)
         note.font = .systemFont(ofSize: NSFont.smallSystemFontSize); note.textColor = .secondaryLabelColor
-        let stack = NSStackView(views: [grid, note])
+        visibility.target = self; visibility.action = #selector(toggleVisibility)
+        animation.target = self; animation.action = #selector(togglePause)
+        let sessionControls = NSStackView(views: [visibility, animation])
+        sessionControls.orientation = .horizontal; sessionControls.spacing = 24
+        let stack = NSStackView(views: [grid, sessionControls, note])
         stack.orientation = .vertical; stack.alignment = .leading; stack.spacing = 22
         stack.translatesAutoresizingMaskIntoConstraints = false
         guard let content = window.contentView else { return }
@@ -69,7 +85,15 @@ import AppKit
             display.lastItem?.isEnabled = false
         }
         display.selectItem(at: displayIDs.firstIndex(of: preferences.homeDisplayID) ?? 0)
+        updateControls(state.controls)
     }
+    func updateControls(_ state: CompanionControlState) {
+        visibility.state = state.isVisible ? .on : .off
+        visibility.isEnabled = state.canShow
+        animation.state = state.isPaused ? .off : .on
+    }
+    @objc private func toggleVisibility() { onAction?(.toggleVisibility) }
+    @objc private func togglePause() { onAction?(.togglePause) }
     @objc private func sizeChanged() {
         preferences.characterSize = CharacterSize.allCases[size.indexOfSelectedItem]; onChange?(preferences)
     }

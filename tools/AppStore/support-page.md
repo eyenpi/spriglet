@@ -18,13 +18,19 @@ Mallow stays in the resting peek until invited and returns after you leave it al
 
 ## Settings
 
-Right-click Mallow and choose Settings… to open a small native window. Choose Small, Medium or Large character size; Gentle, Standard or Lively movement intensity; a home display; and Automatic, Top left, Top center or Top right location. Automatic uses the actual notch when present and the upper-right fallback otherwise. Changes apply immediately and are saved locally for the next launch. Reduce Motion takes priority over movement intensity. Changing size or home ends an active drag and returns Mallow to its updated home. A disconnected saved display remains selected in Settings until it returns or you choose another.
+Open the small native Settings window from the leaf menu or by right-clicking Mallow and choosing Settings…. Choose Small, Medium or Large character size; Gentle, Standard or Lively movement intensity; a home display; and Automatic, Top left, Top center or Top right location. Automatic uses the actual notch when present and the upper-right fallback otherwise. Changes apply immediately and are saved locally for the next launch. Reduce Motion takes priority over movement intensity. Changing size or home ends an active drag and returns Mallow to its updated home. A disconnected saved display remains selected in Settings until it returns or you choose another.
 
 Settings can also be opened with Command-comma when Spriglet is active or through Mallow’s VoiceOver custom action. Opening Settings gives its window keyboard focus; closing the window leaves Mallow running.
 
-## Quitting
+## Menu-bar controls and recovery
 
-Right-click Mallow to bring it home and open its small menu, then choose Quit Spriglet. Reopening Spriglet from Finder returns it home while keeping keyboard focus in your current app. There is no permanent menu-bar item, action card or Dock icon.
+Use the leaf in the menu bar to show or hide Mallow, pause or resume animation, bring it home, open Settings or Help, and quit Spriglet.
+
+Hidden Mallow stays hidden through sleep, lock and display changes. Choose Show Mallow or Bring Home, or reopen Spriglet from Finder to recover it. Bring Home and Finder recovery return it to its resting home and preserve Pause.
+
+Pause freezes the current pose and lets desktop clicks pass through; pausing an active drag releases it and returns Mallow home. Resume continues without simulating paused time. The visibility label reflects whether Mallow is actually visible; Show is unavailable while the display or session is suspended. Pause and Resume reflect your animation choice, independently of system suspension.
+
+Settings exposes the same Show and Animate controls for this session, alongside saved preferences. Help is available offline and preserves keyboard focus in your current app. Closing either window keeps Spriglet running. Right-click Mallow still brings it home and offers Settings and Quit Spriglet. There is no Dock icon or action card.
 
 ## Local preview and troubleshooting
 

@@ -1,6 +1,6 @@
 # Spriglet · Mallow
 
-A soft, local desktop companion for Apple silicon Macs running macOS 26 or later. Mallow rests beneath the notch with its face visible, blinking and breathing while you work. A small Settings window lets you choose its size, movement intensity and home. There are no permanent menu-bar controls.
+A soft, local desktop companion for Apple silicon Macs running macOS 26 or later. Mallow rests beneath the notch with its face visible, blinking and breathing while you work. A small Settings window lets you choose its size, movement intensity and home. A persistent leaf in the menu bar provides visibility, animation controls and recovery when Mallow is hidden.
 
 Its curious peek stays in place. Breathing gently changes pace and depth; blinks vary in timing and occasionally come in pairs. Brief glances and tiny settling movements are separated by long, irregular pauses. These quiet moments yield to nearby pointer attention, hover and deliberate interaction. Reduce Motion keeps blinking while suppressing decorative movement.
 
@@ -23,7 +23,11 @@ Select the full Xcode 26 toolchain, then:
 ./scripts/run.sh
 ```
 
-Builds live under `.build/xcode/Build/Products/`. Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens a small menu with Settings and Quit Spriglet. Settings also has a Command-comma shortcut while the app is active and a VoiceOver custom action on the character. Opening Settings explicitly activates its ordinary native window; closing it keeps Mallow running. Launch, recovery and character interaction preserve keyboard focus. Escape returns it home when this app receives keyboard input outside Settings; native Settings controls keep their usual keyboard behavior. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
+Builds live under `.build/xcode/Build/Products/`.
+
+The leaf menu offers Show/Hide Mallow, Pause/Resume Mallow, Bring Home, Settings, Help and Quit. Settings exposes the same Show and Animate controls alongside saved preferences; Help works offline. Hide and Pause apply for the running session. Pause freezes Mallow and lets clicks pass through, releasing an active drag safely. Hide stops animation and survives sleep, lock, Spaces and display changes. Show, Bring Home and reopening from Finder recover hidden Mallow at its resting home without clearing Pause. Visibility labels reflect actual presentation, with Show unavailable during suspension or without a display. Pause/Resume reflects the user’s animation choice.
+
+Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens a small menu with Settings and Quit Spriglet. Settings also has a Command-comma shortcut while the app is active and a VoiceOver custom action on the character. Opening Settings explicitly activates its ordinary native window; closing it keeps Mallow running. Help, visibility/animation controls, launch, recovery and character interaction preserve keyboard focus. Escape returns it home when this app receives keyboard input outside Settings; native Settings controls keep their usual keyboard behavior. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
 
 For a finite, reproducible animation preview using the production code:
 
@@ -48,7 +52,9 @@ There is one production simulation and one renderer. The preview exporter uses t
 | Desktop host | `Sources/Spriglet/Desktop` | Transparent nonactivating panel, actual-frame coordinate compensation, hit testing and accessible character actions. |
 | Runtime | `Sources/Spriglet/Runtime` | Wire the three boundaries together and own the single screen-bound animation clock. |
 | Settings | `Sources/Spriglet/Settings` | Typed saved choices, isolated preference storage and one native Settings window. |
-| App | `Sources/Spriglet/App` | Launch, shutdown, Settings presentation and generated shared text. |
+| App | `Sources/Spriglet/App` | Launch, shutdown, menu-bar commands, Settings presentation, focus-preserving Help and generated shared text. |
+
+`CompanionRuntime` owns visibility and pause choices and publishes an immutable `CompanionControlState`. The menu and Settings present that same state and route typed `AppControlAction` values through the app delegate. They have no engine or adapter access. The status item lives until shutdown, independently of character visibility.
 
 `CompanionRuntime` is the composition root. It owns a `CompanionEngine`, `DesktopEnvironment`, `CompanionWindowHost` and `ScreenFrameClock`. Adapters report to the runtime; they never call one another. Core state is held in a session value and advances in 120 Hz simulation steps, independently of display cadence. The renderer receives a `CompanionSnapshot` and cannot mutate the model.
 
@@ -76,7 +82,7 @@ A capability requests a `CompanionCommand` through `CompanionRuntime.perform(_:)
 
 ### Lifecycle and resources
 
-The host renders deliberate motion at up to 60 fps, resting peeks at 20 fps and grounded walking/breathing at 30 fps. Low Power Mode uses 15 fps for resting peeks and caps deliberate motion at 30 fps; Reduce Motion or serious thermal pressure cap cadence at 15 fps. System/display sleep, screen lock, inactive sessions and critical thermal pressure suspend the clock and hide the panel. Each suspension reason is tracked independently. Recovery samples current display measurements, resets the character to its resting home and rebuilds the screen-bound clock without simulating time spent asleep. Spaces and fullscreen transitions also return Mallow home without activating the app. The panel cannot become a key or main window and stays out of window cycling. Reduce Motion preserves blinking while limiting decorative movement and return flights. The renderer reuses its fixed body geometry and colors while continuing to draw immutable snapshots.
+The host renders deliberate motion at up to 60 fps, resting peeks at 20 fps and grounded walking/breathing at 30 fps. Low Power Mode uses 15 fps for resting peeks and caps deliberate motion at 30 fps; Reduce Motion or serious thermal pressure cap cadence at 15 fps. System/display sleep, screen lock, inactive sessions and critical thermal pressure suspend the clock and hide the panel. Each suspension reason is tracked independently. Recovery samples current display measurements and resets the character to its resting home, preserving Hide and Pause. It rebuilds the screen-bound clock only when visible and unpaused, without simulating time spent asleep. Spaces and fullscreen transitions also return Mallow home without activating the app. The panel cannot become a key or main window and stays out of window cycling. Reduce Motion preserves blinking while limiting decorative movement and return flights. The renderer reuses its fixed body geometry and colors while continuing to draw immutable snapshots.
 
 By default, home stays on the initial primary display as focus moves between apps. Settings can select a specific display by its persistent macOS UUID. If that display disconnects, Mallow uses the current primary display without overwriting the saved choice, then returns when it reconnects. Automatic location uses the notch or upper-right fallback; Top left, Top center and Top right use the selected display’s upper edge below the menu bar. Resolution, scaling and reserved-space changes recompute home. If no display is available, the host and clock are closed until one returns. Unchanged screen notifications preserve an active interaction.
 

@@ -29,8 +29,3 @@ struct HomeDisplay: Equatable {
     let id: String
     let name: String
 }
-
-struct SettingsState {
-    let preferences: CompanionPreferences
-    let displays: [HomeDisplay]
-}

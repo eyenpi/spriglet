@@ -105,10 +105,13 @@ import CompanionCore
         try LifecycleValidation.require(LifecycleValidation.view(panel).context.id == reconnected.id
                                        && LifecycleValidation.view(panel).snapshot.scene.scale == 1.2,
                                        "Reconnect lost saved display identity or updated settings")
+        runtime.setVisible(false); runtime.setPaused(true)
         runtime.stop()
         let relaunched = CompanionRuntime(environment: environment, preferenceStore: PreferenceStore(defaults: defaults))
         defer { relaunched.stop() }
         relaunched.start(); panel = try LifecycleValidation.visiblePanel()
+        try LifecycleValidation.require(relaunched.controlState.isVisible && !relaunched.controlState.isPaused,
+                                       "Session-only Hide/Pause leaked into saved preferences")
         try LifecycleValidation.require(relaunched.preferences == choices && LifecycleValidation.view(panel).context.id == reconnected.id,
                                        "Relaunch failed to restore choices and home")
         print("Settings runtime passed: saved launch, live edits/drag cancellation, sleep, no display, fallback, persistent reconnect and relaunch.")
@@ -122,7 +125,8 @@ import CompanionCore
             if location != .automatic { try LifecycleValidation.require(!scene.hasHardwareNotch, "Chosen edge claimed a hardware notch") }
         }
         let controller = SettingsWindowController(state: SettingsState(preferences: savedPreferences,
-                                                                       displays: [HomeDisplay(id: savedDisplayID, name: "Test display")]))
+                                                                       displays: [HomeDisplay(id: savedDisplayID, name: "Test display")],
+                                                                       controls: CompanionControlState(isVisible: true, isPaused: false, canShow: true)))
         defer { controller.close() }
         func controls(in view: NSView) -> [NSPopUpButton] {
             view.subviews.flatMap { child in (child as? NSPopUpButton).map { [$0] } ?? controls(in: child) }
@@ -144,7 +148,8 @@ import CompanionCore
               let location = popups.first(where: { $0.accessibilityLabel() == AppText.homeLocation }) else {
             throw ValidationFailure(description: "Settings labels do not identify their controls")
         }
-        controller.update(SettingsState(preferences: savedPreferences, displays: []))
+        controller.update(SettingsState(preferences: savedPreferences, displays: [],
+                                        controls: CompanionControlState(isVisible: false, isPaused: true, canShow: false)))
         try LifecycleValidation.require(display.titleOfSelectedItem == AppText.disconnectedDisplay, "Settings forgot the disconnected selection")
         var emitted: CompanionPreferences?
         controller.onChange = { emitted = $0 }

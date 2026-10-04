@@ -12,9 +12,13 @@ Hover to get a reaction. Click to invite. Drag to play. Click elsewhere to retur
 
 A second touch brings a wave or a gentle swing. Release near the notch to let Mallow catch it; release farther away to try gravity and a soft, squishy landing. Clicking elsewhere brings it home. Displays without a notch use a small home at the upper right edge.
 
+### Controls within reach
+
+Use the leaf in the menu bar to show or hide Mallow, pause or resume animation, bring it home, open Settings or Help, and quit Spriglet. Hidden Mallow is recoverable from the menu bar or by reopening the app from Finder. Offline Help preserves keyboard focus in your current app.
+
 ### Your choice of home
 
-Right-click Mallow to open Settings…. Choose character size, movement intensity and a home display/location. Changes apply immediately and are remembered on this Mac.
+Open Settings… from the leaf menu or by right-clicking Mallow. Settings opens with keyboard focus. Choose character size, movement intensity and a home display/location. Changes apply immediately and are remembered on this Mac.
 
 ### Quiet by default
 

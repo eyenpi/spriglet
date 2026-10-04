@@ -13,12 +13,21 @@ import CompanionCore
     private(set) var preferences: CompanionPreferences
     var onSettingsChanged: ((SettingsState) -> Void)?
     var onShowSettings: (() -> Void)?
-    var settingsState: SettingsState { SettingsState(preferences: preferences, displays: displays) }
+    var settingsState: SettingsState { SettingsState(preferences: preferences, displays: displays, controls: controlState) }
     private var context: DisplayContext?
     private var engine: CompanionEngine?
     private var conditions = RuntimeConditions()
     private var running = false
     private var cadence: Float?
+    private var hidden = false
+    private var paused = false
+    private var publishedControlState: CompanionControlState?
+    var onControlStateChanged: ((CompanionControlState) -> Void)?
+    var controlState: CompanionControlState {
+        let canShow = running && context != nil && !conditions.isSuspended
+        return CompanionControlState(isVisible: canShow && !hidden, isPaused: paused, canShow: canShow)
+    }
+    private var isAnimating: Bool { controlState.isVisible && !paused }
 
     init(environment: DesktopEnvironment = DesktopEnvironment(), clock: ScreenFrameClock = ScreenFrameClock(),
          host: CompanionWindowHost = CompanionWindowHost(),
@@ -53,9 +62,32 @@ import CompanionCore
         environment.onOutsidePressed = nil; environment.onReturnHome = nil
         displays = []
         engine = nil; context = nil; cadence = nil; conditions = RuntimeConditions()
+        hidden = false; paused = false; publishControlState()
     }
     /// Finder reopens recover immediately without requesting application focus.
-    func reopen() { environment.recover() }
+    func reopen() { bringHome() }
+    func setVisible(_ visible: Bool) {
+        guard running else { return }
+        hidden = !visible
+        if visible { environment.recover() }
+        else {
+            engine?.send(.cancelInteraction)
+            refresh()
+        }
+    }
+    func setPaused(_ paused: Bool) {
+        guard running, self.paused != paused else { return }
+        self.paused = paused
+        // A paused drag cannot keep mouse capture or wait for a future release.
+        if engine?.hasPointerCapture == true { engine?.send(.cancelInteraction) }
+        refresh()
+    }
+    /// Explicit recovery shows Mallow even after Hide, and preserves Pause.
+    func bringHome() {
+        guard running else { return }
+        hidden = false
+        environment.recover()
+    }
     /// Future capabilities enter through this action boundary, not adapter access.
     func perform(_ command: CompanionCommand) { send(.command(command)) }
     func updatePreferences(_ preferences: CompanionPreferences) {
@@ -66,7 +98,7 @@ import CompanionCore
         refresh(); onSettingsChanged?(settingsState)
     }
     private func send(_ input: CompanionInput) {
-        guard running, context != nil, !conditions.isSuspended else { return }
+        guard isAnimating else { return }
         engine?.send(input); refresh()
     }
     private func bind(_ context: DisplayContext?) {
@@ -75,6 +107,7 @@ import CompanionCore
             engine?.send(.cancelInteraction)
             self.context = nil; cadence = nil
             clock.stop(); host.close()
+            publishControlState()
             return
         }
         if let current = self.context, current.hasSameLayout(as: context) { return }
@@ -85,7 +118,7 @@ import CompanionCore
         engine?.setMovementAmount(preferences.movementIntensity.amount)
         guard let engine else { return }
         host.attach(context: context, snapshot: engine.snapshot)
-        resumeClock(); refresh(); host.setVisible(!conditions.isSuspended)
+        resumeClock(); refresh()
     }
     private func apply(_ conditions: RuntimeConditions) {
         let changedSuspension = self.conditions.isSuspended != conditions.isSuspended
@@ -100,10 +133,12 @@ import CompanionCore
         // Recreate a display link even if the screen ID and cadence are unchanged:
         // a link tied to the pre-sleep/pre-Space display may have stopped firing.
         resumeClock(); refresh()
-        host.setVisible(context != nil && !conditions.isSuspended)
+        // Reassert ordering after lifecycle transitions even when AppKit still
+        // reports the panel as visible. Normal frames do not reorder windows.
+        host.setVisible(controlState.isVisible, restoringOrder: true)
     }
     private func resumeClock() {
-        guard let context, let engine, !conditions.isSuspended else {
+        guard isAnimating, let context, let engine else {
             clock.stop(); cadence = nil; return
         }
         let frame = engine.snapshot
@@ -111,7 +146,7 @@ import CompanionCore
         clock.bind(to: context.screen, rate: rate); cadence = rate
     }
     private func tick(_ elapsed: Double) {
-        guard running, !conditions.isSuspended, let context else { return }
+        guard isAnimating, let context else { return }
         // A release can be swallowed by a Space switch, system UI or a host stall.
         // Sample button state only while captured, never other apps' event content.
         if engine?.hasPointerCapture == true && !leftButtonIsDown() { engine?.send(.cancelInteraction) }
@@ -119,10 +154,22 @@ import CompanionCore
         engine?.advance(by: elapsed); refresh()
     }
     private func refresh() {
+        defer { publishControlState() }
         guard let engine, let context else { return }
         let frame = engine.snapshot
-        let rate = conditions.frameRate(presence: frame.presence, phase: frame.phase)
-        if rate != cadence { clock.setRate(rate); cadence = rate }
-        host.update(snapshot: frame, capturesPointer: engine.hasPointerCapture, pointer: context.point(NSEvent.mouseLocation))
+        if isAnimating {
+            let rate = conditions.frameRate(presence: frame.presence, phase: frame.phase)
+            if cadence == nil { resumeClock() }
+            else if rate != cadence { clock.setRate(rate); cadence = rate }
+        } else { clock.stop(); cadence = nil }
+        host.update(snapshot: frame, capturesPointer: engine.hasPointerCapture,
+                    pointer: context.point(NSEvent.mouseLocation), acceptsInput: isAnimating)
+        host.setVisible(controlState.isVisible)
+    }
+    private func publishControlState() {
+        let state = controlState
+        guard publishedControlState != state else { return }
+        publishedControlState = state
+        onControlStateChanged?(state)
     }
 }

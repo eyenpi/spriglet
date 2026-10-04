@@ -12,9 +12,13 @@ Meet Mallow, a soft lavender companion that peeks out beneath your Mac's notch. 
 
 A second touch brings a wave or a gentle swing. Release near the notch to let Mallow catch it; release farther away to try gravity and a soft, squishy landing. Clicking elsewhere brings it home. Displays without a notch use a small home at the upper right edge.
 
+### Controls within reach
+
+{{menuControlsHelp}} Hidden Mallow is recoverable from the menu bar or by reopening the app from Finder. Offline Help preserves keyboard focus in your current app.
+
 ### Your choice of home
 
-Right-click Mallow to open {{settingsMenu}}. Choose character size, movement intensity and a home display/location. Changes apply immediately and are remembered on this Mac.
+Open {{settingsMenu}} from the leaf menu or by right-clicking Mallow. Settings opens with keyboard focus. Choose character size, movement intensity and a home display/location. Changes apply immediately and are remembered on this Mac.
 
 ### Quiet by default
 
