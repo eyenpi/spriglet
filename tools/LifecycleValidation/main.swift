@@ -79,11 +79,14 @@ struct ValidationFailure: Error, CustomStringConvertible {
                                              lockCenter: locks, displays: { available })
         let clock = ScreenFrameClock(), host = CompanionWindowHost()
         let runtime = CompanionRuntime(environment: environment, clock: clock, host: host, leftButtonIsDown: { buttonDown })
-        let delegate = AppDelegate(runtime: runtime)
+        let loginService = FakeLoginService()
+        let delegate = AppDelegate(runtime: runtime, launchAtLogin: LaunchAtLoginController(service: loginService))
         defer { runtime.stop() }
         let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
         runtime.start(); runtime.start()
         var window = try visiblePanel()
+        try require(view(window).makeContextMenu?().items.first?.title == AppText.launchAtLogin,
+                    "App controls were not routed to the companion's context menu")
         try assertHome(window)
         let originalWindow = window
         beginDrag(host: host, window: window, clock: clock)
@@ -177,6 +180,10 @@ struct ValidationFailure: Error, CustomStringConvertible {
         workspace.post(name: NSWorkspace.willSleepNotification, object: nil)
         runtime.stop(); runtime.start(); window = try visiblePanel()
         try assertHome(window)
+        try require(view(window).makeContextMenu?().items.first?.title == AppText.launchAtLogin,
+                    "Restart lost the companion's context menu")
+        try require(loginService.registrations == 0 && loginService.unregistrations == 0,
+                    "Native launch/reopen/restart changed login registration")
         print("Native runtime passed: ordered sleep/wake/lock/session cycles, Spaces, lost release, display fallback/reconnect/resize, reopen and restart.")
     }
     static func observationLifetime() throws {
@@ -207,10 +214,10 @@ struct ValidationFailure: Error, CustomStringConvertible {
         for _ in 0..<5 {
             try require(try AppInstanceLease.acquire(directory: directory) == nil, "Duplicate launch acquired a second lease")
         }
-        func probe(_ expected: Int32) throws {
+        func probe(_ expected: Int32, storage: URL = directory) throws {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
-            process.arguments = ["--lease-probe", directory.path]
+            process.arguments = ["--lease-probe", storage.path]
             try process.run(); process.waitUntilExit()
             try require(process.terminationStatus == expected, "Separate process did not respect the launch lease")
         }
@@ -220,6 +227,31 @@ struct ValidationFailure: Error, CustomStringConvertible {
         let next = try AppInstanceLease.acquire(directory: directory)
         try require(next != nil, "Exit left a stale launch lock")
         withExtendedLifetime(next) {}
+
+        let overlapping = directory.appendingPathComponent("overlapping", isDirectory: true)
+        let ready = overlapping.appendingPathComponent("ready")
+        let contenders = (0..<8).map { _ in Process() }
+        defer {
+            for process in contenders where process.isRunning { process.terminate(); process.waitUntilExit() }
+        }
+        for process in contenders {
+            process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
+            process.arguments = ["--lease-holder", overlapping.path]
+            try process.run()
+        }
+        try waitUntil("Overlapping launches did not elect exactly one owner") {
+            FileManager.default.fileExists(atPath: ready.path) && contenders.filter(\.isRunning).count == 1
+        }
+        for process in contenders where !process.isRunning {
+            try require(process.terminationStatus == 2, "Overlapping launch did not exit as a duplicate")
+        }
+        guard let owner = contenders.first(where: \.isRunning) else {
+            throw ValidationFailure(description: "Overlapping launch owner disappeared")
+        }
+        try probe(2, storage: overlapping)
+        try require(kill(owner.processIdentifier, SIGKILL) == 0, "Could not stop the fixture lock owner")
+        owner.waitUntilExit()
+        try probe(0, storage: overlapping)
         let invalid = directory.appendingPathComponent("file")
         try Data().write(to: invalid)
         do {
@@ -227,7 +259,7 @@ struct ValidationFailure: Error, CustomStringConvertible {
             throw ValidationFailure(description: "Unwritable launch storage was silently ignored")
         } catch is ValidationFailure { throw ValidationFailure(description: "Invalid launch storage did not report an error") }
         catch { /* Expected filesystem error. */ }
-        print("Launch lease passed: duplicate rejection, release and filesystem failure.")
+        print("Launch lease passed: duplicate rejection, eight overlapping processes, crash recovery, release and filesystem failure.")
     }
     static func waitUntil(_ message: String, timeout: Double = 5, _ condition: () -> Bool) throws {
         let deadline = Date().addingTimeInterval(timeout)
@@ -279,7 +311,7 @@ struct ValidationFailure: Error, CustomStringConvertible {
         try require(panel.isOnActiveSpace && fixture.isKeyWindow && !panel.isKeyWindow, "Returning from fullscreen lost home or focus")
         print("Real fullscreen/Spaces fixture passed: entry, visible nonkey companion, reopen and desktop return.")
     }
-    static func validate(bundledFullscreen: Bool) -> Int32 {
+    static func validate(bundledFullscreen: Bool, appOnly: Bool = false) -> Int32 {
         let resultURL = Bundle.main.bundleURL.deletingLastPathComponent().appendingPathComponent("fullscreen-result.txt")
         var outcome = "Fullscreen fixture did not finish."
         defer { if bundledFullscreen { try? outcome.write(to: resultURL, atomically: true, encoding: .utf8) } }
@@ -287,11 +319,16 @@ struct ValidationFailure: Error, CustomStringConvertible {
             if bundledFullscreen {
                 try fullscreenTransition()
                 outcome = "Passed: real fullscreen/Spaces fixture retained keyboard focus and a visible home on entry, reopen and exit."
+            } else if appOnly {
+                try launchAtLogin()
+                try instanceLease()
+                print("App validation passed without creating a companion or changing macOS login items.")
             } else {
                 guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Native validation requires a logged-in Mac with a display") }
                 try nativePicking(screen: screen)
                 try nativeLifecycle(screen: screen)
                 try observationLifetime()
+                try launchAtLogin()
                 try instanceLease()
                 print("Desktop lifecycle validation passed. Notifications/display inventory are simulated; physical lock/sleep/fullscreen transitions require device acceptance.")
             }
@@ -303,6 +340,14 @@ struct ValidationFailure: Error, CustomStringConvertible {
         }
     }
     static func main() {
+        if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--lease-holder" {
+            do {
+                let storage = URL(fileURLWithPath: CommandLine.arguments[2])
+                guard let lease = try AppInstanceLease.acquire(directory: storage) else { exit(2) }
+                try Data().write(to: storage.appendingPathComponent("ready"))
+                withExtendedLifetime(lease) { while true { Thread.sleep(forTimeInterval: 0.05) } }
+            } catch { exit(EXIT_FAILURE) }
+        }
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--lease-probe" {
             do {
                 let lease = try AppInstanceLease.acquire(directory: URL(fileURLWithPath: CommandLine.arguments[2]))
@@ -318,7 +363,7 @@ struct ValidationFailure: Error, CustomStringConvertible {
             withExtendedLifetime(delegate) { app.run() }
         } else {
             app.finishLaunching()
-            exit(validate(bundledFullscreen: false))
+            exit(validate(bundledFullscreen: false, appOnly: CommandLine.arguments.contains("--app-only")))
         }
     }
 }

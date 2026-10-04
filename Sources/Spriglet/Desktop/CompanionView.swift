@@ -5,6 +5,7 @@ import CompanionRendering
 
 @MainActor final class CompanionView: NSView {
     var onInput: ((CompanionInput) -> Void)?
+    var makeContextMenu: (() -> NSMenu)?
     /// Optional instrumentation owned by the finite profiling tool.
     var onDraw: ((Double) -> Void)?
     var context: DisplayContext
@@ -58,11 +59,8 @@ import CompanionRendering
     override func mouseUp(with event: NSEvent) { onInput?(.pointerReleased(point(event))) }
     override func rightMouseDown(with event: NSEvent) {
         onInput?(.command(.returnHome))
-        // Quitting remains reachable without activating the app on reopen or
-        // making this panel key. AppKit restores focus after the transient menu.
-        let menu = NSMenu()
-        let quit = NSMenuItem(title: AppText.quitApp, action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
-        quit.target = NSApp; menu.addItem(quit)
-        NSMenu.popUpContextMenu(menu, with: event, for: self)
+        // App-level controls are supplied by the composition root. The transient
+        // menu does not make the companion panel key or activate it on reopen.
+        if let menu = makeContextMenu?() { NSMenu.popUpContextMenu(menu, with: event, for: self) }
     }
 }

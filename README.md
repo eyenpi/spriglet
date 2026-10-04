@@ -23,7 +23,9 @@ Select the full Xcode 26 toolchain, then:
 ./scripts/run.sh
 ```
 
-Builds live under `.build/xcode/Build/Products/`. Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens a small menu with Quit Spriglet. Launch, recovery and character interaction preserve keyboard focus. Escape returns it home when this app receives keyboard input. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
+Builds live under `.build/xcode/Build/Products/`. Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens a small menu with Launch at Login, the current macOS registration status, Login Items settings and Quit Spriglet. Launch, recovery and character interaction preserve keyboard focus. Escape returns it home when this app receives keyboard input. Overlapping launches share one process-held lock, so a second executable exits without creating another companion. After acquiring the lock, startup also exits if macOS reports an already-launched Spriglet, including an older preview without the lock.
+
+Launch at login is optional and off for a new installation. Enable it from Mallow’s right-click menu. The checkmark means macOS reports `.enabled`; a dash means `.requiresApproval`, with login launch still off until you allow it in System Settings > General > Login Items & Extensions. Unavailable states and failed changes are shown explicitly, including the macOS error when a change fails. The menu re-reads registration when opened and before each action, so changes in System Settings are reflected. Quitting leaves the registration intact; turning the option off unregisters future login launches while Mallow keeps running. Startup never registers automatically or restores an old preference.
 
 For a finite, reproducible animation preview using the production code:
 
@@ -47,9 +49,11 @@ There is one production simulation and one renderer. The preview exporter uses t
 | macOS environment | `Sources/Spriglet/Environment` | Convert real display measurements and lifecycle signals into core values. Observe outside clicks without reading clicked content. |
 | Desktop host | `Sources/Spriglet/Desktop` | Transparent nonactivating panel, actual-frame coordinate compensation, hit testing and accessible character actions. |
 | Runtime | `Sources/Spriglet/Runtime` | Wire the three boundaries together and own the single screen-bound animation clock. |
-| App | `Sources/Spriglet/App` | Launch, shutdown and generated shared text. |
+| App | `Sources/Spriglet/App` | Exclusive launch lease, shutdown, login registration, transient app controls and generated shared text. |
 
-`CompanionRuntime` is the composition root. It owns a `CompanionEngine`, `DesktopEnvironment`, `CompanionWindowHost` and `ScreenFrameClock`. Adapters report to the runtime; they never call one another. Core state is held in a session value and advances in 120 Hz simulation steps, independently of display cadence. The renderer receives a `CompanionSnapshot` and cannot mutate the model.
+`AppDelegate` owns the app menu and `LaunchAtLoginController`; `MainAppLoginService` is the only ServiceManagement adapter and uses `SMAppService.mainApp`. Registration is independent of character state, and the app passes a menu factory through the runtime and window host to the view. No helper app, launch-agent plist, polling timer or persisted login boolean is needed.
+
+`CompanionRuntime` is the character composition root. It owns a `CompanionEngine`, `DesktopEnvironment`, `CompanionWindowHost` and `ScreenFrameClock`. Adapters report to the runtime; they never call one another. Core state is held in a session value and advances in 120 Hz simulation steps, independently of display cadence. The renderer receives a `CompanionSnapshot` and cannot mutate the model.
 
 ### Changing behavior
 
@@ -83,7 +87,7 @@ Mallow only occupies a small transparent panel. Empty margins and transparent co
 
 ## Verification
 
-`./scripts/test.sh` checks dependency boundaries, core interactions, trajectory/contact behavior, pose continuity, lifecycle policy, coordinate compensation and native rendered pixels. Debug and Release Xcode builds use Swift 6 with strict concurrency and warnings as errors. `./scripts/test-desktop.sh` separately compiles the production macOS adapters into a finite regression runner; it needs a logged-in Mac with a display. It exercises real panels and display links with injected notifications and display inventories, including repeated starts/stops and launch locks. See [desktop acceptance](tools/LifecycleValidation/README.md) for the physical-device matrix and the distinction between simulated and real system transitions.
+`./scripts/test.sh` checks dependency boundaries, core interactions, trajectory/contact behavior, pose continuity, lifecycle policy, coordinate compensation and native rendered pixels, then runs the window-free app regression suite for login registration/menu states and process-lock ownership. Debug and Release Xcode builds use Swift 6 with strict concurrency and warnings as errors. `./scripts/test-desktop.sh` separately compiles the production macOS adapters into a finite regression runner; it needs a logged-in Mac with a display. It exercises real panels and display links with injected notifications and display inventories, including repeated starts/stops and launch locks. See [desktop acceptance](tools/LifecycleValidation/README.md) for the physical-device matrix and the distinction between simulated and real system transitions.
 
 The PR workflow retains owner approval before runner allocation and its security checks. It runs the same new tests, renders a production preview, checks shared content, validates both app builds and rehearses unsigned packaging. CI compilation is separate from live interaction and visual acceptance.
 
@@ -103,7 +107,7 @@ For repeatable CPU, redraw and live-allocation measurements, use [idle energy pr
 
 ## Release process and next steps
 
-The Mallow release replaces the previous character and interaction system. The bundle identifier remains `dev.spriglet.app`; old saved preferences are neither imported nor deleted. There is no login item registration in this preview. Quit an older running preview before opening Mallow.
+The Mallow release replaces the previous character and interaction system. The bundle identifier remains `dev.spriglet.app`; old saved preferences are neither imported nor deleted. Launch at login uses only an explicit choice and the current macOS registration; old saved login preferences are not imported.
 
 A release goes through a PR, required security and Mac build checks, then a merge to `main`. Build and package that exact clean revision, mount and verify the DMG, create an immutable annotated tag and publish the matching changelog and checksummed downloads. The publisher refuses mismatched or dirty source. See [release instructions](tools/ReleaseNotes/README.md) and [packaging](tools/ReleaseValidation/README.md).
 

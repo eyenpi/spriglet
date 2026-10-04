@@ -4,6 +4,7 @@ import CompanionCore
 /// Composition root. Routes inputs, snapshots and lifecycle; the three owned
 /// adapters never call one another and the core never retains an adapter.
 @MainActor final class CompanionRuntime {
+    var makeContextMenu: (() -> NSMenu)?
     private let environment: DesktopEnvironment
     private let clock: ScreenFrameClock
     private let host: CompanionWindowHost
@@ -23,6 +24,7 @@ import CompanionCore
     func start() {
         guard !running else { return }; running = true
         host.onInput = { [weak self] input in self?.send(input) }
+        host.makeContextMenu = makeContextMenu
         clock.onTick = { [weak self] elapsed in self?.tick(elapsed) }
         environment.onDisplayChanged = { [weak self] context in self?.bind(context) }
         environment.onConditionsChanged = { [weak self] conditions in self?.apply(conditions) }
@@ -34,7 +36,7 @@ import CompanionCore
     func stop() {
         guard running else { return }; running = false
         clock.stop(); environment.stop(); host.close()
-        host.onInput = nil; clock.onTick = nil
+        host.onInput = nil; host.makeContextMenu = nil; clock.onTick = nil
         engine = nil; context = nil; cadence = nil; conditions = RuntimeConditions()
     }
     /// Finder reopens recover immediately without requesting application focus.

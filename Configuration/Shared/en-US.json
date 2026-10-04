@@ -7,5 +7,17 @@
   "restingPresence": "Curious peek",
   "engagedPresence": "Invited out",
   "playingPresence": "Playing",
-  "quitApp": "Quit {{appName}}"
+  "quitApp": "Quit {{appName}}",
+  "launchAtLogin": "Launch at Login",
+  "loginNotRegistered": "Off · Not registered with macOS",
+  "loginEnabled": "On · Registered with macOS",
+  "loginRequiresApproval": "Off · Approval required in System Settings",
+  "loginNotFound": "Unavailable · macOS could not find this app",
+  "loginUnknown": "Unavailable · Unknown macOS registration state",
+  "loginEnableFailed": "Couldn’t enable launch at login",
+  "loginDisableFailed": "Couldn’t disable launch at login",
+  "loginLastAttempt": "Last attempt:",
+  "loginApprovalHelp": "Allow Spriglet in System Settings > General > Login Items & Extensions. It will not launch at login until macOS reports it as enabled. To cancel registration, turn off Launch at Login in Mallow’s menu.",
+  "openLoginItemsSettings": "Open Login Items Settings…",
+  "dismissLoginFeedback": "OK"
 }
