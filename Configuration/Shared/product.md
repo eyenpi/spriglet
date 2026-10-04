@@ -12,6 +12,10 @@ Meet Mallow, a soft lavender companion that peeks out beneath your Mac's notch. 
 
 A second touch brings a wave or a gentle swing. Release near the notch to let Mallow catch it; release farther away to try gravity and a soft, squishy landing. Clicking elsewhere brings it home. Displays without a notch use a small home at the upper right edge.
 
+### Your choice of home
+
+Right-click Mallow to open {{settingsMenu}}. Choose character size, movement intensity and a home display/location. Changes apply immediately and are remembered on this Mac.
+
 ### Quiet by default
 
 Mallow stays at its small resting peek until invited. It returns to that peek after you move on. Empty space around the character passes clicks through to your work. It respects Reduce Motion, Low Power Mode, display sleep and session changes.

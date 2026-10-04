@@ -14,11 +14,17 @@ On a notched display, Mallow uses the actual housing geometry reported by macOS.
 
 ## Keeping your work clear
 
-Mallow stays in the resting peek until invited and returns after you leave it alone. The transparent margins of its window pass clicks through. Reduce Motion limits decorative movement; Low Power Mode and thermal pressure lower animation cadence. Animation stops during system or display sleep, screen lock, an inactive session or critical thermal pressure. Waking, unlocking and changing Spaces return Mallow to its resting home. Home stays on the initial primary display as you move between apps; unplugging it uses the current primary display until the original returns.
+Mallow stays in the resting peek until invited and returns after you leave it alone. The transparent margins of its window pass clicks through. Reduce Motion limits decorative movement; Low Power Mode and thermal pressure lower animation cadence. Animation stops during system or display sleep, screen lock, an inactive session or critical thermal pressure. Waking, unlocking and changing Spaces return Mallow to its resting home. Home stays on the initial primary display as you move between apps unless you choose another display in Settings. Unplugging the chosen display uses the current primary display while preserving your saved choice; Mallow returns when that display reconnects.
+
+## Settings
+
+Right-click Mallow and choose {{settingsMenu}} to open a small native window. Choose Small, Medium or Large character size; Gentle, Standard or Lively movement intensity; a home display; and Automatic, Top left, Top center or Top right location. Automatic uses the actual notch when present and the upper-right fallback otherwise. Changes apply immediately and are saved locally for the next launch. Reduce Motion takes priority over movement intensity. Changing size or home ends an active drag and returns Mallow to its updated home. A disconnected saved display remains selected in Settings until it returns or you choose another.
+
+Settings can also be opened with Command-comma when {{appName}} is active or through Mallow’s VoiceOver custom action. Opening Settings gives its window keyboard focus; closing the window leaves Mallow running.
 
 ## Quitting
 
-Right-click Mallow to bring it home and open its small menu, then choose {{quitApp}}. Reopening {{appName}} from Finder returns it home while keeping keyboard focus in your current app. There is no permanent menu-bar item, action card, settings window or Dock icon.
+Right-click Mallow to bring it home and open its small menu, then choose {{quitApp}}. Reopening {{appName}} from Finder returns it home while keeping keyboard focus in your current app. There is no permanent menu-bar item, action card or Dock icon.
 
 ## Local preview and troubleshooting
 

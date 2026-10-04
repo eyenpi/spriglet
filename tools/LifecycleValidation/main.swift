@@ -78,7 +78,11 @@ struct ValidationFailure: Error, CustomStringConvertible {
         let environment = DesktopEnvironment(applicationCenter: application, workspaceCenter: workspace,
                                              lockCenter: locks, displays: { available })
         let clock = ScreenFrameClock(), host = CompanionWindowHost()
-        let runtime = CompanionRuntime(environment: environment, clock: clock, host: host, leftButtonIsDown: { buttonDown })
+        let suite = "dev.spriglet.lifecycle-validation.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let runtime = CompanionRuntime(environment: environment, clock: clock, host: host,
+                                       preferenceStore: PreferenceStore(defaults: defaults), leftButtonIsDown: { buttonDown })
         let delegate = AppDelegate(runtime: runtime)
         defer { runtime.stop() }
         let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
@@ -293,6 +297,9 @@ struct ValidationFailure: Error, CustomStringConvertible {
                 try nativeLifecycle(screen: screen)
                 try observationLifetime()
                 try instanceLease()
+                try SettingsValidation.preferences()
+                try SettingsValidation.runtime(screen: screen)
+                try SettingsValidation.window(screen: screen)
                 print("Desktop lifecycle validation passed. Notifications/display inventory are simulated; physical lock/sleep/fullscreen transitions require device acceptance.")
             }
             return EXIT_SUCCESS
@@ -303,6 +310,10 @@ struct ValidationFailure: Error, CustomStringConvertible {
         }
     }
     static func main() {
+        if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--preferences-probe" {
+            guard let defaults = UserDefaults(suiteName: CommandLine.arguments[2]) else { exit(EXIT_FAILURE) }
+            exit(PreferenceStore(defaults: defaults).load() == SettingsValidation.savedPreferences ? EXIT_SUCCESS : EXIT_FAILURE)
+        }
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--lease-probe" {
             do {
                 let lease = try AppInstanceLease.acquire(directory: URL(fileURLWithPath: CommandLine.arguments[2]))

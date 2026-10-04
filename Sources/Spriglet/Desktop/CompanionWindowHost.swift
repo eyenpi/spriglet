@@ -10,14 +10,16 @@ import CompanionCore
 /// Native window mechanics only. Has no behavioral state machine or clock.
 @MainActor final class CompanionWindowHost {
     var onInput: ((CompanionInput) -> Void)?
+    var onShowSettings: (() -> Void)?
     var onDraw: ((Double) -> Void)?
     private var panel: NSPanel?
     private var view: CompanionView?
-    private var requestedOrigin: Point?
+    private var requestedFrame: Rect?
     func attach(context: DisplayContext, snapshot: CompanionSnapshot) {
         close()
         let view = CompanionView(context: context, snapshot: snapshot)
         view.onInput = { [weak self] input in self?.onInput?(input) }
+        view.onShowSettings = { [weak self] in self?.onShowSettings?() }
         view.onDraw = onDraw
         let panel = CompanionPanel(contentRect: view.bounds, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.isOpaque = false; panel.backgroundColor = .clear; panel.hasShadow = false
@@ -31,11 +33,14 @@ import CompanionCore
     }
     func update(snapshot: CompanionSnapshot, capturesPointer: Bool, pointer: Point) {
         guard let panel, let view else { return }
-        let origin = WindowGeometry.desiredOrigin(feet: snapshot.windowAnchor, display: view.context.frame)
+        let frame = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: view.context.frame,
+                                               scale: snapshot.scene.scale, visibleBounds: snapshot.hitBounds)
         // Avoid window-server work for the stationary home. Compare requested
         // positions, since macOS may clamp the actual panel to the display.
-        if requestedOrigin.map({ origin.distance(to: $0) > 0.05 }) ?? true {
-            panel.setFrameOrigin(NSPoint(x: origin.x, y: origin.y)); requestedOrigin = origin
+        if requestedFrame.map({ abs(frame.x - $0.x) > 0.05 || abs(frame.y - $0.y) > 0.05
+            || abs(frame.width - $0.width) > 0.05 || abs(frame.height - $0.height) > 0.05 }) ?? true {
+            panel.setFrame(NSRect(x: frame.x, y: frame.y, width: frame.width, height: frame.height), display: false)
+            requestedFrame = frame
         }
         let actual = panel.frame
         view.drawingOrigin = WindowGeometry.drawingOrigin(
@@ -48,5 +53,5 @@ import CompanionCore
     func setVisible(_ visible: Bool) {
         if visible { panel?.orderFrontRegardless() } else { panel?.orderOut(nil) }
     }
-    func close() { panel?.orderOut(nil); panel?.close(); panel = nil; view = nil; requestedOrigin = nil }
+    func close() { panel?.orderOut(nil); panel?.close(); panel = nil; view = nil; requestedFrame = nil }
 }

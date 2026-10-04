@@ -10,6 +10,7 @@ import CompanionCore
     static let screenUnlocked = Notification.Name("com.apple.screenIsUnlocked")
 
     var onDisplayChanged: ((DisplayContext?) -> Void)?
+    var onDisplaysChanged: (([HomeDisplay]) -> Void)?
     var onConditionsChanged: ((RuntimeConditions) -> Void)?
     var onRecoveryNeeded: (() -> Void)?
     var onOutsidePressed: (() -> Void)?
@@ -19,6 +20,10 @@ import CompanionCore
     private let lockCenter: NotificationCenter
     private let displays: () -> [DisplayContext]
     private var preferredDisplayID: CGDirectDisplayID?
+    private var homeDisplayID: String?
+    private var homeLocation = HomeLocation.automatic
+    private var characterSize = CharacterSize.medium
+    private var displayInventory: [HomeDisplay] = []
     private var conditions = RuntimeConditions()
     private var notifications: [(NotificationCenter, NSObjectProtocol)] = []
     private var globalMouse: Any?
@@ -53,7 +58,9 @@ import CompanionCore
         }
         localKeys = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self, self.running else { return event }
-            if event.keyCode == 53 { self.onReturnHome?(); return nil }
+            // Key-capable native windows handle Escape themselves (including
+            // dismissing Settings popups); character recovery must not consume it.
+            if event.keyCode == 53 && event.window?.canBecomeKey != true { self.onReturnHome?(); return nil }
             return event
         }
         let session = CGSessionCopyCurrentDictionary() as? [String: Any]
@@ -70,6 +77,13 @@ import CompanionCore
         if let globalMouse { NSEvent.removeMonitor(globalMouse) }; globalMouse = nil
         if let localKeys { NSEvent.removeMonitor(localKeys) }; localKeys = nil
         preferredDisplayID = nil; conditions = RuntimeConditions()
+        displayInventory = []
+    }
+    func configureHome(_ preferences: CompanionPreferences) {
+        if homeDisplayID != preferences.homeDisplayID { preferredDisplayID = nil }
+        homeDisplayID = preferences.homeDisplayID
+        homeLocation = preferences.homeLocation; characterSize = preferences.characterSize
+        if running { refreshDisplay() }
     }
     /// Reopen and lifecycle recovery sample current measurements before resuming.
     func recover() {
@@ -102,11 +116,18 @@ import CompanionCore
     }
     private func refreshDisplay() {
         let available = displays()
+        let inventory = available.compactMap { context -> HomeDisplay? in
+            guard UUID(uuidString: context.persistentID) != nil else { return nil }
+            return HomeDisplay(id: context.persistentID, name: context.screen.localizedName)
+        }
+        if inventory != displayInventory { displayInventory = inventory; onDisplaysChanged?(inventory) }
         if preferredDisplayID == nil { preferredDisplayID = available.first?.id }
         // NSScreen.main follows keyboard focus. Home instead stays on the initial
         // primary display, falls back while absent and returns when reconnected.
-        let selected = available.first { $0.id == preferredDisplayID } ?? available.first
-        onDisplayChanged?(selected)
+        let selected: DisplayContext?
+        if let homeDisplayID { selected = available.first { $0.persistentID == homeDisplayID } ?? available.first }
+        else { selected = available.first { $0.id == preferredDisplayID } ?? available.first }
+        onDisplayChanged?(selected?.placingHome(size: characterSize, location: homeLocation))
     }
     private func refreshConditions() {
         conditions.lowPower = ProcessInfo.processInfo.isLowPowerModeEnabled

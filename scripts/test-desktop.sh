@@ -25,10 +25,11 @@ swiftc -swift-version 6 -strict-concurrency=complete -warnings-as-errors -parse-
   "$task_root"/Sources/Spriglet/Environment/*.swift \
   "$task_root"/Sources/Spriglet/Desktop/*.swift \
   "$task_root"/Sources/Spriglet/Runtime/*.swift \
+  "$task_root"/Sources/Spriglet/Settings/*.swift \
   "$task_root/Sources/Spriglet/App/AppDelegate.swift" \
   "$task_root/Sources/Spriglet/App/AppInstanceLease.swift" \
   "$task_root/Sources/Spriglet/App/SharedContent.generated.swift" \
-  "$task_root/tools/LifecycleValidation/main.swift" -o "$task_output/lifecycle-validation"
+  "$task_root"/tools/LifecycleValidation/*.swift -o "$task_output/lifecycle-validation"
 if [[ "${1:-}" == "--prepare-fullscreen" ]]; then
   python3 - "$task_output" <<'PY'
 from pathlib import Path

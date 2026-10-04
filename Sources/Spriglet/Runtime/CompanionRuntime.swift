@@ -8,6 +8,12 @@ import CompanionCore
     private let clock: ScreenFrameClock
     private let host: CompanionWindowHost
     private let leftButtonIsDown: () -> Bool
+    private let preferenceStore: PreferenceStore
+    private var displays: [HomeDisplay] = []
+    private(set) var preferences: CompanionPreferences
+    var onSettingsChanged: ((SettingsState) -> Void)?
+    var onShowSettings: (() -> Void)?
+    var settingsState: SettingsState { SettingsState(preferences: preferences, displays: displays) }
     private var context: DisplayContext?
     private var engine: CompanionEngine?
     private var conditions = RuntimeConditions()
@@ -16,31 +22,49 @@ import CompanionCore
 
     init(environment: DesktopEnvironment = DesktopEnvironment(), clock: ScreenFrameClock = ScreenFrameClock(),
          host: CompanionWindowHost = CompanionWindowHost(),
+         preferenceStore: PreferenceStore = PreferenceStore(),
          leftButtonIsDown: @escaping () -> Bool = { NSEvent.pressedMouseButtons & 1 != 0 }) {
         self.environment = environment; self.clock = clock; self.host = host
         self.leftButtonIsDown = leftButtonIsDown
+        self.preferenceStore = preferenceStore; preferences = preferenceStore.load()
     }
     func start() {
         guard !running else { return }; running = true
         host.onInput = { [weak self] input in self?.send(input) }
+        host.onShowSettings = { [weak self] in self?.onShowSettings?() }
         clock.onTick = { [weak self] elapsed in self?.tick(elapsed) }
         environment.onDisplayChanged = { [weak self] context in self?.bind(context) }
+        environment.onDisplaysChanged = { [weak self] displays in
+            guard let self else { return }
+            self.displays = displays; self.onSettingsChanged?(self.settingsState)
+        }
         environment.onConditionsChanged = { [weak self] conditions in self?.apply(conditions) }
         environment.onRecoveryNeeded = { [weak self] in self?.recover() }
         environment.onOutsidePressed = { [weak self] in self?.send(.outsidePressed) }
         environment.onReturnHome = { [weak self] in self?.send(.command(.returnHome)) }
-        environment.start()
+        environment.configureHome(preferences); environment.start()
     }
     func stop() {
         guard running else { return }; running = false
         clock.stop(); environment.stop(); host.close()
-        host.onInput = nil; clock.onTick = nil
+        host.onInput = nil; host.onShowSettings = nil; clock.onTick = nil
+        environment.onDisplayChanged = nil; environment.onDisplaysChanged = nil
+        environment.onConditionsChanged = nil; environment.onRecoveryNeeded = nil
+        environment.onOutsidePressed = nil; environment.onReturnHome = nil
+        displays = []
         engine = nil; context = nil; cadence = nil; conditions = RuntimeConditions()
     }
     /// Finder reopens recover immediately without requesting application focus.
     func reopen() { environment.recover() }
     /// Future capabilities enter through this action boundary, not adapter access.
     func perform(_ command: CompanionCommand) { send(.command(command)) }
+    func updatePreferences(_ preferences: CompanionPreferences) {
+        guard self.preferences != preferences else { return }
+        self.preferences = preferences; preferenceStore.save(preferences)
+        engine?.setMovementAmount(preferences.movementIntensity.amount)
+        environment.configureHome(preferences)
+        refresh(); onSettingsChanged?(settingsState)
+    }
     private func send(_ input: CompanionInput) {
         guard running, context != nil, !conditions.isSuspended else { return }
         engine?.send(input); refresh()
@@ -58,6 +82,7 @@ import CompanionCore
         if engine == nil { engine = CompanionEngine(scene: context.scene, idleSeed: UInt64.random(in: .min ... .max)) }
         else { engine?.reconfigure(scene: context.scene) }
         engine?.setMotionPolicy(conditions.reduceMotion ? .reduced : .full)
+        engine?.setMovementAmount(preferences.movementIntensity.amount)
         guard let engine else { return }
         host.attach(context: context, snapshot: engine.snapshot)
         resumeClock(); refresh(); host.setVisible(!conditions.isSuspended)

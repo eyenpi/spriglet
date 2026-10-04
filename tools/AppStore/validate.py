@@ -21,6 +21,7 @@ require = release.require
 CATEGORY = "public.app-category.entertainment"
 SCREENSHOT_SIZES = {(1280, 800), (1440, 900), (2560, 1600), (2880, 1800)}
 PRIVACY_REASONS = {
+    "NSPrivacyAccessedAPICategoryUserDefaults": ["CA92.1"],
     "NSPrivacyAccessedAPICategorySystemBootTime": ["35F9.1"],
 }
 
