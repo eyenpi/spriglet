@@ -16,9 +16,15 @@ On a notched display, Mallow uses the actual housing geometry reported by macOS.
 
 Mallow stays in the resting peek until invited and returns after you leave it alone. The transparent margins of its window pass clicks through. Reduce Motion limits decorative movement; Low Power Mode and thermal pressure lower animation cadence. Animation stops during system or display sleep, screen lock, an inactive session or critical thermal pressure. Waking, unlocking and changing Spaces return Mallow to its resting home. Home stays on the initial primary display as you move between apps; unplugging it uses the current primary display until the original returns.
 
-## Quitting
+## Menu-bar controls and recovery
 
-Right-click Mallow to bring it home and open its small menu, then choose Quit Spriglet. Reopening Spriglet from Finder returns it home while keeping keyboard focus in your current app. There is no permanent menu-bar item, action card, settings window or Dock icon.
+Use the leaf in the menu bar to show or hide Mallow, pause or resume animation, bring it home, open Settings or Help, and quit Spriglet.
+
+Hidden Mallow stays hidden through sleep, lock and display changes. Choose Show Mallow or Bring Home, or reopen Spriglet from Finder to recover it. Bring Home and Finder recovery return it to its resting home and preserve Pause.
+
+Pause freezes the current pose and lets desktop clicks pass through; pausing an active drag releases it and returns Mallow home. Resume continues without simulating paused time. The visibility label reflects whether Mallow is actually visible; Show is unavailable while the display or session is suspended. Pause and Resume reflect your animation choice, independently of system suspension.
+
+Settings exposes the same visibility and animation controls for this session. Help is available offline. Both panels preserve keyboard focus in your current app. Closing them does not quit Spriglet. Right-click Mallow still brings it home and offers Quit Spriglet. There is no Dock icon or action card.
 
 ## Local preview and troubleshooting
 

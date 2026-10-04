@@ -1,6 +1,6 @@
 # Shared product content
 
-`Configuration/Shared` is the source for the app identity, accessible character labels, ordinary Quit label, help, privacy, product description and prepared store metadata. The runtime has no visible action cards or settings screens.
+`Configuration/Shared` is the source for the app identity, accessible character labels, menu-bar and Settings labels, offline help, privacy, product description and prepared store metadata. The menu and session Settings share these labels and describe the same runtime controls.
 
 ```sh
 python3 tools/SharedContent/sync.py

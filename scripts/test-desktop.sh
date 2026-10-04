@@ -1,8 +1,8 @@
 #!/bin/zsh
 # Compiles the production macOS adapters into a finite native regression runner.
 set -euo pipefail
-if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" ]]; then
-  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen]"
+if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" && "${1:-}" != "--test-quit-timeout" ]]; then
+  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen|--test-quit-timeout]"
   exit 2
 fi
 task_root="${0:A:h:h}"
@@ -27,6 +27,8 @@ swiftc -swift-version 6 -strict-concurrency=complete -warnings-as-errors -parse-
   "$task_root"/Sources/Spriglet/Runtime/*.swift \
   "$task_root/Sources/Spriglet/App/AppDelegate.swift" \
   "$task_root/Sources/Spriglet/App/AppInstanceLease.swift" \
+  "$task_root/Sources/Spriglet/App/MenuBarController.swift" \
+  "$task_root/Sources/Spriglet/App/CompanionControlsPanels.swift" \
   "$task_root/Sources/Spriglet/App/SharedContent.generated.swift" \
   "$task_root/tools/LifecycleValidation/main.swift" -o "$task_output/lifecycle-validation"
 if [[ "${1:-}" == "--prepare-fullscreen" ]]; then
@@ -49,6 +51,8 @@ PY
   codesign --force --sign - "$task_output/FullscreenFixture.app"
   print "Open $task_output/FullscreenFixture.app and click its blank window to run real fullscreen acceptance."
   print "The outcome is saved in $task_output/fullscreen-result.txt."
+elif [[ "${1:-}" == "--test-quit-timeout" ]]; then
+  "$task_output/lifecycle-validation" --test-quit-timeout
 else
   "$task_output/lifecycle-validation"
 fi
