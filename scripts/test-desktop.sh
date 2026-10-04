@@ -1,8 +1,8 @@
 #!/bin/zsh
 # Compiles the production macOS adapters into a finite native regression runner.
 set -euo pipefail
-if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" && "${1:-}" != "--prepare-introduction" ]]; then
-  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen|--prepare-introduction]"
+if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" && "${1:-}" != "--prepare-introduction" && "${1:-}" != "--test-quit-timeout" && "${1:-}" != "--test-preferences" && "${1:-}" != "--test-introduction" ]]; then
+  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen|--prepare-introduction|--test-quit-timeout|--test-preferences|--test-introduction]"
   exit 2
 fi
 task_root="${0:A:h:h}"
@@ -25,11 +25,14 @@ swiftc -swift-version 6 -strict-concurrency=complete -warnings-as-errors -parse-
   "$task_root"/Sources/Spriglet/Environment/*.swift \
   "$task_root"/Sources/Spriglet/Desktop/*.swift \
   "$task_root"/Sources/Spriglet/Runtime/*.swift \
+  "$task_root"/Sources/Spriglet/Settings/*.swift \
   "$task_root/Sources/Spriglet/App/AppDelegate.swift" \
   "$task_root/Sources/Spriglet/App/AppInstanceLease.swift" \
+  "$task_root/Sources/Spriglet/App/MenuBarController.swift" \
+  "$task_root/Sources/Spriglet/App/CompanionHelpPanel.swift" \
   "$task_root/Sources/Spriglet/App/SharedContent.generated.swift" \
-  "$task_root/tools/LifecycleValidation/main.swift" -o "$task_output/lifecycle-validation"
-if [[ -n "${1:-}" ]]; then
+  "$task_root"/tools/LifecycleValidation/*.swift -o "$task_output/lifecycle-validation"
+if [[ "${1:-}" == --prepare-* ]]; then
   task_fixture="${1#--prepare-}"
   python3 - "$task_output" "$task_fixture" <<'PY'
 from pathlib import Path
@@ -57,6 +60,8 @@ PY
   else
     print "Open $task_fixture_app to review the introduction with isolated preferences. It exits after two minutes."
   fi
+elif [[ "${1:-}" == "--test-quit-timeout" || "${1:-}" == "--test-preferences" || "${1:-}" == "--test-introduction" ]]; then
+  "$task_output/lifecycle-validation" "$1"
 else
   "$task_output/lifecycle-validation"
 fi

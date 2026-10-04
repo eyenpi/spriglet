@@ -14,15 +14,27 @@ On a notched display, Mallow uses the actual housing geometry reported by macOS.
 
 ## Meeting Mallow
 
-On first launch, a separate introduction shows five short demos with the actual character: hovering, inviting, dragging, catching home and returning to a quiet peek. Choose Next or a step to browse, Back to revisit, or Skip introduction to dismiss. Done, the close button and Escape also dismiss it. Your dismissal is remembered locally, so later launches stay quiet. Right-click Mallow and choose Help → Meet Mallow to replay it. The character on your desktop has no instructional overlays. With Reduce Motion enabled, each demo shows a representative still instead of looping movement.
+On first launch, a separate introduction shows five short demos with the actual character: hovering, inviting, dragging, catching home and returning to a quiet peek. Choose Next or a step to browse, Back to revisit, or Skip introduction to dismiss. Done, the close button and Escape also dismiss it. Your dismissal is remembered locally, so later launches stay quiet. Replay from the Help menu, the offline Help panel’s Meet Mallow button, or Help → Meet Mallow in Mallow’s right-click menu. Hide and Pause also freeze demo playback; replay keeps those choices. Show or resume Mallow to continue the animation. The character on your desktop has no instructional overlays. With Reduce Motion enabled, each demo shows a representative still instead of looping movement.
 
 ## Keeping your work clear
 
-Mallow stays in the resting peek until invited and returns after you leave it alone. The transparent margins of its window pass clicks through. Reduce Motion limits decorative movement; Low Power Mode and thermal pressure lower animation cadence. Animation stops during system or display sleep, screen lock, an inactive session or critical thermal pressure. Waking, unlocking and changing Spaces return Mallow to its resting home. Home stays on the initial primary display as you move between apps; unplugging it uses the current primary display until the original returns.
+Mallow stays in the resting peek until invited and returns after you leave it alone. The transparent margins of its window pass clicks through. Reduce Motion limits decorative movement; Low Power Mode and thermal pressure lower animation cadence. Animation stops during system or display sleep, screen lock, an inactive session or critical thermal pressure. Waking, unlocking and changing Spaces return Mallow to its resting home. Home stays on the initial primary display as you move between apps unless you choose another display in Settings. Unplugging the chosen display uses the current primary display while preserving your saved choice; Mallow returns when that display reconnects.
 
-## Quitting
+## Settings
 
-Right-click Mallow to bring it home and open its small menu, then choose {{quitApp}}. Reopening {{appName}} from Finder returns it home while keeping keyboard focus in your current app. There is no permanent menu-bar item, action card, settings window or Dock icon.
+Open the small native Settings window from the leaf menu or by right-clicking Mallow and choosing {{settingsMenu}}. Choose Small, Medium or Large character size; Gentle, Standard or Lively movement intensity; a home display; and Automatic, Top left, Top center or Top right location. Automatic uses the actual notch when present and the upper-right fallback otherwise. Changes apply immediately and are saved locally for the next launch. Reduce Motion takes priority over movement intensity. Changing size or home ends an active drag and returns Mallow to its updated home. A disconnected saved display remains selected in Settings until it returns or you choose another.
+
+Settings can also be opened with Command-comma when {{appName}} is active or through Mallow’s VoiceOver custom action. Opening Settings gives its window keyboard focus; closing the window leaves Mallow running.
+
+## Menu-bar controls and recovery
+
+{{menuControlsHelp}}
+
+{{recoveryHelp}}
+
+Pause freezes the current pose and lets desktop clicks pass through; pausing an active drag releases it and returns Mallow home. Resume continues without simulating paused time. The visibility label reflects whether Mallow is actually visible; Show is unavailable while the display or session is suspended. Pause and Resume reflect your animation choice, independently of system suspension.
+
+Settings exposes the same Show and Animate controls for this session, alongside saved preferences. Help is available offline and preserves keyboard focus in your current app. Closing either window keeps {{appName}} running. Right-click Mallow still brings it home and offers Settings, Help → Meet Mallow and {{quitApp}}. There is no Dock icon or action card.
 
 ## Local preview and troubleshooting
 

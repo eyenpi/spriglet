@@ -8,10 +8,14 @@ import Testing
         Rect(x: 1512, y: 100, width: 1920, height: 1080),
     ])
     func windowCoordinates(display: Rect) {
+        for scale in [0.8, 1.0, 1.2] { checkWindowCoordinates(display: display, scale: scale) }
+    }
+    private func checkWindowCoordinates(display: Rect, scale: Double) {
         let feet = Point(x: display.width / 2, y: 92)
-        let desired = WindowGeometry.desiredOrigin(feet: feet, display: display)
+        let desired = WindowGeometry.desiredFrame(feet: feet, display: display, scale: scale)
         // Exercise actual-frame compensation when the OS moves the panel.
-        let actual = Rect(x: desired.x + 11, y: desired.y - 7, width: WindowGeometry.width, height: WindowGeometry.height)
+        let actual = Rect(x: desired.x + 11, y: desired.y - 7,
+                          width: WindowGeometry.width * scale, height: WindowGeometry.height * scale)
         let origin = WindowGeometry.drawingOrigin(window: actual, display: display)
         #expect(abs(actual.maxY - (32 + origin.y) - (display.maxY - 32)) < 0.001)
         let global = Point(x: display.minX + feet.x, y: display.maxY - feet.y)

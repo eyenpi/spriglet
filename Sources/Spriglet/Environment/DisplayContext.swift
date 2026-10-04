@@ -4,6 +4,7 @@ import CompanionCore
 struct DisplayContext {
     let screen: NSScreen
     let id: CGDirectDisplayID
+    let persistentID: String
     let frame: Rect
     let scene: SceneGeometry
     private let backingScale: CGFloat
@@ -30,13 +31,39 @@ struct DisplayContext {
                               floor: min(f.height, floor), hasHardwareNotch: notch)
         self.init(screen: screen, id: id, frame: frame, scene: scene)
     }
-    init(screen: NSScreen, id: CGDirectDisplayID, frame: Rect, scene: SceneGeometry) {
+    init(screen: NSScreen, id: CGDirectDisplayID, frame: Rect, scene: SceneGeometry, persistentID: String? = nil) {
         self.screen = screen; self.id = id; self.frame = frame; self.scene = scene
+        if let persistentID { self.persistentID = persistentID }
+        else if let uuid = CGDisplayCreateUUIDFromDisplayID(id)?.takeRetainedValue() {
+            self.persistentID = CFUUIDCreateString(nil, uuid) as String
+        } else {
+            // An unavailable UUID must never alias another saved display.
+            self.persistentID = "unavailable-\(id)"
+        }
         backingScale = screen.backingScaleFactor; maximumFrameRate = screen.maximumFramesPerSecond
+    }
+    func placingHome(size: CharacterSize, location: HomeLocation) -> DisplayContext {
+        let home: Rect
+        if location == .automatic { home = scene.home }
+        else {
+            let margin = min(20, scene.bounds.width / 4)
+            let width = min(180, scene.bounds.width - margin * 2)
+            let x = switch location {
+            case .left: scene.bounds.minX + margin
+            case .center: scene.bounds.midX - width / 2
+            case .right: scene.bounds.maxX - margin - width
+            case .automatic: scene.home.minX
+            }
+            home = Rect(x: x, y: max(scene.bounds.minY, scene.home.maxY - 20), width: width, height: 20)
+        }
+        let geometry = SceneGeometry(bounds: scene.bounds, home: home, floor: scene.floor,
+                                     scale: scene.scale * size.scale,
+                                     hasHardwareNotch: location == .automatic && scene.hasHardwareNotch)
+        return DisplayContext(screen: screen, id: id, frame: frame, scene: geometry, persistentID: persistentID)
     }
     /// Compare measurements, not NSScreen object identity or the focused app's screen.
     func hasSameLayout(as other: DisplayContext) -> Bool {
-        id == other.id && frame == other.frame && scene == other.scene
+        id == other.id && persistentID == other.persistentID && frame == other.frame && scene == other.scene
             && backingScale == other.backingScale && maximumFrameRate == other.maximumFrameRate
     }
     func point(_ p: NSPoint) -> Point { WindowGeometry.scenePoint(global: Point(x: p.x, y: p.y), display: frame) }

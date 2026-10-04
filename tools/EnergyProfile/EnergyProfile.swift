@@ -104,8 +104,7 @@ private struct Options {
                                   bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { throw ProfileError.allocation }
     let graphics = NSGraphicsContext(cgContext: surface, flipped: true)
     let display = engine.snapshot.scene.bounds
-    let windowOrigin = WindowGeometry.desiredOrigin(feet: engine.snapshot.windowAnchor, display: display)
-    let window = Rect(x: windowOrigin.x, y: windowOrigin.y, width: WindowGeometry.width, height: WindowGeometry.height)
+    let window = WindowGeometry.desiredFrame(feet: engine.snapshot.windowAnchor, display: display)
     let drawingOrigin = WindowGeometry.drawingOrigin(window: window, display: display)
     surface.translateBy(x: 0, y: WindowGeometry.height * 2); surface.scaleBy(x: 2, y: -2)
     surface.translateBy(x: drawingOrigin.x, y: drawingOrigin.y)

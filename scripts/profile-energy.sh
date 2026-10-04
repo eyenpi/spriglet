@@ -17,6 +17,7 @@ xcrun swiftc -O -g -parse-as-library -swift-version 6 -warnings-as-errors \
   -I "$task_modules" "${task_objects[@]}" \
   "$task_root"/Sources/Spriglet/Desktop/*.swift \
   "$task_root/Sources/Spriglet/Environment/DisplayContext.swift" \
+  "$task_root/Sources/Spriglet/Settings/CompanionPreferences.swift" \
   "$task_root/Sources/Spriglet/Runtime/ScreenFrameClock.swift" \
   "$task_root/Sources/Spriglet/App/SharedContent.generated.swift" \
   "$task_root"/tools/EnergyProfile/*.swift \

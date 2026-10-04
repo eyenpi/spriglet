@@ -9,11 +9,31 @@ Run these checks on a logged-in Apple silicon Mac with the full Xcode toolchain:
 ./scripts/build.sh Release
 ```
 
-The native runner compiles the production environment, runtime, window host, view and display clock. It creates real nonactivating panels and advances real display links while supplying isolated notification centers, display measurements and mouse-button state. It does not lock the Mac, sleep its displays, broadcast synthetic lock events to other apps or change display settings. The ordinary app and its saved files are not used by the runner.
+The native runner compiles the production environment, runtime, window host, view and display clock. It creates real nonactivating companion/Help panels and an ordinary native Settings window and advances real display links while supplying isolated notification centers, display measurements and mouse-button state. It does not lock the Mac, sleep its displays, broadcast synthetic lock events to other apps or change display settings. The ordinary app and its saved files are not used by the runner.
 
-Checks cover native body picking, transparent-corner click-through and drag capture across empty pixels; ordered and repeated system/display sleep, lock and session transitions; suspension-time input; Spaces recovery; missed mouse-up; unchanged display notifications; disconnect, no-display, reconnect and resolution fallback; repeated reopen/start/stop; observer cleanup; and exclusive launch lease release/error handling. Synthetic secondary displays exercise negative global coordinates and both notched and unnotched homes. Unit tests also cover compact and ultrawide scene geometry, stale drag events, gesture/deformation cleanup and independent suspension reasons.
+Checks cover native body picking, transparent-corner click-through and drag capture across empty pixels; ordered and repeated system/display sleep, lock and session transitions; suspension-time input; Spaces recovery; missed mouse-up; unchanged display notifications; disconnect, no-display, reconnect and resolution fallback; repeated reopen/start/stop; observer cleanup; exclusive launch lease release/error handling; first-launch and malformed preferences; fresh-process persistence; saved home selection and live edits during drag/sleep; disconnected display fallback/reconnect across display-number changes; and accessible native Settings controls and close/reopen. Menu-bar checks cover synchronized labels and Settings, pause-time freeze and click-through, retained Hide/Pause across suspension and display loss, saved edits while hidden/paused, one keyboard-capable Settings window, nonkey Help, unclipped layout, accessible checkbox actions and status/window shutdown cleanup. A separate finite AppKit process exercises the real menu-bar Quit target. Preferences use disposable suites, never the app’s production defaults. Synthetic secondary displays exercise negative global coordinates and both notched and unnotched homes. Unit tests also cover compact and ultrawide scene geometry, stale drag events, gesture/deformation cleanup and independent suspension reasons.
 
-Introduction checks use an isolated preferences suite and cover first launch without activation, shared-clock playback, Next/Back/direct navigation, repeated selection of the current step in normal and reduced motion, unambiguous layout, live Reduce Motion changes, suspension and display loss, remembered dismissal, Help replay, Done/close/app-scoped Escape and shutdown cleanup. To review the actual introduction window without changing the ordinary app's preferences:
+Quit, preference-restoration and launch-lease subprocesses have a five-second parent deadline. Quit is bounded independently of the child’s main-queue watchdog. On timeout the parent requests termination, then sends SIGKILL if the child remains running after 250 ms, and allows at most one further second for cleanup. A timeout fails validation. The runner also verifies normal subprocess exit and cleanup of a headless child that ignores SIGTERM.
+
+To check those subprocess bounds without opening panels, creating a status item or starting AppKit:
+
+```sh
+./scripts/test-desktop.sh --test-quit-timeout
+```
+
+Preferences can also be validated headlessly, including a fresh process that restores saved choices from a disposable suite:
+
+```sh
+./scripts/test-desktop.sh --test-preferences
+```
+
+Introduction checks use an isolated preferences suite and cover first launch without activation, shared-clock playback, Next/Back/direct navigation, repeated selection of the current step in normal and reduced motion, unambiguous layout, live Reduce Motion changes, suspension and display loss, remembered dismissal, Help replay while hidden/paused, saved edits and recovery without resuming playback, Done/close/app-scoped Escape and shutdown cleanup. To run only introduction integration checks without activating the app or opening Settings:
+
+```sh
+./scripts/test-desktop.sh --test-introduction
+```
+
+This path creates nonactivating panels and a temporary status item. To review the actual introduction window without changing the ordinary app's preferences:
 
 ```sh
 ./scripts/test-desktop.sh --prepare-introduction
@@ -27,7 +47,7 @@ For an actual fullscreen Space transition, run:
 ./scripts/test-desktop.sh --prepare-fullscreen
 ```
 
-Open the resulting `.build/lifecycle-validation/FullscreenFixture.app` in Finder and click its blank window within 30 seconds. It enters/leaves fullscreen and checks that the companion joins the active Space without becoming key, then restores the previous app. Its result is saved in `.build/lifecycle-validation/fullscreen-result.txt`. This separate local app uses the normal AppKit launch/run loop; the default runner remains a finite process that never requests focus. A failure to focus or enter fullscreen is reported as a failure, never as a passing simulated test.
+Open the resulting `.build/lifecycle-validation/FullscreenFixture.app` in Finder and click its blank window within 30 seconds. It enters/leaves fullscreen and checks that the companion joins the active Space without becoming key, then restores the previous app. Its result is saved in `.build/lifecycle-validation/fullscreen-result.txt`. This separate local app uses the normal AppKit launch/run loop; the default runner remains finite, requesting focus only while exercising the explicit native Settings action. A failure to focus or enter fullscreen is reported as a failure, never as a passing simulated test.
 
 ## Physical-device matrix
 
@@ -44,14 +64,16 @@ Automated notification injection verifies recovery logic, not delivery by macOS 
 | Resolution/scaling/arrangement | Change scaled resolution, main display, arrangement, menu-bar and Dock placement. Mallow recomputes its measured home/floor; unrelated unchanged-screen notifications preserve interaction. |
 | Repeated launches | Open the same build repeatedly from Finder, then launch its executable concurrently. Finder reopen returns home without requesting focus; overlapping executable launches exit without a second companion. Quit from Mallow's right-click menu and relaunch. Force-quit once and relaunch to verify kernel lock release. Quit an older pre-lock preview before testing. |
 | Character picking and catch | Click each transparent corner and the area behind home; clicks reach the app underneath and cannot grab Mallow. Grab the visible outline, feet and palms, then drag beyond the silhouette without losing capture. Move slowly into and out of catch range: the upward look/reach appears near home, fades away outside, and release catches only in range. Repeat with Reduce Motion and both notched and unnotched displays. |
-| Quit and focus | Right-click Mallow, dismiss its transient menu, then type in the previous app. Choose Quit Spriglet and verify the panel disappears and the next launch succeeds. |
+| Settings and restoration | Open Settings from the leaf menu, character menu, Command-comma or VoiceOver. Verify one window after repeated opens; change every size, intensity, display and location; quit/relaunch and check restoration. Unplug the chosen display with Settings open, edit size/location, then reconnect. Repeat with Reduce Motion, sleep and mirrored displays. The saved display remains selected while absent and closing Settings leaves Mallow running. |
+| Menu-bar controls | Use Show/Hide and Pause/Resume in the leaf menu and Settings; labels and checkboxes stay synchronized. Hide through sleep, lock, Space switches and display reconnect, then recover with Show, Bring Home and Finder reopen. Pause while dragging releases capture. Open and close Settings/Help repeatedly; Settings takes keyboard focus explicitly, while Help and recovery leave it unchanged. The leaf stays available when Mallow is hidden. |
+| Quit and focus | Right-click Mallow, dismiss its transient menu, then type in the previous app. Choose Quit Spriglet from both menus and verify the panel disappears and the next launch succeeds. |
 | Introduction | With a fresh local preference domain, launch and check that Meet Mallow appears without taking focus. Browse all five demos, dismiss with Skip, Done, Escape and close, then relaunch and check it stays dismissed. Replay from Help in Mallow's right-click menu. Repeat with Reduce Motion, VoiceOver, fullscreen and display unplug/replug; check all controls and text remain reachable and the everyday character stays free of instructions. |
 
 Record hardware, macOS version, display arrangement, Reduce Motion/Low Power Mode and observed results in ignored `.build/` or `docs/`, not in the public source tree. Physical display removal, actual lock/unlock, sleep/wake, third-party fullscreen behavior and sustained energy use require device acceptance even when all regression checks pass.
 
 ## Platform details
 
-Home selection uses display IDs and measured geometry rather than `NSScreen.main`, which follows keyboard focus. The preferred display is remembered only for the running session. No display inventory means no host or clock. Recovery refreshes measurements before restoring visibility and reconstructs the display link, even when its display ID/cadence are unchanged.
+Home selection uses measured geometry rather than `NSScreen.main`, which follows keyboard focus. Automatic display selection keeps the initial primary display for the running session. An explicit home display is saved by macOS display UUID so changes to session display numbers do not lose the choice. Missing saved displays fall back to the available primary without changing preferences. No display inventory means no host or clock. Recovery refreshes measurements before restoring visibility and reconstructs the display link, even when its display ID/cadence are unchanged.
 
 Screen lock uses loginwindow's `com.apple.screenIsLocked`/`com.apple.screenIsUnlocked` distributed broadcasts with immediate delivery for an inactive accessory app. These names are a macOS convention, not a documented AppKit lock API; verify their delivery on supported macOS versions. Public workspace session/display/system-sleep notifications remain independent suspension sources. There is no private framework call or global keyboard monitor. Launching an executable after the Mac is already locked cannot replay an earlier lock broadcast; actual launch-while-locked acceptance remains necessary.
 
