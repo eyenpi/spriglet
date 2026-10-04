@@ -29,7 +29,7 @@ import CompanionCore
         self.panel = panel; self.view = view
         update(snapshot: snapshot, capturesPointer: false, pointer: context.point(NSEvent.mouseLocation))
     }
-    func update(snapshot: CompanionSnapshot, capturesPointer: Bool, pointer: Point) {
+    func update(snapshot: CompanionSnapshot, capturesPointer: Bool, pointer: Point, acceptsInput: Bool = true) {
         guard let panel, let view else { return }
         let origin = WindowGeometry.desiredOrigin(feet: snapshot.windowAnchor, display: view.context.frame)
         // Avoid window-server work for the stationary home. Compare requested
@@ -41,12 +41,13 @@ import CompanionCore
         view.drawingOrigin = WindowGeometry.drawingOrigin(
             window: Rect(x: actual.minX, y: actual.minY, width: actual.width, height: actual.height), display: view.context.frame
         )
-        let passThrough = !capturesPointer && !snapshot.contains(pointer)
+        let passThrough = !acceptsInput || (!capturesPointer && !snapshot.contains(pointer))
         if panel.ignoresMouseEvents != passThrough { panel.ignoresMouseEvents = passThrough }
         view.refresh(snapshot: snapshot)
     }
-    func setVisible(_ visible: Bool) {
-        if visible { panel?.orderFrontRegardless() } else { panel?.orderOut(nil) }
+    func setVisible(_ visible: Bool, restoringOrder: Bool = false) {
+        guard let panel, restoringOrder || panel.isVisible != visible else { return }
+        if visible { panel.orderFrontRegardless() } else { panel.orderOut(nil) }
     }
     func close() { panel?.orderOut(nil); panel?.close(); panel = nil; view = nil; requestedOrigin = nil }
 }

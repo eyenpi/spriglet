@@ -6,11 +6,15 @@ Meet Mallow, a soft lavender companion that peeks out beneath your Mac's notch. 
 
 Spriglet is a native, local app for Apple silicon Macs running macOS 26 or later. This is an early Mallow preview.
 
-### Everything happens through the character
+### Play through the character
 
 Hover to get a reaction. Click to invite. Drag to play. Click elsewhere to return home.
 
 A second touch brings a wave or a gentle swing. Release near the notch to let Mallow catch it; release farther away to try gravity and a soft, squishy landing. Clicking elsewhere brings it home. Displays without a notch use a small home at the upper right edge.
+
+### Controls within reach
+
+Use the leaf in the menu bar to show or hide Mallow, pause or resume animation, bring it home, open Settings or Help, and quit Spriglet. Hidden Mallow is always recoverable from the menu bar or by reopening the app from Finder. Settings and offline Help preserve keyboard focus in your current app.
 
 ### Quiet by default
 

@@ -11,7 +11,7 @@ scripts/archive-app-store.sh --unsigned --output .build/app-store/NEW_DIRECTORY
 
 An unsigned archive rehearsal validates architecture, minimum OS, icon slots, sandboxing, privacy declarations, bundled documents and app version. It makes no upload. A signed archive requires the appropriate Apple account and signing configuration; never put certificates, profiles or credentials in Git.
 
-Use screenshots of the actual Mallow app: default visible peek, hover response, invited body, weighted drag and a soft landing. Avoid unrelated apps and private desktop content. The app has no persistent menu-bar item, settings window, sound/login service or action cards. Reopening it from Finder activates the ordinary app menu for quitting.
+Use screenshots of the actual Mallow app: default visible peek, hover response, invited body, weighted drag and a soft landing. Avoid unrelated apps and private desktop content. The persistent leaf menu offers visibility, pause, Bring Home, Settings, offline Help and Quit. Settings and Help preserve the current app’s keyboard focus. Reopening from Finder recovers hidden Mallow without activating Spriglet or clearing Pause. No sound/login service or action cards are included.
 
 The privacy manifest declares monotonic timing for animation. The retired UserDefaults declaration is removed; app-owned code has no preferences store. The app does not persist companion data, track global keyboard events, inspect other apps or enable plugins. Review both implementation and declarations before changing data handling or preparing a submission.
 
