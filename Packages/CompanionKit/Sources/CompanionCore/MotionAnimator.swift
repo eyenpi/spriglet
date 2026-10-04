@@ -2,33 +2,19 @@ import Foundation
 
 enum Motion: CaseIterable, Sendable { case idle, walkLeft, walkRight, stretch, wave }
 
-/// Authors pose targets and blink/gait timing. PoseDynamics owns blending;
-/// selecting a motion never resets the presented pose or its velocity.
+/// Authors deliberate gestures and gait over the natural idle pose.
+/// PoseDynamics owns blending; selecting a motion never resets the presented
+/// pose or its velocity.
 struct MotionAnimator: Sendable {
     private(set) var motion = Motion.idle
     private(set) var targetPose = CharacterPose()
     private var began = 0.0
-    private var nextBlink = 2.3
-    private var blinkBegan = -100.0
-    private var blinkCount = 0
     mutating func select(_ motion: Motion, at time: Double) { self.motion = motion; began = time }
-    mutating func advance(to time: Double, dt: Double, walkingAmount: Double) {
+    mutating func advance(to time: Double, dt: Double, walkingAmount: Double, idlePose: CharacterPose) {
         let age = max(0, time - began)
-        let breath = sin(time * 2.15)
-        var target = CharacterPose()
-        target.height = 1 + breath * 0.015
-        target.lean = sin(time * 0.55) * 0.012
-        if time >= nextBlink {
-            blinkBegan = time; blinkCount += 1
-            nextBlink = time + 3.1 + (sin(Double(blinkCount) * 2.399963) * 0.5 + 0.5) * 2.6
-        }
-        var blinkAge = time - blinkBegan
-        if blinkCount % 4 == 0 && blinkAge >= 0.32 { blinkAge -= 0.32 }
-        if blinkAge >= 0 && blinkAge < 0.23 {
-            target.eyes = blinkAge < 0.06 ? 1 - blinkAge / 0.06 : blinkAge < 0.14 ? 0 : (blinkAge - 0.14) / 0.09
-        }
+        var target = idlePose
         switch motion {
-        case .idle: target.look = sin(time * 0.42) * 1.3
+        case .idle: break
         case .walkLeft, .walkRight:
             let direction = motion == .walkLeft ? -1.0 : 1.0
             target.walk = 1; target.direction = direction; target.look = direction * 2

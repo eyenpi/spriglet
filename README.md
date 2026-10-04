@@ -2,6 +2,8 @@
 
 A soft, local desktop companion for Apple silicon Macs running macOS 26 or later. Mallow rests beneath the notch with its face visible, blinking and breathing while you work. It has no action cards, settings window or permanent menu-bar controls.
 
+Its curious peek stays in place. Breathing gently changes pace and depth; blinks vary in timing and occasionally come in pairs. Brief glances and tiny settling movements are separated by long, irregular pauses. These quiet moments yield to nearby pointer attention, hover and deliberate interaction. Reduce Motion keeps blinking while suppressing decorative movement.
+
 Hover for a small reaction. Click to invite it out; touch again for a wave or swing. Drag to pick it up. While held close enough to catch home, Mallow looks up and reaches slightly; release there to let it catch, or away from home for gravity and a squishy landing. Click elsewhere to return it to its resting peek. On a display without a notch, it rests at the upper right edge below the menu bar.
 
 This is the first Mallow release, `v0.3.0-preview.1` (app 0.3.0, build 5). Downloads are on [GitHub releases](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1); choose the `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP. macOS may block an unsigned download. Plugins and assistant services are not implemented. The local app uses ad hoc signing; it has not been Apple-notarized or submitted to the App Store.
@@ -29,9 +31,10 @@ For a finite, reproducible animation preview using the production code:
 ./scripts/preview.sh .build/preview/frames
 ./scripts/preview.sh .build/preview/transitions --transitions
 ./scripts/preview.sh .build/preview/interaction --interaction
+./scripts/preview.sh .build/preview/idle --idle
 ```
 
-The exporter writes PNG frames locally. The transition sequence renders at 60 fps and covers emergence, grabbing during emergence, regrabbing a catch, reversing a retreat, a rapid upward throw and returning during a horizontal reversal. The interaction sequence covers a transparent-corner press, dragging away, returning into catch range, the upward look and release. It runs no assistant service and reads no desktop content.
+The exporter writes PNG frames locally. The transition sequence renders at 60 fps and covers emergence, grabbing during emergence, regrabbing a catch, reversing a retreat, a rapid upward throw and returning during a horizontal reversal. The interaction sequence covers a transparent-corner press, dragging away, returning into catch range, the upward look and release. The idle sequence shows two uninterrupted minutes at the normal 20 fps resting cadence, with reproducible timing and no pointer overlay. It runs no assistant service and reads no desktop content.
 
 ## Architecture
 
@@ -51,6 +54,8 @@ There is one production simulation and one renderer. The preview exporter uses t
 ### Changing behavior
 
 Add a semantic input or command in `CompanionInput.swift`. Interaction transitions belong in `InteractionState.swift` and `CompanionEngine.swift`; trajectories, contact and weight belong in `BodyPhysics.swift`; authored pose targets belong in `MotionAnimator.swift`. `PoseDynamics.swift` carries silhouette and limb velocity across target changes and derives width from height to conserve body area. `JumpTrajectory.swift` joins flight endpoints with matching velocities. Preserve the existing pose and momentum when a motion changes. Keep scene measurements and coordinate conversion outside behavior code.
+
+`IdleAnimation.swift` owns natural rhythms and finite quiet pose variations. Blinks pause for roughly 3–8 seconds, breathing cycles vary over roughly 4–6 seconds, and each glance or settling moment is followed by 18–38 seconds of quiet. Only one quiet moment runs at a time; it does not change presence, reveal, body position or cadence. The engine supplies quiet eligibility and motion policy, the animator layers deliberate gestures over the idle pose, and pose dynamics blend the result. The runtime supplies a fresh seed per session; tests and previews supply repeatable seeds. Recovery clears pending expressions and starts a fresh quiet interval without replaying suspended time.
 
 Hands use one continuous attachment value in the snapshot. The renderer blends free and home hand positions and lets the home housing occlude them as they emerge; it has no reveal threshold or gesture-triggered arm switch.
 

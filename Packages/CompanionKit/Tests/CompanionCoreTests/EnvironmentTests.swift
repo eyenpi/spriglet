@@ -150,7 +150,9 @@ import Testing
             maximumHeight = max(maximumHeight, pose.height)
         }
         #expect(closedFrames >= 15)
-        #expect(maximumHeight - minimumHeight > 0.025)
+        // Gentler breathing remains visible at both resting cadences, without
+        // requiring the larger fixed-amplitude motion of the original idle.
+        #expect((0.018...0.04).contains(maximumHeight - minimumHeight))
         #expect(engine.snapshot.hitBounds.height > 25)
     }
     @Test("Low Power Mode preserves gesture, swing and return timing")
