@@ -16,6 +16,7 @@ public struct CompanionEngine: Sendable {
     private var remainder = 0.0
     public private(set) var time = 0.0
     public private(set) var motionPolicy = MotionPolicy.full
+    public private(set) var movementAmount = 1.0
     public var isDragging: Bool { interaction.dragging }
     public var hasPointerCapture: Bool { interaction.press != nil }
     /// Hosts may supply a fresh session seed; previews and tests default to a
@@ -38,6 +39,17 @@ public struct CompanionEngine: Sendable {
             body.swing.value = 0; body.swing.speed = 0
             if body.isReturningHome { body.returnHome(immediately: true) }
         }
+    }
+    /// Amplitude of authored motion, independent of native settings/storage.
+    /// Pointer-driven physics and catch geometry keep their normal responsiveness.
+    public mutating func setMovementAmount(_ amount: Double) {
+        guard amount.isFinite else { return }
+        let next = clamp(amount, 0, 1.5)
+        if movementAmount > 0 {
+            let ratio = next / movementAmount
+            body.swing.value *= ratio; body.swing.speed *= ratio
+        }
+        movementAmount = next
     }
     public mutating func send(_ input: CompanionInput) {
         switch input {
@@ -78,8 +90,8 @@ public struct CompanionEngine: Sendable {
         case .engaged:
             let gesture: CharacterGesture = interaction.gesture == .hello ? .swing : .hello
             interaction.react(gesture, at: time)
-            if gesture == .swing && motionPolicy == .full { body.swing.impulse(1.8) }
-            body.compression.impulse(-1.2)
+            if gesture == .swing && motionPolicy == .full { body.swing.impulse(1.8 * movementAmount) }
+            body.compression.impulse(-1.2 * movementAmount)
         case .playing: returnHome()
         }
     }
@@ -97,7 +109,7 @@ public struct CompanionEngine: Sendable {
         case .swing, .stretch:
             body.returnHome(immediately: motionPolicy == .reduced); interaction.engage(at: time)
             interaction.react(command == .swing ? .swing : .stretch, at: time)
-            if command == .swing && body.phase == .hanging && motionPolicy == .full { body.swing.impulse(1.8) }
+            if command == .swing && body.phase == .hanging && motionPolicy == .full { body.swing.impulse(1.8 * movementAmount) }
         case .walk: if motionPolicy == .full { body.walk() }
         case .hop: if motionPolicy == .full { body.hop() }
         }
@@ -122,7 +134,7 @@ public struct CompanionEngine: Sendable {
         let nearby = pointer.distance(to: snapshot.feet) < 260 * body.scene.scale
         idle.step(dt, quiet: body.phase == .hanging && interaction.presence == .peek && !hasPointerCapture && !nearby,
                   policy: motionPolicy)
-        let look = nearby && motionPolicy == .full ? clamp((pointer.x - snapshot.feet.x) / 35, -5, 5) : 0
+        let look = nearby && motionPolicy == .full ? clamp((pointer.x - snapshot.feet.x) / 35, -5, 5) * movementAmount : 0
         gaze.step(dt, target: look)
         var desired = Motion.idle
         if body.phase == .hanging {
@@ -139,6 +151,9 @@ public struct CompanionEngine: Sendable {
     }
     private var targetPose: CharacterPose {
         var pose = animator.targetPose
+        pose.height = 1 + (pose.height - 1) * movementAmount
+        pose.lean *= movementAmount; pose.look *= movementAmount; pose.lookY *= movementAmount
+        pose.arm *= movementAmount; pose.sparkle *= movementAmount
         switch body.phase {
         case .hanging:
             pose.arm = interaction.gesture == .hello ? pose.arm : 0.4

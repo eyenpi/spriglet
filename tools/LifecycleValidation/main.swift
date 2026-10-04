@@ -6,6 +6,17 @@ struct ValidationFailure: Error, CustomStringConvertible {
     let description: String
 }
 
+enum SubprocessFailure: Error, CustomStringConvertible {
+    case timedOut(seconds: Double)
+    case cleanupFailed
+    var description: String {
+        switch self {
+        case .timedOut(let seconds): "Subprocess did not exit within \(seconds) seconds"
+        case .cleanupFailed: "Timed-out subprocess could not be stopped"
+        }
+    }
+}
+
 @MainActor final class ValidationDelegate: NSObject, NSApplicationDelegate {
     let validate: () -> Void
     init(validate: @escaping () -> Void) { self.validate = validate; super.init() }
@@ -78,15 +89,16 @@ struct ValidationFailure: Error, CustomStringConvertible {
         let environment = DesktopEnvironment(applicationCenter: application, workspaceCenter: workspace,
                                              lockCenter: locks, displays: { available })
         let clock = ScreenFrameClock(), host = CompanionWindowHost()
-        let runtime = CompanionRuntime(environment: environment, clock: clock, host: host, leftButtonIsDown: { buttonDown })
-        let loginService = FakeLoginService()
-        let delegate = AppDelegate(runtime: runtime, launchAtLogin: LaunchAtLoginController(service: loginService))
+        let suite = "dev.spriglet.lifecycle-validation.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let runtime = CompanionRuntime(environment: environment, clock: clock, host: host,
+                                       preferenceStore: PreferenceStore(defaults: defaults), leftButtonIsDown: { buttonDown })
+        let delegate = AppDelegate(runtime: runtime, launchAtLogin: LaunchAtLoginController(service: FakeLoginService()))
         defer { runtime.stop() }
         let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
         runtime.start(); runtime.start()
         var window = try visiblePanel()
-        try require(view(window).makeContextMenu?().items.first?.title == AppText.launchAtLogin,
-                    "App controls were not routed to the companion's context menu")
         try assertHome(window)
         let originalWindow = window
         beginDrag(host: host, window: window, clock: clock)
@@ -180,11 +192,268 @@ struct ValidationFailure: Error, CustomStringConvertible {
         workspace.post(name: NSWorkspace.willSleepNotification, object: nil)
         runtime.stop(); runtime.start(); window = try visiblePanel()
         try assertHome(window)
-        try require(view(window).makeContextMenu?().items.first?.title == AppText.launchAtLogin,
-                    "Restart lost the companion's context menu")
-        try require(loginService.registrations == 0 && loginService.unregistrations == 0,
-                    "Native launch/reopen/restart changed login registration")
         print("Native runtime passed: ordered sleep/wake/lock/session cycles, Spaces, lost release, display fallback/reconnect/resize, reopen and restart.")
+    }
+    static func menuBarControls(screen: NSScreen) throws {
+        let application = NotificationCenter(), workspace = NotificationCenter(), locks = NotificationCenter()
+        let context = DisplayContext(screen: screen)
+        var available = [context]
+        let environment = DesktopEnvironment(applicationCenter: application, workspaceCenter: workspace,
+                                             lockCenter: locks, displays: { available })
+        let host = CompanionWindowHost(), clock = ScreenFrameClock()
+        let suite = "dev.spriglet.menu-settings.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = PreferenceStore(defaults: defaults)
+        let runtime = CompanionRuntime(environment: environment, clock: clock, host: host,
+                                       preferenceStore: store, leftButtonIsDown: { true })
+        let delegate = AppDelegate(runtime: runtime, launchAtLogin: LaunchAtLoginController(service: FakeLoginService()))
+        let previousMenu = NSApp.mainMenu
+        let previousApp = NSWorkspace.shared.frontmostApplication
+        var expectedFrontmost = previousApp?.processIdentifier
+        var expectedKeyWindow = NSApp.keyWindow
+        delegate.applicationWillFinishLaunching(Notification(name: NSApplication.willFinishLaunchingNotification))
+        delegate.applicationDidFinishLaunching(Notification(name: NSApplication.didFinishLaunchingNotification))
+        defer {
+            delegate.applicationWillTerminate(Notification(name: NSApplication.willTerminateNotification))
+            NSApp.mainMenu = previousMenu
+            if let previousApp { NSApp.yieldActivation(to: previousApp); previousApp.activate() }
+        }
+        guard let menuBar = delegate.menuBar else { throw ValidationFailure(description: "Menu bar was not installed") }
+        let menu = menuBar.menu
+        func item(_ action: AppControlAction) -> NSMenuItem { menu.items.first { !$0.isSeparatorItem && $0.tag == action.rawValue }! }
+        func choose(_ action: AppControlAction) throws {
+            menu.performActionForItem(at: menu.index(of: item(action)))
+            if action == .settings {
+                // Settings is the one explicit action that requests activation.
+                pump(0.05)
+                expectedFrontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
+                expectedKeyWindow = NSApp.keyWindow
+            }
+            try checkFocus()
+        }
+        func checkLabels() throws {
+            try require(item(.toggleVisibility).title == (runtime.controlState.isVisible ? AppText.hideMallow : AppText.showMallow),
+                        "Visibility label disagrees with actual runtime state")
+            try require(item(.togglePause).title == (runtime.controlState.isPaused ? AppText.resumeMallow : AppText.pauseMallow),
+                        "Pause label disagrees with the user's pause choice")
+            try require(item(.toggleVisibility).isEnabled == runtime.controlState.canShow,
+                        "Visibility action bypasses unavailable displays/session")
+        }
+        func panel(_ title: String) throws -> NSWindow {
+            let matches = NSApp.windows.filter { $0.title == title && $0.isVisible && !($0.contentView is CompanionView) }
+            try require(matches.count == 1, "Expected one \(title) panel")
+            return matches[0]
+        }
+        func checkFocus() throws {
+            try require(NSWorkspace.shared.frontmostApplication?.processIdentifier == expectedFrontmost,
+                        "A control/recovery action changed the frontmost app")
+            try require(NSApp.keyWindow === expectedKeyWindow, "A control/recovery action changed keyboard focus")
+            try require(NSApp.windows.filter { $0.contentView is CompanionView || $0.title == AppText.supportTitle }
+                        .allSatisfy { !$0.isKeyWindow && !$0.isMainWindow }, "The companion or Help took keyboard focus")
+        }
+        func checkPanelLayout(_ window: NSWindow) throws {
+            let content = window.contentView!
+            pump(0.05); window.displayIfNeeded()
+            content.layoutSubtreeIfNeeded()
+            let stack = content.subviews.compactMap { $0 as? NSStackView }.first!
+            try require(content.bounds.contains(stack.frame), "Control panel content is clipped")
+            for view in stack.views {
+                try require(view.bounds.width > 0 && view.bounds.height > 0, "Control panel row has no area")
+                try require(content.bounds.contains(view.convert(view.bounds, to: content)), "Control panel row is clipped")
+                if let label = view as? NSTextField, let cell = label.cell {
+                    try require(cell.cellSize(forBounds: label.bounds).height <= label.bounds.height + 1,
+                                "Help/Settings text is truncated")
+                }
+            }
+        }
+        try require(menu.items.filter { !$0.isSeparatorItem }.count == 6, "Menu is missing a required control")
+        try require(item(.quit).action != nil && item(.quit).target === menuBar, "Quit is not routed through the menu action boundary")
+        try require(menuBar.statusItem != nil && !menuBar.statusItem!.behavior.contains(.removalAllowed),
+                    "Recovery entry can be removed")
+        menuBar.start()
+        try checkLabels()
+        var window = try visiblePanel()
+        host.onInput?(.activate); clock.onTick?(0.05)
+        try choose(.togglePause)
+        let frozen = view(window).snapshot
+        pump(0.12); clock.onTick?(3600); host.onInput?(.activate)
+        try require(view(window).snapshot.time == frozen.time && view(window).snapshot.presence == frozen.presence
+                    && view(window).snapshot.pose == frozen.pose && view(window).snapshot.feet == frozen.feet,
+                    "Pause did not freeze animation and ignore interaction")
+        try require(window.ignoresMouseEvents, "Paused Mallow intercepts desktop clicks")
+        try checkLabels()
+
+        try choose(.settings); try choose(.settings); try choose(.help); try choose(.help)
+        let settings = try panel(AppText.settingsTitle), help = try panel(AppText.supportTitle)
+        try require(settings.canBecomeKey && !help.canBecomeKey && !help.canBecomeMain,
+                    "Settings lost native keyboard support or Help can take focus")
+        // Character, accessibility and Command-comma all route to this same window.
+        host.onShowSettings?(); pump(0.05)
+        let mainSettings = NSApp.mainMenu!.items[0].submenu!.items.first { $0.keyEquivalent == "," }!
+        NSApp.sendAction(mainSettings.action!, to: mainSettings.target, from: mainSettings)
+        pump(0.05)
+        try require(try panel(AppText.settingsTitle) === settings, "Settings entry points opened unrelated windows")
+        expectedFrontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        expectedKeyWindow = NSApp.keyWindow
+        try checkPanelLayout(settings); try checkPanelLayout(help)
+        func descendants(of view: NSView) -> [NSView] { view.subviews.flatMap { [$0] + descendants(of: $0) } }
+        let buttons = descendants(of: settings.contentView!).compactMap { $0 as? NSButton }
+        let visibility = buttons.first { $0.title == AppText.showMallow }!
+        let animation = buttons.first { $0.title == AppText.animateMallow }!
+        try require(visibility.state == .on && animation.state == .off, "Settings do not reflect paused visible state")
+        try choose(.toggleVisibility)
+        try require(!window.isVisible && visibility.state == .off && menuBar.statusItem != nil,
+                    "Hide lost the recovery entry or settings synchronization")
+        workspace.post(name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
+        workspace.post(name: NSWorkspace.willSleepNotification, object: nil)
+        workspace.post(name: NSWorkspace.didWakeNotification, object: nil)
+        try require(!window.isVisible && runtime.controlState.isPaused, "Lifecycle recovery overrode Hide/Pause")
+        let popups = descendants(of: settings.contentView!).compactMap { $0 as? NSPopUpButton }
+        var edited = runtime.preferences
+        for (label, selection) in [(AppText.characterSize, 0), (AppText.movementIntensity, 2), (AppText.homeLocation, 1)] {
+            let popup = popups.first { $0.accessibilityLabel() == label }!
+            popup.selectItem(at: selection)
+            NSApp.sendAction(popup.action!, to: popup.target, from: popup)
+        }
+        edited.characterSize = .small; edited.movementIntensity = .lively; edited.homeLocation = .left
+        try require(runtime.preferences == edited && store.load() == edited, "Menu Settings did not apply and save preferences")
+        try require(!runtime.controlState.isVisible && runtime.controlState.isPaused && visibility.state == .off && animation.state == .off,
+                    "Saved edits overrode Hide/Pause or left stale Settings controls")
+        try require(NSApp.windows.allSatisfy { !($0.contentView is CompanionView) || !$0.isVisible },
+                    "Hidden preference edit made Mallow visible")
+        try checkLabels()
+        try choose(.bringHome)
+        window = try visiblePanel(); try assertHome(window)
+        try require(runtime.controlState.isPaused && animation.state == .off, "Bring Home cleared Pause")
+        try require(view(window).snapshot.scene.scale == 0.8 && view(window).snapshot.scene.home.minX == 20,
+                    "Recovery discarded saved size/home")
+        let homeTime = view(window).snapshot.time
+        pump(0.12)
+        try require(view(window).snapshot.time == homeTime, "Bring Home restarted paused animation")
+        visibility.performClick(nil)
+        try checkFocus()
+        try require(!window.isVisible, "Settings visibility control did not hide")
+        try require(delegate.applicationShouldHandleReopen(NSApp, hasVisibleWindows: false), "Hidden Finder reopen was not handled")
+        try require(try visiblePanel() === window, "Finder recovery duplicated the companion")
+        try assertHome(window); try checkLabels()
+        try require(runtime.controlState.isPaused, "Finder recovery cleared Pause")
+        animation.performClick(nil); pump(0.12)
+        try checkFocus()
+        try require(!runtime.controlState.isPaused && view(window).snapshot.time > homeTime,
+                    "Settings Resume did not restart the display clock")
+        try checkLabels()
+        try require(animation.accessibilityPerformPress(), "Settings checkbox lacks an accessible press")
+        try require(runtime.controlState.isPaused, "Accessible checkbox press did not pause")
+        try checkFocus()
+        animation.performClick(nil)
+
+        beginDrag(host: host, window: window, clock: clock)
+        try choose(.togglePause); try assertHome(window)
+        try require(window.ignoresMouseEvents, "Pausing a drag retained capture")
+        try choose(.toggleVisibility)
+        try choose(.togglePause)
+        let hiddenTime = view(window).snapshot.time
+        pump(0.12); clock.onTick?(3600)
+        try require(!window.isVisible && view(window).snapshot.time == hiddenTime, "Resume made hidden Mallow visible or active")
+        try choose(.toggleVisibility)
+        window = try visiblePanel(); try assertHome(window); try checkLabels()
+
+        locks.post(name: DesktopEnvironment.screenLocked, object: nil)
+        try require(!runtime.controlState.isVisible && !item(.toggleVisibility).isEnabled && !visibility.isEnabled,
+                    "Locked session still reports a visible actionable companion")
+        try choose(.bringHome)
+        try require(!window.isVisible, "Bring Home bypassed system suspension")
+        locks.post(name: DesktopEnvironment.screenUnlocked, object: nil)
+        window = try visiblePanel(); try assertHome(window); try checkLabels()
+        try choose(.toggleVisibility); try choose(.togglePause)
+        available = []
+        application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        try checkLabels()
+        try require(!visibility.isEnabled, "Settings permit Show without a display")
+        try require(!visibility.accessibilityPerformPress(), "Accessible Show bypassed missing display protection")
+        available = [context]
+        application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        try require(!runtime.controlState.isVisible && runtime.controlState.isPaused, "Display reconnect overrode Hide/Pause")
+        try choose(.toggleVisibility)
+        window = try visiblePanel(); try assertHome(window)
+        try checkLabels(); try checkFocus()
+
+        settings.close(); help.close()
+        expectedKeyWindow = NSApp.keyWindow
+        try choose(.settings); try choose(.help)
+        _ = try panel(AppText.settingsTitle); _ = try panel(AppText.supportTitle)
+        try checkFocus()
+        delegate.applicationWillTerminate(Notification(name: NSApplication.willTerminateNotification))
+        try require(menuBar.statusItem == nil && !window.isVisible && !settings.isVisible && !help.isVisible,
+                    "Shutdown leaked a status item, settings/help or companion window")
+        print("Menu-bar controls passed: state labels, Settings/Help, freeze/capture, Hide/recovery, lifecycle choices, focus and cleanup.")
+    }
+    static func quitControl() throws {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
+        process.arguments = ["--quit-probe"]
+        try process.run()
+        // The child's main-queue watchdog cannot run if launch or AppKit stalls.
+        try waitForSubprocessExit(process, timeout: 5)
+        try require(process.terminationStatus == EXIT_SUCCESS, "Menu-bar Quit did not terminate the fixture")
+        print("Menu-bar Quit passed: a separate native app exited through its real menu target.")
+    }
+    static func waitForSubprocessExit(_ process: Process, timeout: Double) throws {
+        func wait(_ seconds: Double) -> Bool {
+            let deadline = ProcessInfo.processInfo.systemUptime + seconds
+            while process.isRunning {
+                let remaining = deadline - ProcessInfo.processInfo.systemUptime
+                guard remaining > 0 else { return false }
+                pump(min(0.02, remaining))
+            }
+            return true
+        }
+        guard !wait(timeout) else { return }
+        process.terminate()
+        if !wait(0.25) {
+            _ = kill(process.processIdentifier, SIGKILL)
+            guard wait(1) else { throw SubprocessFailure.cleanupFailed }
+        }
+        throw SubprocessFailure.timedOut(seconds: timeout)
+    }
+    static func subprocessTimeoutValidation() throws {
+        for mode in ["exit", "terminate", "stall"] {
+            let process = Process()
+            let readiness = Pipe()
+            process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
+            process.arguments = ["--quit-wait-fixture", mode]
+            process.standardOutput = readiness
+            try process.run()
+            defer {
+                try? readiness.fileHandleForWriting.close()
+                try? readiness.fileHandleForReading.close()
+                if process.isRunning { try? waitForSubprocessExit(process, timeout: 0.1) }
+            }
+            try readiness.fileHandleForWriting.close()
+            if mode == "exit" {
+                try waitForSubprocessExit(process, timeout: 2)
+                try require(process.terminationStatus == EXIT_SUCCESS, "Headless exit fixture failed")
+            } else {
+                // Wait for the SIGTERM policy before testing timeout cleanup.
+                // A bounded poll avoids another blocking wait in this fixture.
+                var descriptor = pollfd(fd: readiness.fileHandleForReading.fileDescriptor, events: Int16(POLLIN), revents: 0)
+                try require(poll(&descriptor, 1, 2_000) == 1 && descriptor.revents & Int16(POLLIN) != 0,
+                            "Headless timeout fixture did not become ready")
+                try require(readiness.fileHandleForReading.readData(ofLength: 1) == Data([1]), "Invalid headless readiness signal")
+                let started = ProcessInfo.processInfo.systemUptime
+                do {
+                    try waitForSubprocessExit(process, timeout: 0.1)
+                    throw ValidationFailure(description: "Stalled child bypassed the subprocess deadline")
+                } catch SubprocessFailure.timedOut {
+                    let expectedSignal = mode == "stall" ? SIGKILL : SIGTERM
+                    try require(!process.isRunning && process.terminationReason == .uncaughtSignal
+                                && process.terminationStatus == expectedSignal, "Timeout did not clean up its child")
+                    try require(ProcessInfo.processInfo.systemUptime - started < 3, "Subprocess timeout cleanup was not bounded")
+                }
+            }
+        }
+        print("Subprocess bounds passed: normal exit, timeout termination and SIGTERM-resistant cleanup.")
     }
     static func observationLifetime() throws {
         let center = NotificationCenter()
@@ -218,7 +487,7 @@ struct ValidationFailure: Error, CustomStringConvertible {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
             process.arguments = ["--lease-probe", storage.path]
-            try process.run(); process.waitUntilExit()
+            try process.run(); try waitForSubprocessExit(process, timeout: 5)
             try require(process.terminationStatus == expected, "Separate process did not respect the launch lease")
         }
         try probe(2)
@@ -232,7 +501,7 @@ struct ValidationFailure: Error, CustomStringConvertible {
         let ready = overlapping.appendingPathComponent("ready")
         let contenders = (0..<8).map { _ in Process() }
         defer {
-            for process in contenders where process.isRunning { process.terminate(); process.waitUntilExit() }
+            for process in contenders where process.isRunning { process.terminate(); try? waitForSubprocessExit(process, timeout: 2) }
         }
         for process in contenders {
             process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
@@ -250,7 +519,7 @@ struct ValidationFailure: Error, CustomStringConvertible {
         }
         try probe(2, storage: overlapping)
         try require(kill(owner.processIdentifier, SIGKILL) == 0, "Could not stop the fixture lock owner")
-        owner.waitUntilExit()
+        try waitForSubprocessExit(owner, timeout: 2)
         try probe(0, storage: overlapping)
         let invalid = directory.appendingPathComponent("file")
         try Data().write(to: invalid)
@@ -321,15 +590,24 @@ struct ValidationFailure: Error, CustomStringConvertible {
                 outcome = "Passed: real fullscreen/Spaces fixture retained keyboard focus and a visible home on entry, reopen and exit."
             } else if appOnly {
                 try launchAtLogin()
+                try loginSettings()
                 try instanceLease()
-                print("App validation passed without creating a companion or changing macOS login items.")
+                try SettingsValidation.preferences()
+                print("App validation passed without showing windows, activating apps or changing macOS login registration.")
             } else {
                 guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Native validation requires a logged-in Mac with a display") }
                 try nativePicking(screen: screen)
                 try nativeLifecycle(screen: screen)
+                try menuBarControls(screen: screen)
                 try observationLifetime()
                 try launchAtLogin()
+                try loginSettings()
                 try instanceLease()
+                try SettingsValidation.preferences()
+                try SettingsValidation.runtime(screen: screen)
+                try SettingsValidation.window(screen: screen)
+                try subprocessTimeoutValidation()
+                try quitControl()
                 print("Desktop lifecycle validation passed. Notifications/display inventory are simulated; physical lock/sleep/fullscreen transitions require device acceptance.")
             }
             return EXIT_SUCCESS
@@ -348,6 +626,33 @@ struct ValidationFailure: Error, CustomStringConvertible {
                 withExtendedLifetime(lease) { while true { Thread.sleep(forTimeInterval: 0.05) } }
             } catch { exit(EXIT_FAILURE) }
         }
+        if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--preferences-probe" {
+            guard let defaults = UserDefaults(suiteName: CommandLine.arguments[2]) else { exit(EXIT_FAILURE) }
+            exit(PreferenceStore(defaults: defaults).load() == SettingsValidation.savedPreferences ? EXIT_SUCCESS : EXIT_FAILURE)
+        }
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-preferences" {
+            do { try SettingsValidation.preferences(); exit(EXIT_SUCCESS) }
+            catch {
+                FileHandle.standardError.write(Data("Preferences validation failed: \(error)\n".utf8))
+                exit(EXIT_FAILURE)
+            }
+        }
+        // These fixtures stay headless, including while another app is fullscreen.
+        if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--quit-wait-fixture" {
+            if CommandLine.arguments[2] == "exit" { exit(EXIT_SUCCESS) }
+            let mode = CommandLine.arguments[2]
+            guard mode == "terminate" || mode == "stall" else { exit(EXIT_FAILURE) }
+            signal(SIGTERM, mode == "stall" ? SIG_IGN : SIG_DFL)
+            FileHandle.standardOutput.write(Data([1]))
+            while true { _ = pause() }
+        }
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-quit-timeout" {
+            do { try subprocessTimeoutValidation(); exit(EXIT_SUCCESS) }
+            catch {
+                FileHandle.standardError.write(Data("Subprocess timeout validation failed: \(error)\n".utf8))
+                exit(EXIT_FAILURE)
+            }
+        }
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--lease-probe" {
             do {
                 let lease = try AppInstanceLease.acquire(directory: URL(fileURLWithPath: CommandLine.arguments[2]))
@@ -357,6 +662,24 @@ struct ValidationFailure: Error, CustomStringConvertible {
         }
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--quit-probe" {
+            let controls = AppDelegate(launchAtLogin: LaunchAtLoginController(service: FakeLoginService()))
+            app.delegate = controls
+            app.finishLaunching()
+            // Command-line AppKit fixtures need explicit delegate launch delivery.
+            controls.applicationWillFinishLaunching(Notification(name: NSApplication.willFinishLaunchingNotification))
+            controls.applicationDidFinishLaunching(Notification(name: NSApplication.didFinishLaunchingNotification))
+            DispatchQueue.main.async {
+                guard let menu = controls.menuBar?.menu,
+                      let quit = menu.items.first(where: { !$0.isSeparatorItem && $0.tag == AppControlAction.quit.rawValue }) else {
+                    exit(EXIT_FAILURE)
+                }
+                menu.performActionForItem(at: menu.index(of: quit))
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { exit(EXIT_FAILURE) }
+            withExtendedLifetime(controls) { app.run() }
+            return
+        }
         if Bundle.main.bundleIdentifier == "dev.spriglet.lifecycle-validation.fullscreen" {
             let delegate = ValidationDelegate { exit(validate(bundledFullscreen: true)) }
             app.delegate = delegate

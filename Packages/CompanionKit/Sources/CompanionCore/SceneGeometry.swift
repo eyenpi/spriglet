@@ -32,9 +32,17 @@ public enum WindowGeometry {
     public static let width = 220.0
     public static let height = 180.0
     public static let feetOffset = 110.0
-    public static func desiredOrigin(feet: Point, display: Rect) -> Point {
-        Point(x: display.minX + feet.x - width / 2,
-              y: display.maxY - feet.y - (height - feetOffset))
+    public static func desiredFrame(feet: Point, display: Rect, scale: Double = 1, visibleBounds: Rect? = nil) -> Rect {
+        var left = feet.x - width * scale / 2, top = feet.y - feetOffset * scale
+        var right = left + width * scale, bottom = top + height * scale
+        // A grab can briefly stretch the attached hands beyond the body canvas.
+        // Include the painted silhouette while keeping the normal decoration margins.
+        if let visibleBounds {
+            let padding = 4 * scale
+            left = min(left, visibleBounds.minX - padding); top = min(top, visibleBounds.minY - padding)
+            right = max(right, visibleBounds.maxX + padding); bottom = max(bottom, visibleBounds.maxY + padding)
+        }
+        return Rect(x: display.minX + left, y: display.maxY - bottom, width: right - left, height: bottom - top)
     }
     public static func drawingOrigin(window: Rect, display: Rect) -> Point {
         Point(x: display.minX - window.minX, y: window.maxY - display.maxY)

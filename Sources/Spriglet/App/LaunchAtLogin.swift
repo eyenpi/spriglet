@@ -45,6 +45,7 @@ struct LaunchAtLoginState: Equatable {
 /// macOS owns the registration. Launching and refreshing only read it; there is
 /// no saved boolean, migration or automatic registration to override user consent.
 @MainActor final class LaunchAtLoginController {
+    var onStateChanged: ((LaunchAtLoginState) -> Void)?
     private let service: any LaunchAtLoginService
     private(set) var state: LaunchAtLoginState
 
@@ -54,7 +55,7 @@ struct LaunchAtLoginState: Equatable {
     }
 
     @discardableResult func refresh() -> LaunchAtLoginState {
-        state = LaunchAtLoginState(registration: service.registration, failure: state.failure)
+        publish(LaunchAtLoginState(registration: service.registration, failure: state.failure))
         return state
     }
 
@@ -72,9 +73,14 @@ struct LaunchAtLoginState: Equatable {
                                           message: error.localizedDescription)
         }
         // Even a successful call is not proof of consent, or of a state change.
-        state = LaunchAtLoginState(registration: service.registration, failure: failure)
+        publish(LaunchAtLoginState(registration: service.registration, failure: failure))
         return state
     }
 
     func openSystemSettings() { service.openSystemSettings() }
+    private func publish(_ state: LaunchAtLoginState) {
+        guard self.state != state else { return }
+        self.state = state
+        onStateChanged?(state)
+    }
 }

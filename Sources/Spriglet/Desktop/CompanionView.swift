@@ -6,6 +6,7 @@ import CompanionRendering
 @MainActor final class CompanionView: NSView {
     var onInput: ((CompanionInput) -> Void)?
     var makeContextMenu: (() -> NSMenu)?
+    var onShowSettings: (() -> Void)?
     /// Optional instrumentation owned by the finite profiling tool.
     var onDraw: ((Double) -> Void)?
     var context: DisplayContext
@@ -15,7 +16,8 @@ import CompanionRendering
     private var presenceDescription = ""
     init(context: DisplayContext, snapshot: CompanionSnapshot) {
         self.context = context; self.snapshot = snapshot
-        super.init(frame: NSRect(x: 0, y: 0, width: WindowGeometry.width, height: WindowGeometry.height))
+        super.init(frame: NSRect(x: 0, y: 0, width: WindowGeometry.width * context.scene.scale,
+                                height: WindowGeometry.height * context.scene.scale))
         setAccessibilityElement(true); setAccessibilityRole(.button)
         setAccessibilityLabel(AppText.companionName); setAccessibilityHelp(AppText.interactionHelp)
     }
@@ -40,6 +42,12 @@ import CompanionRendering
         return NSRect(x: context.frame.minX + hit.minX, y: context.frame.maxY - hit.maxY, width: hit.width, height: hit.height)
     }
     override func accessibilityPerformPress() -> Bool { onInput?(.activate); return true }
+    override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
+        [NSAccessibilityCustomAction(name: AppText.settingsMenu) { [weak self] in
+            guard let self else { return false }
+            self.onShowSettings?(); return true
+        }]
+    }
     func refresh(snapshot: CompanionSnapshot) {
         self.snapshot = snapshot
         let description = switch snapshot.presence {
@@ -59,8 +67,6 @@ import CompanionRendering
     override func mouseUp(with event: NSEvent) { onInput?(.pointerReleased(point(event))) }
     override func rightMouseDown(with event: NSEvent) {
         onInput?(.command(.returnHome))
-        // App-level controls are supplied by the composition root. The transient
-        // menu does not make the companion panel key or activate it on reopen.
         if let menu = makeContextMenu?() { NSMenu.popUpContextMenu(menu, with: event, for: self) }
     }
 }
