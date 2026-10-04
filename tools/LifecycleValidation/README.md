@@ -13,6 +13,14 @@ The native runner compiles the production environment, runtime, window host, vie
 
 Checks cover native body picking, transparent-corner click-through and drag capture across empty pixels; ordered and repeated system/display sleep, lock and session transitions; suspension-time input; Spaces recovery; missed mouse-up; unchanged display notifications; disconnect, no-display, reconnect and resolution fallback; repeated reopen/start/stop; observer cleanup; and exclusive launch lease release/error handling. Menu-bar checks cover synchronized labels and Settings, pause-time freeze and click-through, hidden Finder/Bring Home recovery, retained Hide/Pause across suspension and display loss, nonkey Settings/Help, unclipped panel layout, accessible checkbox actions and status/panel shutdown cleanup. A separate finite AppKit process exercises the real menu-bar Quit target. Synthetic secondary displays exercise negative global coordinates and both notched and unnotched homes. Unit tests also cover compact and ultrawide scene geometry, stale drag events, gesture/deformation cleanup and independent suspension reasons.
 
+The Quit subprocess has a five-second parent deadline, independent of the child's main-queue watchdog. On timeout the parent requests termination, then sends SIGKILL if the child remains running after 250 ms, and allows at most one further second for cleanup. A timeout fails validation. The runner also verifies normal subprocess exit and cleanup of a headless child that ignores SIGTERM.
+
+To check those subprocess bounds without opening panels, creating a status item or starting AppKit:
+
+```sh
+./scripts/test-desktop.sh --test-quit-timeout
+```
+
 For an actual fullscreen Space transition, run:
 
 ```sh
