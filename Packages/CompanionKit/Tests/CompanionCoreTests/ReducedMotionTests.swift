@@ -100,13 +100,14 @@ import Testing
         #expect(abs(engine.snapshot.rotation) > 0.01)
     }
 
-    @Test("Semantic invitations release pointer capture before stale drag events", arguments: [MotionPolicy.full, .reduced])
-    func inviteDuringGrab(policy: MotionPolicy) {
+    @Test("Semantic gestures release pointer capture before stale drag events",
+          arguments: [MotionPolicy.full, .reduced], [CompanionCommand.greet, .swing, .stretch])
+    func inviteDuringGrab(policy: MotionPolicy, command: CompanionCommand) {
         var engine = CompanionEngine(scene: .preview)
         engine.setMotionPolicy(policy)
         engine.send(.pointerPressed(engine.snapshot.hitBounds.center))
         engine.send(.pointerDragged(Point(x: 500, y: 200)))
-        engine.send(.command(.greet))
+        engine.send(.command(command))
         #expect(!engine.hasPointerCapture && engine.snapshot.presence == .engaged)
         engine.send(.pointerDragged(Point(x: 600, y: 300))); engine.send(.pointerReleased(Point(x: 600, y: 300)))
         #expect(!engine.hasPointerCapture && engine.snapshot.phase != .held)

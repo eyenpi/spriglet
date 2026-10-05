@@ -56,7 +56,7 @@ fi
 [[ "$(xcodebuild -version | awk '/^Xcode / {print int($2); exit}')" -ge 26 ]] || die "Select full Xcode 26 or later."
 [[ "$(xcrun --sdk macosx --show-sdk-version | cut -d. -f1)" -ge 26 ]] || die "macOS SDK 26 or later is required for this project."
 task_python="$(xcrun --find python3)"
-"$task_python" "$task_root/tools/SharedContent/sync.py"
+"$task_python" "$task_root/tools/SharedContent/sync.py" --check
 "$task_python" "$task_root/tools/AppStore/validate.py"
 task_output="${task_output:-$task_root/.build/app-store/Spriglet}"
 [[ ! -e "$task_output" && ! -L "$task_output" ]] || die "Output already exists; choose a new directory."
@@ -65,6 +65,8 @@ if [[ "$task_check" == true ]]; then
     exit 0
 fi
 
+task_source_revision="$(git -C "$task_root" rev-parse HEAD)"
+[[ -z "$(git -C "$task_root" status --porcelain)" ]] || die "Archive from a clean committed source revision."
 mkdir -p "$(dirname "$task_output")"
 mkdir "$task_output"
 task_output="$(cd "$task_output" && pwd)"
@@ -77,7 +79,7 @@ if [[ "$task_unsigned" == true ]]; then
     printf 'UNSIGNED LOCAL REHEARSAL — not eligible for upload.\n' > "$task_output/UNSIGNED-REHEARSAL.txt"
 else
     task_signing=(CODE_SIGN_STYLE=Automatic "DEVELOPMENT_TEAM=$task_team" "CODE_SIGN_IDENTITY=Apple Development")
-    task_validation+=(--signed)
+    task_validation+=(--signed --team-id "$task_team")
     if [[ "$task_provision" == true ]]; then task_signing+=(-allowProvisioningUpdates); fi
 fi
 
@@ -91,19 +93,30 @@ xcodebuild -project "$task_root/Spriglet.xcodeproj" -scheme Spriglet \
     archive > "$task_output/build.log" 2>&1
 "$task_python" "$task_root/tools/AppStore/validate.py" \
     --archive "$task_output/Spriglet.xcarchive" "${task_validation[@]}" > "$task_output/local-validation.json"
-"$task_python" - "$task_output" "$task_team" "$task_root" <<'PY'
+[[ "$(git -C "$task_root" rev-parse HEAD)" == "$task_source_revision" && -z "$(git -C "$task_root" status --porcelain)" ]] || die "Source changed while archiving; discard this candidate."
+"$task_python" - "$task_output" "$task_team" "$task_root" "$task_source_revision" <<'PY'
 import json, pathlib, plistlib, subprocess, sys
-output, team, root = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+output, team, root, revision = pathlib.Path(sys.argv[1]), sys.argv[2], pathlib.Path(sys.argv[3]), sys.argv[4]
 options = {'method': 'app-store-connect', 'destination': 'export', 'signingStyle': 'automatic',
            'manageAppVersionAndBuildNumber': False, 'uploadSymbols': True}
 if team:
     options['teamID'] = team
     with (output / 'ExportOptions.plist').open('wb') as stream: plistlib.dump(options, stream)
 report = json.loads((output / 'local-validation.json').read_text())
-report['sourceRevision'] = subprocess.check_output(['git', '-C', root, 'rev-parse', 'HEAD'], text=True).strip()
-report['sourceWorkingTreeDirty'] = bool(subprocess.check_output(['git', '-C', root, 'status', '--porcelain']).strip())
+report['sourceRevision'] = revision
+report['sourceWorkingTreeDirty'] = False
 report['xcode'] = subprocess.check_output(['xcodebuild', '-version'], text=True).strip()
 report['macOSSDK'] = subprocess.check_output(['xcrun', '--sdk', 'macosx', '--show-sdk-version'], text=True).strip()
+metadata = json.loads((root / 'tools/AppStore/metadata/en-US.json').read_text())
+metadata['reviewNotes'] = f"Spriglet {report['appVersion']}, build {report['build']}.\n\n" + metadata['reviewNotes']
+(output / 'submission-metadata.en-US.json').write_text(json.dumps(metadata, indent=2, ensure_ascii=False) + '\n')
+(output / 'review-notes.txt').write_text(metadata['reviewNotes'] + '\n')
+app_resources = output / 'Spriglet.xcarchive/Products/Applications/Spriglet.app/Contents/Resources'
+for name in ('PrivacyPolicy.md', 'Support.md', 'Changelog.json'):
+    (output / name).write_bytes((app_resources / name).read_bytes())
+import hashlib
+report['submissionDocuments'] = {name: hashlib.sha256((output / name).read_bytes()).hexdigest()
+    for name in ('submission-metadata.en-US.json', 'review-notes.txt', 'PrivacyPolicy.md', 'Support.md', 'Changelog.json')}
 (output / 'local-validation.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
 PY
 rm "$task_output/INCOMPLETE"

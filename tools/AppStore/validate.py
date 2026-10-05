@@ -2,6 +2,7 @@
 """Local Mac App Store preparation checks; never signs, uploads, or approves a release."""
 
 import argparse
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -126,11 +127,38 @@ def check_source(root):
     return {"appVersion": newest["appVersion"], "build": str(newest["build"]), "metadataLocale": "en-US"}
 
 
-def check_app(app, root, archive=None, signed=False):
+def validate_signature(details, entitlements, team=None, distribution=False):
+    require(entitlements.get("com.apple.security.app-sandbox") is True, "Signed app is not sandboxed.")
+    require(not entitlements.get("com.apple.security.get-task-allow") and not entitlements.get("get-task-allow"),
+            "Debug entitlement in app.")
+    match = re.search(r"^TeamIdentifier=([A-Z0-9]{10})$", details, re.MULTILINE)
+    require("Signature=adhoc" not in details and match is not None, "Trusted team signature is missing.")
+    if team:
+        require(match[1] == team, "Signing team differs from the selected release team.")
+    if distribution:
+        require(re.search(r"^Authority=(?:Apple Distribution|3rd Party Mac Developer Application):", details, re.MULTILINE),
+                "App Store export requires an Apple distribution signature, not a development or Developer ID signature.")
+
+
+def bundle_digest(app):
+    """Include names and all file bytes, including resources and code signatures."""
+    checksum = hashlib.sha256()
+    for path in sorted(app.rglob("*")):
+        require(not path.is_symlink(), "Unexpected link in the application bundle.")
+        if path.is_file():
+            checksum.update(path.relative_to(app).as_posix().encode() + b"\0")
+            checksum.update(bytes.fromhex(release.digest(path)))
+    return checksum.hexdigest()
+
+
+def check_app(app, root, archive=None, signed=False, team=None, distribution=False):
     source = check_source(root)
     info = release.read_plist(app / "Contents/Info.plist")
     bundle_id = info.get("CFBundleIdentifier", "")
     require(re.fullmatch(r"[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+", bundle_id), "Invalid bundle identifier.")
+    project = (root / "Spriglet.xcodeproj/project.pbxproj").read_text()
+    require(set(re.findall(r"PRODUCT_BUNDLE_IDENTIFIER\s*=\s*([^;]+);", project)) == {bundle_id},
+            "Built bundle identifier differs from the checked-in app identity.")
     release.validate_info(info, source["appVersion"], source["build"], bundle_id)
     validate_store_info(info)
     require(bool(info.get("CFBundleIconName") or info.get("CFBundleIconFile")), "Built app icon is missing.")
@@ -153,15 +181,15 @@ def check_app(app, root, archive=None, signed=False):
             return set(re.findall(r"UUID: ([A-Fa-f0-9-]+) \(([^)]+)\)", output))
         binary_uuids = uuids(app / "Contents/MacOS/Spriglet")
         require(binary_uuids and binary_uuids == uuids(dwarf), "Archive and dSYM UUIDs differ.")
-    if signed:
+    if signed or distribution:
         release.run(["codesign", "--verify", "--strict", str(app)])
         entitlements = plistlib.loads(release.run(["codesign", "-d", "--entitlements", "-", "--xml", str(app)]))
-        require(entitlements.get("com.apple.security.app-sandbox") is True, "Signed app is not sandboxed.")
-        require(not entitlements.get("com.apple.security.get-task-allow") and not entitlements.get("get-task-allow"), "Debug entitlement in archive.")
         details = subprocess.run(["codesign", "-dv", "--verbose=4", str(app)], capture_output=True, text=True, check=True).stderr
-        require("Signature=adhoc" not in details and re.search(r"TeamIdentifier=[A-Z0-9]{10}", details), "Trusted team signature is missing.")
+        validate_signature(details, entitlements, team, distribution)
     return {**source, "bundleIdentifier": bundle_id, "architectures": architectures, "resources": resources,
-            "signedArchiveChecked": signed, "appleValidationPerformed": False, "submissionReady": False}
+            "executableSHA256": release.digest(app / "Contents/MacOS/Spriglet"), "appBundleSHA256": bundle_digest(app),
+            "signedArchiveChecked": bool(archive and (signed or distribution)),
+            "distributionSignatureChecked": distribution, "appleValidationPerformed": False, "submissionReady": False}
 
 
 def main():
@@ -170,13 +198,17 @@ def main():
     parser.add_argument("--app", type=Path)
     parser.add_argument("--archive", type=Path)
     parser.add_argument("--signed", action="store_true")
+    parser.add_argument("--distribution", action="store_true", help="Require an App Store distribution signature on the exported app")
+    parser.add_argument("--team-id", help="Expected ten-character signing team")
     parser.add_argument("--screenshots", type=Path)
     args = parser.parse_args()
     try:
         require(not (args.app and args.archive), "Choose --app or --archive.")
-        require(not args.signed or args.archive, "--signed requires --archive.")
+        require(not (args.signed or args.distribution) or args.app or args.archive, "Signature validation requires --app or --archive.")
+        require(not args.team_id or ((args.signed or args.distribution) and re.fullmatch(r"[A-Z0-9]{10}", args.team_id)),
+                "--team-id requires signature validation and a ten-character team identifier.")
         app = args.archive / "Products/Applications/Spriglet.app" if args.archive else args.app
-        result = check_app(app, args.source_root, args.archive, args.signed) if app else check_source(args.source_root)
+        result = check_app(app, args.source_root, args.archive, args.signed, args.team_id, args.distribution) if app else check_source(args.source_root)
         if args.screenshots: result["screenshotCount"] = validate_screenshots(args.screenshots)
         print(json.dumps(result, indent=2, sort_keys=True))
     except (release.ValidationError, OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:

@@ -9,7 +9,11 @@ scripts/archive-app-store.sh --unsigned --check
 scripts/archive-app-store.sh --unsigned --output .build/app-store/NEW_DIRECTORY
 ```
 
-An unsigned archive rehearsal validates architecture, minimum OS, icon slots, sandboxing, privacy declarations, bundled documents and app version. It makes no upload. A signed archive requires the appropriate Apple account and signing configuration; never put certificates, profiles or credentials in Git.
+Archive from a clean committed revision. Both signed and unsigned archives reject source changes during the build, verify the checked-in bundle identifier and matching dSYM, and record the executable and complete bundle checksums. The output includes exact bundled support, privacy and changelog documents, submission metadata, and reviewer notes prefixed with the archive's version/build. Keep these records with the candidate; a later source change requires a new archive and acceptance pass.
+
+An unsigned archive rehearsal validates architecture, minimum OS, icon slots, sandboxing, privacy declarations, bundled documents and app version. It makes no upload. A signed archive requires the appropriate Apple account and signing configuration; never put certificates, profiles or credentials in Git. `--team-id` validation verifies the selected team; a development-signed archive still needs a distribution export and Apple validation.
+
+For the exported application, use `python3 tools/AppStore/validate.py --app PATH --distribution --team-id TEAM`. This rejects development, Developer ID and ad hoc signatures as App Store exports. The report deliberately keeps `submissionReady` false: local verification cannot establish Apple processing, physical device acceptance or App Store Connect readiness. See [submission answers and acceptance](submission.md).
 
 Use screenshots of the actual Mallow app: default visible peek, hover response, invited body, weighted drag and a soft landing. Avoid unrelated apps and private desktop content. The app has a small native Settings window opened through the character’s right-click menu, Command-comma while active, or its VoiceOver custom action. The persistent leaf menu offers visibility, pause, Bring Home, Settings, offline Help and Quit. Settings opens with keyboard focus; Help preserves the current app’s focus and provides Meet Mallow replay. The first-launch introduction uses short animations of the production character and remembers dismissal. Reopening from Finder recovers hidden Mallow without activation or clearing Pause. No sound service or action cards are included.
 

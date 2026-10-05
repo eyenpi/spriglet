@@ -83,6 +83,37 @@ class StoreValidationTests(unittest.TestCase):
     def test_signed_option_needs_an_archive(self):
         with patch("sys.argv", ["validate.py", "--signed"]): self.assertEqual(store.main(), 1)
 
+    def test_signature_checks_selected_team_and_distribution_certificate(self):
+        entitlements = {"com.apple.security.app-sandbox": True}
+        development = "Authority=Apple Development: Example\nTeamIdentifier=ABCDEFGHIJ\n"
+        distribution = development.replace("Apple Development", "Apple Distribution")
+        store.validate_signature(development, entitlements, "ABCDEFGHIJ")
+        store.validate_signature(distribution, entitlements, "ABCDEFGHIJ", distribution=True)
+        for details, values, team, exported in (
+            (development, entitlements, "ABCDEFGHIJ", True),
+            (distribution, entitlements, "ZZZZZZZZZZ", True),
+            ("Signature=adhoc\nTeamIdentifier=ABCDEFGHIJ\n", entitlements, None, False),
+            (distribution, {**entitlements, "com.apple.security.get-task-allow": True}, None, True),
+            (distribution, {}, None, True),
+            (distribution.replace("Apple Distribution", "Developer ID Application"), entitlements, None, True),
+        ):
+            with self.subTest(details=details, team=team, entitlements=values), self.assertRaises(store.release.ValidationError):
+                store.validate_signature(details, values, team, exported)
+
+    def test_bundle_checksum_detects_resource_edits_and_renames(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            app = Path(temporary)
+            first = app / "Support.md"
+            first.write_text("Current build instructions")
+            original = store.bundle_digest(app)
+            first.write_text("Stale build instructions")
+            self.assertNotEqual(original, store.bundle_digest(app))
+            first.write_text("Current build instructions")
+            first.rename(app / "PrivacyPolicy.md")
+            self.assertNotEqual(original, store.bundle_digest(app))
+            (app / "linked-resource").symlink_to(app / "PrivacyPolicy.md")
+            with self.assertRaises(store.release.ValidationError): store.bundle_digest(app)
+
     def test_screenshot_decode_rejects_a_truncated_file(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)

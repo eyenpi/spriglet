@@ -4,7 +4,7 @@ Static pages for **meetspriglet.com**, hosted with Cloudflare Workers Static Ass
 
 ## Content
 
-- `/support`: [shared support source](../../../Configuration/Shared/support.md), also bundled as an offline resource. The Mallow app has no Help window.
+- `/support`: [shared support source](../../../Configuration/Shared/support.md), also bundled as an offline resource. Mallow has a focus-preserving Help panel.
 - `/privacy`: [shared privacy source](../../../Configuration/Shared/privacy.md), also rendered to root `PRIVACY.md` and the offline app policy.
 - `/`: temporary `302` redirect to `/support`.
 - Unknown paths: a proper `404` page with support and privacy links.
