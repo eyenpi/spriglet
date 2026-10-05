@@ -4,11 +4,11 @@
 
 Use [GitHub private vulnerability reporting](https://github.com/eyenpi/spriglet/security/advisories/new). Include the affected version or commit, steps to reproduce, expected impact, and a minimal example. Remove personal desktop content and credentials from diagnostics. Please keep exploitable details out of public issues until a fix or mitigation is available.
 
-The maintainer reviews reports and coordinates fixes through the private advisory. There is no paid support SLA or bug bounty. If you cannot use GitHub's private reporting, use the contact route on the [support page](https://meetspriglet.com/support) once it is operational.
+The maintainer reviews reports and coordinates fixes through the private advisory. There is no paid support SLA or bug bounty. If you cannot use GitHub's private reporting, email [support@meetspriglet.com](mailto:support@meetspriglet.com) or use the [support page](https://meetspriglet.com/support).
 
 ## Supported versions
 
-Spriglet ships early GitHub previews. Security fixes target the latest development source on `main`; older preview tags are not maintained separately. Install the latest Mallow preview from [GitHub releases](https://github.com/eyenpi/spriglet/releases), or build the current source. No App Store release is available.
+Security fixes target the current source on `main`; older GitHub preview tags are not maintained separately. The public [Mallow preview](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1) is app 0.3.0, build 5 and predates the current controls and accessibility work. App 0.3.1, build 6 was submitted to the Mac App Store on October 5, 2026 and was Waiting for Review as of that date. It is not yet a public Store release. Build the current source for the latest implementation; an ad hoc GitHub download is not Apple-notarized.
 
 ## Security boundaries
 

@@ -1,0 +1,40 @@
+name: Bug report
+description: Report a problem with Spriglet or Mallow.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Spriglet is the app; Mallow is its first spriglet. Please report problems with the build you actually used. Keep private desktop content out of screenshots and logs. For security vulnerabilities, use private reporting instead of a public issue.
+  - type: input
+    id: version
+    attributes:
+      label: App version and installation source
+      description: Include the build number or source commit, and whether you used a GitHub download, source build or TestFlight.
+      placeholder: "0.3.1 (6), TestFlight"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Mac and macOS version
+      placeholder: "Apple silicon Mac, macOS 26.x"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Describe the interaction, what you expected and what happened. Mention whether Bring Home or reopening from Finder recovered Mallow.
+    validations:
+      required: true
+  - type: textarea
+    id: settings
+    attributes:
+      label: Displays and relevant settings
+      description: Include the display arrangement, notch/home location, Reduce Motion, Low Power Mode, VoiceOver, and Show/Pause choices when relevant.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Optional screenshots or logs
+      description: Remove personal desktop content, email addresses, credentials and other private information before attaching evidence.

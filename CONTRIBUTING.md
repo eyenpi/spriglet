@@ -1,6 +1,6 @@
 # Contributing
 
-Spriglet's Mallow preview is a native companion for Apple silicon Macs running macOS 26 or later. Code and original artwork contributions use the repository's MIT license.
+Spriglet is a native app for Apple silicon Macs running macOS 26 or later. Its desktop companions are called spriglets; Mallow is the first and only included character. Code and original artwork contributions use the repository's MIT license.
 
 ## Architecture boundaries
 
