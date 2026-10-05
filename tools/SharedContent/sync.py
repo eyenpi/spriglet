@@ -77,14 +77,15 @@ def output_files(root=ROOT):
     swift += "".join(f"    static let {key} = {literal(value)}\n" for key, value in labels.items())
     swift += "}\n"
     outputs["Sources/Spriglet/App/SharedContent.generated.swift"] = swift
-    outputs.update({"tools/AppStore/website/public/" + name: text for name, text in website.outputs(context, documents, presentation).items()})
     icon_root = root / "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset"
     images = json.loads((icon_root / "Contents.json").read_text())["images"]
     # Follow the asset catalog's filename, not a separate website logo or assumed file name.
     icon = next(item for item in images if item["idiom"] == "mac" and item["size"] == "128x128" and item["scale"] == "1x")
     icon_path = (icon_root / icon["filename"]).resolve()
     if icon_path.parent != icon_root.resolve(): raise ValueError("Icon must be inside the app icon catalog")
-    outputs["tools/AppStore/website/public/spriglet.png"] = icon_path.read_bytes()
+    icon_bytes = icon_path.read_bytes()
+    outputs["tools/AppStore/website/public/spriglet.png"] = icon_bytes
+    outputs.update({"tools/AppStore/website/public/" + name: text for name, text in website.outputs(context, documents, presentation, icon_bytes).items()})
     config = {"name": "meetspriglet-support", "compatibility_date": "2026-09-15", "send_metrics": False,
               "workers_dev": False, "routes": [{"pattern": context["websiteDomain"], "custom_domain": True}],
               "build": {"command": 'PYTHONDONTWRITEBYTECODE=1 python3 "$(git rev-parse --show-toplevel)/tools/SharedContent/sync.py"',

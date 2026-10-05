@@ -26,6 +26,8 @@ Edit `Configuration/Shared/privacy.md` to change the policy. Regeneration update
 
 Website presentation copy is separate from the shared support and privacy documents. Changing the website's framing or CSS does not change the bundled policies or the submitted build. Preserve the reviewed support instructions and data practices when changing the presentation.
 
+The favicon uses the current app icon, with a URL version derived from its image bytes. Icon changes refresh favicon references on every page automatically; ordinary regeneration keeps the URL stable. Local link checks resolve the URL's path independently of its query and fragment.
+
 ## Preview
 
 ```sh

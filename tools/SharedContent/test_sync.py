@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import re
 import shutil
 import tempfile
 import unittest
@@ -53,6 +54,9 @@ class SharedContentTests(unittest.TestCase):
         self.assertIn('"pattern": "companion.example"', self.text("tools/AppStore/website/wrangler.jsonc"))
 
     def test_logo_follows_catalog_filename_and_bytes(self):
+        pages = ("support", "privacy", "index", "404")
+        favicon_pattern = r'<link rel="icon"[^>]*href="([^"]+)"'
+        before = {page: re.search(favicon_pattern, self.text(f"tools/AppStore/website/public/{page}.html"))[1] for page in pages}
         catalog = self.root / self.icon_root / "Contents.json"
         value = json.loads(catalog.read_text())
         slot = next(i for i in value["images"] if i["size"] == "128x128" and i["scale"] == "1x")
@@ -62,6 +66,22 @@ class SharedContentTests(unittest.TestCase):
         catalog.write_text(json.dumps(value))
         sync.synchronize(self.root)
         self.assertEqual((self.root / "tools/AppStore/website/public/spriglet.png").read_bytes(), data + b"fixture-change")
+        updated = set()
+        for page in pages:
+            favicon = re.search(favicon_pattern, self.text(f"tools/AppStore/website/public/{page}.html"))[1]
+            self.assertNotEqual(favicon, before[page])
+            self.assertTrue(favicon.startswith("/spriglet.png?v="))
+            updated.add(favicon)
+        self.assertEqual(len(updated), 1)
+        self.assertEqual(sync.synchronize(self.root), [])
+
+    def test_website_link_check_resolves_queries_and_fragments_but_rejects_missing_assets(self):
+        checker = sync.website.LinkCheck()
+        checker.feed('<link rel="icon" href="/spriglet.png?v=changed#icon">')
+        with self.assertRaisesRegex(ValueError, "Missing local destination"):
+            sync.website.LinkCheck().feed('<link rel="icon" href="/missing-icon.png?v=changed#icon">')
+        with self.assertRaisesRegex(ValueError, "Non-local destination"):
+            sync.website.LinkCheck().feed('<link rel="icon" href="//another.example/spriglet.png?v=changed">')
 
     def test_website_branding_updates_pages_without_changing_bundled_documents(self):
         bundled = {name: (self.root / name).read_bytes() for name in (
