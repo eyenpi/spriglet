@@ -51,17 +51,25 @@ import CompanionRendering
     override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
         var actions: [NSAccessibilityCustomAction] = []
         if acceptsInput {
-            actions.append(NSAccessibilityCustomAction(name: AppText.inviteMallow) { [weak self] in
-                guard let self, self.acceptsInput, let onInput = self.onInput else { return false }
-                onInput(.command(.greet)); return true
-            })
+            for (command, title) in [(CompanionCommand.greet, AppText.inviteMallow),
+                                     (.swing, AppText.swingMallow),
+                                     (.stretch, AppText.stretchMallow)] {
+                actions.append(NSAccessibilityCustomAction(name: title) { [weak self] in
+                    guard let self, self.acceptsInput, let onInput = self.onInput else { return false }
+                    onInput(.command(command)); return true
+                })
+            }
         }
+        let offeredWhilePaused = isPaused
         for (action, title) in [(AppControlAction.bringHome, AppText.bringHome),
                                 (.togglePause, isPaused ? AppText.resumeMallow : AppText.pauseMallow),
                                 (.toggleVisibility, AppText.hideMallow), (.settings, AppText.settingsMenu),
                                 (.introduction, AppText.introductionMenu), (.help, AppText.supportTitle)] {
             actions.append(NSAccessibilityCustomAction(name: title) { [weak self] in
-                guard let onControlAction = self?.onControlAction else { return false }
+                guard let self, self.window?.isVisible == true, let onControlAction = self.onControlAction else { return false }
+                // VoiceOver may retain actions across updates. A named Pause
+                // must never resume, and a retained Hide must never show.
+                if action == .togglePause && self.isPaused != offeredWhilePaused { return false }
                 onControlAction(action); return true
             })
         }

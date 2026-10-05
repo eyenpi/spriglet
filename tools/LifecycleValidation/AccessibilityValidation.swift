@@ -50,6 +50,11 @@ import CompanionCore
         try perform(AppText.inviteMallow)
         try LifecycleValidation.require(character.snapshot.presence == .engaged, "Invite did not reach the engine")
         let staleInvite = try action(AppText.inviteMallow)
+        try perform(AppText.swingMallow)
+        try LifecycleValidation.require(character.snapshot.gesture == .swing, "Named Swing did not select the gesture")
+        try perform(AppText.stretchMallow)
+        try LifecycleValidation.require(character.snapshot.gesture == .stretch, "Named Stretch did not select the gesture")
+        let staleStretch = try action(AppText.stretchMallow)
         LifecycleValidation.beginDrag(host: host, window: panel, clock: clock)
         try LifecycleValidation.require(character.accessibilityValue() as? String == AppText.heldPresence,
                                         "A grab is not described to VoiceOver")
@@ -62,15 +67,20 @@ import CompanionCore
         try LifecycleValidation.require(character.accessibilityValue() as? String == AppText.catchReadyPresence,
                                         "Catch readiness is not described to VoiceOver")
         try perform(AppText.bringHome); try LifecycleValidation.assertHome(panel)
+        let stalePause = try action(AppText.pauseMallow)
         try perform(AppText.pauseMallow)
         try LifecycleValidation.require(character.accessibilityValue() as? String == AppText.pausedPresence
-                                        && !character.accessibilityPerformPress() && staleInvite.handler?() == false,
+                                        && !character.accessibilityPerformPress() && staleInvite.handler?() == false
+                                        && staleStretch.handler?() == false && stalePause.handler?() == false,
                                         "Paused character accepted an accessible interaction or retained a stale Invite")
+        try LifecycleValidation.require(runtime.controlState.isPaused, "Retained Pause resumed Mallow")
         try LifecycleValidation.require(panel.ignoresMouseEvents, "Accessible Pause retained mouse capture")
         try perform(AppText.bringHome)
         try LifecycleValidation.require(runtime.controlState.isPaused, "Accessible Bring Home cleared Pause")
         try perform(AppText.resumeMallow)
+        let staleHide = try action(AppText.hideMallow)
         try perform(AppText.hideMallow)
+        try LifecycleValidation.require(staleHide.handler?() == false, "Retained Hide showed hidden Mallow")
         try LifecycleValidation.require(!panel.isVisible && delegate.menuBar?.statusItem != nil, "Accessible Hide lost recovery")
         delegate.perform(.bringHome); try LifecycleValidation.assertHome(panel)
         try LifecycleValidation.require(NSWorkspace.shared.frontmostApplication?.processIdentifier == frontmost,
@@ -150,6 +160,13 @@ import CompanionCore
         try perform(AppText.inviteMallow)
         try LifecycleValidation.require(character.snapshot.openness == 1 && character.snapshot.rotation == 0,
                                         "Accessible Invite ignored live Reduce Motion")
+        for title in [AppText.swingMallow, AppText.stretchMallow] {
+            try perform(title)
+            LifecycleValidation.pump(0.1)
+            try LifecycleValidation.require(character.snapshot.rotation == 0 && character.snapshot.pose.arm == 0
+                                            && character.snapshot.pose.height == 1,
+                                            "Named gesture ignored Reduce Motion: \(title)")
+        }
         LifecycleValidation.beginDrag(host: host, window: panel, clock: clock)
         host.onInput?(.pointerReleased(Point(x: 500, y: 250)))
         try LifecycleValidation.assertHome(panel)

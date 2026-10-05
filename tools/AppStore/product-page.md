@@ -4,7 +4,7 @@
 
 Meet Mallow, a soft lavender companion that peeks out beneath your Mac's notch. Its face stays visible while it quietly blinks and breathes beside your work.
 
-Spriglet is a native, local app for Apple silicon Macs running macOS 26 or later. This is an early Mallow preview.
+Spriglet is a native, local app for Apple silicon Macs running macOS 26 or later.
 
 ### Everything happens through the character
 
@@ -26,7 +26,7 @@ Mallow stays at its small resting peek until invited. It returns to that peek af
 
 ### Local by design
 
-No account, server connection, analytics, screen capture or global keyboard monitoring. Future capabilities have a separate command boundary; no plugins or assistant services are active in this preview.
+No account, server connection, analytics, screen capture or global keyboard monitoring. Future capabilities have a separate command boundary; no plugins or assistant services are included.
 
 [Get support](https://meetspriglet.com/support) · [Privacy policy](https://meetspriglet.com/privacy) · [Source code](https://github.com/eyenpi/spriglet)
 

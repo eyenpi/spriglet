@@ -2,6 +2,32 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "0.3.1-preview.1",
+      "appVersion": "0.3.1",
+      "build": 6,
+      "date": "2026-10-05",
+      "channel": "preview",
+      "title": "Accessible character controls and Store preparation",
+      "summary": "Named VoiceOver gestures, predictable recovery actions and an exact-build Mac App Store archive candidate.",
+      "distribution": "Prepared for Mac App Store submission. Local rehearsal packages use ad hoc signing and are not eligible for App Store upload. Apple distribution signing, validation and review determine the submitted release.",
+      "changes": {
+        "added": [
+          "VoiceOver actions name Swing and Stretch alongside Invite with a wave and drag-free Bring Home.",
+          "Archive records include the executable checksum and exact bundled support, privacy and changelog content."
+        ],
+        "fixed": [
+          "Retained VoiceOver Pause and Hide actions cannot reverse their named effect after a state change."
+        ],
+        "changed": [
+          "Store description and reviewer instructions explain keyboard navigation, Reduce Motion, local privacy and recovery."
+        ]
+      },
+      "knownLimitations": [
+        "Apple distribution signing and App Store Connect acceptance must be verified before upload.",
+        "Spoken VoiceOver and physical sleep, lock, display and login delivery require acceptance on the distributed signed build."
+      ]
+    },
+    {
       "version": "0.3.0-preview.1",
       "appVersion": "0.3.0",
       "build": 5,

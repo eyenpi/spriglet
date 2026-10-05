@@ -16,6 +16,18 @@ func drag(_ engine: inout CompanionEngine, to point: Point) {
 }
 
 @Suite("Character interactions") struct InteractionTests {
+    @Test("Named gestures choose a predictable reaction without pointer input",
+          arguments: [CompanionCommand.greet, .swing, .stretch])
+    func namedGesture(command: CompanionCommand) {
+        var engine = CompanionEngine(scene: .preview)
+        engine.send(.command(command)); advance(&engine, seconds: 0.3)
+        let expected: CharacterGesture = command == .greet ? .hello : command == .swing ? .swing : .stretch
+        #expect(engine.snapshot.presence == .engaged && engine.snapshot.gesture == expected)
+        #expect(!engine.hasPointerCapture)
+        if command == .greet { #expect(engine.snapshot.pose.arm > 0.2) }
+        if command == .swing { #expect(abs(engine.snapshot.rotation) > 0.01) }
+        if command == .stretch { #expect(engine.snapshot.pose.height > 1) }
+    }
     @Test("Rest is a visible face, even after a long idle", arguments: [12.0, 30, 60, 120])
     func persistentPeek(fps: Double) {
         var engine = CompanionEngine(scene: .preview)

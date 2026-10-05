@@ -4,6 +4,32 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
+## 0.3.1-preview.1 — Accessible character controls and Store preparation
+
+2026-10-05 · App 0.3.1 · Build 6
+
+Named VoiceOver gestures, predictable recovery actions and an exact-build Mac App Store archive candidate.
+
+Prepared for Mac App Store submission. Local rehearsal packages use ad hoc signing and are not eligible for App Store upload. Apple distribution signing, validation and review determine the submitted release.
+
+### Added
+
+- VoiceOver actions name Swing and Stretch alongside Invite with a wave and drag-free Bring Home.
+- Archive records include the executable checksum and exact bundled support, privacy and changelog content.
+
+### Changed
+
+- Store description and reviewer instructions explain keyboard navigation, Reduce Motion, local privacy and recovery.
+
+### Fixed
+
+- Retained VoiceOver Pause and Hide actions cannot reverse their named effect after a state change.
+
+### Known limitations
+
+- Apple distribution signing and App Store Connect acceptance must be verified before upload.
+- Spoken VoiceOver and physical sleep, lock, display and login delivery require acceptance on the distributed signed build.
+
 ## 0.3.0-preview.1 — Mallow, rebuilt from the interaction up
 
 2026-10-03 · App 0.3.0 · Build 5

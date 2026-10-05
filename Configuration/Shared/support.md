@@ -1,6 +1,6 @@
 # {{supportTitle}}
 
-{{appName}} is an early native desktop companion for Apple silicon Macs running macOS 26 or later. The current character is Mallow.
+{{appName}} is a native desktop companion for Apple silicon Macs running macOS 26 or later. The current character is Mallow.
 
 ## Interacting with Mallow
 
@@ -40,11 +40,11 @@ An unavailable state or failed change is shown separately from the actual regist
 
 Pause freezes the current pose and lets desktop clicks pass through; pausing an active drag releases it and returns Mallow home. Resume continues without simulating paused time. The visibility label reflects whether Mallow is actually visible; Show is unavailable while the display or session is suspended. Pause and Resume reflect your animation choice, independently of system suspension.
 
-Settings exposes the same Show and Animate controls for this session, alongside saved preferences. Help is available offline and preserves keyboard focus in your current app. Closing either window keeps {{appName}} running. Right-click Mallow brings it home and opens the same typed controls as the leaf menu, including Settings, Meet Mallow, login status and {{quitApp}}. VoiceOver character actions offer Invite, Bring Home, Pause/Resume, Hide, Settings, Meet Mallow and Help. Its state describes held, catch-ready, moving, grounded and paused moments as well as its resting peek. Paused Mallow keeps recovery available. There is no Dock icon or action card.
+Settings exposes the same Show and Animate controls for this session, alongside saved preferences. Help is available offline and preserves keyboard focus in your current app. Closing either window keeps {{appName}} running. Right-click Mallow brings it home and opens the same typed controls as the leaf menu, including Settings, Meet Mallow, login status and {{quitApp}}. VoiceOver character actions offer Invite with a wave, Swing, Stretch, Bring Home, Pause/Resume, Hide, Settings, Meet Mallow and Help. Its state describes held, catch-ready, moving, grounded and paused moments as well as its resting peek. Paused Mallow keeps recovery available. There is no Dock icon or action card.
 
-## Local preview and troubleshooting
+## Source builds and troubleshooting
 
-This rewrite is a local preview, not an Apple-notarized release. Installing a downloaded unsigned build may be blocked by macOS. For bugs, include the app version, macOS version, display arrangement, what you did and whether Reduce Motion or Low Power Mode was enabled. Avoid including private desktop content in screenshots.
+Local source builds use ad hoc signing. macOS may block unsigned downloads; local validation does not imply Apple approval. For bugs, include the app version, macOS version, display arrangement, what you did and whether Reduce Motion or Low Power Mode was enabled. Avoid including private desktop content in screenshots.
 
 ## Contact
 
