@@ -1,6 +1,7 @@
 $(SRCROOT)/Configuration/Shared/Info.plist
 $(SRCROOT)/Configuration/Shared/app-store.en-US.json
 $(SRCROOT)/Configuration/Shared/brand.json
+$(SRCROOT)/Configuration/Shared/website.en-US.json
 $(SRCROOT)/Configuration/Shared/en-US.json
 $(SRCROOT)/Configuration/Shared/privacy.md
 $(SRCROOT)/Configuration/Shared/product.md

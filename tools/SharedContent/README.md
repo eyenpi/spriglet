@@ -2,6 +2,8 @@
 
 `Configuration/Shared` is the source for the app identity, accessible character labels, menu-bar and native Settings labels, help, privacy, product description and prepared store metadata. The menu and native Settings window share labels for the same runtime controls. Saved preferences and offline Help use these sources too.
 
+`website.en-US.json` holds website presentation copy separately from bundled help and privacy documents. Spriglet is the app, spriglets are its desktop companions, and Mallow is the first available spriglet. Website branding edits do not change the app's generated labels or bundled policy text.
+
 ```sh
 python3 tools/SharedContent/sync.py
 python3 tools/SharedContent/sync.py --check
