@@ -2,11 +2,13 @@
 """Render Spriglet's public support and privacy pages from the reviewed source text."""
 
 import argparse
+import hashlib
 import html
 from html.parser import HTMLParser
 from pathlib import Path
 import re
 import sys
+from urllib.parse import urlsplit
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
@@ -49,7 +51,7 @@ def document(source):
     return "\n".join(result)
 
 
-def page(context, presentation, title, description, route, body):
+def page(context, presentation, title, description, route, body, favicon_url):
     name = html.escape(context["appName"])
     origin = html.escape(context["websiteURL"], quote=True)
     email = html.escape(context["supportEmail"], quote=True)
@@ -70,7 +72,7 @@ def page(context, presentation, title, description, route, body):
   <title>{html.escape(title)} — {name}</title>
   <meta name="description" content="{html.escape(description, quote=True)}">
   <link rel="canonical" href="{origin}/{route}">
-  <link rel="icon" type="image/png" href="/spriglet.png">
+  <link rel="icon" type="image/png" sizes="128x128" href="{html.escape(favicon_url, quote=True)}">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -98,14 +100,15 @@ def page(context, presentation, title, description, route, body):
 '''
 
 
-def outputs(context, documents, presentation):
+def outputs(context, documents, presentation, icon_bytes):
     support = documents["support"].split("\n[Back to ")[0]
     name = context["appName"]
+    favicon_url = "/spriglet.png?v=" + hashlib.sha256(icon_bytes).hexdigest()[:16]
     return {
-        "support.html": page(context, presentation, context["supportTitle"], f"Help with {name}, home to little desktop companions for Mac. Contact support and find answers to common questions.", "support", document(support)),
-        "privacy.html": page(context, presentation, context["privacyTitle"], f"How {name} handles session state, desktop interaction, support requests, and website visits.", "privacy", document(documents["privacy"])),
-        "index.html": page(context, presentation, f"{name} support", f"Support and privacy information for {name} for Mac.", "support", '<p><a href="/support">Visit support</a> or read our <a href="/privacy">privacy policy</a>.</p>'),
-        "404.html": page(context, presentation, "Page not found", f"Find support and privacy information for {name}.", "404", '<p>This page could not be found. <a href="/support">Visit support</a> or read the <a href="/privacy">privacy policy</a>.</p>'),
+        "support.html": page(context, presentation, context["supportTitle"], f"Help with {name}, home to little desktop companions for Mac. Contact support and find answers to common questions.", "support", document(support), favicon_url),
+        "privacy.html": page(context, presentation, context["privacyTitle"], f"How {name} handles session state, desktop interaction, support requests, and website visits.", "privacy", document(documents["privacy"]), favicon_url),
+        "index.html": page(context, presentation, f"{name} support", f"Support and privacy information for {name} for Mac.", "support", '<p><a href="/support">Visit support</a> or read our <a href="/privacy">privacy policy</a>.</p>', favicon_url),
+        "404.html": page(context, presentation, "Page not found", f"Find support and privacy information for {name}.", "404", '<p>This page could not be found. <a href="/support">Visit support</a> or read the <a href="/privacy">privacy policy</a>.</p>', favicon_url),
     }
 
 
@@ -116,7 +119,9 @@ class LinkCheck(HTMLParser):
         for key in ("src", "href"):
             value = values.get(key, "")
             if value.startswith("/"):
-                target = value.split("#", 1)[0].strip("/") or "index.html"
+                destination = urlsplit(value)
+                if destination.netloc: raise ValueError(f"Non-local destination: {value}")
+                target = destination.path.strip("/") or "index.html"
                 if not Path(target).suffix: target += ".html"
                 if not (OUTPUT / target).is_file(): raise ValueError(f"Missing local destination: {value}")
         if tag == "img" and "alt" not in values: raise ValueError("Image is missing alt text.")
