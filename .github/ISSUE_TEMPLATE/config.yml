@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Help and support
+    url: https://meetspriglet.com/support
+    about: Read the controls, recovery steps and troubleshooting guidance, or contact support.
+  - name: Report a security vulnerability privately
+    url: https://github.com/eyenpi/spriglet/security/advisories/new
+    about: Keep exploitable details and sensitive information out of public issues.
+  - name: Privacy policy
+    url: https://meetspriglet.com/privacy
+    about: Read how Spriglet handles local preferences, desktop interaction and support messages.

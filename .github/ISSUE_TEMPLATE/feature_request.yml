@@ -1,0 +1,27 @@
+name: Feature or spriglet idea
+description: Suggest an improvement or a future spriglet.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Mallow is the only spriglet currently included. More spriglets are planned; suggestions do not imply a release date or a commitment to build them.
+  - type: textarea
+    id: need
+    attributes:
+      label: What would this improve?
+      description: Describe the experience or problem you want Spriglet to address.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: For a spriglet, describe its personality and how it would fit quiet desktop company. For a feature, describe the intended behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: considerations
+    attributes:
+      label: Accessibility, privacy or alternatives
+      description: Mention keyboard access, Reduce Motion, recovery, local data handling or alternatives when relevant.

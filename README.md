@@ -1,18 +1,37 @@
 # Spriglet
 
-Spriglet is home to little desktop companions called spriglets, for Apple silicon Macs running macOS 26 or later. Meet Mallow, your first spriglet: soft, lavender and local. Mallow rests beneath the notch with its face visible, blinking and breathing while you work. A small Settings window lets you choose its size, movement intensity and home. A persistent leaf in the menu bar provides visibility, animation controls and recovery when Mallow is hidden.
+<img src="art/app-icon/spriglet-app-icon-1024.png" width="96" height="96" alt="Spriglet app icon showing Mallow, a soft lavender spriglet">
 
-Its curious peek stays in place. Breathing gently changes pace and depth; blinks vary in timing and occasionally come in pairs. Brief glances and tiny settling movements are separated by long, irregular pauses. These quiet moments yield to nearby pointer attention, hover and deliberate interaction. Reduce Motion keeps blinking while suppressing decorative movement.
+**A little quiet company.**
 
-Hover for a small reaction. Click to invite it out; touch again for a wave or swing. Drag to pick it up. While held close enough to catch home, Mallow looks up and reaches slightly; release there to let it catch, or away from home for gravity and a squishy landing. Click elsewhere to return it to its resting peek. On a display without a notch, it rests at the upper right edge below the menu bar.
+Spriglet brings little desktop companions called **spriglets** to your Mac. Meet **Mallow, your first spriglet**: soft, lavender and a little curious. Mallow quietly peeks beneath your Mac's notch, blinking and breathing while you work. On displays without a notch, it rests near the upper right edge.
 
-On first launch, Meet Mallow opens a separate introduction with five short, looping demonstrations of those interactions, using the actual character engine and renderer. Browse with Next, Back or the step buttons; Skip introduction, Done, Escape or the close button dismiss it and remember that choice locally. Right-click Mallow and choose Meet Mallow to replay; it is also in the app's Help menu. Reduce Motion shows representative stills. The everyday character has no instructional overlays.
+Spriglet is a native, local app for **Apple silicon Macs running macOS 26 or later**. Mallow is the only character currently included; more spriglets are planned.
 
-The published Mallow preview is `v0.3.0-preview.1` (app 0.3.0, build 5). Downloads are on [GitHub releases](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1); choose the `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP. macOS may block an unsigned download. Plugins and assistant services are not implemented. That published download uses ad hoc signing and has not been Apple-notarized. The Mac App Store candidate is app 0.3.1, build 6; Store availability follows Apple review and manual release.
+[Website](https://meetspriglet.com) · [Support](https://meetspriglet.com/support) · [Privacy](https://meetspriglet.com/privacy) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
 ![Mallow peeking, reacting and playing](art/mallow/demo.gif)
 
-The preview above uses the production simulation and renderer on a simulated desktop.
+This animation uses the production simulation and renderer on a simulated desktop.
+
+## Meet Mallow
+
+- **Quiet company.** Small glances, blinks and breathing settle back into a resting peek after you move on.
+- **Direct interaction.** Hover for a reaction, click to invite a wave, touch again to swing, or drag to play. Release near home to catch or farther away for a soft landing. Click elsewhere to bring Mallow home.
+- **Your choice of home.** Native Settings controls size, movement intensity and home display/location. A leaf in the menu bar offers Show/Hide, Pause/Resume, Bring Home, Help and optional launch at login.
+- **Keyboard and VoiceOver actions.** Navigate menus and Settings with the keyboard. Invite, Swing, Stretch and Bring Home are available as character actions. Recovery never requires a precise drag.
+- **Reduce Motion.** Decorative movement and travel become still state changes; deliberate dragging and blinking remain. Every release returns directly home. The five-step Meet Mallow introduction uses still demonstrations.
+- **Local by design.** No account, advertising, analytics or app server connection. Preferences stay on this Mac. Code and original artwork use the [MIT license](LICENSE).
+
+## Availability
+
+| Distribution | Version | Status |
+| --- | --- | --- |
+| Mac App Store | 0.3.1 (build 6) | Submitted October 5, 2026. Waiting for Review as of that date; availability requires Apple approval and manual release. |
+| [GitHub preview](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1) | 0.3.0 (build 5) | Older public Mallow preview with ad hoc signing and no Apple notarization. |
+| Source on `main` | 0.3.1 | Current app source, accessibility work and repository/website updates. Build instructions follow below. |
+
+The GitHub download predates the current Settings, menu controls, introduction and accessibility work described here. Choose its `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP; macOS may block the download. Historical releases describe their own builds and characters. There is no public App Store download yet. Plugins and assistant services are not implemented.
 
 ## Build and run
 
@@ -27,11 +46,28 @@ Select the full Xcode 26 toolchain, then:
 
 Builds live under `.build/xcode/Build/Products/`.
 
+## Controls and accessibility
+
 The leaf menu offers Show/Hide Mallow, Pause/Resume Mallow, Bring Home, launch at login, Settings, Meet Mallow, Help and Quit. Settings exposes the same Show and Animate controls alongside saved preferences and a Bring Home button; Help works offline. Hide and Pause apply for the running session. Pause freezes Mallow and lets clicks pass through, releasing an active drag safely. Hide stops animation and survives sleep, lock, Spaces and display changes. Show, Bring Home and reopening from Finder recover hidden Mallow at its resting home without clearing Pause. Visibility labels reflect actual presentation, with Show unavailable during suspension or without a display. Pause/Resume reflects the user’s animation choice.
 
-Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens the same controls as the leaf menu, including Settings, Meet Mallow, login status and Quit Spriglet. Settings also has a Command-comma shortcut while the app is active and a VoiceOver custom action on the character. Reach the leaf with Control-F8 (or Fn-Control-F8), then use arrow keys and Return. Settings and Meet Mallow support Tab and Shift-Tab even with macOS keyboard navigation off; native arrows choose popup values and Space operates buttons. When Spriglet is active, Command-Shift-H brings Mallow home, Command-Shift-P pauses/resumes and Command-Shift-M shows/hides it. Command-W closes the focused native window. Opening Settings explicitly activates its ordinary native window; closing it keeps Mallow running. Help, visibility/animation controls, launch, recovery and character interaction preserve keyboard focus. The introduction opens without activation; clicking its controls allows keyboard navigation. Escape dismisses the introduction when it has keyboard focus, or returns Mallow home outside native windows; native Settings controls keep their usual keyboard behavior. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
+Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens the same controls as the leaf menu. Settings is also available through a VoiceOver character action. Settings and Meet Mallow support Tab and Shift-Tab even with macOS keyboard navigation off. Use arrow keys and Return in menus. Opening Settings activates its native window; closing it keeps Mallow running. Help, visibility/animation controls, launch, recovery and character interaction preserve keyboard focus. The introduction opens without activation; clicking its controls allows keyboard navigation. Escape dismisses the introduction when it has keyboard focus, or returns Mallow home outside native windows; native Settings controls keep their usual keyboard behavior. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
 
 Launch at login is optional and off for a new installation. Enable it from the shared menus or Settings. The checkmark means macOS reports `.enabled`; a dash means `.requiresApproval`, with login launch still off until you allow it in System Settings > General > Login Items & Extensions. Unavailable states and failed changes are shown explicitly, including the macOS error when a change fails. Menus re-read registration when opened; Settings refreshes on registration changes and when it regains focus and before each action, so changes in System Settings are reflected. Quitting leaves the registration intact; turning the option off unregisters future login launches while Mallow keeps running. Startup never registers automatically or restores an old preference.
+
+| Action | Keyboard control |
+| --- | --- |
+| Reach the menu bar | Control-F8, or Fn-Control-F8 |
+| Open Settings | Command-comma while Spriglet is active |
+| Bring Home | Command-Shift-H while Spriglet is active |
+| Pause or resume | Command-Shift-P while Spriglet is active |
+| Show or hide | Command-Shift-M while Spriglet is active |
+| Move between Settings controls | Tab / Shift-Tab |
+| Choose a popup value or operate a control | Arrow keys / Space |
+| Close the focused native window | Command-W |
+
+Use Bring Home in the leaf menu or Settings, or reopen Spriglet from Finder, to recover hidden Mallow without dragging. The current implementation provides VoiceOver actions and Reduce Motion behavior; wider spoken VoiceOver and physical system-transition acceptance remain ongoing. See [verification](#verification).
+
+## Render a preview
 
 For a finite, reproducible animation preview using the production code:
 
@@ -125,4 +161,6 @@ The Mallow release replaces the previous character and interaction system. The b
 
 A release goes through a PR, required security and Mac build checks, then a merge to `main`. Build and package that exact clean revision, mount and verify the DMG, create an immutable annotated tag and publish the matching changelog and checksummed downloads. The publisher refuses mismatched or dirty source. See [release instructions](tools/ReleaseNotes/README.md) and [packaging](tools/ReleaseValidation/README.md).
 
-App 0.3.1, build 6 is the Mac App Store release candidate, separate from the published preview. The remaining release priorities are broader device acceptance (sleep/wake, multiple displays, VoiceOver and sustained energy use), more authored expressions and idle moments, and Developer ID signing/notarization. After that, add one useful capability through the typed command boundary before introducing a permissioned plugin loader. No assistant behavior, external-app awareness or 3D runtime is included in this release.
+App 0.3.1, build 6 has been submitted to the Mac App Store, separately from the older GitHub preview. Its signed archive and Store metadata are recorded for that exact build; later website and GitHub presentation updates do not rebuild it. Store preparation and validation are documented in [App Store delivery](tools/AppStore/README.md).
+
+Next steps are broader physical-device acceptance (sleep/wake, display transitions, spoken VoiceOver and sustained energy use), Apple review and manual release, and more spriglets. Additional characters are planned, not available in the current app. A future direct-download release needs its own Developer ID signing, notarization and exact-build validation. Future capabilities should use the typed command boundary; no plugin loader, assistant behavior, external-app awareness or 3D runtime is included.
