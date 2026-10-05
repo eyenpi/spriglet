@@ -25,6 +25,7 @@ Mac App Store release build for Apple silicon and macOS 26 or later. Availabilit
 ### Changed
 
 - Store description and reviewer instructions explain keyboard navigation, Reduce Motion, local privacy and recovery.
+- Stable Store candidates can rehearse unsigned CI packaging while unsigned stable publication remains prohibited.
 
 ### Fixed
 
