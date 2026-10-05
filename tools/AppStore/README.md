@@ -1,6 +1,6 @@
 # App Store preparation
 
-The current Mallow rewrite is a local preview. It has not been submitted to Apple. Prepared metadata and policy are generated from `Configuration/Shared`; local validation does not constitute Apple approval.
+App 0.3.1, build 6 is the Mac App Store release candidate. The published GitHub preview is a separate unsigned download. Metadata and policy are generated from `Configuration/Shared`; local validation does not constitute Apple approval. Submission status is recorded privately with the exact archive, rather than inferred from source documentation.
 
 ```sh
 python3 tools/SharedContent/sync.py --check
