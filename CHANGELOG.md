@@ -32,6 +32,7 @@ Mac App Store release build for Apple silicon and macOS 26 or later. Availabilit
 - Bring Home and reopening from Finder restore hidden Mallow without dragging and preserve Pause.
 - Reduce Motion cancels decorative travel in every interaction while preserving deliberate dragging and returning releases directly home.
 - Sleep, lock, Spaces and display recovery preserve visibility and animation choices; missed releases cannot leave pointer capture stuck.
+- Store archives preserve readable app and signature resources for non-root users after installation.
 
 ### Known limitations
 

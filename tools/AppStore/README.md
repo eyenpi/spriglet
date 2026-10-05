@@ -9,7 +9,7 @@ scripts/archive-app-store.sh --unsigned --check
 scripts/archive-app-store.sh --unsigned --output .build/app-store/NEW_DIRECTORY
 ```
 
-Archive from a clean committed revision. Both signed and unsigned archives reject source changes during the build, verify the checked-in bundle identifier and matching dSYM, and record the executable and complete bundle checksums. The output includes exact bundled support, privacy and changelog documents, submission metadata, and reviewer notes prefixed with the archive's version/build. Keep these records with the candidate; a later source change requires a new archive and acceptance pass.
+Archive from a clean committed revision. Both signed and unsigned archives reject source changes during the build, verify the checked-in bundle identifier and matching dSYM, verify non-root installation permissions, and record the executable and complete bundle checksums. The output includes exact bundled support, privacy and changelog documents, submission metadata, and reviewer notes prefixed with the archive's version/build. Keep these records with the candidate; a later source change requires a new archive and acceptance pass.
 
 An unsigned archive rehearsal validates architecture, minimum OS, icon slots, sandboxing, privacy declarations, bundled documents and app version. It makes no upload. A signed archive requires the appropriate Apple account and signing configuration; never put certificates, profiles or credentials in Git. `--team-id` validation verifies the selected team; a development-signed archive still needs a distribution export and Apple validation.
 

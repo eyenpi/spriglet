@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import plistlib
 import re
+import stat
 import struct
 import subprocess
 import sys
@@ -151,8 +152,20 @@ def bundle_digest(app):
     return checksum.hexdigest()
 
 
+def validate_bundle_permissions(app):
+    """A root-owned Store installation must remain accessible to its users."""
+    for path in [app, *sorted(app.rglob("*"))]:
+        require(not path.is_symlink(), "Unexpected link in the application bundle.")
+        mode = path.stat().st_mode
+        name = path.relative_to(app).as_posix()
+        require(mode & stat.S_IROTH, f"Installed app is not readable by all users: {name}.")
+        if path.is_dir() or path == app / "Contents/MacOS/Spriglet":
+            require(mode & stat.S_IXOTH, f"Installed app is not traversable or executable by all users: {name}.")
+
+
 def check_app(app, root, archive=None, signed=False, team=None, distribution=False):
     source = check_source(root)
+    validate_bundle_permissions(app)
     info = release.read_plist(app / "Contents/Info.plist")
     bundle_id = info.get("CFBundleIdentifier", "")
     require(re.fullmatch(r"[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+", bundle_id), "Invalid bundle identifier.")
@@ -189,7 +202,8 @@ def check_app(app, root, archive=None, signed=False, team=None, distribution=Fal
     return {**source, "bundleIdentifier": bundle_id, "architectures": architectures, "resources": resources,
             "executableSHA256": release.digest(app / "Contents/MacOS/Spriglet"), "appBundleSHA256": bundle_digest(app),
             "signedArchiveChecked": bool(archive and (signed or distribution)),
-            "distributionSignatureChecked": distribution, "appleValidationPerformed": False, "submissionReady": False}
+            "distributionSignatureChecked": distribution, "installationPermissionsChecked": True,
+            "appleValidationPerformed": False, "submissionReady": False}
 
 
 def main():

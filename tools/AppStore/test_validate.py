@@ -114,6 +114,35 @@ class StoreValidationTests(unittest.TestCase):
             (app / "linked-resource").symlink_to(app / "PrivacyPolicy.md")
             with self.assertRaises(store.release.ValidationError): store.bundle_digest(app)
 
+    def test_root_owned_installation_requires_readable_resources_and_executable_paths(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            app = Path(temporary) / "Spriglet.app"
+            executable = app / "Contents/MacOS/Spriglet"
+            resource = app / "Contents/Resources/Support.md"
+            for path in (executable, resource):
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("Installed payload")
+                path.chmod(0o644)
+            for path in (app, *app.rglob("*")):
+                if path.is_dir(): path.chmod(0o755)
+            executable.chmod(0o755)
+            store.validate_bundle_permissions(app)
+            for path, mode in ((app, 0o700), (resource, 0o600),
+                               (resource, 0o640), (resource.parent, 0o744),
+                               (executable, 0o744)):
+                with self.subTest(path=path.relative_to(app), mode=oct(mode)):
+                    original = path.stat().st_mode & 0o777
+                    path.chmod(mode)
+                    try:
+                        with self.assertRaises(store.release.ValidationError):
+                            store.validate_bundle_permissions(app)
+                    finally:
+                        path.chmod(original)
+            link = resource.parent / "linked-document"
+            link.symlink_to(resource)
+            with self.assertRaisesRegex(store.release.ValidationError, "Unexpected link"):
+                store.validate_bundle_permissions(app)
+
     def test_screenshot_decode_rejects_a_truncated_file(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
