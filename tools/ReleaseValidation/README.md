@@ -13,6 +13,8 @@ python3 tools/ReleaseValidation/package_preview.py \
 
 Choose a new output directory. Packaging uses the canonical changelog version/build, creates an ad hoc signed ZIP and DMG, verifies the mounted installation layout and writes checksums and a source report. It does not upload anything. A local ad hoc preview is not Apple-notarized.
 
+For a stable Store candidate, add `--rehearsal` to test the same local packaging path. CI uses this explicit option. The packages remain marked `LOCAL-UNSIGNED`; the release publisher still rejects unsigned packages for a stable release. Store signing and Apple validation use the separate [App Store archive process](../AppStore/README.md).
+
 ## Distribution signing
 
 `scripts/package-release.sh --help` describes Developer ID signing and notarization. Those operations require an explicit release request, an existing signing identity and a Keychain notarization profile. `--check` performs read-only preflight. Never put credentials in source files or command arguments.

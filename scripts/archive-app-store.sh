@@ -84,13 +84,19 @@ else
 fi
 
 printf 'Archiving Release. Build log: %s/build.log\n' "$task_output"
-xcodebuild -project "$task_root/Spriglet.xcodeproj" -scheme Spriglet \
-    -configuration Release -destination 'generic/platform=macOS' \
-    -archivePath "$task_output/Spriglet.xcarchive" -derivedDataPath "$task_output/DerivedData" \
-    ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
-    ENABLE_HARDENED_RUNTIME=YES CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
-    "PRODUCT_BUNDLE_IDENTIFIER=$task_bundle_id" "${task_signing[@]}" \
-    archive > "$task_output/build.log" 2>&1
+(
+    # Store installers own their payload as root. App files must stay readable
+    # and directories traversable by the user launching the installed app.
+    # The output directory and submission records retain the private umask.
+    umask 022
+    xcodebuild -project "$task_root/Spriglet.xcodeproj" -scheme Spriglet \
+        -configuration Release -destination 'generic/platform=macOS' \
+        -archivePath "$task_output/Spriglet.xcarchive" -derivedDataPath "$task_output/DerivedData" \
+        ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
+        ENABLE_HARDENED_RUNTIME=YES CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
+        "PRODUCT_BUNDLE_IDENTIFIER=$task_bundle_id" "${task_signing[@]}" \
+        archive > "$task_output/build.log" 2>&1
+)
 "$task_python" "$task_root/tools/AppStore/validate.py" \
     --archive "$task_output/Spriglet.xcarchive" "${task_validation[@]}" > "$task_output/local-validation.json"
 [[ "$(git -C "$task_root" rev-parse HEAD)" == "$task_source_revision" && -z "$(git -C "$task_root" status --porcelain)" ]] || die "Source changed while archiving; discard this candidate."

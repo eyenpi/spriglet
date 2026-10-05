@@ -1,6 +1,6 @@
 # Mac App Store submission
 
-Use the exact version/build and source revision in the archive's `local-validation.json`. The App Store uses the numeric app version; the source changelog's preview suffix identifies local preparation. Confirm that the build number exceeds the last upload in App Store Connect before committing and archiving. Never submit a dirty rehearsal or reuse screenshots from another candidate.
+Use the exact version/build and source revision in the archive's `local-validation.json`. The release changelog and App Store use the same numeric version. Confirm that the build number exceeds the last upload in App Store Connect before committing and archiving. Never submit a dirty rehearsal or reuse screenshots from another candidate.
 
 ## Account and build
 

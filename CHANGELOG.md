@@ -4,31 +4,41 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
-## 0.3.1-preview.1 — Accessible character controls and Store preparation
+## 0.3.1 — Accessible Mallow
 
 2026-10-05 · App 0.3.1 · Build 6
 
-Named VoiceOver gestures, predictable recovery actions and an exact-build Mac App Store archive candidate.
+Keyboard controls, meaningful VoiceOver actions, persistent Settings and optional login launch for a quiet Mac companion.
 
-Prepared for Mac App Store submission. Local rehearsal packages use ad hoc signing and are not eligible for App Store upload. Apple distribution signing, validation and review determine the submitted release.
+Mac App Store release build for Apple silicon and macOS 26 or later. Availability follows Apple review and manual release; the separately published GitHub preview remains an unsigned download.
 
 ### Added
 
-- VoiceOver actions name Swing and Stretch alongside Invite with a wave and drag-free Bring Home.
+- Keyboard-accessible leaf and app menus, Settings controls and shortcuts for visibility, animation and drag-free recovery.
+- VoiceOver describes character state and offers Invite with a wave, Swing, Stretch, Bring Home, Pause/Resume, Hide, Settings, Meet Mallow and Help.
+- Immediate, persistent character size, movement intensity and home display/location preferences with disconnected-display recovery.
+- A dismissible first-launch Meet Mallow introduction with replay from the menu and Help, plus still demonstrations for Reduce Motion.
+- Default-off Launch at Login using actual macOS registration, with approval, failure and external-change feedback.
+- Quiet idle expressions, precise silhouette hit testing and continuous interaction transitions.
 - Archive records include the executable checksum and exact bundled support, privacy and changelog content.
 
 ### Changed
 
 - Store description and reviewer instructions explain keyboard navigation, Reduce Motion, local privacy and recovery.
+- Stable Store candidates can rehearse unsigned CI packaging while unsigned stable publication remains prohibited.
 
 ### Fixed
 
 - Retained VoiceOver Pause and Hide actions cannot reverse their named effect after a state change.
+- Bring Home and reopening from Finder restore hidden Mallow without dragging and preserve Pause.
+- Reduce Motion cancels decorative travel in every interaction while preserving deliberate dragging and returning releases directly home.
+- Sleep, lock, Spaces and display recovery preserve visibility and animation choices; missed releases cannot leave pointer capture stuck.
+- Store archives preserve readable app and signature resources for non-root users after installation.
 
 ### Known limitations
 
-- Apple distribution signing and App Store Connect acceptance must be verified before upload.
-- Spoken VoiceOver and physical sleep, lock, display and login delivery require acceptance on the distributed signed build.
+- Plugins, assistant services, sound, other-app window awareness and exact Dock shelf inspection are not included.
+- Spoken VoiceOver, physical sleep/lock/display transitions, actual login delivery and sustained battery use need broader device testing.
 
 ## 0.3.0-preview.1 — Mallow, rebuilt from the interaction up
 
