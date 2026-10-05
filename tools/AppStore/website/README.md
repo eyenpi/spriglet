@@ -9,7 +9,7 @@ Static pages for **meetspriglet.com**, hosted with Cloudflare Workers Static Ass
 - `/`: temporary `302` redirect to `/support`.
 - Unknown paths: a proper `404` page with support and privacy links.
 
-`public/` is the deployment directory. `build.py` invokes the [shared content generator](../../SharedContent/README.md), which renders the shared text and copies the app icon. Branding/contact details come from `Configuration/Shared/brand.json`. The checked-in output is verified in CI. Navigation, system fonts, light/dark colors, keyboard focus, and a skip link are included. Security headers are configured in `_headers`.
+`public/` is the deployment directory. `build.py` invokes the [shared content generator](../../SharedContent/README.md), which renders the shared text and copies the app icon. Branding/contact details come from `Configuration/Shared/brand.json`; website introductions and companion naming come from `Configuration/Shared/website.en-US.json`. Spriglet is the app, spriglets are its companions, and Mallow is the first available spriglet. The site uses Mallow's lavender palette, warm backgrounds and rounded reading surfaces in light and dark mode. The checked-in output is verified in CI. Navigation, system fonts, keyboard focus, and a skip link are included. The site has no animation. Security headers are configured in `_headers`.
 
 ## Edit and check
 
@@ -23,6 +23,8 @@ python3 tools/AppStore/validate.py
 ```
 
 Edit `Configuration/Shared/privacy.md` to change the policy. Regeneration updates the root policy, bundled copy, and website together. Rebuild the app and prepare a new archive before submission. The website and reviewed binary must describe the same practices.
+
+Website presentation copy is separate from the shared support and privacy documents. Changing the website's framing or CSS does not change the bundled policies or the submitted build. Preserve the reviewed support instructions and data practices when changing the presentation.
 
 ## Preview
 

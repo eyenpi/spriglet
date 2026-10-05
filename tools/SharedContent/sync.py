@@ -59,6 +59,7 @@ def output_files(root=ROOT):
     context, labels = read_context(root)
     documents = {name: expand((source / f"{name}.md").read_text(), context) for name in ("privacy", "support", "product")}
     metadata = expand(json.loads((source / "app-store.en-US.json").read_text()), context)
+    presentation = expand(json.loads((source / "website.en-US.json").read_text()), context)
     outputs = {
         "PRIVACY.md": documents["privacy"],
         "tools/AppStore/support-page.md": documents["support"],
@@ -76,7 +77,7 @@ def output_files(root=ROOT):
     swift += "".join(f"    static let {key} = {literal(value)}\n" for key, value in labels.items())
     swift += "}\n"
     outputs["Sources/Spriglet/App/SharedContent.generated.swift"] = swift
-    outputs.update({"tools/AppStore/website/public/" + name: text for name, text in website.outputs(context, documents).items()})
+    outputs.update({"tools/AppStore/website/public/" + name: text for name, text in website.outputs(context, documents, presentation).items()})
     icon_root = root / "Sources/Spriglet/Assets.xcassets/AppIcon.appiconset"
     images = json.loads((icon_root / "Contents.json").read_text())["images"]
     # Follow the asset catalog's filename, not a separate website logo or assumed file name.

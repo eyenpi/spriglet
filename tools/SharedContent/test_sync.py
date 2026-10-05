@@ -63,6 +63,35 @@ class SharedContentTests(unittest.TestCase):
         sync.synchronize(self.root)
         self.assertEqual((self.root / "tools/AppStore/website/public/spriglet.png").read_bytes(), data + b"fixture-change")
 
+    def test_website_branding_updates_pages_without_changing_bundled_documents(self):
+        bundled = {name: (self.root / name).read_bytes() for name in (
+            "Sources/Spriglet/Resources/Support.md", "Sources/Spriglet/Resources/PrivacyPolicy.md",
+            "tools/AppStore/metadata/en-US.json")}
+        source = self.root / "Configuration/Shared/website.en-US.json"
+        presentation = json.loads(source.read_text())
+        presentation["companionTitle"] = "Mallow, the first spriglet in {{appName}}."
+        source.write_text(json.dumps(presentation))
+        sync.synchronize(self.root)
+        for page in ("support", "privacy", "index", "404"):
+            self.assertIn("Mallow, the first spriglet in Spriglet.", self.text(f"tools/AppStore/website/public/{page}.html"))
+        for name, original in bundled.items():
+            self.assertEqual((self.root / name).read_bytes(), original)
+
+    def test_website_presentation_is_escaped_and_unknown_tokens_do_not_write(self):
+        source = self.root / "Configuration/Shared/website.en-US.json"
+        presentation = json.loads(source.read_text())
+        presentation["supportIntro"] = '<script>alert("hello")</script>'
+        source.write_text(json.dumps(presentation))
+        sync.synchronize(self.root)
+        page = self.text("tools/AppStore/website/public/support.html")
+        self.assertIn("&lt;script&gt;", page)
+        self.assertNotIn("<script>", page)
+        presentation["privacyIntro"] = "{{unknownWebsiteLabel}}"
+        source.write_text(json.dumps(presentation))
+        with self.assertRaisesRegex(ValueError, "Unknown shared content token"):
+            sync.synchronize(self.root)
+        self.assertEqual(page, self.text("tools/AppStore/website/public/support.html"))
+
     def test_bad_token_fails_before_writing_outputs(self):
         source = self.root / "Configuration/Shared/support.md"
         before = self.text("Sources/Spriglet/Resources/Support.md")

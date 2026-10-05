@@ -1,6 +1,6 @@
-# Spriglet · Mallow
+# Spriglet
 
-A soft, local desktop companion for Apple silicon Macs running macOS 26 or later. Mallow rests beneath the notch with its face visible, blinking and breathing while you work. A small Settings window lets you choose its size, movement intensity and home. A persistent leaf in the menu bar provides visibility, animation controls and recovery when Mallow is hidden.
+Spriglet is home to little desktop companions called spriglets, for Apple silicon Macs running macOS 26 or later. Meet Mallow, your first spriglet: soft, lavender and local. Mallow rests beneath the notch with its face visible, blinking and breathing while you work. A small Settings window lets you choose its size, movement intensity and home. A persistent leaf in the menu bar provides visibility, animation controls and recovery when Mallow is hidden.
 
 Its curious peek stays in place. Breathing gently changes pace and depth; blinks vary in timing and occasionally come in pairs. Brief glances and tiny settling movements are separated by long, irregular pauses. These quiet moments yield to nearby pointer attention, hover and deliberate interaction. Reduce Motion keeps blinking while suppressing decorative movement.
 
