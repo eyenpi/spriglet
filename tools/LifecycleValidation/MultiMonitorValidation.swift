@@ -93,13 +93,33 @@ import CompanionCore
             FileHandle.standardOutput.write(Data((line + "\n").utf8))
             try? FileHandle.standardOutput.synchronize()
         }
-        func checkCoordinates() throws {
+        func checkCoordinates(panelMustBelongToSelectedDisplay: Bool) throws {
             let actual = rect(panel.frame), origin = view.drawingOrigin
             try require(view.frame.width == WindowGeometry.width * context.scene.scale
                         && view.frame.height == WindowGeometry.height * context.scene.scale,
                         "Native view dimensions changed during R/C transitions")
-            try require(panel.backingScaleFactor == screen.backingScaleFactor,
-                        "Native backing scale changed during R/C transitions")
+            try require(view.context.hasSameLayout(as: context),
+                        "Active logical display or character scene changed during R/C transitions")
+            guard let actualScreen = panel.screen else {
+                throw Failure.message("Panel has no screen affiliation during R/C transitions")
+            }
+            let actualBackingScale = panel.backingScaleFactor
+            try require(actualBackingScale.isFinite && actualBackingScale > 0
+                        && abs(actualBackingScale - actualScreen.backingScaleFactor) <= 1e-8,
+                        "Panel backing scale does not match its actual AppKit screen")
+            if panelMustBelongToSelectedDisplay {
+                try require(actual.minX >= context.frame.minX && actual.maxX <= context.frame.maxX
+                            && actual.minY >= context.frame.minY && actual.maxY <= context.frame.maxY,
+                            "Contained C frame is outside the selected logical display")
+                try require(DisplayContext(screen: actualScreen).isSameLogicalDisplay(as: context)
+                            && actualScreen.frame == screen.frame
+                            && abs(actualBackingScale - screen.backingScaleFactor) <= 1e-8,
+                            "Contained C frame is not affiliated with the selected display/backing scale")
+            }
+            let backingProbe = view.convertToBacking(NSRect(x: 0, y: 0, width: 10, height: 10))
+            try require(abs(backingProbe.width - 10 * actualBackingScale) <= 1e-8
+                        && abs(backingProbe.height - 10 * actualBackingScale) <= 1e-8,
+                        "View backing conversion disagrees with the panel's actual screen scale")
             for point in [snapshot.feet, snapshot.geometry.bounds.center] {
                 let global = Point(x: actual.minX + point.x + origin.x,
                                    y: actual.maxY - point.y - origin.y)
@@ -115,27 +135,27 @@ import CompanionCore
                         "Native screen event coordinate round trip changed a scene point")
             try require(panel.windowNumber == windowID && ObjectIdentifier(panel) == identity,
                         "R/C transition replaced the native panel")
+            let accessibility = view.accessibilityFrame()
+            try require(abs(accessibility.minX - (context.frame.minX + snapshot.hitBounds.minX)) <= 1e-8
+                        && abs(accessibility.maxY - (context.frame.maxY - snapshot.hitBounds.minY)) <= 1e-8,
+                        "Accessibility frame changed with panel placement")
         }
 
         recordFrame("eligible-C", requested: contained, capturesPointer: false)
         try require(Self.framesWithinNativeTolerance(rect(panel.frame), contained),
                     "Initial eligible native frame was not expected C: actual=\(rect(panel.frame)), R=\(requested), C=\(contained), D=\(context.frame)")
-        try checkCoordinates()
+        try checkCoordinates(panelMustBelongToSelectedDisplay: true)
         host.update(snapshot: snapshot, capturesPointer: true, pointer: target)
         recordFrame("capture-R", requested: requested, capturesPointer: true)
         try require(Self.framesWithinNativeTolerance(rect(panel.frame), requested), "Pointer capture did not restore original R")
         try require(!panel.ignoresMouseEvents, "Captured fixture panel became click-through")
-        try checkCoordinates()
+        try checkCoordinates(panelMustBelongToSelectedDisplay: false)
         host.update(snapshot: snapshot, capturesPointer: false, pointer: Point(x: -1000, y: -1000))
         recordFrame("retired-C", requested: contained, capturesPointer: false)
         try require(Self.framesWithinNativeTolerance(rect(panel.frame), contained), "Capture retirement did not select C immediately")
         try require(panel.ignoresMouseEvents, "Unheld fixture panel stopped being click-through")
-        try checkCoordinates()
+        try checkCoordinates(panelMustBelongToSelectedDisplay: true)
         try require(panel.screen?.frame == screen.frame, "Panel screen disagrees with the active display")
-        let accessibility = view.accessibilityFrame()
-        try require(abs(accessibility.minX - (context.frame.minX + snapshot.hitBounds.minX)) < 0.001
-                    && abs(accessibility.maxY - (context.frame.maxY - snapshot.hitBounds.minY)) < 0.001,
-                    "Accessibility frame changed with panel placement")
         print("Placement native frame fixture passed: panelID=\(windowID), screen=\(screen.frame), activeDisplay=\(context.frame), backingScale=\(panel.backingScaleFactor), R=\(requested), C=\(contained), actualC=\(rect(panel.frame)), view=\(view.frame), origin=\(view.drawingOrigin), feetGlobal=(616,994), samePanel=true. Injected no mouse events; native composition remains unverified.")
     }
 
