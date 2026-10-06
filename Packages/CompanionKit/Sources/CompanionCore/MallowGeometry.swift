@@ -85,8 +85,8 @@ public struct MallowGeometry: Sendable {
             let raise = pose.arm * (side > 0 ? 29 : 12) + gait
             let shoulder = bodyPoint(side * 47, -29)
             let wave = side > 0 ? max(0, pose.arm - 0.4) * 28 * emergence : 0
-            let homeHand = Point(x: frame.scene.home.midX + side * 43 * s,
-                                 y: frame.scene.home.maxY + (-8 + emergence * 10 + wave) * s)
+            let homeHand = Point(x: frame.homeAttachment.x + side * 43 * s,
+                                 y: frame.homeAttachment.y + (-8 + emergence * 10 + wave) * s)
             let hand = blend(bodyPoint(side * 34, -15 - raise * 0.6), homeHand)
             return CharacterHand(arm: CharacterCurve(
                 start: blend(bodyPoint(side * 47, -29 - raise), shoulder),

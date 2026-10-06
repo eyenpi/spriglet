@@ -10,6 +10,7 @@ import CompanionCore
 /// Native window mechanics only. Has no behavioral state machine or clock.
 @MainActor final class CompanionWindowHost {
     var onInput: ((CompanionInput) -> Void)?
+    var onPointerInput: ((DesktopPointerInput) -> Void)?
     var makeContextMenu: (() -> NSMenu)?
     var onControlAction: ((AppControlAction) -> Void)?
     var onDraw: ((Double) -> Void)?
@@ -20,6 +21,7 @@ import CompanionCore
         close()
         let view = CompanionView(context: context, snapshot: snapshot)
         view.onInput = { [weak self] input in self?.onInput?(input) }
+        view.onPointerInput = { [weak self] input in self?.onPointerInput?(input) }
         view.makeContextMenu = makeContextMenu
         view.onControlAction = { [weak self] in self?.onControlAction?($0) }
         view.onDraw = onDraw
@@ -32,6 +34,11 @@ import CompanionCore
         panel.title = AppText.companionName; panel.contentView = view; panel.ignoresMouseEvents = true
         self.panel = panel; self.view = view
         update(snapshot: snapshot, capturesPointer: false, pointer: context.point(NSEvent.mouseLocation))
+    }
+    /// Move the existing view/panel to a new logical display without ending capture.
+    func retarget(context: DisplayContext) {
+        guard let view else { return }
+        view.retarget(context: context); requestedFrame = nil
     }
     func update(snapshot: CompanionSnapshot, capturesPointer: Bool, pointer: Point, acceptsInput: Bool = true, isPaused: Bool = false) {
         guard let panel, let view else { return }
@@ -57,7 +64,7 @@ import CompanionCore
         if visible { panel.orderFrontRegardless() } else { panel.orderOut(nil) }
     }
     func close() {
-        view?.onInput = nil; view?.makeContextMenu = nil; view?.onControlAction = nil; view?.onDraw = nil
+        view?.onInput = nil; view?.onPointerInput = nil; view?.makeContextMenu = nil; view?.onControlAction = nil; view?.onDraw = nil
         panel?.orderOut(nil); panel?.close(); panel = nil; view = nil; requestedFrame = nil
     }
 }

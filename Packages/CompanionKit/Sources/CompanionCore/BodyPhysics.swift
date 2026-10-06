@@ -29,6 +29,8 @@ struct BodyPhysics: Sendable {
     private var lastCompressionAxis: CompressionAxis?
     private var stagedWallImpulse = 0.0
     private var hadVerticalImpactThisStep = false
+    private var dragBounds: Rect?
+    private var pendingReleaseInterior: Rect?
     init(scene: SceneGeometry) { self.scene = scene; position = scene.homeFeet }
     var renderedFeet: Point {
         guard phase == .hanging else { return position }
@@ -52,7 +54,9 @@ struct BodyPhysics: Sendable {
         return feet.x >= scene.home.minX - margin && feet.x <= scene.home.maxX + margin
             && feet.y >= scene.home.maxY + 12 * scene.scale && feet.y <= scene.home.maxY + 115 * scene.scale
     }
+    var isPendingRelease: Bool { pendingReleaseInterior != nil }
     mutating func grab(visibleFeet: Point, visibleVelocity: Point? = nil, target: Point, at time: Double) {
+        pendingReleaseInterior = nil
         if phase != .held {
             let momentum = visibleVelocity ?? renderedVelocity
             if phase == .hanging { tilt.value = rotation; tilt.speed = -swing.speed }
@@ -60,8 +64,11 @@ struct BodyPhysics: Sendable {
             velocity = momentum
         }
         phase = .held; isWalking = false; jumpTarget = nil; flight = nil
-        let feet = Point(x: clamp(target.x, scene.leftLimit, scene.rightLimit),
-                         y: clamp(target.y + SimulationTuning.grabWeightOffset * scene.scale, scene.ceiling, scene.floor))
+        let limits = dragBounds ?? Rect(x: scene.leftLimit, y: scene.ceiling,
+                                         width: scene.rightLimit - scene.leftLimit,
+                                         height: scene.floor - scene.ceiling)
+        let feet = Point(x: clamp(target.x, limits.minX, limits.maxX),
+                         y: clamp(target.y + SimulationTuning.grabWeightOffset * scene.scale, limits.minY, limits.maxY))
         if let previous = lastDrag, time > previous.time {
             let elapsed = max(time - previous.time, SimulationTuning.step)
             let estimate = (feet - previous.feet) * (1 / elapsed)
@@ -70,18 +77,63 @@ struct BodyPhysics: Sendable {
         }
         lastDrag = (feet, time); heldFeet = feet
     }
+    mutating func beginDesktopDrag(heldBounds: Rect) { dragBounds = heldBounds }
+    mutating func updateDesktopDragBounds(_ heldBounds: Rect) {
+        if phase == .held, heldBounds.isValid, heldBounds.width > 0, heldBounds.height > 0 { dragBounds = heldBounds }
+    }
+    mutating func endDesktopDrag() { dragBounds = nil }
+    mutating func transferDrag(scene nextScene: SceneGeometry, translation delta: Point, heldBounds: Rect) -> Bool {
+        guard phase == .held, delta.isFinite, heldBounds.isValid, heldBounds.width > 0, heldBounds.height > 0,
+              nextScene.scale == scene.scale, jumpTarget == nil, flight == nil,
+              velocity.isFinite, (position + delta).isFinite,
+              heldFeet.map({ ($0 + delta).isFinite }) ?? true,
+              lastDrag.map({ ($0.feet + delta).isFinite && $0.time.isFinite }) ?? true else { return false }
+        let oldHome = scene.homeFeet, newHome = nextScene.homeFeet
+        let nextCatchX = catchX.value + oldHome.x + delta.x - newHome.x
+        let nextCatchY = catchY.value + oldHome.y + delta.y - newHome.y
+        guard nextCatchX.isFinite, nextCatchY.isFinite else { return false }
+        position = position + delta
+        if let heldFeet { self.heldFeet = heldFeet + delta }
+        if let lastDrag { self.lastDrag = (lastDrag.feet + delta, lastDrag.time) }
+        catchX.value = nextCatchX; catchY.value = nextCatchY
+        scene = nextScene; dragBounds = heldBounds
+        wallContact = nil; stagedWallImpulse = 0; hadVerticalImpactThisStep = false
+        return true
+    }
     mutating func release() {
         guard phase == .held else { return }
+        if position.x < scene.leftLimit || position.x > scene.rightLimit
+            || position.y < scene.ceiling || position.y > scene.floor {
+            let inset = 0.5 * scene.scale
+            let interior = Rect(x: scene.leftLimit + inset, y: scene.ceiling + inset,
+                                width: max(0, scene.rightLimit - scene.leftLimit - inset * 2),
+                                height: max(0, scene.floor - scene.ceiling - inset * 2))
+            let target = heldFeet ?? position
+            heldFeet = Point(x: clamp(target.x, interior.minX, interior.maxX),
+                             y: clamp(target.y, interior.minY, interior.maxY))
+            pendingReleaseInterior = Rect(x: scene.leftLimit, y: scene.ceiling,
+                                          width: scene.rightLimit - scene.leftLimit,
+                                          height: scene.floor - scene.ceiling)
+            lastDrag = nil
+            return
+        }
+        finishRelease()
+    }
+    private mutating func finishRelease() {
         if canCatch {
             beginCatch()
         } else {
             phase = .falling
         }
         heldFeet = nil; lastDrag = nil
+        dragBounds = nil
+        pendingReleaseInterior = nil
     }
     mutating func returnHome(immediately: Bool = false) {
         guard phase != .hanging else { return }
         heldFeet = nil; lastDrag = nil; isWalking = false
+        dragBounds = nil
+        pendingReleaseInterior = nil
         if immediately {
             tilt.value = 0; tilt.speed = 0
             position = scene.homeFeet; velocity = .zero
@@ -205,16 +257,24 @@ struct BodyPhysics: Sendable {
                     - velocity * (2 * SimulationTuning.dragDamping * frequency)
                 velocity = velocity + acceleration * dt
                 position = position + velocity * dt
-                if position.x < scene.leftLimit && velocity.x < 0 {
+                let limits = dragBounds ?? Rect(x: scene.leftLimit, y: scene.ceiling,
+                                                 width: scene.rightLimit - scene.leftLimit,
+                                                 height: scene.floor - scene.ceiling)
+                if position.x < limits.minX && velocity.x < 0 {
                     stageWallImpact(side: .left, incomingSpeed: abs(velocity.x))
-                } else if position.x > scene.rightLimit && velocity.x > 0 {
+                } else if position.x > limits.maxX && velocity.x > 0 {
                     stageWallImpact(side: .right, incomingSpeed: abs(velocity.x))
                 }
-                let bounded = Point(x: clamp(position.x, scene.leftLimit, scene.rightLimit),
-                                    y: clamp(position.y, scene.ceiling, scene.floor))
+                let bounded = Point(x: clamp(position.x, limits.minX, limits.maxX),
+                                    y: clamp(position.y, limits.minY, limits.maxY))
                 if bounded.x != position.x { velocity.x = 0 }
                 if bounded.y != position.y { velocity.y = 0 }
                 position = bounded
+                if let interior = pendingReleaseInterior, interior.contains(position) ||
+                    (position.x >= interior.minX && position.x <= interior.maxX
+                        && position.y >= interior.minY && position.y <= interior.maxY) {
+                    finishRelease()
+                }
             }
         case .catching:
             catchX.step(dt); catchY.step(dt)

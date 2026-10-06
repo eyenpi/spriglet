@@ -11,18 +11,26 @@ public struct CompanionEngine: Sendable {
     private var reveal = Spring(value: 0.6, frequency: 12, damping: 0.9)
     private var homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
     private var homeGrip = Spring(value: 1, frequency: 14, damping: 1)
+    private var attachmentX = Spring(frequency: 12, damping: 1)
+    private var attachmentY = Spring(frequency: 12, damping: 1)
+    private var attachmentTarget = Point.zero
     private var gaze = Spring(frequency: 10, damping: 1)
     private var pointer = Point(x: -1000, y: -1000)
+    private var dragGeometry: DragGeometry?
     private var remainder = 0.0
     public private(set) var time = 0.0
     public private(set) var motionPolicy = MotionPolicy.full
     public private(set) var movementAmount = 1.0
     public var isDragging: Bool { interaction.dragging }
     public var hasPointerCapture: Bool { interaction.press != nil }
+    public var hasPendingDragRelease: Bool { body.isPendingRelease }
     /// Hosts may supply a fresh session seed; previews and tests default to a
     /// repeatable sequence. The seed is the only external source of randomness.
     public init(scene: SceneGeometry, idleSeed: UInt64 = 0x4D414C4C4F57) {
         body = BodyPhysics(scene: scene); idle = IdleAnimation(seed: idleSeed)
+        attachmentX = Spring(value: scene.home.midX, frequency: 12, damping: 1)
+        attachmentY = Spring(value: scene.home.maxY, frequency: 12, damping: 1)
+        attachmentTarget = Point(x: scene.home.midX, y: scene.home.maxY)
     }
     public mutating func reconfigure(scene: SceneGeometry) {
         body = BodyPhysics(scene: scene); interaction = InteractionState()
@@ -31,7 +39,40 @@ public struct CompanionEngine: Sendable {
         reveal = Spring(value: 0.6, frequency: 12, damping: 0.9); gaze = Spring(frequency: 10, damping: 1)
         homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
         homeGrip = Spring(value: 1, frequency: 14, damping: 1)
+        attachmentX = Spring(value: scene.home.midX, frequency: 12, damping: 1)
+        attachmentY = Spring(value: scene.home.maxY, frequency: 12, damping: 1)
+        attachmentTarget = Point(x: scene.home.midX, y: scene.home.maxY)
         pointer = Point(x: -1000, y: -1000); remainder = 0
+        dragGeometry = nil
+    }
+    /// Called after native hit testing accepts the press; geometry is immutable and finite.
+    @discardableResult public mutating func beginDesktopDrag(geometry: DragGeometry) -> Bool {
+        guard hasPointerCapture, geometry.isValid else { return false }
+        dragGeometry = geometry; body.beginDesktopDrag(heldBounds: geometry.heldBounds)
+        return true
+    }
+    @discardableResult public mutating func updateDesktopDragGeometry(_ geometry: DragGeometry) -> Bool {
+        guard hasPointerCapture, geometry.isValid else { return false }
+        dragGeometry = geometry; body.updateDesktopDragBounds(geometry.heldBounds)
+        return true
+    }
+    public mutating func endDesktopDrag() { dragGeometry = nil; body.endDesktopDrag() }
+    /// Translate every position in the active drag frame while retaining all motion history.
+    @discardableResult public mutating func transferDrag(scene: SceneGeometry, translation: Point,
+                                                          geometry: DragGeometry) -> Bool {
+        guard isDragging, hasPointerCapture, translation.isFinite, geometry.isValid,
+              scene.scale == body.scene.scale, (pointer + translation).isFinite,
+              (attachmentTarget + translation).isFinite,
+              (attachmentX.value + translation.x).isFinite,
+              (attachmentY.value + translation.y).isFinite else { return false }
+        if let press = interaction.press, !(press + translation).isFinite { return false }
+        guard body.transferDrag(scene: scene, translation: translation, heldBounds: geometry.heldBounds) else { return false }
+        if let press = interaction.press { interaction.press = press + translation }
+        pointer = pointer + translation
+        attachmentX.value += translation.x; attachmentY.value += translation.y
+        attachmentTarget = attachmentTarget + translation
+        dragGeometry = geometry
+        return true
     }
     public mutating func setMotionPolicy(_ policy: MotionPolicy) {
         guard motionPolicy != policy else { return }
@@ -43,6 +84,14 @@ public struct CompanionEngine: Sendable {
             if body.phase != .held {
                 body = BodyPhysics(scene: body.scene)
                 if interaction.presence == .playing { interaction.rest() }
+            }
+            if body.isPendingRelease {
+                body.returnHome(immediately: true); endDesktopDrag()
+            }
+            if !hasPointerCapture {
+                attachmentTarget = Point(x: body.scene.home.midX, y: body.scene.home.maxY)
+                attachmentX.value = attachmentTarget.x; attachmentX.speed = 0
+                attachmentY.value = attachmentTarget.y; attachmentY.speed = 0
             }
             updateHomePresentation(SimulationTuning.step)
         }
@@ -84,8 +133,15 @@ public struct CompanionEngine: Sendable {
             if dragged {
                 if motionPolicy == .reduced { returnHome() }
                 else { body.release() }
+                attachmentTarget = Point(x: body.scene.home.midX, y: body.scene.home.maxY)
+                if motionPolicy == .reduced {
+                    attachmentX.value = attachmentTarget.x; attachmentX.speed = 0
+                    attachmentY.value = attachmentTarget.y; attachmentY.speed = 0
+                }
+                if !body.isPendingRelease { endDesktopDrag() }
             }
             else if point.isFinite && snapshot.contains(point) { activate() }
+            if !dragged { endDesktopDrag() }
         case .cancelInteraction:
             reconfigure(scene: body.scene)
         case .outsidePressed:
@@ -139,6 +195,7 @@ public struct CompanionEngine: Sendable {
         time += dt
         if interaction.step(dt, at: time, pointerOver: snapshot.contains(pointer)) { returnHome() }
         body.step(dt, at: time, walkingAmount: presentation.pose.walk)
+        if !hasPointerCapture, dragGeometry != nil, !body.isPendingRelease { endDesktopDrag() }
         if body.phase == .hanging && interaction.presence == .playing { interaction.rest() }
         updateHomePresentation(dt)
         let nearby = pointer.distance(to: snapshot.feet) < 260 * body.scene.scale
@@ -171,6 +228,19 @@ public struct CompanionEngine: Sendable {
             reveal.step(dt, target: openTarget)
             homeRetraction.step(dt, target: retractionTarget)
             homeGrip.step(dt, target: gripTarget)
+        }
+        if motionPolicy == .reduced {
+            if hasPointerCapture {
+                attachmentX.speed = 0; attachmentY.speed = 0
+            } else {
+                attachmentX.value = attachmentTarget.x; attachmentX.speed = 0
+                attachmentY.value = attachmentTarget.y; attachmentY.speed = 0
+            }
+        } else if !hasPointerCapture {
+            attachmentX.step(dt, target: attachmentTarget.x)
+            attachmentY.step(dt, target: attachmentTarget.y)
+        } else {
+            attachmentX.step(dt, target: attachmentTarget.x); attachmentY.step(dt, target: attachmentTarget.y)
         }
     }
     private var targetPose: CharacterPose {
@@ -220,7 +290,9 @@ public struct CompanionEngine: Sendable {
         }
         return CompanionSnapshot(scene: scene, presence: interaction.presence, phase: body.phase, pose: pose,
                                  feet: feet, windowAnchor: body.renderedFeet, rotation: motionPolicy == .full ? body.rotation : 0,
-                                 openness: open, homeGrip: clamp(homeGrip.value, 0, 1), time: time, gesture: interaction.gesture,
+                                 openness: open, homeGrip: clamp(homeGrip.value, 0, 1),
+                                 homeAttachment: Point(x: attachmentX.value, y: attachmentY.value), dragGeometry: dragGeometry,
+                                 time: time, gesture: interaction.gesture,
                                  canCatch: body.canCatch)
     }
 }

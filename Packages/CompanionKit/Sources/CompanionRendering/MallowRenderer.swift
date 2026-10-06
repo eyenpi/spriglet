@@ -110,19 +110,30 @@ import CompanionCore
     public func draw(_ frame: CompanionSnapshot) {
         let scene = frame.scene, scale = scene.scale
         NSGraphicsContext.saveGraphicsState()
-        // The home housing occludes the same pixels through every phase.
-        // A grab must not suddenly expose the portion still behind the notch.
-        let visible = NSBezierPath(rect: NSRect(x: scene.bounds.x, y: scene.bounds.y,
-                                              width: scene.bounds.width, height: scene.bounds.height))
-        visible.appendRect(NSRect(x: scene.home.x, y: scene.home.y,
-                                  width: scene.home.width, height: scene.home.height))
-        visible.windingRule = .evenOdd; visible.addClip()
+        let visible = NSBezierPath(); visible.windingRule = .nonZero
+        if let dragGeometry = frame.dragGeometry {
+            for rect in dragGeometry.visibleRectangles { appendWoundRect(rect, to: visible, reversed: false) }
+        } else {
+            appendWoundRect(scene.bounds, to: visible, reversed: false)
+            appendWoundRect(scene.home, to: visible, reversed: true)
+        }
+        visible.addClip()
         drawMallow(frame.pose, artwork: artwork,
                    center: NSPoint(x: frame.feet.x, y: frame.feet.y - 7 * scale), scale: scale,
                    drawShadow: frame.phase == .grounded, rotation: frame.rotation,
                    drawArms: false, clipFace: true)
         drawHands(frame)
         NSGraphicsContext.restoreGraphicsState()
+    }
+    private func appendWoundRect(_ rect: Rect, to path: NSBezierPath, reversed: Bool) {
+        let points = reversed
+            ? [Point(x: rect.minX, y: rect.minY), Point(x: rect.minX, y: rect.maxY),
+               Point(x: rect.maxX, y: rect.maxY), Point(x: rect.maxX, y: rect.minY)]
+            : [Point(x: rect.minX, y: rect.minY), Point(x: rect.maxX, y: rect.minY),
+               Point(x: rect.maxX, y: rect.maxY), Point(x: rect.minX, y: rect.maxY)]
+        path.move(to: native(points[0]))
+        for point in points.dropFirst() { path.line(to: native(point)) }
+        path.close()
     }
     private func drawHands(_ frame: CompanionSnapshot) {
         let s = frame.scene.scale

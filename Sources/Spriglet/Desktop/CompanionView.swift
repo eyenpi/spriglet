@@ -5,6 +5,7 @@ import CompanionRendering
 
 @MainActor final class CompanionView: NSView {
     var onInput: ((CompanionInput) -> Void)?
+    var onPointerInput: ((DesktopPointerInput) -> Void)?
     var makeContextMenu: (() -> NSMenu)?
     var onControlAction: ((AppControlAction) -> Void)?
     /// Optional instrumentation owned by the finite profiling tool.
@@ -99,13 +100,18 @@ import CompanionRendering
         }
         needsDisplay = true
     }
-    private func point(_ event: NSEvent) -> Point {
-        if let window { return context.point(window.convertPoint(toScreen: event.locationInWindow)) }
-        return context.point(NSEvent.mouseLocation)
+    func retarget(context: DisplayContext) {
+        self.context = context
+        needsDisplay = true
+        NSAccessibility.post(element: self, notification: .layoutChanged)
     }
-    override func mouseDown(with event: NSEvent) { onInput?(.pointerPressed(point(event))) }
-    override func mouseDragged(with event: NSEvent) { onInput?(.pointerDragged(point(event))) }
-    override func mouseUp(with event: NSEvent) { onInput?(.pointerReleased(point(event))) }
+    private func globalPoint(_ event: NSEvent) -> Point {
+        let screenPoint = window.map { $0.convertPoint(toScreen: event.locationInWindow) } ?? NSEvent.mouseLocation
+        return Point(x: screenPoint.x, y: screenPoint.y)
+    }
+    override func mouseDown(with event: NSEvent) { onPointerInput?(.pressed(globalPoint(event))) }
+    override func mouseDragged(with event: NSEvent) { onPointerInput?(.dragged(globalPoint(event))) }
+    override func mouseUp(with event: NSEvent) { onPointerInput?(.released(globalPoint(event))) }
     override func rightMouseDown(with event: NSEvent) {
         onInput?(.command(.returnHome))
         if let menu = makeContextMenu?() { NSMenu.popUpContextMenu(menu, with: event, for: self) }
