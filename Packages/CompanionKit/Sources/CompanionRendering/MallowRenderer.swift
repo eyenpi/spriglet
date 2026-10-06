@@ -115,7 +115,7 @@ import CompanionCore
             for rect in dragGeometry.visibleRectangles { appendWoundRect(rect, to: visible, reversed: false) }
         } else {
             appendWoundRect(scene.bounds, to: visible, reversed: false)
-            appendWoundRect(scene.home, to: visible, reversed: true)
+            appendWoundRect(scene.homeOcclusion, to: visible, reversed: true)
         }
         visible.addClip()
         drawMallow(frame.pose, artwork: artwork,

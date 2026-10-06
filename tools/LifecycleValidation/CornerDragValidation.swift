@@ -36,6 +36,7 @@ import CompanionCore
         runtime.start()
         var input = try LifecycleValidation.visiblePanel(), view = input.contentView as! CompanionView
         let identity = ObjectIdentifier(input)
+        try validateHomeMask(snapshot: view.snapshot)
         func event(_ type: NSEvent.EventType, at global: Point) throws {
             pointer = global
             let point = input.convertPoint(fromScreen: NSPoint(x: global.x, y: global.y))
@@ -51,6 +52,7 @@ import CompanionCore
         }
         let press = try visiblePoint(view.snapshot)
         try event(.leftMouseDown, at: view.context.globalPoint(scene: press))
+        try validateHomeMask(snapshot: view.snapshot)
         let x = main.frame.midX + (source.frame.midX < main.frame.midX ? -250 : 250)
         try event(.leftMouseDragged, at: Point(x: x, y: source.frame.minY + 110))
         for _ in 0..<120 { clock.onTick?(1 / 60.0) }
@@ -289,16 +291,50 @@ import CompanionCore
                 let point = geometry.root.apply(geometry.body.apply(Point(x: x, y: y)))
                 guard snapshot.contains(point) else { continue }
                 expected += 1
-                if bitmaps.contains(where: { canvas, bitmap in
-                    let local = point + canvas.drawingOrigin
-                    let px = Int((local.x - canvas.bounds.minX) * Double(bitmap.pixelsWide) / canvas.bounds.width)
-                    let py = Int((local.y - canvas.bounds.minY) * Double(bitmap.pixelsHigh) / canvas.bounds.height)
-                    return px >= 0 && px < bitmap.pixelsWide && py >= 0 && py < bitmap.pixelsHigh
-                        && bitmap.colorAt(x: px, y: py)!.alphaComponent > 0
-                }) { retained += 1 }
+                if hasPaint(at: point, in: bitmaps) { retained += 1 }
             }
         }
         try require(expected > 0 && retained == expected, "Native display canvases lost legal crown samples: \(retained)/\(expected)")
+    }
+
+    private static func validateHomeMask(snapshot: CompanionSnapshot) throws {
+        let scene = snapshot.scene
+        guard scene.home.minY > scene.bounds.minY else { return }
+        var bitmaps: [(CompanionCanvasView, NSBitmapImageRep)] = []
+        for window in NSApp.windows where window.isVisible {
+            guard let canvas = window.contentView as? CompanionCanvasView, canvas.drawsSnapshot,
+                  let bitmap = canvas.bitmapImageRepForCachingDisplay(in: canvas.bounds) else { continue }
+            canvas.cacheDisplay(in: canvas.bounds, to: bitmap)
+            bitmaps.append((canvas, bitmap))
+        }
+        var crownControl = 0, leaked = 0, hiddenHits = 0, visibleFace = 0
+        for y in stride(from: scene.bounds.minY + 0.5, to: scene.home.maxY, by: 2) {
+            for x in stride(from: scene.home.minX + 0.5, to: scene.home.maxX, by: 2) {
+                let point = Point(x: x, y: y)
+                if y < scene.home.minY && snapshot.geometry.contains(point) { crownControl += 1 }
+                if snapshot.contains(point) { hiddenHits += 1 }
+                if hasPaint(at: point, in: bitmaps) { leaked += 1 }
+            }
+        }
+        for y in stride(from: scene.home.maxY + 1, to: scene.home.maxY + 60, by: 2) {
+            for x in stride(from: scene.home.minX + 1, to: scene.home.maxX, by: 2) {
+                if hasPaint(at: Point(x: x, y: y), in: bitmaps) { visibleFace += 1 }
+            }
+        }
+        try require(crownControl > 20 && visibleFace > 100, "Native Home mask controls are empty")
+        try require(leaked == 0 && hiddenHits == 0,
+                    "Home exposed crown artwork or picks above its edge: paint=\(leaked), hits=\(hiddenHits), desktopDrag=\(snapshot.dragGeometry != nil)")
+    }
+
+    private static func hasPaint(at point: Point, in bitmaps: [(CompanionCanvasView, NSBitmapImageRep)]) -> Bool {
+        bitmaps.contains { canvas, bitmap in
+            let local = point + canvas.drawingOrigin
+            guard canvas.bounds.contains(NSPoint(x: local.x, y: local.y)) else { return false }
+            let px = Int((local.x - canvas.bounds.minX) * Double(bitmap.pixelsWide) / canvas.bounds.width)
+            let py = Int((local.y - canvas.bounds.minY) * Double(bitmap.pixelsHigh) / canvas.bounds.height)
+            return px >= 0 && px < bitmap.pixelsWide && py >= 0 && py < bitmap.pixelsHigh
+                && bitmap.colorAt(x: px, y: py)!.alphaComponent > 0
+        }
     }
 
     private static func dragGeometry(active: DisplayContext, displays: [DisplayContext]) -> DragGeometry {
@@ -306,8 +342,8 @@ import CompanionCore
         let surfaces = displays.indices.map { index in
             let context = displays[index], delta = offsets[index]
             return DragSurface(bounds: Rect(x: delta.x, y: delta.y, width: context.frame.width, height: context.frame.height),
-                               housing: Rect(x: delta.x + context.scene.home.x, y: delta.y + context.scene.home.y,
-                                             width: context.scene.home.width, height: context.scene.home.height))
+                               housing: Rect(x: delta.x + context.scene.homeOcclusion.x, y: delta.y + context.scene.homeOcclusion.y,
+                                             width: context.scene.homeOcclusion.width, height: context.scene.homeOcclusion.height))
         }
         let left = displays.indices.map { offsets[$0].x + displays[$0].scene.leftLimit }.min()!
         let right = displays.indices.map { offsets[$0].x + displays[$0].scene.rightLimit }.max()!

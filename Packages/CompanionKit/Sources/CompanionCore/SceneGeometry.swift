@@ -5,6 +5,13 @@ public struct SceneGeometry: Equatable, Sendable {
     public let floor: Double
     public let scale: Double
     public let hasHardwareNotch: Bool
+    /// Hide artwork behind Home all the way to the display's top edge. A
+    /// synthetic Home may start below that edge to sit beneath the menu bar;
+    /// its attachment geometry must not leave a visible strip above it.
+    public var homeOcclusion: Rect {
+        let top = min(bounds.minY, home.minY)
+        return Rect(x: home.x, y: top, width: home.width, height: home.maxY - top)
+    }
     public var homeFeet: Point { Point(x: home.midX, y: home.maxY + 60 * scale) }
     /// Free motion keeps enough of the body below the display and housing to
     /// remain reachable. The resting peek can be grabbed without a position jump.
