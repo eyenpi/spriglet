@@ -6,6 +6,27 @@ import CompanionCore
 /// this checks real AppKit panels, display measurements, runtime dispatch and
 /// disposable persistence without synthesizing or posting OS mouse events.
 @MainActor enum MultiMonitorValidation {
+    static func framesWithinNativeTolerance(_ actual: Rect, _ expected: Rect) -> Bool {
+        let tolerance = 1e-8
+        return abs(actual.minX - expected.minX) <= tolerance
+            && abs(actual.minY - expected.minY) <= tolerance
+            && abs(actual.width - expected.width) <= tolerance
+            && abs(actual.height - expected.height) <= tolerance
+    }
+    static func pointsWithinNativeTolerance(_ actual: Point, _ expected: Point) -> Bool {
+        abs(actual.x - expected.x) <= 1e-8 && abs(actual.y - expected.y) <= 1e-8
+    }
+    static func verifyFrameComparisonTolerance() throws {
+        let expected = Rect(x: 528.0000000000009, y: 982, width: 176, height: 144)
+        let appKitRounded = Rect(x: 528, y: 982, width: 176, height: 144)
+        let beyondTolerance = Rect(x: expected.x + 2e-8, y: expected.y,
+                                   width: expected.width, height: expected.height)
+        guard framesWithinNativeTolerance(appKitRounded, expected),
+              !framesWithinNativeTolerance(beyondTolerance, expected) else {
+            throw Failure.message("Frame comparison must accept the observed subpixel rounding and reject 2e-8pt")
+        }
+        print("Window-free native comparison passed: 9.1e-13pt delta accepted, 2e-8pt rejected, tolerance=1e-8pt.")
+    }
     static func runPlacementFrame() throws {
         guard let screen = NSScreen.screens.first(where: { $0.frame.minX < 0 && $0.frame.minY > 0 }) else {
             throw Failure.message("No measured upper-left display is connected; placement fixture did not run")
@@ -63,8 +84,9 @@ import CompanionCore
                                y: actual.maxY - snapshot.feet.y - origin.y)
             let expectedGlobal = Point(x: context.frame.minX + snapshot.feet.x,
                                        y: context.frame.maxY - snapshot.feet.y)
-            let line = "PLACEMENT_FRAME stage=\(stage) R=\(requested) C=\(contained) D=\(context.frame) A=\(actual) "
-                + "A_equals_expected=\(actual == expected) A_inside_D=\(actual.minX >= context.frame.minX && actual.maxX <= context.frame.maxX && actual.minY >= context.frame.minY && actual.maxY <= context.frame.maxY) "
+            let delta = Point(x: actual.x - expected.x, y: actual.y - expected.y)
+            let line = "PLACEMENT_FRAME stage=\(stage) R=\(requested) C=\(contained) expectedStage=\(expected) D=\(context.frame) A=\(actual) "
+                + "A_equals_expected=\(actual == expected) A_within_1e-8=\(Self.framesWithinNativeTolerance(actual, expected)) A_delta=\(delta) A_inside_D=\(actual.minX >= context.frame.minX && actual.maxX <= context.frame.maxX && actual.minY >= context.frame.minY && actual.maxY <= context.frame.maxY) "
                 + "screenID=\(context.id) panelScreen=\(String(describing: panel.screen?.frame)) phase=\(snapshot.phase) capturesPointer=\(capturesPointer) dragGeometryNil=\(snapshot.dragGeometry == nil) "
                 + "panelID=\(panel.windowNumber) panelFrame=\(panel.frame) contentFrame=\(String(describing: panel.contentView?.frame)) viewFrame=\(view.frame) backingScale=\(panel.backingScaleFactor) origin=\(origin) "
                 + "feetScene=\(snapshot.feet) feetGlobal=\(global) expectedFeetGlobal=\(expectedGlobal) nativeRoundTrip=\(back)"
@@ -81,31 +103,32 @@ import CompanionCore
             for point in [snapshot.feet, snapshot.geometry.bounds.center] {
                 let global = Point(x: actual.minX + point.x + origin.x,
                                    y: actual.maxY - point.y - origin.y)
-                try require(global == Point(x: context.frame.minX + point.x, y: context.frame.maxY - point.y),
+                try require(Self.pointsWithinNativeTolerance(
+                    global, Point(x: context.frame.minX + point.x, y: context.frame.maxY - point.y)),
                             "Actual-frame compensation changed a global scene point")
             }
             let local = NSPoint(x: snapshot.feet.x + origin.x, y: snapshot.feet.y + origin.y)
             let inWindow = view.convert(local, to: nil)
             let screenPoint = panel.convertPoint(toScreen: inWindow)
             let backInView = view.convert(panel.convertPoint(fromScreen: screenPoint), from: nil)
-            try require(abs(backInView.x - local.x) < 0.001 && abs(backInView.y - local.y) < 0.001,
+            try require(abs(backInView.x - local.x) <= 1e-8 && abs(backInView.y - local.y) <= 1e-8,
                         "Native screen event coordinate round trip changed a scene point")
             try require(panel.windowNumber == windowID && ObjectIdentifier(panel) == identity,
                         "R/C transition replaced the native panel")
         }
 
         recordFrame("eligible-C", requested: contained, capturesPointer: false)
-        try require(rect(panel.frame) == contained,
+        try require(Self.framesWithinNativeTolerance(rect(panel.frame), contained),
                     "Initial eligible native frame was not expected C: actual=\(rect(panel.frame)), R=\(requested), C=\(contained), D=\(context.frame)")
         try checkCoordinates()
         host.update(snapshot: snapshot, capturesPointer: true, pointer: target)
         recordFrame("capture-R", requested: requested, capturesPointer: true)
-        try require(rect(panel.frame) == requested, "Pointer capture did not restore original R")
+        try require(Self.framesWithinNativeTolerance(rect(panel.frame), requested), "Pointer capture did not restore original R")
         try require(!panel.ignoresMouseEvents, "Captured fixture panel became click-through")
         try checkCoordinates()
         host.update(snapshot: snapshot, capturesPointer: false, pointer: Point(x: -1000, y: -1000))
         recordFrame("retired-C", requested: contained, capturesPointer: false)
-        try require(rect(panel.frame) == contained, "Capture retirement did not select C immediately")
+        try require(Self.framesWithinNativeTolerance(rect(panel.frame), contained), "Capture retirement did not select C immediately")
         try require(panel.ignoresMouseEvents, "Unheld fixture panel stopped being click-through")
         try checkCoordinates()
         try require(panel.screen?.frame == screen.frame, "Panel screen disagrees with the active display")

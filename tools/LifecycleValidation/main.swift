@@ -1037,6 +1037,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                 try fullscreenTransition()
                 outcome = "Passed: real fullscreen/Spaces fixture retained keyboard focus and a visible home on entry, reopen and exit."
             } else if appOnly {
+                try MultiMonitorValidation.verifyFrameComparisonTolerance()
                 try productionWallSnapshots()
                 try launchAtLogin()
                 try loginSettings()
