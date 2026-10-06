@@ -56,6 +56,23 @@ public enum WindowGeometry {
         let contained = Rect(x: x, y: y, width: width, height: height)
         return contained.hasFinitePositiveEdges ? contained : requested
     }
+    /// Remove off-display padding independently on each axis, keeping the
+    /// complete unmasked paint envelope on the canvas. An axis with artwork
+    /// crossing a display seam must remain free for continuous desktop dragging.
+    public static func axisContainedFrame(_ requested: Rect, in display: Rect, protecting paint: Rect) -> Rect {
+        guard requested.hasFinitePositiveEdges, display.hasFinitePositiveEdges,
+              paint.hasFinitePositiveEdges, requested.covers(paint) else { return requested }
+        let contained = containedFrame(requested, in: display)
+        let constrainX = paint.minX >= display.minX && paint.maxX <= display.maxX
+            && paint.minX >= contained.minX && paint.maxX <= contained.maxX
+        let constrainY = paint.minY >= display.minY && paint.maxY <= display.maxY
+            && paint.minY >= contained.minY && paint.maxY <= contained.maxY
+        let frame = Rect(x: constrainX ? contained.x : requested.x,
+                         y: constrainY ? contained.y : requested.y,
+                         width: constrainX ? contained.width : requested.width,
+                         height: constrainY ? contained.height : requested.height)
+        return frame.hasFinitePositiveEdges && frame.covers(paint) ? frame : requested
+    }
     public static func drawingOrigin(window: Rect, display: Rect) -> Point {
         Point(x: display.minX - window.minX, y: window.maxY - display.maxY)
     }
@@ -65,6 +82,9 @@ public enum WindowGeometry {
 }
 
 private extension Rect {
+    func covers(_ other: Rect) -> Bool {
+        other.minX >= minX && other.maxX <= maxX && other.minY >= minY && other.maxY <= maxY
+    }
     var hasFinitePositiveEdges: Bool {
         x.isFinite && y.isFinite && width.isFinite && height.isFinite
             && width > 0 && height > 0 && minX.isFinite && minY.isFinite

@@ -37,6 +37,14 @@ Cross-display runtime integration uses the Mac's connected display arrangement a
 
 This requires at least two connected logical displays. It verifies production runtime dispatch, global/local conversion, continued native panel and view identity, capture across retargeting, save-on-success semantics, cancellation, unrelated preference preservation and reload. It injects pointer points through the production host callback; it does not claim physical mouse travel, seam stability, mirror transitions or hot-unplug acceptance. Those remain rows in the physical-device matrix below.
 
+For a triangular arrangement with two displays above the primary display:
+
+```sh
+./scripts/test-desktop.sh --test-corner-drag
+```
+
+This finite check uses the production panel, View event adapters and engine at both inward upper corners. It verifies a zero-motion press, the drag threshold, inward motion, artwork spanning the lower seam, pending release, regrab and cancellation. It checks actual window/content bounds, global crown/feet coordinates, backing conversion and the next production draw. Its events are delivered directly to the View; it posts no OS input, captures no desktop pixels and uses no app preferences. Pixel tests separately compare generous and relocated canvases at 1× and 2×, with crown-crop and incorrect-origin negative controls. These checks do not establish compositor-visible head retention: physically press, drag and regrab at both inward corners, cross the upper and lower seams, release, hop/land and Bring Home before accepting the visual fix.
+
 Introduction checks use an isolated preferences suite and cover first launch without activation, shared-clock playback, Next/Back/direct navigation, repeated selection of the current step in normal and reduced motion, unambiguous layout, live Reduce Motion changes, suspension and display loss, remembered dismissal, Help replay while hidden/paused, saved edits and recovery without resuming playback, Done/close/app-scoped Escape and shutdown cleanup. To run only introduction integration checks without activating the app or opening Settings:
 
 ```sh

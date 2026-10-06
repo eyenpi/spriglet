@@ -46,7 +46,12 @@ import CompanionCore
         if !capturesPointer && snapshot.phase != .held && snapshot.dragGeometry == nil {
             frame = WindowGeometry.containedFrame(requested, in: view.context.frame)
         } else {
-            frame = requested
+            let paint = snapshot.geometry.paintBounds(drawShadow: snapshot.phase == .grounded)
+            let padding = 4 * snapshot.scene.scale
+            let protectedPaint = Rect(x: view.context.frame.minX + paint.minX - padding,
+                                      y: view.context.frame.maxY - paint.maxY - padding,
+                                      width: paint.width + 2 * padding, height: paint.height + 2 * padding)
+            frame = WindowGeometry.axisContainedFrame(requested, in: view.context.frame, protecting: protectedPaint)
         }
         // Avoid window-server work for the stationary home. Compare requested
         // positions, since macOS may clamp the actual panel to the display.

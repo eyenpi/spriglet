@@ -58,6 +58,12 @@ import CompanionCore
         let requested = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: context.frame,
                                                     scale: snapshot.scene.scale, visibleBounds: snapshot.hitBounds)
         let contained = WindowGeometry.containedFrame(requested, in: context.frame)
+        let paint = snapshot.geometry.paintBounds(drawShadow: snapshot.phase == .grounded)
+        let padding = 4 * snapshot.scene.scale
+        let protectedPaint = Rect(x: context.frame.minX + paint.minX - padding,
+                                  y: context.frame.maxY - paint.maxY - padding,
+                                  width: paint.width + 2 * padding, height: paint.height + 2 * padding)
+        let captured = WindowGeometry.axisContainedFrame(requested, in: context.frame, protecting: protectedPaint)
         guard requested != contained else {
             throw Failure.message("Production frozen frame did not exercise R→C: R=\(requested), D=\(context.frame)")
         }
@@ -146,8 +152,8 @@ import CompanionCore
                     "Initial eligible native frame was not expected C: actual=\(rect(panel.frame)), R=\(requested), C=\(contained), D=\(context.frame)")
         try checkCoordinates(panelMustBelongToSelectedDisplay: true)
         host.update(snapshot: snapshot, capturesPointer: true, pointer: target)
-        recordFrame("capture-R", requested: requested, capturesPointer: true)
-        try require(Self.framesWithinNativeTolerance(rect(panel.frame), requested), "Pointer capture did not restore original R")
+        recordFrame("capture-H", requested: captured, capturesPointer: true)
+        try require(Self.framesWithinNativeTolerance(rect(panel.frame), captured), "Pointer capture did not select paint-preserving H")
         try require(!panel.ignoresMouseEvents, "Captured fixture panel became click-through")
         try checkCoordinates(panelMustBelongToSelectedDisplay: false)
         host.update(snapshot: snapshot, capturesPointer: false, pointer: Point(x: -1000, y: -1000))

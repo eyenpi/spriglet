@@ -53,7 +53,7 @@ import CompanionCore
     NSGraphicsContext.saveGraphicsState()
     concatenate(CharacterTransform(origin: Point(x: center.x, y: center.y), rotation: rotation, scaleX: scale, scaleY: scale))
     if drawShadow {
-        oval(NSRect(x: -49, y: -2, width: 98, height: 10), fill: MallowPalette.shadow)
+        oval(native(MallowGeometry.groundShadowBounds), fill: MallowPalette.shadow)
     }
     // 60% of each stride is planted. During that phase, feet move backwards
     // relative to the body at the same speed as the desktop window moves forward.
