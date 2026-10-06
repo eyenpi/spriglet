@@ -53,6 +53,24 @@ import CompanionCore
         func require(_ condition: Bool, _ message: String) throws {
             if !condition { throw Failure.message(message) }
         }
+        func recordFrame(_ stage: String, requested expected: Rect, capturesPointer: Bool) {
+            let actual = rect(panel.frame), origin = view.drawingOrigin
+            let local = NSPoint(x: snapshot.feet.x + origin.x, y: snapshot.feet.y + origin.y)
+            let inWindow = view.convert(local, to: nil)
+            let onScreen = panel.convertPoint(toScreen: inWindow)
+            let back = view.convert(panel.convertPoint(fromScreen: onScreen), from: nil)
+            let global = Point(x: actual.minX + snapshot.feet.x + origin.x,
+                               y: actual.maxY - snapshot.feet.y - origin.y)
+            let expectedGlobal = Point(x: context.frame.minX + snapshot.feet.x,
+                                       y: context.frame.maxY - snapshot.feet.y)
+            let line = "PLACEMENT_FRAME stage=\(stage) R=\(requested) C=\(contained) D=\(context.frame) A=\(actual) "
+                + "A_equals_expected=\(actual == expected) A_inside_D=\(actual.minX >= context.frame.minX && actual.maxX <= context.frame.maxX && actual.minY >= context.frame.minY && actual.maxY <= context.frame.maxY) "
+                + "screenID=\(context.id) panelScreen=\(String(describing: panel.screen?.frame)) phase=\(snapshot.phase) capturesPointer=\(capturesPointer) dragGeometryNil=\(snapshot.dragGeometry == nil) "
+                + "panelID=\(panel.windowNumber) panelFrame=\(panel.frame) contentFrame=\(String(describing: panel.contentView?.frame)) viewFrame=\(view.frame) backingScale=\(panel.backingScaleFactor) origin=\(origin) "
+                + "feetScene=\(snapshot.feet) feetGlobal=\(global) expectedFeetGlobal=\(expectedGlobal) nativeRoundTrip=\(back)"
+            FileHandle.standardOutput.write(Data((line + "\n").utf8))
+            try? FileHandle.standardOutput.synchronize()
+        }
         func checkCoordinates() throws {
             let actual = rect(panel.frame), origin = view.drawingOrigin
             try require(view.frame.width == WindowGeometry.width * context.scene.scale
@@ -76,14 +94,17 @@ import CompanionCore
                         "R/C transition replaced the native panel")
         }
 
+        recordFrame("eligible-C", requested: contained, capturesPointer: false)
         try require(rect(panel.frame) == contained,
                     "Initial eligible native frame was not expected C: actual=\(rect(panel.frame)), R=\(requested), C=\(contained), D=\(context.frame)")
         try checkCoordinates()
         host.update(snapshot: snapshot, capturesPointer: true, pointer: target)
+        recordFrame("capture-R", requested: requested, capturesPointer: true)
         try require(rect(panel.frame) == requested, "Pointer capture did not restore original R")
         try require(!panel.ignoresMouseEvents, "Captured fixture panel became click-through")
         try checkCoordinates()
         host.update(snapshot: snapshot, capturesPointer: false, pointer: Point(x: -1000, y: -1000))
+        recordFrame("retired-C", requested: contained, capturesPointer: false)
         try require(rect(panel.frame) == contained, "Capture retirement did not select C immediately")
         try require(panel.ignoresMouseEvents, "Unheld fixture panel stopped being click-through")
         try checkCoordinates()
