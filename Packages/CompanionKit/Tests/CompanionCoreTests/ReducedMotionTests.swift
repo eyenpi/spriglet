@@ -5,7 +5,7 @@ import Testing
     private func expectStill(_ frame: CompanionSnapshot) {
         #expect(frame.rotation == 0 && frame.pose.height == 1 && frame.pose.width == 1)
         #expect(frame.pose.lean == 0 && frame.pose.look == 0 && frame.pose.arm == 0)
-        #expect(frame.pose.walk == 0 && frame.pose.sparkle == 0 && frame.pose.facing == 0)
+        #expect(frame.pose.walk == 0 && frame.pose.facing == 0)
     }
 
     @Test("Hover, invitation, reactions and dismissal change state without animated travel", arguments: [0.8, 1.0, 1.2])
