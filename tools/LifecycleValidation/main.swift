@@ -225,6 +225,70 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         }, "Introduction selection does not match the displayed step \(step)")
         try require(window.title.hasSuffix("\(step.rawValue + 1) / \(IntroductionStep.allCases.count)"), "Introduction title and selected step disagree")
     }
+    static func assertIntroductionLayout(_ window: NSWindow, step: IntroductionStep, reducedMotion: Bool) throws {
+        guard let content = window.contentView else { throw ValidationFailure(description: "Introduction content missing") }
+        content.layoutSubtreeIfNeeded()
+        let views = descendants(of: content)
+        let contentBounds = content.bounds
+        func rect(_ view: NSView) -> NSRect { view.convert(view.bounds, to: content) }
+        func field(_ value: String, minimumWidth: CGFloat = 0) -> NSTextField? {
+            views.compactMap { $0 as? NSTextField }.first { $0.stringValue == value && rect($0).width >= minimumWidth }
+        }
+        let demo = try introductionView(window)
+        let demoRect = rect(demo)
+        try require(abs(contentBounds.width - 720) < 1 && abs(contentBounds.height - 500) < 1,
+                    "Introduction content is not the fixed 720 × 500 layout")
+        try require(abs(demoRect.width - 496) < 1 && abs(demoRect.width / demoRect.height - 2) < 0.01,
+                    "Introduction production demo is not 496 × 248 (2:1)")
+
+        let stepButtons = views.compactMap { $0 as? NSButton }.filter { introductionTabTitles.contains($0.title) }
+        try require(stepButtons.count == 5 && stepButtons.map(\.title) == introductionTabTitles,
+                    "Introduction does not contain the five same-title lesson controls")
+        try require(stepButtons.allSatisfy { contentBounds.contains(rect($0)) }, "An introduction lesson control is clipped")
+        try assertIntroductionSelection(step, in: window)
+
+        guard let railTitle = field(AppText.introductionTitle, minimumWidth: 100),
+              let heading = field([AppText.introductionHoverTitle, AppText.introductionInviteTitle,
+                                   AppText.introductionDragTitle, AppText.introductionCatchTitle,
+                                   AppText.introductionHomeTitle][step.rawValue], minimumWidth: 400),
+              let body = field([AppText.introductionHoverBody, AppText.introductionInviteBody,
+                                AppText.introductionDragBody, AppText.introductionCatchBody,
+                                AppText.introductionHomeBody][step.rawValue], minimumWidth: 400),
+              let note = field(AppText.introductionReducedMotion, minimumWidth: 400) else {
+            throw ValidationFailure(description: "Introduction rail, heading, body or motion note is missing")
+        }
+        let railRect = rect(railTitle), headingRect = rect(heading), bodyRect = rect(body), noteRect = rect(note)
+        for label in [railTitle, heading, body, note] {
+            try require(contentBounds.contains(rect(label)), "An introduction label is clipped")
+        }
+        for (label, name) in [(body, "lesson body"), (note, "motion note")] {
+            guard let cell = label.cell else { throw ValidationFailure(description: "Introduction \(name) has no text cell") }
+            try require(cell.cellSize(forBounds: label.bounds).height <= label.bounds.height + 1,
+                        "Introduction \(name) wraps beyond its reserved height")
+        }
+        try require(!headingRect.intersects(bodyRect) && !bodyRect.intersects(demoRect) && !demoRect.intersects(noteRect),
+                    "Introduction heading, body, demo and note overlap")
+        try require(railRect.maxX <= contentBounds.minX + 176 && stepButtons.allSatisfy { rect($0).maxX <= 176 },
+                    "Introduction lesson rail exceeds its 176-point column")
+
+        guard let skip = views.compactMap({ $0 as? NSButton }).first(where: { $0.title == AppText.introductionSkip }),
+              let back = views.compactMap({ $0 as? NSButton }).first(where: { $0.title == AppText.introductionBack }),
+              let next = views.compactMap({ $0 as? NSButton }).first(where: { $0.title == (step == .returnHome ? AppText.introductionDone : AppText.introductionNext) }) else {
+            throw ValidationFailure(description: "Introduction footer controls are missing")
+        }
+        let footerRects = [rect(skip), rect(back), rect(next)]
+        try require(footerRects.allSatisfy { abs($0.height - 32) < 1 && contentBounds.contains($0) },
+                    "Introduction footer controls are clipped or not 32 points tall")
+        try require(footerRects.allSatisfy { abs($0.midY - footerRects[0].midY) < 1 },
+                    "Introduction footer controls do not share one control band")
+        let bottomGap = footerRects[0].minY - contentBounds.minY
+        try require((18...20).contains(Int(bottomGap.rounded())), "Introduction footer bottom gap is \(bottomGap), expected 18–20 points")
+        try require((step == .hover) == !back.isEnabled, "Introduction Back enabled state is wrong for \(step)")
+        try require(next.title == (step == .returnHome ? AppText.introductionDone : AppText.introductionNext),
+                    "Introduction final step does not show Done")
+        try require(note.isHidden == !reducedMotion, "Reduced-motion note visibility does not match the current motion policy")
+        try require(views.allSatisfy { !$0.hasAmbiguousLayout }, "Introduction layout is ambiguous at step \(step)")
+    }
     static func checkPanelLayout(_ window: NSWindow) throws {
         let content = window.contentView!
         pump(0.05); window.displayIfNeeded()
@@ -271,7 +335,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             introductionHost.onStepSelected?(step)
             guard let content = window.contentView else { throw ValidationFailure(description: "Introduction content missing") }
             content.layoutSubtreeIfNeeded()
-            try require(descendants(of: content).allSatisfy { !$0.hasAmbiguousLayout }, "Introduction layout is ambiguous at step \(step)")
+            try assertIntroductionLayout(window, step: step, reducedMotion: false)
         }
         var conditions = RuntimeConditions()
         for policy in [MotionPolicy.full, .reduced] {
@@ -280,6 +344,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             for step in IntroductionStep.allCases {
                 try press(introductionTabTitles[step.rawValue], in: window)
                 try assertIntroductionSelection(step, in: window)
+                try assertIntroductionLayout(window, step: step, reducedMotion: policy == .reduced)
                 for _ in 0..<2 {
                     // AppKit toggles a push-on/push-off button before its action.
                     // Reselect through the real control, not the host callback.
