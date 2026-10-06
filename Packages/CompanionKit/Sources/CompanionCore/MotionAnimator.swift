@@ -26,7 +26,7 @@ struct MotionAnimator: Sendable {
             target.height = 1 + reach * 0.23
             target.arm = reach; target.eyes *= 1 - reach * 0.70
         case .wave:
-            target.arm = 0.7 + sin(age * 7) * 0.22; target.lean = -0.035; target.sparkle = 0.3
+            target.arm = 0.7 + sin(age * 7) * 0.22; target.lean = -0.035
         }
         target.width = 1 / target.height
         target.gaitPhase = targetPose.gaitPhase

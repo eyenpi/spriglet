@@ -27,7 +27,7 @@ import Testing
             bounded = bounded && (0.977...1.0141).contains(pose.height) && abs(pose.look) <= 2.4
                 && abs(pose.lookY) <= 0.8 && abs(pose.lean) <= 0.01 && (0...1).contains(pose.eyes)
                 && abs(pose.width * pose.height - 1) < 0.000001
-                && pose.arm == 0 && pose.walk == 0 && pose.sparkle == 0
+                && pose.arm == 0 && pose.walk == 0
             continuous = continuous && abs(pose.height - previous.height) < 0.0003
                 && abs(pose.look - previous.look) < 0.03 && abs(pose.lean - previous.lean) < 0.0001
             previous = pose

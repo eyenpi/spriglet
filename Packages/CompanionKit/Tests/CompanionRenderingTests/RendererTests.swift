@@ -143,6 +143,64 @@ import Testing
         }
         #expect(handPixels > 20)
     }
+    @Test("Greet paints only the articulated character and keeps both hands waving", arguments: [1.0, 1.45])
+    func greetSilhouette(scale: Double) throws {
+        let base = SceneGeometry.preview
+        let scene = SceneGeometry(bounds: base.bounds, home: base.home, floor: base.floor, scale: scale)
+        var engine = CompanionEngine(scene: scene)
+        engine.send(.command(.greet))
+        var arms: [Double] = [], hands: [Point] = [], paintedHandPixels: [Int] = []
+        var frames: [CompanionSnapshot] = []
+        for index in 0..<84 {
+            engine.advance(by: 1 / 120.0)
+            let frame = engine.snapshot
+            arms.append(frame.pose.arm)
+            hands.append(frame.geometry.hands[1].arm.end)
+            if [6, 18, 30, 42, 54, 66, 78, 83].contains(index) {
+                frames.append(frame)
+                let image = try characterImage(frame)
+                var detachedPaint = 0, handPixels = 0
+                for y in 0..<image.pixelsHigh {
+                    for x in 0..<image.pixelsWide {
+                        let alpha = image.colorAt(x: x, y: y)?.alphaComponent ?? 0
+                        let point = Point(x: Double(x) + 0.5, y: Double(y) + 0.5)
+                        if alpha > 0.02 {
+                            // One-pixel neighborhood accounts for rasterization
+                            // versus the geometry's sampled curves. A detached
+                            // mark remains well outside this tolerance.
+                            let belongsToSilhouette = (-1...1).contains { dy in (-1...1).contains { dx in
+                                frame.contains(Point(x: point.x + Double(dx), y: point.y + Double(dy)))
+                            } }
+                            if !belongsToSilhouette { detachedPaint += 1 }
+                        }
+                        if alpha > 0.2 && frame.geometry.hands.contains(where: { hand in
+                            let xValues = [hand.arm.start.x, hand.arm.control1.x, hand.arm.control2.x,
+                                           hand.arm.end.x, hand.palm.minX, hand.palm.maxX]
+                            let yValues = [hand.arm.start.y, hand.arm.control1.y, hand.arm.control2.y,
+                                           hand.arm.end.y, hand.palm.minY, hand.palm.maxY]
+                            return (xValues.min()!-2...xValues.max()!+2).contains(point.x)
+                                && (yValues.min()!-2...yValues.max()!+2).contains(point.y)
+                        }) { handPixels += 1 }
+                    }
+                }
+                paintedHandPixels.append(handPixels)
+                #expect(detachedPaint <= 2)
+                if index == 83 {
+                    let palm = frame.geometry.hands[1].palm.center
+                    let paintedPalm = (-3...3).contains { dy in (-3...3).contains { dx in
+                        let x = Int(palm.x.rounded()) + dx, y = Int(palm.y.rounded()) + dy
+                        return x >= 0 && x < image.pixelsWide && y >= 0 && y < image.pixelsHigh
+                            && (image.colorAt(x: x, y: y)?.alphaComponent ?? 0) > 0.2
+                    } }
+                    #expect(paintedPalm)
+                }
+            }
+        }
+        #expect((arms.max() ?? 0) - (arms.min() ?? 0) > 0.15)
+        #expect(zip(hands, hands.dropFirst()).contains { $0.distance(to: $1) > 1 })
+        #expect(paintedHandPixels.allSatisfy { $0 > 12 })
+        #expect(frames.count == 8)
+    }
     @Test("Stretch keeps both eyes visible below the housing")
     func stretchedFace() throws {
         var engine = CompanionEngine(scene: .preview)

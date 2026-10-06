@@ -177,7 +177,7 @@ public struct CompanionEngine: Sendable {
         var pose = animator.targetPose
         pose.height = 1 + (pose.height - 1) * movementAmount
         pose.lean *= movementAmount; pose.look *= movementAmount; pose.lookY *= movementAmount
-        pose.arm *= movementAmount; pose.sparkle *= movementAmount
+        pose.arm *= movementAmount
         switch body.phase {
         case .hanging:
             pose.arm = interaction.gesture == .hello ? pose.arm : 0.4
@@ -213,7 +213,7 @@ public struct CompanionEngine: Sendable {
         pose.look += gaze.value
         if motionPolicy == .reduced {
             pose.width = 1; pose.height = 1; pose.lean = 0; pose.look = 0
-            pose.arm = 0; pose.sparkle = 0
+            pose.arm = 0
             pose.walk = 0; pose.facing = 0; pose.gaitPhase = 0; pose.direction = 1
             pose.lookY = min(28, (1 - open) * 75) + (body.canCatch ? -5 : 0)
             feet = body.phase == .hanging ? Point(x: scene.homeFeet.x, y: scene.homeFeet.y - homeRetraction.value * scene.scale) : feet

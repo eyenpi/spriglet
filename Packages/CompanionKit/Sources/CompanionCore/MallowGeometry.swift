@@ -1,7 +1,7 @@
 import Foundation
 
 /// The vector artwork and its transforms are shared by drawing and picking.
-/// All coordinates are scene points; decorative shadows and sparkles are excluded.
+/// All coordinates are scene points; decorative shadows are excluded.
 public struct CharacterTransform: Sendable {
     public let origin: Point
     public let rotation: Double

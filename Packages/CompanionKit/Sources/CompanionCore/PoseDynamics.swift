@@ -17,7 +17,6 @@ struct PoseDynamics: Sendable {
         pose.lookY += (target.lookY - pose.lookY) * blend
         pose.walk += (target.walk - pose.walk) * blend
         pose.direction += (target.direction - pose.direction) * blend
-        pose.sparkle += (target.sparkle - pose.sparkle) * blend
         pose.facing += (target.facing - pose.facing) * (1 - exp(-dt * 5))
         pose.eyes += (target.eyes - pose.eyes) * (1 - exp(-dt * 28))
         pose.height = height.value
