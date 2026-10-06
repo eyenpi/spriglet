@@ -37,13 +37,14 @@ extension LifecycleValidation {
         })
     }
     static func launchAtLogin() throws {
-        // App, status and character menus share the same action owner. Replay
+        try simpleMenuBar()
+        // Full character/application menus retain their typed controls. Replay
         // and Help remain reachable without invoking windows or registration.
         let menuService = FakeLoginService(), menuLogin = LaunchAtLoginController(service: menuService)
         var actions: [AppControlAction] = []
         let shared = MenuBarController(state: { CompanionControlState(isVisible: true, isPaused: false, canShow: true) },
                                        loginState: { menuLogin.refresh() }, onAction: { actions.append($0) })
-        for menu in [shared.menu, shared.makeMenu(), shared.makeMenu()] {
+        for menu in [shared.makeMenu(), shared.makeMenu()] {
             let items = menu.items.filter { $0.action != nil }
             try require(items.count == AppControlAction.allCases.count && Set(items.map(\.tag)).count == items.count,
                         "Shared menus duplicated or omitted a typed control")
