@@ -29,6 +29,14 @@ Preferences can also be validated headlessly, including a fresh process that res
 ./scripts/test-desktop.sh --test-preferences
 ```
 
+Cross-display runtime integration uses the Mac's connected display arrangement and an isolated preference suite:
+
+```sh
+./scripts/test-desktop.sh --test-multi-monitor
+```
+
+This requires at least two connected logical displays. It verifies production runtime dispatch, global/local conversion, continued native panel and view identity, capture across retargeting, save-on-success semantics, cancellation, unrelated preference preservation and reload. It injects pointer points through the production host callback; it does not claim physical mouse travel, seam stability, mirror transitions or hot-unplug acceptance. Those remain rows in the physical-device matrix below.
+
 Introduction checks use an isolated preferences suite and cover first launch without activation, shared-clock playback, Next/Back/direct navigation, repeated selection of the current step in normal and reduced motion, unambiguous layout, live Reduce Motion changes, suspension and display loss, remembered dismissal, Help replay while hidden/paused, saved edits and recovery without resuming playback, Done/close/app-scoped Escape and shutdown cleanup. To run only introduction integration checks without activating the app or opening Settings:
 
 ```sh

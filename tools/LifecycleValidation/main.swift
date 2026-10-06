@@ -1068,6 +1068,13 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             return EXIT_FAILURE
         }
     }
+    static func multiMonitorValidation() -> Int32 {
+        do { try MultiMonitorValidation.run(); return EXIT_SUCCESS }
+        catch {
+            FileHandle.standardError.write(Data("Multi-display validation failed: \(error)\n".utf8))
+            return EXIT_FAILURE
+        }
+    }
     static func main() {
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--lease-holder" {
             do {
@@ -1087,6 +1094,9 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                 FileHandle.standardError.write(Data("Preferences validation failed: \(error)\n".utf8))
                 exit(EXIT_FAILURE)
             }
+        }
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-multi-monitor" {
+            exit(multiMonitorValidation())
         }
         // These fixtures stay headless, including while another app is fullscreen.
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--quit-wait-fixture" {
