@@ -38,6 +38,7 @@ extension LifecycleValidation {
     }
     static func launchAtLogin() throws {
         try simpleMenuBar()
+        try NoRightClickValidation.detachedView()
         // Full character/application menus retain their typed controls. Replay
         // and Help remain reachable without invoking windows or registration.
         let menuService = FakeLoginService(), menuLogin = LaunchAtLoginController(service: menuService)

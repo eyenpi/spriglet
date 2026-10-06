@@ -8,7 +8,6 @@ import CompanionCore
         var active: DisplayContext
         var committing = false
     }
-    var makeContextMenu: (() -> NSMenu)?
     private let environment: DesktopEnvironment
     private let clock: ScreenFrameClock
     private let host: CompanionWindowHost
@@ -59,7 +58,6 @@ import CompanionCore
         guard !running else { return }; running = true
         host.onInput = { [weak self] input in self?.send(input) }
         host.onPointerInput = { [weak self] input in self?.pointer(input) }
-        host.makeContextMenu = makeContextMenu
         host.onControlAction = { [weak self] in self?.onControlAction?($0) }
         introductionHost.onStepSelected = { [weak self] step in self?.selectIntroductionStep(step) }
         introductionHost.onDismiss = { [weak self] in self?.dismissIntroduction() }
@@ -83,7 +81,7 @@ import CompanionCore
         guard running else { return }; running = false
         dragTransaction = nil; availableContexts = []; layoutHome = nil
         clock.stop(); environment.stop(); host.close(); introductionHost.close()
-        host.onInput = nil; host.onPointerInput = nil; host.makeContextMenu = nil; host.onControlAction = nil; clock.onTick = nil
+        host.onInput = nil; host.onPointerInput = nil; host.onControlAction = nil; clock.onTick = nil
         introductionHost.onStepSelected = nil; introductionHost.onDismiss = nil; introduction = nil
         environment.onLayoutChanged = nil; environment.onDisplaysChanged = nil
         environment.onConditionsChanged = nil; environment.onRecoveryNeeded = nil

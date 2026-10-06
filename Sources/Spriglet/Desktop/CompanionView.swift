@@ -6,7 +6,6 @@ import CompanionRendering
 @MainActor final class CompanionView: NSView {
     var onInput: ((CompanionInput) -> Void)?
     var onPointerInput: ((DesktopPointerInput) -> Void)?
-    var makeContextMenu: (() -> NSMenu)?
     var onControlAction: ((AppControlAction) -> Void)?
     /// Optional instrumentation owned by the finite profiling tool.
     var onDraw: ((Double) -> Void)?
@@ -17,6 +16,7 @@ import CompanionRendering
     private var presenceDescription = ""
     private var acceptsInput = true
     private var isPaused = false
+    private var suppressControlPrimarySequence = false
     init(context: DisplayContext, snapshot: CompanionSnapshot) {
         self.context = context; self.snapshot = snapshot
         super.init(frame: NSRect(x: 0, y: 0, width: WindowGeometry.width * context.scene.scale,
@@ -49,6 +49,12 @@ import CompanionRendering
         guard acceptsInput, let onInput else { return false }
         onInput(.activate); return true
     }
+    override func accessibilityPerformShowMenu() -> Bool { false }
+    override func isAccessibilitySelectorAllowed(_ selector: Selector) -> Bool {
+        if selector == #selector(CompanionView.accessibilityPerformShowMenu) { return false }
+        return super.isAccessibilitySelectorAllowed(selector)
+    }
+    override func menu(for event: NSEvent?) -> NSMenu? { nil }
     override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
         var actions: [NSAccessibilityCustomAction] = []
         if acceptsInput {
@@ -109,11 +115,20 @@ import CompanionRendering
         let screenPoint = window.map { $0.convertPoint(toScreen: event.locationInWindow) } ?? NSEvent.mouseLocation
         return Point(x: screenPoint.x, y: screenPoint.y)
     }
-    override func mouseDown(with event: NSEvent) { onPointerInput?(.pressed(globalPoint(event))) }
-    override func mouseDragged(with event: NSEvent) { onPointerInput?(.dragged(globalPoint(event))) }
-    override func mouseUp(with event: NSEvent) { onPointerInput?(.released(globalPoint(event))) }
-    override func rightMouseDown(with event: NSEvent) {
-        onInput?(.command(.returnHome))
-        if let menu = makeContextMenu?() { NSMenu.popUpContextMenu(menu, with: event, for: self) }
+    override func mouseDown(with event: NSEvent) {
+        suppressControlPrimarySequence = event.modifierFlags.contains(.control)
+        guard !suppressControlPrimarySequence else { return }
+        onPointerInput?(.pressed(globalPoint(event)))
     }
+    override func mouseDragged(with event: NSEvent) {
+        guard !suppressControlPrimarySequence else { return }
+        onPointerInput?(.dragged(globalPoint(event)))
+    }
+    override func mouseUp(with event: NSEvent) {
+        if suppressControlPrimarySequence { suppressControlPrimarySequence = false; return }
+        onPointerInput?(.released(globalPoint(event)))
+    }
+    override func rightMouseDown(with event: NSEvent) {}
+    override func rightMouseDragged(with event: NSEvent) {}
+    override func rightMouseUp(with event: NSEvent) {}
 }

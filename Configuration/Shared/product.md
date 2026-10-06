@@ -18,7 +18,7 @@ A second touch brings a wave or a gentle swing. Release near the notch to let Ma
 
 ### Your choice of home
 
-Open {{settingsMenu}} from the leaf menu or by right-clicking Mallow. Settings opens with keyboard focus. Choose character size, movement intensity and a home display/location. Changes apply immediately and are remembered on this Mac.
+Open Settings from the leaf menu. It opens with keyboard focus. Choose character size, movement intensity and a home display/location. Changes apply immediately and are remembered on this Mac.
 
 ### Quiet by default
 

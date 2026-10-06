@@ -20,8 +20,9 @@ import CompanionCore
         let host = CompanionWindowHost(), clock = ScreenFrameClock()
         let environment = DesktopEnvironment(applicationCenter: events, workspaceCenter: events,
                                              lockCenter: events, displays: { [context] })
+        let preferenceStore = PreferenceStore(defaults: defaults)
         let runtime = CompanionRuntime(environment: environment, clock: clock, host: host,
-                                       introductionPreferences: introduction, preferenceStore: PreferenceStore(defaults: defaults),
+                                       introductionPreferences: introduction, preferenceStore: preferenceStore,
                                        leftButtonIsDown: { true })
         let loginService = FakeLoginService()
         let delegate = AppDelegate(runtime: runtime, launchAtLogin: LaunchAtLoginController(service: loginService))
@@ -45,6 +46,16 @@ import CompanionCore
             try LifecycleValidation.require(try action(title).handler?() == true, "Character action failed: \(title)")
         }
         let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        try NoRightClickValidation.assertNoAccessibilityMenu(character)
+        let restingSnapshot = character.snapshot, restingPreferences = preferenceStore.load()
+        let restingKeyWindow = NSApp.keyWindow
+        try NoRightClickValidation.nativeEventPaths(on: character, windowNumber: panel.windowNumber)
+        try LifecycleValidation.require(character.snapshot.phase == restingSnapshot.phase && character.snapshot.feet == restingSnapshot.feet
+                                        && character.snapshot.time == restingSnapshot.time && panel.isVisible
+                                        && runtime.controlState.isVisible && preferenceStore.load() == restingPreferences
+                                        && NSApp.keyWindow === restingKeyWindow
+                                        && NSWorkspace.shared.frontmostApplication?.processIdentifier == frontmost,
+                                        "Ignored context gestures changed resting state, preferences, visibility or focus")
         try LifecycleValidation.require(character.accessibilityValue() as? String == AppText.restingPresence,
                                         "Character has no initial accessible state")
         try perform(AppText.inviteMallow)
@@ -56,11 +67,22 @@ import CompanionCore
         try LifecycleValidation.require(character.snapshot.gesture == .stretch, "Named Stretch did not select the gesture")
         let staleStretch = try action(AppText.stretchMallow)
         LifecycleValidation.beginDrag(host: host, window: panel, clock: clock)
+        let heldSnapshot = character.snapshot, heldKeyWindow = NSApp.keyWindow
+        try NoRightClickValidation.nativeEventPaths(on: character, windowNumber: panel.windowNumber)
+        try LifecycleValidation.require(character.snapshot.phase == heldSnapshot.phase && character.snapshot.feet == heldSnapshot.feet
+                                        && character.snapshot.time == heldSnapshot.time && character.snapshot.dragGeometry != nil
+                                        && !panel.ignoresMouseEvents && NSApp.keyWindow === heldKeyWindow,
+                                        "Ignored context gestures disturbed an active primary drag")
         try LifecycleValidation.require(character.accessibilityValue() as? String == AppText.heldPresence,
                                         "A grab is not described to VoiceOver")
         try perform(AppText.bringHome); try LifecycleValidation.assertHome(panel)
         host.onInput?(.pointerDragged(Point(x: 600, y: 300)))
         host.onInput?(.pointerReleased(Point(x: 600, y: 300)))
+        let returnSnapshot = character.snapshot, returnKeyWindow = NSApp.keyWindow
+        try NoRightClickValidation.nativeEventPaths(on: character, windowNumber: panel.windowNumber)
+        try LifecycleValidation.require(character.snapshot.phase == returnSnapshot.phase && character.snapshot.feet == returnSnapshot.feet
+                                        && character.snapshot.time == returnSnapshot.time && NSApp.keyWindow === returnKeyWindow,
+                                        "Ignored context gestures changed return-home motion or focus")
         try LifecycleValidation.assertHome(panel)
         let catchStart = character.snapshot.hitBounds.center
         host.onInput?(.pointerPressed(catchStart)); host.onInput?(.pointerDragged(catchStart + Point(x: 20, y: 10)))

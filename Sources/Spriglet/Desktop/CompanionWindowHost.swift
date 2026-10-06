@@ -11,7 +11,6 @@ import CompanionCore
 @MainActor final class CompanionWindowHost {
     var onInput: ((CompanionInput) -> Void)?
     var onPointerInput: ((DesktopPointerInput) -> Void)?
-    var makeContextMenu: (() -> NSMenu)?
     var onControlAction: ((AppControlAction) -> Void)?
     var onDraw: ((Double) -> Void)?
     private var panel: NSPanel?
@@ -22,7 +21,6 @@ import CompanionCore
         let view = CompanionView(context: context, snapshot: snapshot)
         view.onInput = { [weak self] input in self?.onInput?(input) }
         view.onPointerInput = { [weak self] input in self?.onPointerInput?(input) }
-        view.makeContextMenu = makeContextMenu
         view.onControlAction = { [weak self] in self?.onControlAction?($0) }
         view.onDraw = onDraw
         let panel = CompanionPanel(contentRect: view.bounds, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
@@ -64,7 +62,7 @@ import CompanionCore
         if visible { panel.orderFrontRegardless() } else { panel.orderOut(nil) }
     }
     func close() {
-        view?.onInput = nil; view?.onPointerInput = nil; view?.makeContextMenu = nil; view?.onControlAction = nil; view?.onDraw = nil
+        view?.onInput = nil; view?.onPointerInput = nil; view?.onControlAction = nil; view?.onDraw = nil
         panel?.orderOut(nil); panel?.close(); panel = nil; view = nil; requestedFrame = nil
     }
 }
