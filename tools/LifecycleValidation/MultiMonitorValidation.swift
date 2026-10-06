@@ -42,18 +42,15 @@ import CompanionCore
         guard let destination = logical.first(where: { !$0.isSameLogicalDisplay(as: source) }) else {
             throw Failure.message("Could not choose a distinct destination display")
         }
+        try beginDrag(host: host, view: sourceView, context: source)
+        try LifecycleValidation.require(!sourcePanel.ignoresMouseEvents,
+                                        "Native panel did not capture the pointer press")
+        try LifecycleValidation.require(sourceView.snapshot.phase == .held,
+                                        "Pointer movement did not begin a held drag")
         let originalPanel = sourcePanel
         let originalView = sourceView
         let hostIdentity = ObjectIdentifier(sourcePanel)
         let viewIdentity = ObjectIdentifier(sourceView)
-        let sourceStart = try visiblePoint(in: sourceView.snapshot)
-        host.onInput?(.pointerPressed(sourceStart))
-        try LifecycleValidation.require(!sourcePanel.ignoresMouseEvents,
-                                        "Native panel did not capture the pointer press")
-        let sourceGlobal = source.globalPoint(scene: sourceStart)
-        host.onPointerInput?(.dragged(Point(x: sourceGlobal.x + 12, y: sourceGlobal.y)))
-        try LifecycleValidation.require(sourceView.snapshot.phase == .held,
-                                        "Pointer movement did not begin a held drag")
         let drop = Point(x: destination.frame.midX, y: destination.frame.midY)
         host.onPointerInput?(.dragged(drop))
         try LifecycleValidation.require(LifecycleValidation.visiblePanel() === originalPanel,
@@ -69,8 +66,52 @@ import CompanionCore
         try LifecycleValidation.require(store.load() == originalPreferences,
                                         "Home display persisted before a successful release")
 
+        // Cancel after provisional A→B transfer. Preferences remain the
+        // authority, including an Automatic nil UUID, and the runtime returns
+        // to the initial saved-home context without retaining capture.
+        host.onInput?(.cancelInteraction)
+        let cancelledPanel = try LifecycleValidation.visiblePanel()
+        let cancelledView = cancelledPanel.contentView as! CompanionView
+        try LifecycleValidation.require(cancelledView.context.isSameLogicalDisplay(as: source),
+                                        "Cancelling a provisional transfer did not restore the authoritative home display")
+        try LifecycleValidation.require(cancelledPanel.ignoresMouseEvents && cancelledView.snapshot.phase != .held,
+                                        "Cancelling a provisional transfer retained pointer capture")
+        try LifecycleValidation.require(store.load() == originalPreferences
+                                        && runtime.preferences == originalPreferences,
+                                        "Cancelling a provisional transfer changed the saved home UUID or unrelated preferences")
+
+        // Cross A→B→A before mouse-up. Returning to the origin is an ordinary
+        // same-display release and must preserve Automatic rather than saving
+        // A's current UUID.
+        let roundTripPanel = try LifecycleValidation.visiblePanel()
+        let roundTripView = roundTripPanel.contentView as! CompanionView
+        try beginDrag(host: host, view: roundTripView, context: source)
+        host.onPointerInput?(.dragged(drop))
+        try LifecycleValidation.require(roundTripView.context.isSameLogicalDisplay(as: destination),
+                                        "A→B round-trip did not provisionally transfer to B")
+        let returnPoint = Point(x: source.frame.midX, y: source.frame.midY)
+        host.onPointerInput?(.dragged(returnPoint))
+        try LifecycleValidation.require(roundTripView.context.isSameLogicalDisplay(as: source),
+                                        "A→B→A drag did not transfer back to its origin")
+        try LifecycleValidation.require(roundTripView.snapshot.phase == .held
+                                        && !roundTripPanel.ignoresMouseEvents,
+                                        "Returning to the origin lost active drag capture")
+        try LifecycleValidation.require(store.load() == originalPreferences,
+                                        "Provisional A→B→A transfer mutated Automatic or unrelated preferences")
+        host.onPointerInput?(.released(returnPoint))
+        try LifecycleValidation.require(store.load() == originalPreferences,
+                                        "Same-origin release converted Automatic to an explicit display")
+        try LifecycleValidation.require(roundTripPanel.ignoresMouseEvents,
+                                        "Same-origin release retained pointer capture")
+
+        try beginDrag(host: host, view: roundTripView, context: source)
+        host.onPointerInput?(.dragged(drop))
+        try LifecycleValidation.require(roundTripView.context.isSameLogicalDisplay(as: destination)
+                                        && store.load() == originalPreferences,
+                                        "Successful-drop fixture did not remain provisional before mouse-up")
         host.onPointerInput?(.released(drop))
-        try LifecycleValidation.require(LifecycleValidation.visiblePanel() === originalPanel,
+        let releasePanel = try LifecycleValidation.visiblePanel()
+        try LifecycleValidation.require(releasePanel === roundTripPanel,
                                         "Successful drop recreated the native panel")
         let persisted = store.load()
         try LifecycleValidation.require(persisted.homeDisplayID == destination.persistentID,
@@ -79,27 +120,44 @@ import CompanionCore
                                         && persisted.movementIntensity == originalPreferences.movementIntensity
                                         && persisted.homeLocation == originalPreferences.homeLocation,
                                         "Cross-display release changed unrelated preferences")
-        try LifecycleValidation.require(originalView.snapshot.scene == destination.scene,
+        let releasedView = releasePanel.contentView as! CompanionView
+        try LifecycleValidation.require(releasedView.snapshot.scene == destination.scene,
                                         "Transferred engine did not retain destination scene geometry")
-        try LifecycleValidation.require(originalPanel.ignoresMouseEvents,
+        try LifecycleValidation.require(releasePanel.ignoresMouseEvents,
                                         "Release retained whole-panel pointer capture")
 
-        // A second same-display drag cancelled before release must not write
-        // preferences or replace either native object.
-        let sameDisplayStart = try visiblePoint(in: originalView.snapshot)
-        host.onInput?(.pointerPressed(sameDisplayStart))
-        host.onInput?(.pointerDragged(destination.scenePoint(global: Point(x: destination.frame.midX + 12, y: destination.frame.midY))))
+        // Now Home is an explicit saved UUID. A provisional transfer away
+        // followed by cancellation must restore this exact UUID/context.
+        let savedHome = store.load()
+        try beginDrag(host: host, view: releasedView, context: destination)
+        let originDrop = Point(x: source.frame.midX, y: source.frame.midY)
+        host.onPointerInput?(.dragged(originDrop))
+        try LifecycleValidation.require(releasedView.context.isSameLogicalDisplay(as: source)
+                                        && store.load() == savedHome,
+                                        "Explicit saved-home UUID changed before a cross-display release")
         host.onInput?(.cancelInteraction)
-        try LifecycleValidation.require(store.load() == persisted,
-                                        "Cancelled same-display drag changed persisted preferences")
-        try LifecycleValidation.require(LifecycleValidation.visiblePanel() === originalPanel
-                                        && ObjectIdentifier(originalPanel.contentView!) == viewIdentity,
-                                        "Cancelled drag replaced native panel or view")
+        let explicitHomePanel = try LifecycleValidation.visiblePanel()
+        let explicitHomeView = explicitHomePanel.contentView as! CompanionView
+        try LifecycleValidation.require(explicitHomeView.context.isSameLogicalDisplay(as: destination),
+                                        "Cancellation failed to restore the explicitly saved Home display")
+        try LifecycleValidation.require(store.load() == savedHome,
+                                        "Cancellation changed an explicit saved-home UUID or unrelated preference")
+        try LifecycleValidation.require(explicitHomePanel.ignoresMouseEvents
+                                        && explicitHomeView.snapshot.phase != .held,
+                                        "Explicit-home cancellation retained pointer capture")
 
         let reloaded = PreferenceStore(defaults: defaults).load()
-        try LifecycleValidation.require(reloaded.homeDisplayID == destination.persistentID,
+        try LifecycleValidation.require(reloaded == savedHome
+                                        && reloaded.homeDisplayID == destination.persistentID,
                                         "Destination UUID did not survive preference-store reload")
-        print("Multi-display native integration passed: connectedScreens=\(measured.count), logicalDisplays=\(logical.count), native panel/view identity, global-point transfer, capture, successful UUID persistence, unrelated preference preservation, cancellation and reload. Pointer events were injected through the production host callback; this does not verify physical mouse delivery or seam travel.")
+        print("Multi-display native integration passed: connectedScreens=\(measured.count), logicalDisplays=\(logical.count), native panel/view identity, global-point transfer, cancel after provisional transfer, A→B→A Automatic preservation, explicit saved-home restoration, successful UUID persistence, unrelated preference preservation and reload. Pointer events were injected through the production host callback; this does not verify physical mouse delivery or seam travel.")
+    }
+    private static func beginDrag(host: CompanionWindowHost, view: CompanionView,
+                                  context: DisplayContext) throws {
+        let start = try visiblePoint(in: view.snapshot)
+        host.onInput?(.pointerPressed(start))
+        let global = context.globalPoint(scene: start)
+        host.onPointerInput?(.dragged(Point(x: global.x + 12, y: global.y)))
     }
     private static func visiblePoint(in snapshot: CompanionSnapshot) throws -> Point {
         let bounds = snapshot.hitBounds
