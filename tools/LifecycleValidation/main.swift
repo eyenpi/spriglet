@@ -573,10 +573,38 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             if let previousApp { NSApp.yieldActivation(to: previousApp); previousApp.activate() }
         }
         guard let menuBar = delegate.menuBar else { throw ValidationFailure(description: "Menu bar was not installed") }
-        let menu = menuBar.menu
-        func item(_ action: AppControlAction) -> NSMenuItem { menu.items.first { !$0.isSeparatorItem && $0.tag == action.rawValue }! }
+        let statusMenu = menuBar.menu, fullMenu = menuBar.makeMenu()
+        let statusIdentity = menuBar.statusItem
+        func item(_ action: AppControlAction) -> NSMenuItem {
+            fullMenu.items.first { !$0.isSeparatorItem && $0.tag == action.rawValue }!
+        }
+        func checkStatusMenu() throws {
+            menuBar.menuNeedsUpdate(statusMenu)
+            let items = statusMenu.items
+            try require(items.count == 2 && items.map(\.tag) == [AppControlAction.settings.rawValue, AppControlAction.quit.rawValue],
+                        "Leaf menu did not contain only Settings and Quit in order")
+            try require(items.map(\.title) == [AppText.settingsMenu, AppText.quitApp]
+                        && items.allSatisfy { $0.action != nil && $0.target === menuBar && $0.isEnabled && !$0.isHidden && $0.submenu == nil },
+                        "Leaf menu labels or typed targets changed")
+            try require(items[0].keyEquivalent == "," && items[0].keyEquivalentModifierMask == .command
+                        && items[1].keyEquivalent == "q" && items[1].keyEquivalentModifierMask == .command,
+                        "Leaf menu lost Command-comma Settings or Command-Q Quit")
+            try require(menuBar.statusItem === statusIdentity && menuBar.statusItem?.menu === statusMenu,
+                        "Leaf refresh replaced or detached the status item")
+        }
         func choose(_ action: AppControlAction) throws {
-            menu.performActionForItem(at: menu.index(of: item(action)))
+            let menu: NSMenu
+            if action == .settings || action == .quit {
+                try checkStatusMenu()
+                menu = statusMenu
+            } else {
+                menuBar.menuNeedsUpdate(fullMenu)
+                menu = fullMenu
+            }
+            guard let selected = menu.items.first(where: { !$0.isSeparatorItem && $0.tag == action.rawValue }) else {
+                throw ValidationFailure(description: "Selected menu omitted \(action)")
+            }
+            menu.performActionForItem(at: menu.index(of: selected))
             if action == .settings {
                 // Settings is the one explicit action that requests activation.
                 pump(0.05)
@@ -586,6 +614,8 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             try checkFocus()
         }
         func checkLabels() throws {
+            try checkStatusMenu()
+            menuBar.menuNeedsUpdate(fullMenu)
             try require(item(.toggleVisibility).title == (runtime.controlState.isVisible ? AppText.hideMallow : AppText.showMallow),
                         "Visibility label disagrees with actual runtime state")
             try require(item(.togglePause).title == (runtime.controlState.isPaused ? AppText.resumeMallow : AppText.pauseMallow),
@@ -599,17 +629,21 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             return matches[0]
         }
         func checkFocus() throws {
+            try checkStatusMenu()
             try require(NSWorkspace.shared.frontmostApplication?.processIdentifier == expectedFrontmost,
                         "A control/recovery action changed the frontmost app")
             try require(NSApp.keyWindow === expectedKeyWindow, "A control/recovery action changed keyboard focus")
             try require(NSApp.windows.filter { $0.contentView is CompanionView || $0.title == AppText.supportTitle }
                         .allSatisfy { !$0.isKeyWindow && !$0.isMainWindow }, "The companion or Help took keyboard focus")
         }
-        try require(menu.items.filter { $0.action != nil }.count == AppControlAction.allCases.count, "Menu is missing a required control")
-        try require(item(.quit).action != nil && item(.quit).target === menuBar, "Quit is not routed through the menu action boundary")
+        menuBar.menuNeedsUpdate(fullMenu)
+        try require(fullMenu.items.filter { $0.action != nil }.count == AppControlAction.allCases.count, "Full menu is missing a required control")
+        try require(item(.quit).action != nil && item(.quit).target === menuBar, "Context-menu Quit is not routed through the menu action boundary")
         try require(menuBar.statusItem != nil && !menuBar.statusItem!.behavior.contains(.removalAllowed),
                     "Recovery entry can be removed")
+        try checkStatusMenu()
         menuBar.start()
+        try require(menuBar.statusItem === statusIdentity, "Idempotent start replaced the status item")
         try checkLabels()
         var window = try visiblePanel()
         host.onInput?(.activate); clock.onTick?(0.05)
@@ -643,6 +677,9 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         try choose(.toggleVisibility)
         try require(!window.isVisible && visibility.state == .off && menuBar.statusItem != nil,
                     "Hide lost the recovery entry or settings synchronization")
+        try choose(.settings)
+        try require(try panel(AppText.settingsTitle) === settings && !window.isVisible,
+                    "Leaf Settings was unavailable while Mallow was hidden")
         workspace.post(name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
         workspace.post(name: NSWorkspace.willSleepNotification, object: nil)
         workspace.post(name: NSWorkspace.didWakeNotification, object: nil)
@@ -698,6 +735,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         window = try visiblePanel(); try assertHome(window); try checkLabels()
 
         locks.post(name: DesktopEnvironment.screenLocked, object: nil)
+        menuBar.menuNeedsUpdate(fullMenu)
         try require(!runtime.controlState.isVisible && !item(.toggleVisibility).isEnabled && !visibility.isEnabled,
                     "Locked session still reports a visible actionable companion")
         try choose(.bringHome)
@@ -708,6 +746,9 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         available = []
         application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
         try checkLabels()
+        try choose(.settings)
+        try require(try panel(AppText.settingsTitle) === settings && !window.isVisible,
+                    "Leaf Settings was unavailable without a display")
         try require(!visibility.isEnabled, "Settings permit Show without a display")
         try require(!visibility.accessibilityPerformPress(), "Accessible Show bypassed missing display protection")
         available = [context]
@@ -725,7 +766,74 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         delegate.applicationWillTerminate(Notification(name: NSApplication.willTerminateNotification))
         try require(menuBar.statusItem == nil && !window.isVisible && !settings.isVisible && !help.isVisible,
                     "Shutdown leaked a status item, settings/help or companion window")
+        try require(statusMenu.items.count == 2 && statusMenu.items.map(\.tag) == [AppControlAction.settings.rawValue, AppControlAction.quit.rawValue],
+                    "Stopping removed or changed the reusable leaf menu")
         print("Menu-bar controls passed: state labels, Settings/Help, freeze/capture, Hide/recovery, lifecycle choices, focus and cleanup.")
+    }
+    static func productionWallSnapshots() throws {
+        let scene = SceneGeometry.preview
+        func impact(side: Double, policy: MotionPolicy) throws -> CompanionSnapshot {
+            var engine = CompanionEngine(scene: scene)
+            engine.setMotionPolicy(policy)
+            let initial = engine.snapshot, pointerStart = initial.hitBounds.center
+            engine.send(.pointerPressed(pointerStart))
+            let wall = side < 0 ? scene.leftLimit : scene.rightLimit
+            let targetFeet = Point(x: wall + side * 100 * scene.scale, y: scene.floor - 80 * scene.scale)
+            let pointerTarget = pointerStart + (targetFeet - initial.feet)
+            var impactFrame: CompanionSnapshot?
+            for _ in 0..<180 {
+                engine.send(.pointerDragged(pointerTarget))
+                engine.advance(by: 1 / 120)
+                let frame = engine.snapshot
+                let reachedWall = abs(frame.windowAnchor.x - wall) < 0.01
+                let visibleImpact = policy == .reduced || (frame.pose.width < 0.99 && frame.pose.height > 1)
+                if reachedWall && visibleImpact { impactFrame = frame; break }
+            }
+            guard let impactFrame else {
+                throw ValidationFailure(description: "Production engine did not emit a \(policy) snapshot for the \(side < 0 ? "left" : "right") wall impact")
+            }
+            return impactFrame
+        }
+
+        for side in [-1.0, 1.0] {
+            let full = try impact(side: side, policy: .full)
+            try require(full.pose.width < 0.99 && full.pose.height > 1
+                        && abs(full.pose.width * full.pose.height - 1) < 0.02,
+                        "Production snapshot lost proportional wall squash at the \(side < 0 ? "left" : "right") wall")
+            let reduced = try impact(side: side, policy: .reduced)
+            try require(reduced.pose.width == 1 && reduced.pose.height == 1,
+                        "Reduced Motion exposed wall deformation at the \(side < 0 ? "left" : "right") wall")
+        }
+
+        var cornerEngine = CompanionEngine(scene: scene)
+        let initial = cornerEngine.snapshot, pointerStart = initial.hitBounds.center
+        cornerEngine.send(.pointerPressed(pointerStart))
+        let pointerTarget = pointerStart + (Point(x: scene.rightLimit + 100 * scene.scale,
+                                                  y: scene.floor + 100 * scene.scale) - initial.feet)
+        var reachedCorner = false
+        for _ in 0..<180 {
+            cornerEngine.send(.pointerDragged(pointerTarget))
+            cornerEngine.advance(by: 1 / 120)
+            let frame = cornerEngine.snapshot
+            if abs(frame.windowAnchor.x - scene.rightLimit) < 0.01
+                && abs(frame.windowAnchor.y - scene.floor) < 0.01 {
+                reachedCorner = true; break
+            }
+        }
+        try require(reachedCorner, "Production engine did not reach the right/floor corner")
+        // Let the held wall response recover while the wall-contact latch stays
+        // set, then release at the corner. The floor contact must own this axis.
+        cornerEngine.advance(by: 3)
+        let beforeFloorContact = cornerEngine.snapshot
+        cornerEngine.send(.pointerReleased(pointerTarget))
+        cornerEngine.advance(by: 1 / 120)
+        let corner = cornerEngine.snapshot
+        try require(abs(corner.feet.x - scene.rightLimit) < 0.01 && abs(corner.feet.y - scene.floor) < 0.01,
+                    "Production corner snapshot left the scene bounds")
+        try require(corner.pose.height < beforeFloorContact.pose.height
+                    && corner.pose.width > beforeFloorContact.pose.width,
+                    "Production corner snapshot did not favor floor-axis squash over wall-axis squash")
+        print("Production wall snapshots passed: left/right full and reduced motion, plus floor-priority corner response.")
     }
     static func quitControl() throws {
         for mode in ["resting", "held", "falling", "catching", "paused", "hidden", "introduction", "settings"] {
@@ -929,6 +1037,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                 try fullscreenTransition()
                 outcome = "Passed: real fullscreen/Spaces fixture retained keyboard focus and a visible home on entry, reopen and exit."
             } else if appOnly {
+                try productionWallSnapshots()
                 try launchAtLogin()
                 try loginSettings()
                 try instanceLease()
@@ -1062,7 +1171,10 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                     FileHandle.standardError.write(Data("Quit fixture failed: \(error)\n".utf8)); exit(EXIT_FAILURE)
                 }
                 guard let menu = controls.menuBar?.menu,
-                      let quit = menu.items.first(where: { !$0.isSeparatorItem && $0.tag == AppControlAction.quit.rawValue }) else {
+                      menu.items.count == 2,
+                      menu.items.map(\.tag) == [AppControlAction.settings.rawValue, AppControlAction.quit.rawValue],
+                      let quit = menu.items.first(where: { $0.tag == AppControlAction.quit.rawValue }),
+                      quit.target === controls.menuBar else {
                     exit(EXIT_FAILURE)
                 }
                 menu.performActionForItem(at: menu.index(of: quit))

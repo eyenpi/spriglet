@@ -18,7 +18,7 @@ This animation uses the production simulation and renderer on a simulated deskto
 
 - **Quiet company.** Small glances, blinks and breathing settle back into a resting peek after you move on.
 - **Direct interaction.** Hover for a reaction, click to invite a wave, touch again to swing, or drag to play. Release near home to catch or farther away for a soft landing. Click elsewhere to bring Mallow home.
-- **Your choice of home.** Native Settings controls size, movement intensity and home display/location. A leaf in the menu bar offers Show/Hide, Pause/Resume, Bring Home, Help and optional launch at login.
+- **Your choice of home.** Native Settings controls size, movement intensity and home display/location. The menu-bar leaf opens Settings or quits; Mallow’s right-click menu offers Show/Hide, Pause/Resume, Bring Home and optional launch at login.
 - **Keyboard and VoiceOver actions.** Navigate menus and Settings with the keyboard. Invite, Swing, Stretch and Bring Home are available as character actions. Recovery never requires a precise drag.
 - **Reduce Motion.** Decorative movement and travel become still state changes; deliberate dragging and blinking remain. Every release returns directly home. The five-step Meet Mallow introduction uses still demonstrations.
 - **Local by design.** No account, advertising, analytics or app server connection. Preferences stay on this Mac. Code and original artwork use the [MIT license](LICENSE).
@@ -48,15 +48,16 @@ Builds live under `.build/xcode/Build/Products/`.
 
 ## Controls and accessibility
 
-The leaf menu offers Show/Hide Mallow, Pause/Resume Mallow, Bring Home, launch at login, Settings, Meet Mallow, Help and Quit. Settings exposes the same Show and Animate controls alongside saved preferences and a Bring Home button; Help works offline. Hide and Pause apply for the running session. Pause freezes Mallow and lets clicks pass through, releasing an active drag safely. Hide stops animation and survives sleep, lock, Spaces and display changes. Show, Bring Home and reopening from Finder recover hidden Mallow at its resting home without clearing Pause. Visibility labels reflect actual presentation, with Show unavailable during suspension or without a display. Pause/Resume reflects the user’s animation choice.
+The leaf menu contains only Settings and Quit. Settings and Mallow’s right-click menu provide Show/Hide, Pause/Resume and Bring Home; the right-click menu also provides Launch at Login, Meet Mallow, Help and Quit. Settings exposes Show and Animate for this session alongside saved preferences and its Bring Home button. Help works offline. Hide and Pause apply for the running session. Pause freezes Mallow and lets clicks pass through, releasing an active drag safely. Hide stops animation and survives sleep, lock, Spaces and display changes. Show, Bring Home and reopening from Finder recover hidden Mallow at its resting home without clearing Pause. Visibility labels reflect actual presentation, with Show unavailable during suspension or without a display. Pause/Resume reflects the user’s animation choice.
 
-Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click returns it home and opens the same controls as the leaf menu. Settings is also available through a VoiceOver character action. Settings and Meet Mallow support Tab and Shift-Tab even with macOS keyboard navigation off. Use arrow keys and Return in menus. Opening Settings activates its native window; closing it keeps Mallow running. Help, visibility/animation controls, launch, recovery and character interaction preserve keyboard focus. The introduction opens without activation; clicking its controls allows keyboard navigation. Escape dismisses the introduction when it has keyboard focus, or returns Mallow home outside native windows; native Settings controls keep their usual keyboard behavior. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
+Reopening the app from Finder returns Mallow to its resting home without activating the app. Right-click Mallow for its full character menu, including Bring Home, Launch at Login, Meet Mallow and Help. Settings is also available through a VoiceOver character action. Settings and Meet Mallow support Tab and Shift-Tab even with macOS keyboard navigation off. Use arrow keys and Return in menus. Opening Settings activates its native window; closing it keeps Mallow running. Help, visibility/animation controls, launch, recovery and character interaction preserve keyboard focus. The introduction opens without activation; clicking its controls allows keyboard navigation. Escape dismisses the introduction when it has keyboard focus, or returns Mallow home outside native windows; native Settings controls keep their usual keyboard behavior. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
 
-Launch at login is optional and off for a new installation. Enable it from the shared menus or Settings. The checkmark means macOS reports `.enabled`; a dash means `.requiresApproval`, with login launch still off until you allow it in System Settings > General > Login Items & Extensions. Unavailable states and failed changes are shown explicitly, including the macOS error when a change fails. Menus re-read registration when opened; Settings refreshes on registration changes and when it regains focus and before each action, so changes in System Settings are reflected. Quitting leaves the registration intact; turning the option off unregisters future login launches while Mallow keeps running. Startup never registers automatically or restores an old preference.
+Launch at login is optional and off for a new installation. Enable it in Settings or Mallow’s right-click menu. The checkmark means macOS reports `.enabled`; a dash means `.requiresApproval`, with login launch still off until you allow it in System Settings > General > Login Items & Extensions. Unavailable states and failed changes are shown explicitly, including the macOS error when a change fails. Mallow’s right-click menu rereads registration when opened; Settings refreshes on registration changes and when it regains focus and before each action, so changes in System Settings are reflected. Quitting leaves the registration intact; turning the option off unregisters future login launches while Mallow keeps running. Startup never registers automatically or restores an old preference.
 
 | Action | Keyboard control |
 | --- | --- |
-| Reach the menu bar | Control-F8, or Fn-Control-F8 |
+| Reach the leaf menu | Control-F8, or Fn-Control-F8 |
+| Select Settings or Quit in the leaf | Arrow keys / Return |
 | Open Settings | Command-comma while Spriglet is active |
 | Bring Home | Command-Shift-H while Spriglet is active |
 | Pause or resume | Command-Shift-P while Spriglet is active |
@@ -65,7 +66,7 @@ Launch at login is optional and off for a new installation. Enable it from the s
 | Choose a popup value or operate a control | Arrow keys / Space |
 | Close the focused native window | Command-W |
 
-Use Bring Home in the leaf menu or Settings, or reopen Spriglet from Finder, to recover hidden Mallow without dragging. The current implementation provides VoiceOver actions and Reduce Motion behavior; wider spoken VoiceOver and physical system-transition acceptance remain ongoing. See [verification](#verification).
+Open Settings from the leaf and choose Show Mallow or Bring Home, or reopen Spriglet from Finder, to recover hidden Mallow without dragging. Mallow’s right-click menu also includes these recovery controls. The current implementation provides VoiceOver actions and Reduce Motion behavior; wider spoken VoiceOver and physical system-transition acceptance remain ongoing. See [verification](#verification).
 
 ## Render a preview
 
@@ -97,7 +98,7 @@ There is one production simulation and one renderer. The preview exporter uses t
 
 `CompanionRuntime` owns visibility and pause choices and publishes an immutable `CompanionControlState`. The menu and Settings present that same state and route typed `AppControlAction` values through the app delegate. They have no engine or adapter access. The status item lives until shutdown, independently of character visibility.
 
-`AppDelegate` owns login registration through `LaunchAtLoginController` and the `MainAppLoginService` adapter. `MenuBarController` creates the shared menus; Settings displays the same system-owned registration without saving a separate login boolean. The runtime only routes the menu factory to the desktop host.
+`AppDelegate` owns login registration through `LaunchAtLoginController` and the `MainAppLoginService` adapter. `MenuBarController` builds the two-action leaf and the full character/application menus; Settings displays the same system-owned registration without saving a separate login boolean. The runtime only routes the full context-menu factory to the desktop host.
 
 `CompanionRuntime` is the composition root. It owns a `CompanionEngine`, `DesktopEnvironment`, `CompanionWindowHost`, `IntroductionWindowHost`, `IntroductionPreferences` and `ScreenFrameClock`. Adapters report to the runtime; they never call one another. Core state is held in a session value and advances in 120 Hz simulation steps, independently of display cadence. The renderer receives a `CompanionSnapshot` and cannot mutate the model.
 
