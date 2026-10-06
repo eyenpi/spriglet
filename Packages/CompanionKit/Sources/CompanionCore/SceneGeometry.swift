@@ -44,10 +44,30 @@ public enum WindowGeometry {
         }
         return Rect(x: display.minX + left, y: display.maxY - bottom, width: right - left, height: bottom - top)
     }
+    /// Keeps a requested panel rectangle inside one logical display. Oversized
+    /// axes are reduced only as much as needed; invalid rectangles are left to
+    /// the existing window-server behavior.
+    public static func containedFrame(_ requested: Rect, in display: Rect) -> Rect {
+        guard requested.hasFinitePositiveEdges, display.hasFinitePositiveEdges else { return requested }
+        let width = min(requested.width, display.width)
+        let height = min(requested.height, display.height)
+        let x = min(max(requested.minX, display.minX), display.maxX - width)
+        let y = min(max(requested.minY, display.minY), display.maxY - height)
+        let contained = Rect(x: x, y: y, width: width, height: height)
+        return contained.hasFinitePositiveEdges ? contained : requested
+    }
     public static func drawingOrigin(window: Rect, display: Rect) -> Point {
         Point(x: display.minX - window.minX, y: window.maxY - display.maxY)
     }
     public static func scenePoint(global: Point, display: Rect) -> Point {
         Point(x: global.x - display.minX, y: display.maxY - global.y)
+    }
+}
+
+private extension Rect {
+    var hasFinitePositiveEdges: Bool {
+        x.isFinite && y.isFinite && width.isFinite && height.isFinite
+            && width > 0 && height > 0 && minX.isFinite && minY.isFinite
+            && maxX.isFinite && maxY.isFinite
     }
 }

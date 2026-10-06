@@ -1098,6 +1098,13 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-multi-monitor" {
             exit(multiMonitorValidation())
         }
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-placement-frame" {
+            do { try MultiMonitorValidation.runPlacementFrame(); exit(EXIT_SUCCESS) }
+            catch {
+                FileHandle.standardError.write(Data("Placement frame validation failed: \(error)\n".utf8))
+                exit(EXIT_FAILURE)
+            }
+        }
         // These fixtures stay headless, including while another app is fullscreen.
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--quit-wait-fixture" {
             if CommandLine.arguments[2] == "exit" { exit(EXIT_SUCCESS) }

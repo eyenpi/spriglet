@@ -6,6 +6,95 @@ import CompanionCore
 /// this checks real AppKit panels, display measurements, runtime dispatch and
 /// disposable persistence without synthesizing or posting OS mouse events.
 @MainActor enum MultiMonitorValidation {
+    static func runPlacementFrame() throws {
+        guard let screen = NSScreen.screens.first(where: { $0.frame.minX < 0 && $0.frame.minY > 0 }) else {
+            throw Failure.message("No measured upper-left display is connected; placement fixture did not run")
+        }
+        let context = DisplayContext(screen: screen).placingHome(size: .small, location: .automatic)
+        let suite = "dev.spriglet.lifecycle-validation.placement.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        _ = PreferenceStore(defaults: defaults).load()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        var engine = CompanionEngine(scene: context.scene, idleSeed: 7)
+        let initial = engine.snapshot, hit = engine.snapshot.hitBounds
+        guard let press = stride(from: hit.minY, through: hit.maxY, by: 1).flatMap({ y in
+            stride(from: hit.minX, through: hit.maxX, by: 1).map { Point(x: $0, y: y) }
+        }).first(where: initial.contains) else {
+            throw Failure.message("Frozen production engine snapshot had no hit point")
+        }
+        engine.send(.pointerPressed(press))
+        let target = Point(x: 616 - context.frame.minX, y: context.frame.maxY - 994)
+        let endpoint = press + (target - initial.feet)
+        engine.send(.pointerDragged(endpoint))
+        for _ in 0..<120 { engine.advance(by: 1 / 60.0) }
+        engine.send(.pointerReleased(endpoint))
+        for _ in 0..<120 { engine.advance(by: 1 / 60.0) }
+        let snapshot = engine.snapshot
+        guard snapshot.phase != .held, !engine.hasPointerCapture, snapshot.dragGeometry == nil else {
+            throw Failure.message("Frozen snapshot retained capture or transfer state: \(snapshot.phase)")
+        }
+        let requested = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: context.frame,
+                                                    scale: snapshot.scene.scale, visibleBounds: snapshot.hitBounds)
+        let contained = WindowGeometry.containedFrame(requested, in: context.frame)
+        guard requested != contained else {
+            throw Failure.message("Production frozen frame did not exercise R→C: R=\(requested), D=\(context.frame)")
+        }
+
+        let host = CompanionWindowHost()
+        defer { host.close() }
+        host.attach(context: context, snapshot: snapshot)
+        guard let panel = NSApplication.shared.windows.first(where: { $0.title == AppText.companionName }),
+              let view = panel.contentView as? CompanionView else {
+            throw Failure.message("Production panel/view was not registered after attach")
+        }
+        let identity = ObjectIdentifier(panel), windowID = panel.windowNumber
+        func rect(_ frame: NSRect) -> Rect { Rect(x: frame.minX, y: frame.minY, width: frame.width, height: frame.height) }
+        func require(_ condition: Bool, _ message: String) throws {
+            if !condition { throw Failure.message(message) }
+        }
+        func checkCoordinates() throws {
+            let actual = rect(panel.frame), origin = view.drawingOrigin
+            try require(view.frame.width == WindowGeometry.width * context.scene.scale
+                        && view.frame.height == WindowGeometry.height * context.scene.scale,
+                        "Native view dimensions changed during R/C transitions")
+            try require(panel.backingScaleFactor == screen.backingScaleFactor,
+                        "Native backing scale changed during R/C transitions")
+            for point in [snapshot.feet, snapshot.geometry.bounds.center] {
+                let global = Point(x: actual.minX + point.x + origin.x,
+                                   y: actual.maxY - point.y - origin.y)
+                try require(global == Point(x: context.frame.minX + point.x, y: context.frame.maxY - point.y),
+                            "Actual-frame compensation changed a global scene point")
+            }
+            let local = NSPoint(x: snapshot.feet.x + origin.x, y: snapshot.feet.y + origin.y)
+            let inWindow = view.convert(local, to: nil)
+            let screenPoint = panel.convertPoint(toScreen: inWindow)
+            let backInView = view.convert(panel.convertPoint(fromScreen: screenPoint), from: nil)
+            try require(abs(backInView.x - local.x) < 0.001 && abs(backInView.y - local.y) < 0.001,
+                        "Native screen event coordinate round trip changed a scene point")
+            try require(panel.windowNumber == windowID && ObjectIdentifier(panel) == identity,
+                        "R/C transition replaced the native panel")
+        }
+
+        try require(rect(panel.frame) == contained,
+                    "Initial eligible native frame was not expected C: actual=\(rect(panel.frame)), R=\(requested), C=\(contained), D=\(context.frame)")
+        try checkCoordinates()
+        host.update(snapshot: snapshot, capturesPointer: true, pointer: target)
+        try require(rect(panel.frame) == requested, "Pointer capture did not restore original R")
+        try require(!panel.ignoresMouseEvents, "Captured fixture panel became click-through")
+        try checkCoordinates()
+        host.update(snapshot: snapshot, capturesPointer: false, pointer: Point(x: -1000, y: -1000))
+        try require(rect(panel.frame) == contained, "Capture retirement did not select C immediately")
+        try require(panel.ignoresMouseEvents, "Unheld fixture panel stopped being click-through")
+        try checkCoordinates()
+        try require(panel.screen?.frame == screen.frame, "Panel screen disagrees with the active display")
+        let accessibility = view.accessibilityFrame()
+        try require(abs(accessibility.minX - (context.frame.minX + snapshot.hitBounds.minX)) < 0.001
+                    && abs(accessibility.maxY - (context.frame.maxY - snapshot.hitBounds.minY)) < 0.001,
+                    "Accessibility frame changed with panel placement")
+        print("Placement native frame fixture passed: panelID=\(windowID), screen=\(screen.frame), activeDisplay=\(context.frame), backingScale=\(panel.backingScaleFactor), R=\(requested), C=\(contained), actualC=\(rect(panel.frame)), view=\(view.frame), origin=\(view.drawingOrigin), feetGlobal=(616,994), samePanel=true. Injected no mouse events; native composition remains unverified.")
+    }
+
     static func run() throws {
         let measured = NSScreen.screens.map(DisplayContext.init(screen:))
         var logical: [DisplayContext] = []

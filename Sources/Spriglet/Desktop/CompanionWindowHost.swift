@@ -40,8 +40,14 @@ import CompanionCore
     }
     func update(snapshot: CompanionSnapshot, capturesPointer: Bool, pointer: Point, acceptsInput: Bool = true, isPaused: Bool = false) {
         guard let panel, let view else { return }
-        let frame = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: view.context.frame,
-                                               scale: snapshot.scene.scale, visibleBounds: snapshot.hitBounds)
+        let requested = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: view.context.frame,
+                                                    scale: snapshot.scene.scale, visibleBounds: snapshot.hitBounds)
+        let frame: Rect
+        if !capturesPointer && snapshot.phase != .held && snapshot.dragGeometry == nil {
+            frame = WindowGeometry.containedFrame(requested, in: view.context.frame)
+        } else {
+            frame = requested
+        }
         // Avoid window-server work for the stationary home. Compare requested
         // positions, since macOS may clamp the actual panel to the display.
         if requestedFrame.map({ abs(frame.x - $0.x) > 0.05 || abs(frame.y - $0.y) > 0.05

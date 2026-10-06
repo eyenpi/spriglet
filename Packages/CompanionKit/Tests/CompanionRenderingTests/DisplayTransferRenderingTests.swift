@@ -146,6 +146,143 @@ import Testing
         #expect(mismatches == 0, "Retargeting changed the fixed-global silhouette or attachment pixels")
     }
 
+    @Test("Contained corner frames never remove production renderer pixels")
+    func containedCornerPaintOracle() throws {
+        let displays = [Rect(x: -1772, y: 982, width: 2560, height: 1440),
+                        Rect(x: 788, y: 982, width: 2560, height: 1440)]
+        for (index, display) in displays.enumerated() {
+            let home = index == 0 ? Rect(x: 2330, y: 0, width: 180, height: 20)
+                                  : Rect(x: 50, y: 0, width: 180, height: 20)
+            let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 2560, height: 1440),
+                                      home: home, floor: 1428, scale: 0.8, hasHardwareNotch: false)
+            var engine = CompanionEngine(scene: scene, idleSeed: 7)
+            var snapshots = [engine.snapshot]
+            let initial = engine.snapshot
+            let hit = initial.hitBounds
+            guard let press = stride(from: hit.minY, through: hit.maxY, by: 1).flatMap({ y in
+                stride(from: hit.minX, through: hit.maxX, by: 1).map { Point(x: $0, y: y) }
+            }).first(where: initial.contains) else {
+                Issue.record("Production engine had no visible point for corner trace")
+                continue
+            }
+            engine.send(.pointerPressed(press))
+            let target = Point(x: index == 0 ? scene.rightLimit : scene.leftLimit, y: scene.floor)
+            let endpoint = press + (target - initial.feet)
+            engine.send(.pointerDragged(endpoint))
+            for _ in 0..<120 { engine.advance(by: 1 / 60.0) }
+            engine.send(.pointerReleased(endpoint))
+            if engine.snapshot.phase == .falling { snapshots.append(engine.snapshot) }
+            for _ in 0..<600 {
+                engine.advance(by: 1 / 60.0)
+                if engine.snapshot.phase == .falling { snapshots.append(engine.snapshot); break }
+            }
+            for _ in 0..<900 {
+                engine.advance(by: 1 / 60.0)
+                if engine.snapshot.phase == .grounded { snapshots.append(engine.snapshot); break }
+            }
+            engine.send(.command(.hop))
+            var hopSamples: [CompanionSnapshot] = []
+            for _ in 0..<600 {
+                engine.advance(by: 1 / 60.0)
+                if engine.snapshot.phase == .jumping { hopSamples.append(engine.snapshot) }
+                else if !hopSamples.isEmpty { break }
+            }
+            if let apex = hopSamples.min(by: { $0.feet.y < $1.feet.y }) { snapshots.append(apex) }
+            for _ in 0..<900 {
+                engine.advance(by: 1 / 60.0)
+                if engine.snapshot.phase == .grounded { snapshots.append(engine.snapshot); break }
+            }
+            engine.send(.command(.returnHome))
+            for _ in 0..<900 {
+                engine.advance(by: 1 / 60.0)
+                if engine.snapshot.phase == .catching { snapshots.append(engine.snapshot); break }
+            }
+            for _ in 0..<900 {
+                engine.advance(by: 1 / 60.0)
+                if engine.snapshot.phase == .hanging { snapshots.append(engine.snapshot); break }
+            }
+            for phase in [BodyPhase.falling, .grounded, .jumping, .catching, .hanging] {
+                #expect(snapshots.contains(where: { $0.phase == phase }), "Corner trace missed renderer state \(phase)")
+            }
+            #expect(snapshots.contains(where: { $0.presence == .peek }), "Corner trace missed home/peek renderer state")
+
+            var sawEscape = false
+            for snapshot in snapshots {
+                let old = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: display,
+                                                      scale: snapshot.scene.scale, visibleBounds: snapshot.hitBounds)
+                let next = WindowGeometry.containedFrame(old, in: display)
+                guard old != next else { continue }
+                sawEscape = true
+                let render = try render(snapshot, width: 2560, height: 1440)
+                let oldOrigin = WindowGeometry.drawingOrigin(window: old, display: display)
+                let nextOrigin = WindowGeometry.drawingOrigin(window: next, display: display)
+                let oldIn = Rect(x: max(old.minX, display.minX), y: max(old.minY, display.minY),
+                                 width: max(0, min(old.maxX, display.maxX) - max(old.minX, display.minX)),
+                                 height: max(0, min(old.maxY, display.maxY) - max(old.minY, display.minY)))
+                let scanLeft = max(0, Int(floor(min(oldIn.minX, next.minX) - display.minX)))
+                let scanRight = min(2560, Int(ceil(max(oldIn.maxX, next.maxX) - display.minX)))
+                let scanTop = max(0, Int(floor(display.maxY - max(oldIn.maxY, next.maxY))))
+                let scanBottom = min(1440, Int(ceil(display.maxY - min(oldIn.minY, next.minY))))
+                var controlPaint = 0, retained = 0, added = 0, lost = 0, rgbaMismatches = 0
+                var bodyFootControl = 0, handControl = 0, shadowControl = 0
+                let geometry = snapshot.geometry
+                let shadowY = snapshot.feet.y - 7 * snapshot.scene.scale
+                for y in scanTop..<scanBottom {
+                    for x in scanLeft..<scanRight {
+                        let scenePoint = Point(x: Double(x) + 0.5, y: Double(y) + 0.5)
+                        let oldGlobal = Point(x: old.minX + scenePoint.x + oldOrigin.x,
+                                              y: old.maxY - scenePoint.y - oldOrigin.y)
+                        let nextGlobal = Point(x: next.minX + scenePoint.x + nextOrigin.x,
+                                               y: next.maxY - scenePoint.y - nextOrigin.y)
+                        #expect(abs(oldGlobal.x - nextGlobal.x) < 0.000001
+                                && abs(oldGlobal.y - nextGlobal.y) < 0.000001)
+                        let global = Point(x: display.minX + scenePoint.x, y: display.maxY - scenePoint.y)
+                        let oldVisible = global.x >= old.minX && global.x < old.maxX
+                            && global.y >= old.minY && global.y < old.maxY
+                        let nextVisible = global.x >= next.minX && global.x < next.maxX
+                            && global.y >= next.minY && global.y < next.maxY
+                        guard oldVisible || nextVisible else { continue }
+                        let color = render.colorAt(x: x, y: y)
+                        let control = [color?.redComponent ?? 0, color?.greenComponent ?? 0,
+                                       color?.blueComponent ?? 0, color?.alphaComponent ?? 0]
+                        if control[3] > 0 { controlPaint += 1 }
+                        let oldPixel = oldVisible ? control : [CGFloat](repeating: 0, count: 4)
+                        let nextPixel = nextVisible ? control : [CGFloat](repeating: 0, count: 4)
+                        if oldPixel != nextPixel { rgbaMismatches += 1 }
+                        if oldPixel[3] > 0 && nextPixel[3] > 0 { retained += 1 }
+                        if oldPixel[3] == 0 && nextPixel[3] > 0 { added += 1 }
+                        if oldPixel[3] > 0 && nextPixel[3] == 0 { lost += 1 }
+                        if scenePoint.x >= snapshot.feet.x - 70 && scenePoint.x <= snapshot.feet.x + 70
+                            && scenePoint.y >= snapshot.feet.y - 110 && scenePoint.y <= snapshot.feet.y + 14
+                            && control[3] > 0 { bodyFootControl += 1 }
+                        if geometry.hands.contains(where: { hand in
+                            let xs = [hand.arm.start.x, hand.arm.control1.x, hand.arm.control2.x, hand.arm.end.x]
+                            let ys = [hand.arm.start.y, hand.arm.control1.y, hand.arm.control2.y, hand.arm.end.y]
+                            let bounds = Rect(x: xs.min()! - 4, y: ys.min()! - 4,
+                                              width: xs.max()! - xs.min()! + 8, height: ys.max()! - ys.min()! + 8)
+                            return bounds.contains(scenePoint) || hand.palm.contains(scenePoint)
+                        }), control[3] > 0 { handControl += 1 }
+                        if snapshot.phase == .grounded
+                            && scenePoint.x >= snapshot.feet.x - 50 * snapshot.scene.scale
+                            && scenePoint.x <= snapshot.feet.x + 50 * snapshot.scene.scale
+                            && scenePoint.y >= shadowY - 2 * snapshot.scene.scale
+                            && scenePoint.y <= shadowY + 8 * snapshot.scene.scale
+                            && control[3] > 0 { shadowControl += 1 }
+                    }
+                }
+                #expect(controlPaint > 0, "Generous full-renderer reference must be non-vacuous")
+                #expect(retained > 0, "Full renderer control must paint within the old panel")
+                #expect(bodyFootControl > 0, "Body/feet pixel control must be non-vacuous")
+                #expect(handControl > 0, "Hand pixel control must be non-vacuous")
+                if snapshot.phase == .grounded { #expect(shadowControl > 0, "Grounded shadow pixel control must be non-vacuous") }
+                #expect(added == max(0, controlPaint - retained), "Added renderer pixels are counted on the global grid")
+                #expect(lost == 0, "Containment lost renderer pixels")
+                #expect(rgbaMismatches == added + lost, "All RGBA differences must be accounted for as added or lost paint")
+            }
+            #expect(sawEscape, "Corner trace must include an escaping old panel frame")
+        }
+    }
+
     private func copy(_ frame: CompanionSnapshot, dragGeometry: DragGeometry?) -> CompanionSnapshot {
         CompanionSnapshot(scene: frame.scene, presence: frame.presence, phase: frame.phase, pose: frame.pose,
                           feet: frame.feet, windowAnchor: frame.windowAnchor, rotation: frame.rotation,
