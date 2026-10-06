@@ -14,7 +14,7 @@ A second touch brings a wave or a gentle swing. Release near the notch to let Ma
 
 ### Controls within reach
 
-{{menuControlsHelp}} Hidden Mallow is recoverable from the menu bar or by reopening the app from Finder. Offline Help preserves keyboard focus in your current app.
+{{menuControlsHelp}} Hidden Mallow is recoverable through Show Mallow or Bring Home in Settings, opened from the leaf, or by reopening the app from Finder. Offline Help preserves keyboard focus in your current app.
 
 ### Your choice of home
 

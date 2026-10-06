@@ -14,7 +14,7 @@ A second touch brings a wave or a gentle swing. Release near the notch to let Ma
 
 ### Controls within reach
 
-Use the leaf in the menu bar to show or hide Mallow, pause or resume animation, bring it home, review Launch at Login, open Settings or Help, replay Meet Mallow, and quit Spriglet. Hidden Mallow is recoverable from the menu bar or by reopening the app from Finder. Offline Help preserves keyboard focus in your current app.
+The leaf in the menu bar opens Settings or quits Spriglet. In Settings, use Show Mallow, Animate Mallow or Bring Home to recover Mallow. Right-click Mallow for those controls, Launch at Login, Meet Mallow and Help. Hidden Mallow is recoverable through Show Mallow or Bring Home in Settings, opened from the leaf, or by reopening the app from Finder. Offline Help preserves keyboard focus in your current app.
 
 ### Your choice of home
 
