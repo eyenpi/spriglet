@@ -138,7 +138,7 @@ Settings changes apply immediately and restore after relaunch. Small, Medium and
 
 Mallow occupies a transparent panel scaled with the character. Its canvas expands only when needed to fit the visible body or attached hands during a grab. Empty margins and transparent corners pass clicks through; a drag retains capture until release or cancellation. While captured, the runtime samples the left mouse button so a lost mouse-up cannot leave a stuck drag. The floor clears macOS-reported reserved space. Other app windows and the exact Dock icon shelf are not inspected.
 
-During a drag, window placement contains transparent padding separately on each axis where the full unmasked artwork fits the active display. The other axis stays free when the body, hands or shadow cross a screen seam. This avoids unnecessary window overlap with the lower display at inward corners of a triangular layout. Rendering still clips to the connected display surfaces and hardware housing; drawing coordinates come from the actual native window frame.
+During a desktop drag, one persistent input panel retains capture while temporary, click-through canvases draw the same immutable snapshot on each touched physical display. Every paint canvas stays within its display, so changing pointer ownership across a seam does not move a straddling paint window between displays. These borderless panels preserve full-display placement at menu-bar edges; rendering still clips to connected display surfaces and hardware housing. Drawing coordinates come from actual native frames. The canvases own no simulation or clock and close when the drag geometry retires, interaction is cancelled or the runtime stops.
 
 ## Verification
 

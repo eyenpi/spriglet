@@ -51,10 +51,10 @@ import Testing
         #expect(engine.snapshot.feet == before.feet && engine.snapshot.pose == before.pose)
         let down = engine.snapshot
         let requested = request(down, display: displays[active])
-        let candidate = placement(down, display: displays[active])
-        #expect(requested.minY < 982 && candidate.minY == 982)
-        #expect(candidate.x == requested.x && candidate.width == requested.width,
-                "Art crossing the upper seam must keep horizontal canvas travel")
+        let candidate = try layout(down, display: displays[active])
+        #expect(requested.minY < 982 && candidate.inputFrame.minY == 982)
+        #expect(candidate.canvases.count == 2,
+                "The grounded corner must paint on both upper displays without extending a window onto the lower display")
         try checkPaint(down, display: displays[active], checkNegatives: true)
 
         let inward = destination == 0 ? -1.0 : 1.0
@@ -76,7 +76,12 @@ import Testing
         let across = engine.snapshot
         let seamPaint = paint(across, display: displays[active])
         #expect(seamPaint.minY < 982 && seamPaint.maxY > 982)
-        #expect(placement(across, display: displays[active]).y == request(across, display: displays[active]).y)
+        let crossingLayout = try layout(across, display: displays[active])
+        #expect(crossingLayout.canvases.contains { $0.display == displays[2] })
+        #expect(crossingLayout.canvases.allSatisfy { canvas in
+            canvas.frame.minX >= canvas.display.minX && canvas.frame.maxX <= canvas.display.maxX
+                && canvas.frame.minY >= canvas.display.minY && canvas.frame.maxY <= canvas.display.maxY
+        })
         try checkPaint(across, display: displays[active])
         engine.send(.pointerReleased(bottomSeam))
         try checkPaint(engine.snapshot, display: displays[active])
@@ -130,7 +135,7 @@ import Testing
     }
     private func request(_ snapshot: CompanionSnapshot, display: Rect) -> Rect {
         WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: display,
-                                    scale: snapshot.scene.scale, visibleBounds: snapshot.hitBounds)
+                                    scale: snapshot.scene.scale, visibleBounds: snapshot.dragGeometry == nil ? snapshot.hitBounds : snapshot.geometry.paintBounds(drawShadow: snapshot.phase == .grounded))
     }
     private func paint(_ snapshot: CompanionSnapshot, display: Rect) -> Rect {
         let bounds = snapshot.geometry.paintBounds(drawShadow: snapshot.phase == .grounded)
@@ -138,9 +143,10 @@ import Testing
         return Rect(x: display.minX + bounds.minX - margin, y: display.maxY - bounds.maxY - margin,
                     width: bounds.width + 2 * margin, height: bounds.height + 2 * margin)
     }
-    private func placement(_ snapshot: CompanionSnapshot, display: Rect) -> Rect {
-        WindowGeometry.axisContainedFrame(request(snapshot, display: display), in: display,
-                                          protecting: paint(snapshot, display: display))
+    private func layout(_ snapshot: CompanionSnapshot, display: Rect) throws -> DesktopWindowLayout {
+        try #require(WindowGeometry.desktopLayout(requested: request(snapshot, display: display),
+                                                   paint: paint(snapshot, display: display), activeDisplay: display,
+                                                   displays: displays))
     }
 
     private func checkPaint(_ snapshot: CompanionSnapshot, display: Rect, checkNegatives: Bool = false) throws {
@@ -148,13 +154,15 @@ import Testing
         let crop = Rect(x: floor(envelope.minX) - 16, y: floor(envelope.minY) - 16,
                         width: ceil(envelope.maxX) - floor(envelope.minX) + 32,
                         height: ceil(envelope.maxY) - floor(envelope.minY) + 32)
-        let old = request(snapshot, display: display), next = placement(snapshot, display: display)
+        let old = request(snapshot, display: display), next = try layout(snapshot, display: display)
         for scale in [1, 2] {
             let control = try render(snapshot, display: display, crop: crop, scale: scale)
             let oldImage = try render(snapshot, display: display, crop: crop, scale: scale, window: old)
-            let nextImage = try render(snapshot, display: display, crop: crop, scale: scale, window: next)
+            let nextImage = try render(snapshot, display: display, crop: crop, scale: scale, canvases: next.canvases)
             let pixels = control.pixelsWide * control.pixelsHigh
-            var painted = 0, lost = 0, mismatched = 0
+            var painted = 0, lost = 0, mismatched = 0, oldMismatches = 0
+            var maximumByteDifference = 0
+            var firstMismatch = ""
             var headPixels: [(Int, Int)] = []
             let crown = NSBezierPath()
             crown.move(to: NSPoint(x: MallowGeometry.bodyCurves[0].start.x, y: MallowGeometry.bodyCurves[0].start.y))
@@ -175,16 +183,29 @@ import Testing
                     if canonical.y <= -40 && crown.contains(NSPoint(x: canonical.x, y: canonical.y)) { headPixels.append((x, y)) }
                     if nextImage.colorAt(x: x, y: y)!.alphaComponent == 0 { lost += 1 }
                 }
-                if color != nextImage.colorAt(x: x, y: y) || color != oldImage.colorAt(x: x, y: y) { mismatched += 1 }
+                if color != nextImage.colorAt(x: x, y: y) {
+                    mismatched += 1
+                    if firstMismatch.isEmpty { firstMismatch = "pixel=(\(x),\(y)) reference=\(color) tiled=\(String(describing: nextImage.colorAt(x: x, y: y)))" }
+                }
+                for component in 0..<4 {
+                    let reference = control.bitmapData![y * control.bytesPerRow + x * 4 + component]
+                    let tiled = nextImage.bitmapData![y * nextImage.bytesPerRow + x * 4 + component]
+                    maximumByteDifference = max(maximumByteDifference, abs(Int(reference) - Int(tiled)))
+                }
+                if color != oldImage.colorAt(x: x, y: y) { oldMismatches += 1 }
             }
             #expect(painted > 0 && !headPixels.isEmpty, "Full artwork and crown controls must be nonempty")
-            #expect(lost == 0 && mismatched == 0, "Canvas relocation changed global RGBA pixels")
+            // Independently clipped Core Graphics gradients differ by up to
+            // two 8-bit quanta. No painted pixel may disappear; the wrong-origin
+            // and cropped-crown controls below must still reject displacement.
+            #expect(lost == 0 && maximumByteDifference <= 2 && oldMismatches == 0,
+                    "Canvas changed pixels: lost=\(lost) maxByteDelta=\(maximumByteDifference) tiledMismatch=\(mismatched) oldMismatch=\(oldMismatches) phase=\(snapshot.phase) t=\(snapshot.time) scale=\(scale) \(firstMismatch)")
             if checkNegatives {
-                let cut = Rect(x: next.x, y: next.y, width: next.width,
-                               height: envelope.maxY - next.y - 16 * snapshot.scene.scale)
+                let cut = Rect(x: old.x, y: old.y, width: old.width,
+                               height: envelope.maxY - old.y - 16 * snapshot.scene.scale)
                 let cropped = try render(snapshot, display: display, crop: crop, scale: scale, window: cut)
                 let shifted = try render(snapshot, display: display, crop: crop, scale: scale,
-                                         window: next, originOffset: Point(x: 0, y: 16 * snapshot.scene.scale))
+                                         canvases: next.canvases, originOffset: Point(x: 0, y: 16 * snapshot.scene.scale))
                 #expect(headPixels.contains { cropped.colorAt(x: $0.0, y: $0.1)!.alphaComponent == 0 },
                         "Crown crop negative control must lose actual head pixels")
                 #expect(headPixels.contains { shifted.colorAt(x: $0.0, y: $0.1) != control.colorAt(x: $0.0, y: $0.1) },
@@ -193,7 +214,7 @@ import Testing
         }
     }
     private func render(_ snapshot: CompanionSnapshot, display: Rect, crop: Rect, scale: Int,
-                        window: Rect? = nil, originOffset: Point = .zero) throws -> NSBitmapImageRep {
+                        window: Rect? = nil, canvases: [DisplayWindowFrame]? = nil, originOffset: Point = .zero) throws -> NSBitmapImageRep {
         let bitmap = try #require(NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(crop.width) * scale,
                                                   pixelsHigh: Int(crop.height) * scale, bitsPerSample: 8,
                                                   samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
@@ -205,13 +226,26 @@ import Testing
         cg.clear(CGRect(x: 0, y: 0, width: bitmap.pixelsWide, height: bitmap.pixelsHigh))
         cg.translateBy(x: 0, y: CGFloat(bitmap.pixelsHigh)); cg.scaleBy(x: CGFloat(scale), y: -CGFloat(scale))
         NSGraphicsContext.current = NSGraphicsContext(cgContext: cg, flipped: true)
-        if let window {
+        func draw(window: Rect, surface: Rect?) {
+            cg.saveGState()
             cg.translateBy(x: window.minX - crop.minX, y: crop.maxY - window.maxY)
             cg.clip(to: CGRect(x: 0, y: 0, width: window.width, height: window.height))
             let origin = WindowGeometry.drawingOrigin(window: window, display: display) + originOffset
             cg.translateBy(x: origin.x, y: origin.y)
-        } else { cg.translateBy(x: display.minX - crop.minX, y: crop.maxY - display.maxY) }
-        MallowRenderer().draw(snapshot)
+            if let surface {
+                cg.clip(to: CGRect(x: surface.minX - display.minX, y: display.maxY - surface.maxY,
+                                   width: surface.width, height: surface.height))
+            }
+            MallowRenderer().draw(snapshot)
+            cg.restoreGState()
+        }
+        if let canvases {
+            for canvas in canvases { draw(window: canvas.frame, surface: canvas.display) }
+        } else if let window { draw(window: window, surface: nil) }
+        else {
+            cg.translateBy(x: display.minX - crop.minX, y: crop.maxY - display.maxY)
+            MallowRenderer().draw(snapshot)
+        }
         return bitmap
     }
 }

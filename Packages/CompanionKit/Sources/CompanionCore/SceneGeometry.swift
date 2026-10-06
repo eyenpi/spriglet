@@ -56,22 +56,27 @@ public enum WindowGeometry {
         let contained = Rect(x: x, y: y, width: width, height: height)
         return contained.hasFinitePositiveEdges ? contained : requested
     }
-    /// Remove off-display padding independently on each axis, keeping the
-    /// complete unmasked paint envelope on the canvas. An axis with artwork
-    /// crossing a display seam must remain free for continuous desktop dragging.
-    public static func axisContainedFrame(_ requested: Rect, in display: Rect, protecting paint: Rect) -> Rect {
-        guard requested.hasFinitePositiveEdges, display.hasFinitePositiveEdges,
-              paint.hasFinitePositiveEdges, requested.covers(paint) else { return requested }
-        let contained = containedFrame(requested, in: display)
-        let constrainX = paint.minX >= display.minX && paint.maxX <= display.maxX
-            && paint.minX >= contained.minX && paint.maxX <= contained.maxX
-        let constrainY = paint.minY >= display.minY && paint.maxY <= display.maxY
-            && paint.minY >= contained.minY && paint.maxY <= contained.maxY
-        let frame = Rect(x: constrainX ? contained.x : requested.x,
-                         y: constrainY ? contained.y : requested.y,
-                         width: constrainX ? contained.width : requested.width,
-                         height: constrainY ? contained.height : requested.height)
-        return frame.hasFinitePositiveEdges && frame.covers(paint) ? frame : requested
+    /// A persistent input window and independent, display-contained paint
+    /// canvases. The input rectangle and paint envelope are independent, so
+    /// presentation ownership never switches with pointer ownership.
+    public static func desktopLayout(requested: Rect, paint: Rect, activeDisplay: Rect,
+                                     displays: [Rect]) -> DesktopWindowLayout? {
+        guard requested.hasFinitePositiveEdges, activeDisplay.hasFinitePositiveEdges,
+              paint.hasFinitePositiveEdges else { return nil }
+        var frames: [DisplayWindowFrame] = []
+        for display in [activeDisplay] + displays where display.hasFinitePositiveEdges {
+            guard !frames.contains(where: { $0.display == display }) else { continue }
+            let left = max(paint.minX, display.minX), right = min(paint.maxX, display.maxX)
+            let bottom = max(paint.minY, display.minY), top = min(paint.maxY, display.maxY)
+            guard right > left && top > bottom else { continue }
+            // Round outward to whole logical points so native pixel alignment
+            // cannot trim a fractional tile edge. Never extend onto a neighbor.
+            let x = max(left.rounded(.down), display.minX), y = max(bottom.rounded(.down), display.minY)
+            let frame = Rect(x: x, y: y, width: min(right.rounded(.up), display.maxX) - x,
+                             height: min(top.rounded(.up), display.maxY) - y)
+            if frame.hasFinitePositiveEdges { frames.append(DisplayWindowFrame(display: display, frame: frame)) }
+        }
+        return DesktopWindowLayout(inputFrame: containedFrame(requested, in: activeDisplay), canvases: frames)
     }
     public static func drawingOrigin(window: Rect, display: Rect) -> Point {
         Point(x: display.minX - window.minX, y: window.maxY - display.maxY)
@@ -81,10 +86,19 @@ public enum WindowGeometry {
     }
 }
 
+public struct DisplayWindowFrame: Equatable, Sendable {
+    public let display: Rect
+    public let frame: Rect
+    public init(display: Rect, frame: Rect) { self.display = display; self.frame = frame }
+}
+
+public struct DesktopWindowLayout: Equatable, Sendable {
+    public let inputFrame: Rect
+    public let canvases: [DisplayWindowFrame]
+    public init(inputFrame: Rect, canvases: [DisplayWindowFrame]) { self.inputFrame = inputFrame; self.canvases = canvases }
+}
+
 private extension Rect {
-    func covers(_ other: Rect) -> Bool {
-        other.minX >= minX && other.maxX <= maxX && other.minY >= minY && other.maxY <= maxY
-    }
     var hasFinitePositiveEdges: Bool {
         x.isFinite && y.isFinite && width.isFinite && height.isFinite
             && width > 0 && height > 0 && minX.isFinite && minY.isFinite

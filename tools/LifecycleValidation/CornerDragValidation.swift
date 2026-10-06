@@ -12,8 +12,110 @@ import CompanionCore
         guard upper.count >= 2 else { throw Failure("Corner drag validation requires two displays above the primary display") }
         for context in upper {
             try check(context: context, displays: contexts, rightCorner: context.frame.midX < main.frame.midX)
+            try checkRuntimeTransfers(source: context, main: main, displays: contexts)
         }
         print("Both triangle corner native checks passed: production View input, capture, actual paint coverage, next draw, inward drag, seam travel, release and regrab. Compositor-visible output and physical mouse delivery remain unverified.")
+    }
+
+    private static func checkRuntimeTransfers(source: DisplayContext, main: DisplayContext,
+                                               displays: [DisplayContext]) throws {
+        let suite = "dev.spriglet.lifecycle-validation.seam.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = PreferenceStore(defaults: defaults)
+        var preferences = store.load()
+        preferences.homeDisplayID = source.persistentID; preferences.characterSize = .small
+        store.save(preferences)
+        let introduction = IntroductionPreferences(defaults: defaults); introduction.recordDismissal()
+        let host = CompanionWindowHost(), clock = ScreenFrameClock()
+        var pointer = Point.zero
+        let runtime = CompanionRuntime(environment: DesktopEnvironment(displays: { displays }), clock: clock, host: host,
+                                       introductionPreferences: introduction, preferenceStore: store,
+                                       leftButtonIsDown: { true }, pointerLocation: { pointer })
+        defer { runtime.stop() }
+        runtime.start()
+        var input = try LifecycleValidation.visiblePanel(), view = input.contentView as! CompanionView
+        let identity = ObjectIdentifier(input)
+        func event(_ type: NSEvent.EventType, at global: Point) throws {
+            pointer = global
+            let point = input.convertPoint(fromScreen: NSPoint(x: global.x, y: global.y))
+            let event = NSEvent.mouseEvent(with: type, location: point, modifierFlags: [],
+                                          timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: input.windowNumber,
+                                          context: nil, eventNumber: 1, clickCount: 1, pressure: 1)!
+            switch type {
+            case .leftMouseDown: view.mouseDown(with: event)
+            case .leftMouseDragged: view.mouseDragged(with: event)
+            case .leftMouseUp: view.mouseUp(with: event)
+            default: throw Failure("Unsupported runtime fixture event")
+            }
+        }
+        let press = try visiblePoint(view.snapshot)
+        try event(.leftMouseDown, at: view.context.globalPoint(scene: press))
+        let x = main.frame.midX + (source.frame.midX < main.frame.midX ? -250 : 250)
+        try event(.leftMouseDragged, at: Point(x: x, y: source.frame.minY + 110))
+        for _ in 0..<120 { clock.onTick?(1 / 60.0) }
+        try require(view.snapshot.phase == .held, "Runtime seam fixture did not begin dragging")
+        var sawBothDisplays = false
+        for direction in [1, -1, 1] {
+            for step in 0...60 {
+                let offset = direction == 1 ? 110 - Double(step) * 220 / 60 : -110 + Double(step) * 220 / 60
+                try event(.leftMouseDragged, at: Point(x: x, y: source.frame.minY + offset))
+                clock.onTick?(1 / 60.0)
+                try require(try LifecycleValidation.visiblePanel() === input && ObjectIdentifier(input) == identity,
+                            "Vertical transfer replaced the native input window")
+                try require(view.snapshot.phase == .held && !input.ignoresMouseEvents,
+                            "Vertical transfer lost pointer capture")
+                try require(store.load() == preferences, "Provisional vertical transfer changed saved preferences")
+                if step % 10 == 0 {
+                    try validatePresentation(snapshot: view.snapshot, context: view.context, input: input)
+                    let passive = NSApp.windows.filter { $0.isVisible && $0.contentView is CompanionCanvasView && !($0.contentView is CompanionView) }
+                    if passive.contains(where: { covers(source.frame, rect($0.frame)) })
+                        && passive.contains(where: { covers(main.frame, rect($0.frame)) }) { sawBothDisplays = true }
+                }
+            }
+            let expected = direction == 1 ? main : source
+            try require(view.context.isSameLogicalDisplay(as: expected), "Runtime did not retarget across the vertical seam")
+        }
+        try require(sawBothDisplays, "Runtime trace never painted both sides of the seam")
+        try event(.leftMouseUp, at: pointer)
+        try require(store.load().homeDisplayID == main.persistentID, "Vertical release did not commit the lower display UUID")
+        for _ in 0..<240 { clock.onTick?(1 / 60.0) }
+        try require(NSApp.windows.allSatisfy { !$0.isVisible || !($0.contentView is CompanionCanvasView) || $0.contentView is CompanionView },
+                    "Release retirement leaked a passive paint window")
+        runtime.bringHome()
+        try require(view.snapshot.phase == .hanging && !input.isKeyWindow, "Bring Home failed after a vertical transfer")
+        // Cancellation must remove paint windows even while both displays are
+        // touched; ordinary post-release cleanup does not exercise this path.
+        for action in ["pause", "hide", "stop"] {
+            let saved = store.load()
+            let grab = try visiblePoint(view.snapshot)
+            try event(.leftMouseDown, at: view.context.globalPoint(scene: grab))
+            try event(.leftMouseDragged, at: Point(x: x, y: main.frame.maxY + 48))
+            for _ in 0..<120 { clock.onTick?(1 / 60.0) }
+            try require(view.snapshot.phase == .held && NSApp.windows.contains {
+                $0.isVisible && $0.contentView is CompanionCanvasView && !($0.contentView is CompanionView)
+            }, "\(action) fixture did not create active paint canvases: phase=\(view.snapshot.phase), sameInput=\(input.contentView === view), pointer=\(pointer)")
+            switch action {
+            case "pause": runtime.setPaused(true)
+            case "hide": runtime.setVisible(false)
+            default: runtime.stop()
+            }
+            try require(store.load() == saved, "\(action) committed a provisional display")
+            try require(NSApp.windows.allSatisfy {
+                !$0.isVisible || !($0.contentView is CompanionCanvasView) || $0.contentView is CompanionView
+            }, "\(action) left a visible passive canvas")
+            if action == "pause" { runtime.setPaused(false) }
+            if action != "stop" {
+                runtime.bringHome()
+                // Cancelling on a provisional display restores the saved home
+                // and may replace the input window after capture has ended.
+                input = try LifecycleValidation.visiblePanel()
+                view = input.contentView as! CompanionView
+            }
+        }
+        try require(NSApp.windows.allSatisfy { !$0.isVisible || !($0.contentView is CompanionCanvasView) },
+                    "Stopping the runtime left a visible canvas")
+        print("Vertical runtime seam passed: \(source.frame) ↔ \(main.frame), mixed backing, unchanged provisional preferences, one input window, complete native crown, release UUID and canvas cleanup.")
     }
 
     private static func check(context: DisplayContext, displays: [DisplayContext], rightCorner: Bool) throws {
@@ -30,10 +132,9 @@ import CompanionCore
         try require(engine.snapshot.phase == .grounded, "Corner fixture failed to reach the floor")
         let host = CompanionWindowHost()
         defer { host.onPointerInput = nil; host.onDraw = nil; host.close() }
-        var draws = 0
-        host.onDraw = { _ in draws += 1 }
         let previousWindows = Set(NSApp.windows.map(ObjectIdentifier.init))
         host.attach(context: context, snapshot: engine.snapshot)
+        host.setVisible(true)
         guard let panel = NSApp.windows.first(where: { !previousWindows.contains(ObjectIdentifier($0)) && $0.title == AppText.companionName }),
               let view = panel.contentView as? CompanionView else { throw Failure("Missing native panel/view") }
         let identity = ObjectIdentifier(panel)
@@ -75,54 +176,15 @@ import CompanionCore
             let snapshot = engine.snapshot, d = context.frame
             let actual = rect(panel.frame)
             let requested = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: d,
-                                                        scale: snapshot.scene.scale, visibleBounds: snapshot.hitBounds)
-            let paint = protectedPaint(snapshot, display: d)
-            let expected = !engine.hasPointerCapture && snapshot.phase != .held && snapshot.dragGeometry == nil
-                ? WindowGeometry.containedFrame(requested, in: d)
-                : WindowGeometry.axisContainedFrame(requested, in: d, protecting: paint)
+                                                        scale: snapshot.scene.scale,
+                                                        visibleBounds: snapshot.dragGeometry == nil ? snapshot.hitBounds
+                                                            : snapshot.geometry.paintBounds(drawShadow: snapshot.phase == .grounded))
             try require(ObjectIdentifier(panel) == identity && panel.contentView === view,
-                        "Drag replaced the panel or view")
+                        "Drag replaced the input panel or view")
             try require(view.context.hasSameLayout(as: context), "Placement changed the logical display")
-            if protectFullPaint {
-                try require(covers(actual, paint), "Actual native window clips protected paint at \(stage): A=\(actual), G=\(paint)")
-                let viewPaint = Rect(x: paint.x - actual.minX, y: actual.maxY - paint.maxY,
-                                     width: paint.width, height: paint.height)
-                try require(covers(rect(view.bounds), viewPaint), "Actual content-view bounds clip paint at \(stage)")
-                if paint.minX >= d.minX && paint.maxX <= d.maxX {
-                    try require(actual.minX >= d.minX && actual.maxX <= d.maxX, "Native X containment failed")
-                }
-                if paint.minY >= d.minY && paint.maxY <= d.maxY {
-                    try require(actual.minY >= d.minY && actual.maxY <= d.maxY, "Native Y containment failed")
-                }
-            }
-            for point in [snapshot.feet, snapshot.geometry.root.apply(snapshot.geometry.body.apply(Point(x: 0, y: -58)))] {
-                let origin = view.drawingOrigin
-                let actualGlobal = Point(x: actual.minX + point.x + origin.x, y: actual.maxY - point.y - origin.y)
-                try require(MultiMonitorValidation.pointsWithinNativeTolerance(actualGlobal, context.globalPoint(scene: point)),
-                            "Actual-frame compensation moved feet/head")
-            }
-            let scale = panel.backingScaleFactor, probe = view.convertToBacking(NSRect(x: 0, y: 0, width: 10, height: 10))
-            try require(scale.isFinite && scale > 0 && abs(probe.width - 10 * scale) < 1e-8
-                        && abs(probe.height - 10 * scale) < 1e-8, "Native view backing conversion changed")
-            let oldDraws = draws
-            guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { throw Failure("Could not allocate native draw bitmap") }
-            view.cacheDisplay(in: view.bounds, to: bitmap)
-            try require(draws > oldDraws, "Next production View draw did not execute")
-            var paintedCrownSamples = 0
-            let geometry = snapshot.geometry
-            for y in stride(from: -70.0, through: -45.0, by: 5) {
-                for x in stride(from: -25.0, through: 25.0, by: 5) {
-                    let point = geometry.root.apply(geometry.body.apply(Point(x: x, y: y)))
-                    guard snapshot.contains(point) else { continue }
-                    let local = point + view.drawingOrigin
-                    let pixelX = Int((local.x - view.bounds.minX) * Double(bitmap.pixelsWide) / view.bounds.width)
-                    let pixelY = Int((local.y - view.bounds.minY) * Double(bitmap.pixelsHigh) / view.bounds.height)
-                    if pixelX >= 0 && pixelX < bitmap.pixelsWide && pixelY >= 0 && pixelY < bitmap.pixelsHigh,
-                       bitmap.colorAt(x: pixelX, y: pixelY)!.alphaComponent > 0 { paintedCrownSamples += 1 }
-                }
-            }
-            try require(paintedCrownSamples > 0, "Next native View draw has no visible crown pixels at \(stage)")
-            print("CORNER_DRAG stage=\(stage) display=\(d) R=\(requested) H=\(expected) A=\(actual) paint=\(paint) origin=\(view.drawingOrigin) backing=\(scale) screen=\(String(describing: panel.screen?.frame)) fullPaint=\(protectFullPaint) nextDraw=true")
+            try require(covers(d, actual), "Input window escaped the active display")
+            try validatePresentation(snapshot: snapshot, context: context, input: panel)
+            print("CORNER_DRAG stage=\(stage) display=\(d) requested=\(requested) input=\(actual) splitPaint=\(snapshot.dragGeometry != nil) fullPaint=\(protectFullPaint)")
         }
 
         try checkFrame("rest", protectFullPaint: false)
@@ -166,6 +228,79 @@ import CompanionCore
         try require(!engine.hasPointerCapture && engine.snapshot.phase == .hanging, "Cancellation failed to restore home")
     }
 
+    static func validatePresentation(snapshot: CompanionSnapshot, context: DisplayContext, input: NSWindow) throws {
+        guard let inputView = input.contentView as? CompanionView else { throw Failure("Missing input view") }
+        let passive = NSApp.windows.filter { $0.isVisible && $0.contentView is CompanionCanvasView && !($0.contentView is CompanionView) }
+        let requested = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: context.frame,
+                                                    scale: snapshot.scene.scale,
+                                                    visibleBounds: snapshot.dragGeometry == nil ? snapshot.hitBounds
+                                                        : snapshot.geometry.paintBounds(drawShadow: snapshot.phase == .grounded))
+        let paint = protectedPaint(snapshot, display: context.frame)
+        let displays = snapshot.dragGeometry?.surfaces.map { surface in
+            Rect(x: context.frame.minX + surface.bounds.minX, y: context.frame.maxY - surface.bounds.maxY,
+                 width: surface.bounds.width, height: surface.bounds.height)
+        } ?? []
+        let layout = snapshot.dragGeometry == nil ? nil
+            : WindowGeometry.desktopLayout(requested: requested, paint: paint, activeDisplay: context.frame, displays: displays)
+        try require(inputView.drawsSnapshot == (layout == nil), "Input view duplicates drag artwork")
+        try require(passive.count == (layout?.canvases.count ?? 0), "Unexpected passive canvas count")
+        var bitmaps: [(CompanionCanvasView, NSBitmapImageRep)] = []
+        let windows = layout == nil ? [input] : passive
+        for window in windows {
+            let canvas = window.contentView as! CompanionCanvasView
+            let actual = rect(window.frame)
+            if layout != nil {
+                guard let surface = layout?.canvases.first(where: { covers($0.display, actual) }) else {
+                    throw Failure("Passive canvas straddles physical displays")
+                }
+                try require(covers(actual, surface.frame), "Native placement cropped the planned canvas: actual=\(actual) expected=\(surface.frame) surface=\(surface.display)")
+                try require(window.ignoresMouseEvents && !window.canBecomeKey && !window.canBecomeMain,
+                            "Passive canvas can intercept input or focus")
+                try require(!canvas.isAccessibilityElement(), "Passive canvas duplicates accessibility")
+            }
+            try require(canvas.snapshot.feet == snapshot.feet && canvas.snapshot.pose == snapshot.pose
+                        && canvas.snapshot.time == snapshot.time, "Canvases are drawing different simulation states")
+            let crown = snapshot.geometry.root.apply(snapshot.geometry.body.apply(Point(x: 0, y: -58)))
+            for point in [snapshot.feet, crown] {
+                let global = Point(x: actual.minX + point.x + canvas.drawingOrigin.x,
+                                   y: actual.maxY - point.y - canvas.drawingOrigin.y)
+                try require(MultiMonitorValidation.pointsWithinNativeTolerance(global, context.globalPoint(scene: point)),
+                            "Canvas origin moved global feet/head")
+            }
+            let scale = window.backingScaleFactor
+            let probe = canvas.convertToBacking(NSRect(x: 0, y: 0, width: 10, height: 10))
+            try require(scale.isFinite && scale > 0 && abs(probe.width - 10 * scale) < 1e-8
+                        && abs(probe.height - 10 * scale) < 1e-8, "Canvas backing conversion changed")
+            guard let bitmap = canvas.bitmapImageRepForCachingDisplay(in: canvas.bounds) else {
+                throw Failure("Could not allocate native canvas bitmap")
+            }
+            var drew = false
+            let callback = canvas.onDraw
+            canvas.onDraw = { _ in drew = true }
+            canvas.cacheDisplay(in: canvas.bounds, to: bitmap)
+            canvas.onDraw = callback
+            try require(drew, "Next production canvas draw did not execute")
+            bitmaps.append((canvas, bitmap))
+        }
+        var expected = 0, retained = 0
+        let geometry = snapshot.geometry
+        for y in stride(from: -65.0, through: -45.0, by: 5) {
+            for x in stride(from: -20.0, through: 20.0, by: 5) {
+                let point = geometry.root.apply(geometry.body.apply(Point(x: x, y: y)))
+                guard snapshot.contains(point) else { continue }
+                expected += 1
+                if bitmaps.contains(where: { canvas, bitmap in
+                    let local = point + canvas.drawingOrigin
+                    let px = Int((local.x - canvas.bounds.minX) * Double(bitmap.pixelsWide) / canvas.bounds.width)
+                    let py = Int((local.y - canvas.bounds.minY) * Double(bitmap.pixelsHigh) / canvas.bounds.height)
+                    return px >= 0 && px < bitmap.pixelsWide && py >= 0 && py < bitmap.pixelsHigh
+                        && bitmap.colorAt(x: px, y: py)!.alphaComponent > 0
+                }) { retained += 1 }
+            }
+        }
+        try require(expected > 0 && retained == expected, "Native display canvases lost legal crown samples: \(retained)/\(expected)")
+    }
+
     private static func dragGeometry(active: DisplayContext, displays: [DisplayContext]) -> DragGeometry {
         let offsets = displays.map { DesktopDragCoordinates.translation(from: $0.frame, to: active.frame) }
         let surfaces = displays.indices.map { index in
@@ -190,7 +325,12 @@ import CompanionCore
         for y in stride(from: hit.minY, through: hit.maxY, by: 1) {
             for x in stride(from: hit.minX, through: hit.maxX, by: 1) {
                 let point = Point(x: x, y: y)
-                if snapshot.contains(point) { return point }
+                // Avoid an exact silhouette/housing boundary: conversion
+                // through AppKit may differ by a fraction of a logical point.
+                if [point, point + Point(x: -1, y: 0), point + Point(x: 1, y: 0),
+                    point + Point(x: 0, y: -1), point + Point(x: 0, y: 1)].allSatisfy(snapshot.contains) {
+                    return point
+                }
             }
         }
         throw Failure("Snapshot has no visible pick")
