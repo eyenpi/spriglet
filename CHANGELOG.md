@@ -4,6 +4,39 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
+## 0.3.2 — Mallow across your displays
+
+2026-10-07 · App 0.3.2 · Build 7
+
+Continuous dragging across connected displays, a simpler leaf menu and a refreshed Meet Mallow introduction.
+
+Prepared for TestFlight and a GitHub source-and-release-notes release. Apple processing, beta review and public Mac App Store availability are separate steps; no new public app download is implied.
+
+### Added
+
+- Drag Mallow between connected displays while preserving pointer capture, pose and motion; save the destination Home after a successful release.
+- Soft squash feedback when Mallow lands against a side wall.
+
+### Changed
+
+- The menu-bar leaf now contains Settings and Quit; recovery, visibility, pause and login controls remain in Settings and the native app menu.
+- Meet Mallow uses a postcard layout with the production character demonstrations.
+- Website deployment tooling uses Wrangler 4.147.0.
+
+### Removed
+
+- The right-click popup over Mallow and the detached wave sparkle.
+
+### Fixed
+
+- Keep complete drag artwork visible across display seams, including triangular arrangements and mixed display scales.
+- Hide the resting crown above Home on displays without a notch while keeping the face visible.
+
+### Known limitations
+
+- Plugins, assistant services, sound, other-app window awareness and exact Dock shelf inspection are not included.
+- Spoken VoiceOver, physical sleep/lock/display transitions, actual login delivery and sustained battery use need broader device testing.
+
 ## 0.3.1 — Accessible Mallow
 
 2026-10-05 · App 0.3.1 · Build 6

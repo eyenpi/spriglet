@@ -27,9 +27,9 @@ This animation uses the production simulation and renderer on a simulated deskto
 
 | Distribution | Version | Status |
 | --- | --- | --- |
-| Mac App Store | 0.3.1 (build 6) | Submitted October 5, 2026. Waiting for Review as of that date; availability requires Apple approval and manual release. |
+| TestFlight and App Review | 0.3.1 (build 6) | The maintainer reports TestFlight availability and an app under review as of October 7, 2026. Public Mac App Store availability requires Apple approval and manual release. |
 | [GitHub preview](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1) | 0.3.0 (build 5) | Older public Mallow preview with ad hoc signing and no Apple notarization. |
-| Source on `main` | 0.3.1 | Current app source, accessibility work and repository/website updates. Build instructions follow below. |
+| Next update source | 0.3.2 (build 7) | Continuous multi-display dragging, simpler controls and the refreshed introduction. Build instructions follow below; upload and publication are separate steps. |
 
 The GitHub download predates the current Settings, menu controls, introduction and accessibility work described here. Choose its `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP; macOS may block the download. Historical releases describe their own builds and characters. There is no public App Store download yet. Plugins and assistant services are not implemented.
 
@@ -168,6 +168,6 @@ The Mallow release replaces the previous character and interaction system. The b
 
 A release goes through a PR, required security and Mac build checks, then a merge to `main`. Build and package that exact clean revision, mount and verify the DMG, create an immutable annotated tag and publish the matching changelog and checksummed downloads. The publisher refuses mismatched or dirty source. See [release instructions](tools/ReleaseNotes/README.md) and [packaging](tools/ReleaseValidation/README.md).
 
-App 0.3.1, build 6 has been submitted to the Mac App Store, separately from the older GitHub preview. Its signed archive and Store metadata are recorded for that exact build; later website and GitHub presentation updates do not rebuild it. Store preparation and validation are documented in [App Store delivery](tools/AppStore/README.md).
+App 0.3.1, build 6 is the existing TestFlight build and app under review, as reported by the maintainer on October 7, 2026. Version 0.3.2, build 7 prepares the next update without replacing that submission. Archive, export, upload, beta review and public release remain separate steps. See [App Store delivery](tools/AppStore/README.md).
 
 Next steps are broader physical-device acceptance (sleep/wake, display transitions, spoken VoiceOver and sustained energy use), Apple review and manual release, and more spriglets. Additional characters are planned, not available in the current app. A future direct-download release needs its own Developer ID signing, notarization and exact-build validation. Future capabilities should use the typed command boundary; no plugin loader, assistant behavior, external-app awareness or 3D runtime is included.

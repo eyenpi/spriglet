@@ -1,6 +1,6 @@
 # App Store preparation
 
-App 0.3.1, build 6 is the Mac App Store release candidate. The published GitHub preview is a separate unsigned download. Metadata and policy are generated from `Configuration/Shared`; local validation does not constitute Apple approval. Submission status is recorded privately with the exact archive, rather than inferred from source documentation.
+Version 0.3.2, build 7 prepares the next TestFlight and Store update. The maintainer reports that version 0.3.1, build 6 is already in TestFlight and the app is under review as of October 7, 2026; preserve that submission while preparing the next build. The published GitHub preview is a separate older unsigned download. Metadata and policy are generated from `Configuration/Shared`; local validation does not constitute Apple approval. Record live upload, processing and submission status privately with the exact archive.
 
 ```sh
 python3 tools/SharedContent/sync.py --check
