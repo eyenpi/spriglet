@@ -48,6 +48,7 @@ jobs:
           python3 -m unittest discover -s tools/ReleaseNotes -p 'test_*.py'
           python3 -m unittest discover -s tools/AppStore -p 'test_*.py'
           python3 -m unittest discover -s tools/SharedContent -p 'test_*.py'
+          python3 -m unittest discover -s tools/AppStore/website -p 'test_*.py'
           python3 -m unittest discover -s tools/WebsiteDeployment -p 'test_*.py'
       - name: App Store source and metadata checks
         run: |
@@ -55,6 +56,18 @@ jobs:
           sh -n scripts/deploy-website.sh
           scripts/archive-app-store.sh --unsigned --check
           python3 tools/AppStore/website/build.py --check
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Homepage browser, navigation and accessibility checks
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund --prefix tools/WebsiteDeployment
+          npm ci --ignore-scripts --no-audit --no-fund --prefix tools/AppStore/website
+          tools/AppStore/website/node_modules/.bin/playwright install chromium webkit
+          npm test --prefix tools/AppStore/website -- --workers=2
       - name: Production scene preview
         run: ./scripts/preview.sh .build/ci-preview/frames
       - name: App icon artwork and catalog

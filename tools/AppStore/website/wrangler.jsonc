@@ -17,7 +17,8 @@
       "../../../Sources/Spriglet/Assets.xcassets/AppIcon.appiconset",
       "../../../LICENSE",
       "../../SharedContent/sync.py",
-      "./build.py"
+      "./build.py",
+      "./home.html"
     ]
   },
   "assets": {

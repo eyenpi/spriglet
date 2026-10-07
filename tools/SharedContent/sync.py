@@ -89,7 +89,7 @@ def output_files(root=ROOT):
     config = {"name": "meetspriglet-support", "compatibility_date": "2026-09-15", "send_metrics": False,
               "workers_dev": False, "routes": [{"pattern": context["websiteDomain"], "custom_domain": True}],
               "build": {"command": 'PYTHONDONTWRITEBYTECODE=1 python3 "$(git rev-parse --show-toplevel)/tools/SharedContent/sync.py"',
-                        "watch_dir": ["../../../Configuration/Shared", "../../../Sources/Spriglet/Assets.xcassets/AppIcon.appiconset", "../../../LICENSE", "../../SharedContent/sync.py", "./build.py"]},
+                        "watch_dir": ["../../../Configuration/Shared", "../../../Sources/Spriglet/Assets.xcassets/AppIcon.appiconset", "../../../LICENSE", "../../SharedContent/sync.py", "./build.py", "./home.html"]},
               "assets": {"directory": "./public", "html_handling": "auto-trailing-slash", "not_found_handling": "404-page"},
               "observability": {"enabled": False}}
     outputs["tools/AppStore/website/wrangler.jsonc"] = "// Generated from Configuration/Shared/brand.json by tools/SharedContent/sync.py.\n" + json.dumps(config, indent=2) + "\n"
