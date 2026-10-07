@@ -50,6 +50,20 @@ import Testing
         state.update(at: 1000, quiet: true, enabled: true)
         #expect(state.requestedMoment == nil)
     }
+#if DEBUG
+    @Test("A debug request starts through its command and pointer attention interrupts it",
+          arguments: IdleMoment.allCases)
+    func debugTrigger(moment: IdleMoment) {
+        var engine = CompanionEngine(scene: .preview)
+        engine.requestDebugIdleMoment(moment)
+        #expect(engine.requestedIdleMoment == moment)
+        engine.send(.command(moment.command))
+        #expect(engine.snapshot.idleMoment?.moment == moment)
+        engine.send(.pointerMoved(engine.snapshot.hitBounds.center))
+        #expect(engine.snapshot.idleMoment == nil)
+        #expect(engine.snapshot.presence == .peek && engine.snapshot.phase == .hanging)
+    }
+#endif
     @Test("Energy, battery, heat and Reduce Motion gate pending and active work")
     func gating() throws {
         let blocked: [RuntimeConditions] = [

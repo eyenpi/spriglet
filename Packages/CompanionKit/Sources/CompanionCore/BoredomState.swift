@@ -109,4 +109,10 @@ public struct BoredomState: Sendable {
         frame = IdleMomentFrame(moment: moment, progress: 0)
         return true
     }
+#if DEBUG
+    mutating func requestDebugMoment(_ moment: IdleMoment, at time: Double) {
+        guard frame == nil, requestedMoment == nil, time.isFinite, time >= lastTime else { return }
+        lastTime = time; quietSince = time; eligible = true; requestedMoment = moment
+    }
+#endif
 }

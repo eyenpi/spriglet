@@ -1078,6 +1078,15 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         }
     }
     static func main() {
+#if DEBUG
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-debug-idle-argument" {
+            do { try DebugIdleMomentValidation.run(); exit(EXIT_SUCCESS) }
+            catch {
+                FileHandle.standardError.write(Data("Debug idle argument validation failed: \(error)\n".utf8))
+                exit(EXIT_FAILURE)
+            }
+        }
+#endif
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--lease-holder" {
             do {
                 let storage = URL(fileURLWithPath: CommandLine.arguments[2])

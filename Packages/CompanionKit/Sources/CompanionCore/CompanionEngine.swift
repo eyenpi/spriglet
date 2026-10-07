@@ -84,6 +84,16 @@ public struct CompanionEngine: Sendable {
         idleMomentsEnabled = enabled
         if !enabled { boredom.interrupt(at: time, cadence: idleCadence) }
     }
+#if DEBUG
+    /// Seeds one eligible request for the desktop debug trigger. Runtime still
+    /// delivers its typed command through the normal command/interruption path.
+    public mutating func requestDebugIdleMoment(_ moment: IdleMoment) {
+        guard idleMomentsEnabled, motionPolicy == .full, movementAmount > 0,
+              body.phase == .hanging, interaction.presence == .peek, !hasPointerCapture,
+              pointer.distance(to: snapshot.feet) >= 260 * body.scene.scale else { return }
+        boredom.requestDebugMoment(moment, at: time)
+    }
+#endif
     public mutating func setMotionPolicy(_ policy: MotionPolicy) {
         guard motionPolicy != policy else { return }
         motionPolicy = policy

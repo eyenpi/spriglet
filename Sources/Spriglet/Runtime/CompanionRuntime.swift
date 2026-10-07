@@ -28,6 +28,9 @@ import CompanionCore
     private var engine: CompanionEngine?
     private let boredomTiming: BoredomTiming
     private let idleSeed: UInt64
+#if DEBUG
+    private var debugIdleMoment: IdleMoment? = DebugIdleMomentArgument.parse(arguments: ProcessInfo.processInfo.arguments)
+#endif
     /// Only Debug builds honor the accelerated demo. Release never reads it.
     private static var defaultBoredomTiming: BoredomTiming {
         #if DEBUG
@@ -122,6 +125,16 @@ import CompanionCore
     }
     func bringHome() { guard running else { return }; hidden = false; environment.recover() }
     func perform(_ command: CompanionCommand) { send(.command(command)) }
+#if DEBUG
+    private func performDebugIdleMoment(_ moment: IdleMoment) {
+        guard isAnimating else { return }
+        // Move the simulated pointer out of Mallow's attention radius, then
+        // create the requested eligible Core command and deliver it normally.
+        engine?.send(.pointerMoved(Point(x: -1_000_000, y: -1_000_000)))
+        engine?.requestDebugIdleMoment(moment)
+        perform(moment.command)
+    }
+#endif
     func showIntroductionIfNeeded() { if introductionPreferences.shouldPresentOnLaunch { showIntroduction() } }
     func showIntroduction() { guard running else { return }; selectIntroductionStep(.hover); presentIntroduction() }
     private func selectIntroductionStep(_ step: IntroductionStep) {
@@ -180,6 +193,12 @@ import CompanionCore
         guard let engine else { return }
         host.attach(context: next, snapshot: engine.snapshot)
         resumeClock(); refresh(); introductionHost.setVisible(false); presentIntroduction()
+#if DEBUG
+        if let moment = debugIdleMoment {
+            debugIdleMoment = nil
+            performDebugIdleMoment(moment)
+        }
+#endif
     }
     private func samePhysicalLayout(_ a: DisplayContext, _ b: DisplayContext) -> Bool {
         a.logicalID == b.logicalID && a.hasSameMeasurements(as: b)
