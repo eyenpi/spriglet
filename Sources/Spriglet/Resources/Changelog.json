@@ -2,6 +2,38 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "0.3.2",
+      "appVersion": "0.3.2",
+      "build": 7,
+      "date": "2026-10-07",
+      "channel": "stable",
+      "title": "Mallow across your displays",
+      "summary": "Continuous dragging across connected displays, a simpler leaf menu and a refreshed Meet Mallow introduction.",
+      "distribution": "Prepared for TestFlight and a GitHub source-and-release-notes release. Apple processing, beta review and public Mac App Store availability are separate steps; no new public app download is implied.",
+      "changes": {
+        "added": [
+          "Drag Mallow between connected displays while preserving pointer capture, pose and motion; save the destination Home after a successful release.",
+          "Soft squash feedback when Mallow lands against a side wall."
+        ],
+        "changed": [
+          "The menu-bar leaf now contains Settings and Quit; recovery, visibility, pause and login controls remain in Settings and the native app menu.",
+          "Meet Mallow uses a postcard layout with the production character demonstrations.",
+          "Website deployment tooling uses Wrangler 4.147.0."
+        ],
+        "removed": [
+          "The right-click popup over Mallow and the detached wave sparkle."
+        ],
+        "fixed": [
+          "Keep complete drag artwork visible across display seams, including triangular arrangements and mixed display scales.",
+          "Hide the resting crown above Home on displays without a notch while keeping the face visible."
+        ]
+      },
+      "knownLimitations": [
+        "Plugins, assistant services, sound, other-app window awareness and exact Dock shelf inspection are not included.",
+        "Spoken VoiceOver, physical sleep/lock/display transitions, actual login delivery and sustained battery use need broader device testing."
+      ]
+    },
+    {
       "version": "0.3.1",
       "appVersion": "0.3.1",
       "build": 6,

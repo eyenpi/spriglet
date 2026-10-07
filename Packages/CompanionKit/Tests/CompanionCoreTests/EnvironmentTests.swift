@@ -21,6 +21,81 @@ import Testing
         let global = Point(x: display.minX + feet.x, y: display.maxY - feet.y)
         #expect(WindowGeometry.scenePoint(global: global, display: display) == feet)
     }
+    @Test("Contained panel frames preserve size, cover the clipped intersection, and retain global pixels")
+    func containedWindowFrames() {
+        let display = Rect(x: -1772, y: 982, width: 2560, height: 1440)
+        let requested = Rect(x: 528, y: 954, width: 176, height: 144)
+        let contained = WindowGeometry.containedFrame(requested, in: display)
+        #expect(contained == Rect(x: 528, y: 982, width: 176, height: 144))
+        #expect(WindowGeometry.containedFrame(Rect(x: -1600, y: 1200, width: 176, height: 144), in: display)
+                == Rect(x: -1600, y: 1200, width: 176, height: 144))
+
+        // The clamp must include the full old-frame/display intersection,
+        // including every edge and corner, despite moving the panel origin.
+        let intersection = Rect(x: requested.minX, y: display.minY, width: requested.width, height: 116)
+        for point in [
+            Point(x: intersection.minX, y: intersection.minY),
+            Point(x: intersection.maxX, y: intersection.minY),
+            Point(x: intersection.minX, y: intersection.maxY),
+            Point(x: intersection.maxX, y: intersection.maxY),
+            Point(x: intersection.midX, y: intersection.midY),
+        ] {
+            #expect(point.x >= contained.minX && point.x <= contained.maxX)
+            #expect(point.y >= contained.minY && point.y <= contained.maxY)
+        }
+
+        // Scene pixels map from the full display independently of panel frame.
+        let points = [Point(x: 616, y: 994), Point(x: 650.25, y: 1001.75), Point(x: 703, y: 1110)]
+        let actual = Rect(x: contained.x + 3, y: contained.y - 5, width: contained.width, height: contained.height)
+        for point in points {
+            let oldOrigin = WindowGeometry.drawingOrigin(window: requested, display: display)
+            let newOrigin = WindowGeometry.drawingOrigin(window: actual, display: display)
+            let oldGlobal = Point(x: requested.minX + point.x + oldOrigin.x,
+                                  y: requested.maxY - point.y - oldOrigin.y)
+            let newGlobal = Point(x: actual.minX + point.x + newOrigin.x,
+                                  y: actual.maxY - point.y - newOrigin.y)
+            #expect(oldGlobal == newGlobal)
+            #expect(oldGlobal == Point(x: display.minX + point.x, y: display.maxY - point.y))
+        }
+    }
+    @Test("Containment handles every display edge, oversized axes, and invalid overflow")
+    func containedWindowFrameEdges() {
+        let displays = [
+            Rect(x: -1772, y: 982, width: 2560, height: 1440),
+            Rect(x: 1512, y: -900, width: 1920, height: 1080),
+        ]
+        for display in displays {
+            let corners = [
+                Rect(x: display.minX - 20, y: display.minY - 30, width: 176, height: 144),
+                Rect(x: display.maxX - 100, y: display.minY - 30, width: 176, height: 144),
+                Rect(x: display.minX - 20, y: display.maxY - 100, width: 176, height: 144),
+                Rect(x: display.maxX - 100, y: display.maxY - 100, width: 176, height: 144),
+            ]
+            for request in corners {
+                let frame = WindowGeometry.containedFrame(request, in: display)
+                #expect(frame.minX >= display.minX && frame.maxX <= display.maxX)
+                #expect(frame.minY >= display.minY && frame.maxY <= display.maxY)
+                #expect(frame.width == request.width && frame.height == request.height)
+            }
+        }
+        let display = Rect(x: -100, y: -50, width: 300, height: 200)
+        #expect(WindowGeometry.containedFrame(Rect(x: -500, y: 20, width: 500, height: 400), in: display)
+                == display)
+        #expect(WindowGeometry.containedFrame(Rect(x: 500, y: 20, width: 60, height: 500), in: display)
+                == Rect(x: 140, y: -50, width: 60, height: 200))
+        let invalidRequests = [
+            Rect(x: .nan, y: 0, width: 1, height: 1),
+            Rect(x: 0, y: 0, width: 0, height: 1),
+            Rect(x: Double.greatestFiniteMagnitude, y: 0, width: Double.greatestFiniteMagnitude, height: 1),
+        ]
+        #expect(WindowGeometry.containedFrame(invalidRequests[0], in: display).x.isNaN)
+        for request in invalidRequests.dropFirst() {
+            #expect(WindowGeometry.containedFrame(request, in: display) == request)
+        }
+        let invalidDisplay = Rect(x: 0, y: 0, width: .infinity, height: 100)
+        let validRequest = Rect(x: 0, y: 0, width: 10, height: 10)
+        #expect(WindowGeometry.containedFrame(validRequest, in: invalidDisplay) == validRequest)
+    }
     @Test("Sleep, session lock and critical heat suspend animation")
     func suspension() {
         var policy = RuntimeConditions()

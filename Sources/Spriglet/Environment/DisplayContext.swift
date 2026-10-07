@@ -4,6 +4,7 @@ import CompanionCore
 struct DisplayContext {
     let screen: NSScreen
     let id: CGDirectDisplayID
+    let mirrorMasterID: CGDirectDisplayID?
     let persistentID: String
     let frame: Rect
     let scene: SceneGeometry
@@ -31,8 +32,11 @@ struct DisplayContext {
                               floor: min(f.height, floor), hasHardwareNotch: notch)
         self.init(screen: screen, id: id, frame: frame, scene: scene)
     }
-    init(screen: NSScreen, id: CGDirectDisplayID, frame: Rect, scene: SceneGeometry, persistentID: String? = nil) {
+    init(screen: NSScreen, id: CGDirectDisplayID, frame: Rect, scene: SceneGeometry,
+         persistentID: String? = nil, mirrorMasterID: CGDirectDisplayID? = nil) {
         self.screen = screen; self.id = id; self.frame = frame; self.scene = scene
+        let master = mirrorMasterID ?? CGDisplayMirrorsDisplay(id)
+        self.mirrorMasterID = master == kCGNullDirectDisplay ? nil : master
         if let persistentID { self.persistentID = persistentID }
         else if let uuid = CGDisplayCreateUUIDFromDisplayID(id)?.takeRetainedValue() {
             self.persistentID = CFUUIDCreateString(nil, uuid) as String
@@ -59,12 +63,25 @@ struct DisplayContext {
         let geometry = SceneGeometry(bounds: scene.bounds, home: home, floor: scene.floor,
                                      scale: scene.scale * size.scale,
                                      hasHardwareNotch: location == .automatic && scene.hasHardwareNotch)
-        return DisplayContext(screen: screen, id: id, frame: frame, scene: geometry, persistentID: persistentID)
+        return DisplayContext(screen: screen, id: id, frame: frame, scene: geometry,
+                              persistentID: persistentID, mirrorMasterID: mirrorMasterID)
+    }
+    func retainingPersistentID(_ value: String) -> DisplayContext {
+        DisplayContext(screen: screen, id: id, frame: frame, scene: scene,
+                       persistentID: value, mirrorMasterID: mirrorMasterID)
     }
     /// Compare measurements, not NSScreen object identity or the focused app's screen.
     func hasSameLayout(as other: DisplayContext) -> Bool {
-        id == other.id && persistentID == other.persistentID && frame == other.frame && scene == other.scene
-            && backingScale == other.backingScale && maximumFrameRate == other.maximumFrameRate
+        persistentID == other.persistentID && hasSameMeasurements(as: other)
     }
-    func point(_ p: NSPoint) -> Point { WindowGeometry.scenePoint(global: Point(x: p.x, y: p.y), display: frame) }
+    func hasSameMeasurements(as other: DisplayContext) -> Bool {
+        id == other.id && frame == other.frame && scene == other.scene
+            && backingScale == other.backingScale && maximumFrameRate == other.maximumFrameRate
+            && mirrorMasterID == other.mirrorMasterID
+    }
+    var logicalID: CGDirectDisplayID { mirrorMasterID ?? id }
+    func isSameLogicalDisplay(as other: DisplayContext) -> Bool { logicalID == other.logicalID }
+    func scenePoint(global point: Point) -> Point { DesktopDragCoordinates.globalToLocal(point, display: frame) }
+    func globalPoint(scene point: Point) -> Point { Point(x: frame.minX + point.x, y: frame.maxY - point.y) }
+    func point(_ p: NSPoint) -> Point { scenePoint(global: Point(x: p.x, y: p.y)) }
 }

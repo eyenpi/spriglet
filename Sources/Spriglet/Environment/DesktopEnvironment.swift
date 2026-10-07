@@ -9,7 +9,7 @@ import CompanionCore
     static let screenLocked = Notification.Name("com.apple.screenIsLocked")
     static let screenUnlocked = Notification.Name("com.apple.screenIsUnlocked")
 
-    var onDisplayChanged: ((DisplayContext?) -> Void)?
+    var onLayoutChanged: ((DisplayLayout) -> Void)?
     var onDisplaysChanged: (([HomeDisplay]) -> Void)?
     var onConditionsChanged: ((RuntimeConditions) -> Void)?
     var onRecoveryNeeded: (() -> Void)?
@@ -115,19 +115,33 @@ import CompanionCore
         if conditions.screenUnlocked { recover() } else { publishConditions() }
     }
     private func refreshDisplay() {
-        let available = displays()
-        let inventory = available.compactMap { context -> HomeDisplay? in
+        let measured = displays()
+        let inventory = measured.compactMap { context -> HomeDisplay? in
             guard UUID(uuidString: context.persistentID) != nil else { return nil }
             return HomeDisplay(id: context.persistentID, name: context.screen.localizedName)
         }
         if inventory != displayInventory { displayInventory = inventory; onDisplaysChanged?(inventory) }
-        if preferredDisplayID == nil { preferredDisplayID = available.first?.id }
+        if preferredDisplayID == nil { preferredDisplayID = measured.first?.id }
+        // Mirror members are one logical pointer surface. Prefer the reported master;
+        // if it is omitted, retain the first member's measurements as that surface.
+        var logical: [DisplayContext] = []
+        for context in measured {
+            let key = context.logicalID
+            if let index = logical.firstIndex(where: { $0.logicalID == key }) {
+                if context.id == key { logical[index] = context }
+            } else { logical.append(context) }
+        }
+        let placed = logical.map { $0.placingHome(size: characterSize, location: homeLocation) }
         // NSScreen.main follows keyboard focus. Home instead stays on the initial
         // primary display, falls back while absent and returns when reconnected.
         let selected: DisplayContext?
-        if let homeDisplayID { selected = available.first { $0.persistentID == homeDisplayID } ?? available.first }
-        else { selected = available.first { $0.id == preferredDisplayID } ?? available.first }
-        onDisplayChanged?(selected?.placingHome(size: characterSize, location: homeLocation))
+        if let homeDisplayID,
+           let member = measured.first(where: { $0.persistentID == homeDisplayID }),
+           let master = placed.first(where: { $0.logicalID == member.logicalID }) {
+            selected = master.retainingPersistentID(homeDisplayID)
+        } else if homeDisplayID != nil { selected = placed.first }
+        else { selected = placed.first { $0.logicalID == (preferredDisplayID ?? 0) } ?? placed.first }
+        onLayoutChanged?(DisplayLayout(home: selected, available: placed))
     }
     private func refreshConditions() {
         conditions.lowPower = ProcessInfo.processInfo.isLowPowerModeEnabled

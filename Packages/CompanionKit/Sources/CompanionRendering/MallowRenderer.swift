@@ -49,11 +49,11 @@ import CompanionCore
     }
 }
 
-@MainActor private func drawMallow(_ pose: CharacterPose, artwork: MallowArtwork, time: Double, center: NSPoint, scale: CGFloat = 1, drawShadow: Bool = true, rotation: Double = 0, drawArms: Bool = true, clipFace: Bool = false) {
+@MainActor private func drawMallow(_ pose: CharacterPose, artwork: MallowArtwork, center: NSPoint, scale: CGFloat = 1, drawShadow: Bool = true, rotation: Double = 0, drawArms: Bool = true, clipFace: Bool = false) {
     NSGraphicsContext.saveGraphicsState()
     concatenate(CharacterTransform(origin: Point(x: center.x, y: center.y), rotation: rotation, scaleX: scale, scaleY: scale))
     if drawShadow {
-        oval(NSRect(x: -49, y: -2, width: 98, height: 10), fill: MallowPalette.shadow)
+        oval(native(MallowGeometry.groundShadowBounds), fill: MallowPalette.shadow)
     }
     // 60% of each stride is planted. During that phase, feet move backwards
     // relative to the body at the same speed as the desktop window moves forward.
@@ -100,16 +100,6 @@ import CompanionCore
     stroke(smile, 2)
     NSGraphicsContext.restoreGraphicsState()
     NSGraphicsContext.restoreGraphicsState()
-    if pose.sparkle > 0.01 {
-        for index in 0..<3 {
-            let angle = Double(index) * 0.65 - 1.45
-            let radius = 88 + sin(time * 4 + Double(index)) * 3
-            let a = NSPoint(x: cos(angle) * radius, y: sin(angle) * radius)
-            let p = NSBezierPath(); p.move(to: a)
-            p.line(to: NSPoint(x: a.x + cos(angle) * 7, y: a.y + sin(angle) * 7))
-            stroke(p, 3, color(0xE7BA58, alpha: pose.sparkle))
-        }
-    }
     NSGraphicsContext.restoreGraphicsState()
 }
 
@@ -120,19 +110,30 @@ import CompanionCore
     public func draw(_ frame: CompanionSnapshot) {
         let scene = frame.scene, scale = scene.scale
         NSGraphicsContext.saveGraphicsState()
-        // The home housing occludes the same pixels through every phase.
-        // A grab must not suddenly expose the portion still behind the notch.
-        let visible = NSBezierPath(rect: NSRect(x: scene.bounds.x, y: scene.bounds.y,
-                                              width: scene.bounds.width, height: scene.bounds.height))
-        visible.appendRect(NSRect(x: scene.home.x, y: scene.home.y,
-                                  width: scene.home.width, height: scene.home.height))
-        visible.windingRule = .evenOdd; visible.addClip()
-        drawMallow(frame.pose, artwork: artwork, time: frame.time,
+        let visible = NSBezierPath(); visible.windingRule = .nonZero
+        if let dragGeometry = frame.dragGeometry {
+            for rect in dragGeometry.visibleRectangles { appendWoundRect(rect, to: visible, reversed: false) }
+        } else {
+            appendWoundRect(scene.bounds, to: visible, reversed: false)
+            appendWoundRect(scene.homeOcclusion, to: visible, reversed: true)
+        }
+        visible.addClip()
+        drawMallow(frame.pose, artwork: artwork,
                    center: NSPoint(x: frame.feet.x, y: frame.feet.y - 7 * scale), scale: scale,
                    drawShadow: frame.phase == .grounded, rotation: frame.rotation,
                    drawArms: false, clipFace: true)
         drawHands(frame)
         NSGraphicsContext.restoreGraphicsState()
+    }
+    private func appendWoundRect(_ rect: Rect, to path: NSBezierPath, reversed: Bool) {
+        let points = reversed
+            ? [Point(x: rect.minX, y: rect.minY), Point(x: rect.minX, y: rect.maxY),
+               Point(x: rect.maxX, y: rect.maxY), Point(x: rect.maxX, y: rect.minY)]
+            : [Point(x: rect.minX, y: rect.minY), Point(x: rect.maxX, y: rect.minY),
+               Point(x: rect.maxX, y: rect.maxY), Point(x: rect.minX, y: rect.maxY)]
+        path.move(to: native(points[0]))
+        for point in points.dropFirst() { path.line(to: native(point)) }
+        path.close()
     }
     private func drawHands(_ frame: CompanionSnapshot) {
         let s = frame.scene.scale
@@ -160,7 +161,7 @@ import CompanionCore
         NSGraphicsContext.current = NSGraphicsContext(cgContext: context.cgContext, flipped: true)
         color(0xEEE5FF).setFill(); NSRect(x: 0, y: 0, width: 1024, height: 1024).fill()
         NSGradient(starting: color(0xF5F0FF), ending: color(0xD5C5F0))!.draw(in: NSRect(x: 0, y: 0, width: 1024, height: 1024), angle: 90)
-        drawMallow(CharacterPose(), artwork: artwork, time: 0, center: NSPoint(x: 512, y: 780), scale: 6.7, drawShadow: true)
+        drawMallow(CharacterPose(), artwork: artwork, center: NSPoint(x: 512, y: 780), scale: 6.7, drawShadow: true)
         NSGraphicsContext.restoreGraphicsState()
         // Core Graphics draws into 32-bit surfaces. Convert the result to a
         // no-alpha RGB image for the icon PNGs after rendering succeeds.

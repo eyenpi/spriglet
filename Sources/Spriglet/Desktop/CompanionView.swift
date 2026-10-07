@@ -1,41 +1,25 @@
 import AppKit
-import QuartzCore
 import CompanionCore
-import CompanionRendering
 
-@MainActor final class CompanionView: NSView {
+@MainActor final class CompanionView: CompanionCanvasView {
     var onInput: ((CompanionInput) -> Void)?
-    var makeContextMenu: (() -> NSMenu)?
+    var onPointerInput: ((DesktopPointerInput) -> Void)?
     var onControlAction: ((AppControlAction) -> Void)?
-    /// Optional instrumentation owned by the finite profiling tool.
-    var onDraw: ((Double) -> Void)?
     var context: DisplayContext
-    var snapshot: CompanionSnapshot
-    var drawingOrigin = Point.zero
-    private let renderer = MallowRenderer()
     private var presenceDescription = ""
     private var acceptsInput = true
     private var isPaused = false
+    private var suppressControlPrimarySequence = false
     init(context: DisplayContext, snapshot: CompanionSnapshot) {
-        self.context = context; self.snapshot = snapshot
+        self.context = context
         super.init(frame: NSRect(x: 0, y: 0, width: WindowGeometry.width * context.scene.scale,
-                                height: WindowGeometry.height * context.scene.scale))
+                                height: WindowGeometry.height * context.scene.scale), snapshot: snapshot)
         setAccessibilityElement(true); setAccessibilityRole(.button)
         setAccessibilityLabel(AppText.companionName); setAccessibilityHelp(AppText.accessibleCharacterHelp)
         refresh(snapshot: snapshot)
     }
     required init?(coder: NSCoder) { fatalError("Use init(context:snapshot:)") }
-    override var isFlipped: Bool { true }
-    override var isOpaque: Bool { false }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
-    override func draw(_ dirtyRect: NSRect) {
-        let started = onDraw == nil ? nil : CACurrentMediaTime()
-        NSGraphicsContext.saveGraphicsState()
-        let transform = NSAffineTransform(); transform.translateX(by: drawingOrigin.x, yBy: drawingOrigin.y); transform.concat()
-        renderer.draw(snapshot)
-        NSGraphicsContext.restoreGraphicsState()
-        if let started { onDraw?(CACurrentMediaTime() - started) }
-    }
     override func hitTest(_ point: NSPoint) -> NSView? {
         let p = convert(point, from: superview)
         return snapshot.contains(Point(x: p.x - drawingOrigin.x, y: p.y - drawingOrigin.y)) ? self : nil
@@ -48,6 +32,12 @@ import CompanionRendering
         guard acceptsInput, let onInput else { return false }
         onInput(.activate); return true
     }
+    override func accessibilityPerformShowMenu() -> Bool { false }
+    override func isAccessibilitySelectorAllowed(_ selector: Selector) -> Bool {
+        if selector == #selector(CompanionView.accessibilityPerformShowMenu) { return false }
+        return super.isAccessibilitySelectorAllowed(selector)
+    }
+    override func menu(for event: NSEvent?) -> NSMenu? { nil }
     override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
         var actions: [NSAccessibilityCustomAction] = []
         if acceptsInput {
@@ -99,15 +89,29 @@ import CompanionRendering
         }
         needsDisplay = true
     }
-    private func point(_ event: NSEvent) -> Point {
-        if let window { return context.point(window.convertPoint(toScreen: event.locationInWindow)) }
-        return context.point(NSEvent.mouseLocation)
+    func retarget(context: DisplayContext) {
+        self.context = context
+        needsDisplay = true
+        NSAccessibility.post(element: self, notification: .layoutChanged)
     }
-    override func mouseDown(with event: NSEvent) { onInput?(.pointerPressed(point(event))) }
-    override func mouseDragged(with event: NSEvent) { onInput?(.pointerDragged(point(event))) }
-    override func mouseUp(with event: NSEvent) { onInput?(.pointerReleased(point(event))) }
-    override func rightMouseDown(with event: NSEvent) {
-        onInput?(.command(.returnHome))
-        if let menu = makeContextMenu?() { NSMenu.popUpContextMenu(menu, with: event, for: self) }
+    private func globalPoint(_ event: NSEvent) -> Point {
+        let screenPoint = window.map { $0.convertPoint(toScreen: event.locationInWindow) } ?? NSEvent.mouseLocation
+        return Point(x: screenPoint.x, y: screenPoint.y)
     }
+    override func mouseDown(with event: NSEvent) {
+        suppressControlPrimarySequence = event.modifierFlags.contains(.control)
+        guard !suppressControlPrimarySequence else { return }
+        onPointerInput?(.pressed(globalPoint(event)))
+    }
+    override func mouseDragged(with event: NSEvent) {
+        guard !suppressControlPrimarySequence else { return }
+        onPointerInput?(.dragged(globalPoint(event)))
+    }
+    override func mouseUp(with event: NSEvent) {
+        if suppressControlPrimarySequence { suppressControlPrimarySequence = false; return }
+        onPointerInput?(.released(globalPoint(event)))
+    }
+    override func rightMouseDown(with event: NSEvent) {}
+    override func rightMouseDragged(with event: NSEvent) {}
+    override func rightMouseUp(with event: NSEvent) {}
 }

@@ -13,7 +13,6 @@ import AppKit
         menuBar = MenuBarController(state: { [runtime] in runtime.controlState },
                                     loginState: { [launchAtLogin] in launchAtLogin.refresh() },
                                     onAction: { [weak self] in self?.perform($0) })
-        runtime.makeContextMenu = { [weak self] in self?.menuBar?.makeMenu() ?? NSMenu() }
         launchAtLogin.onStateChanged = { [weak self] in self?.settings?.updateLoginState($0) }
     }
     func applicationWillFinishLaunching(_ notification: Notification) {
@@ -45,7 +44,7 @@ import AppKit
         settings?.close(); settings?.onChange = nil; settings?.onAction = nil; settings?.onRefreshLoginState = nil; settings = nil
         menuBar?.stop(); help?.close(); help?.onShowIntroduction = nil; menuBar = nil; help = nil
         runtime.onControlAction = nil; runtime.onSettingsChanged = nil
-        runtime.onControlStateChanged = nil; runtime.makeContextMenu = nil; runtime.stop()
+        runtime.onControlStateChanged = nil; runtime.stop()
         launchAtLogin.onStateChanged = nil
     }
     func perform(_ action: AppControlAction) {

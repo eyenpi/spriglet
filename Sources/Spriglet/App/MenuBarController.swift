@@ -1,6 +1,6 @@
 import AppKit
 
-/// Owns the persistent recovery entry and the menus shared by all app controls.
+/// Owns the persistent Settings recovery entry and the full character/application menus.
 /// Actions carry values; registration and character behavior stay with their owners.
 @MainActor final class MenuBarController: NSObject, NSMenuDelegate {
     let menu = NSMenu()
@@ -13,11 +13,11 @@ import AppKit
          onAction: @escaping (AppControlAction) -> Void) {
         self.state = state; self.loginState = loginState; self.onAction = onAction
         super.init()
-        populate(menu)
+        populateStatusMenu()
     }
     func start() {
         guard statusItem == nil else { return }
-        populate(menu)
+        populateStatusMenu()
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let image = NSImage(systemSymbolName: "leaf.fill", accessibilityDescription: AppText.appName) {
             image.isTemplate = true; item.button?.image = image
@@ -34,7 +34,7 @@ import AppKit
     }
     func makeMenu() -> NSMenu {
         let menu = NSMenu()
-        populate(menu)
+        populateFullMenu(menu)
         return menu
     }
     func makeHelpMenu() -> NSMenu {
@@ -46,7 +46,10 @@ import AppKit
         }
         return menu
     }
-    func menuNeedsUpdate(_ menu: NSMenu) { populate(menu) }
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        if menu === self.menu { populateStatusMenu() }
+        else { populateFullMenu(menu) }
+    }
 
     /// Update existing recovery controls without rebuilding a tracked menu.
     func update(_ state: CompanionControlState) {
@@ -61,7 +64,13 @@ import AppKit
             }
         }
     }
-    private func populate(_ menu: NSMenu) {
+    private func populateStatusMenu() {
+        menu.delegate = self; menu.autoenablesItems = false; menu.removeAllItems()
+        menu.addItem(makeItem(.settings, title: AppText.settingsMenu, keyEquivalent: ",", modifiers: .command))
+        menu.addItem(makeItem(.quit, title: AppText.quitApp, keyEquivalent: "q", modifiers: .command))
+    }
+
+    private func populateFullMenu(_ menu: NSMenu) {
         let controls = state(), login = loginState()
         menu.delegate = self; menu.autoenablesItems = false; menu.removeAllItems()
         for action in AppControlAction.allCases {
@@ -85,9 +94,12 @@ import AppKit
             case .toggleVisibility: "m"
             default: ""
             }
-            let item = NSMenuItem(title: title, action: #selector(chooseAction(_:)), keyEquivalent: key)
-            if [.bringHome, .togglePause, .toggleVisibility].contains(action) { item.keyEquivalentModifierMask = [.command, .shift] }
-            item.target = self; item.tag = action.rawValue
+            let modifiers: NSEvent.ModifierFlags = switch action {
+            case .settings, .quit: .command
+            case .bringHome, .togglePause, .toggleVisibility: [.command, .shift]
+            default: []
+            }
+            let item = makeItem(action, title: title, keyEquivalent: key, modifiers: modifiers)
             if action == .toggleVisibility { item.isEnabled = controls.canShow }
             if action == .toggleLaunchAtLogin {
                 item.state = login.checkmark; item.isEnabled = login.registration != .unknown
@@ -101,6 +113,14 @@ import AppKit
                 }
             }
         }
+    }
+
+    private func makeItem(_ action: AppControlAction, title: String, keyEquivalent: String = "",
+                          modifiers: NSEvent.ModifierFlags = []) -> NSMenuItem {
+        let item = NSMenuItem(title: title, action: #selector(chooseAction(_:)), keyEquivalent: keyEquivalent)
+        item.target = self; item.tag = action.rawValue
+        item.keyEquivalentModifierMask = modifiers
+        return item
     }
     private func addStatus(_ title: String, to menu: NSMenu, detail: String? = nil) {
         let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")

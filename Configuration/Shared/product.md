@@ -14,11 +14,11 @@ A second touch brings a wave or a gentle swing. Release near the notch to let Ma
 
 ### Controls within reach
 
-{{menuControlsHelp}} Hidden Mallow is recoverable from the menu bar or by reopening the app from Finder. Offline Help preserves keyboard focus in your current app.
+{{menuControlsHelp}} Hidden Mallow is recoverable through Show Mallow or Bring Home in Settings, opened from the leaf, or by reopening the app from Finder. Offline Help preserves keyboard focus in your current app.
 
 ### Your choice of home
 
-Open {{settingsMenu}} from the leaf menu or by right-clicking Mallow. Settings opens with keyboard focus. Choose character size, movement intensity and a home display/location. Changes apply immediately and are remembered on this Mac.
+Open Settings from the leaf menu. It opens with keyboard focus. Choose character size, movement intensity and a home display/location. Changes apply immediately and are remembered on this Mac.
 
 ### Quiet by default
 

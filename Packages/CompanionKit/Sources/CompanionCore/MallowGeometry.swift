@@ -1,7 +1,7 @@
 import Foundation
 
 /// The vector artwork and its transforms are shared by drawing and picking.
-/// All coordinates are scene points; decorative shadows and sparkles are excluded.
+/// All coordinates are scene points; decorative shadows are excluded.
 public struct CharacterTransform: Sendable {
     public let origin: Point
     public let rotation: Double
@@ -39,6 +39,7 @@ public struct CharacterHand: Sendable {
 }
 
 public struct MallowGeometry: Sendable {
+    public static let groundShadowBounds = Rect(x: -49, y: -2, width: 98, height: 10)
     public static let bodyCurves: [CharacterCurve] = [
         CharacterCurve(start: Point(x: -49, y: 0), control1: Point(x: -66, y: -1), control2: Point(x: -66, y: -16), end: Point(x: -61, y: -31)),
         CharacterCurve(start: Point(x: -61, y: -31), control1: Point(x: -57, y: -56), control2: Point(x: -42, y: -76), end: Point(x: -22, y: -77)),
@@ -85,8 +86,8 @@ public struct MallowGeometry: Sendable {
             let raise = pose.arm * (side > 0 ? 29 : 12) + gait
             let shoulder = bodyPoint(side * 47, -29)
             let wave = side > 0 ? max(0, pose.arm - 0.4) * 28 * emergence : 0
-            let homeHand = Point(x: frame.scene.home.midX + side * 43 * s,
-                                 y: frame.scene.home.maxY + (-8 + emergence * 10 + wave) * s)
+            let homeHand = Point(x: frame.homeAttachment.x + side * 43 * s,
+                                 y: frame.homeAttachment.y + (-8 + emergence * 10 + wave) * s)
             let hand = blend(bodyPoint(side * 34, -15 - raise * 0.6), homeHand)
             return CharacterHand(arm: CharacterCurve(
                 start: blend(bodyPoint(side * 47, -29 - raise), shoulder),
@@ -115,6 +116,13 @@ public struct MallowGeometry: Sendable {
         let handBounds = hands.flatMap { [boundingRect([$0.arm.start, $0.arm.control1, $0.arm.control2, $0.arm.end], padding: scale),
                                         boundingRect(corners($0.palm), padding: 0.95 * scale)] }
         return boundingRect(([bodyBounds] + footBounds + handBounds).flatMap(corners))
+    }
+    /// Full artwork envelope before any display/housing clipping. Picking keeps
+    /// using `bounds`; native canvas placement also needs the decorative shadow.
+    public func paintBounds(drawShadow: Bool) -> Rect {
+        guard drawShadow else { return bounds }
+        let shadow = corners(Self.groundShadowBounds).map(root.apply)
+        return boundingRect(corners(bounds) + shadow)
     }
 }
 

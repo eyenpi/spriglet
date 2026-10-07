@@ -2,6 +2,9 @@ import Foundation
 
 /// Position, contact and weight only. No pointer sampling, gestures or drawing.
 struct BodyPhysics: Sendable {
+    private enum WallSide: Equatable { case left, right }
+    private enum CompressionAxis: Equatable { case horizontal, vertical }
+
     var scene: SceneGeometry
     private(set) var phase = BodyPhase.hanging
     private(set) var position: Point
@@ -22,6 +25,12 @@ struct BodyPhysics: Sendable {
     private var anticipation = 0.0
     private var flight: JumpTrajectory?
     private var flightAge = 0.0
+    private var wallContact: WallSide?
+    private var lastCompressionAxis: CompressionAxis?
+    private var stagedWallImpulse = 0.0
+    private var hadVerticalImpactThisStep = false
+    private var dragBounds: Rect?
+    private var pendingReleaseInterior: Rect?
     init(scene: SceneGeometry) { self.scene = scene; position = scene.homeFeet }
     var renderedFeet: Point {
         guard phase == .hanging else { return position }
@@ -45,7 +54,9 @@ struct BodyPhysics: Sendable {
         return feet.x >= scene.home.minX - margin && feet.x <= scene.home.maxX + margin
             && feet.y >= scene.home.maxY + 12 * scene.scale && feet.y <= scene.home.maxY + 115 * scene.scale
     }
+    var isPendingRelease: Bool { pendingReleaseInterior != nil }
     mutating func grab(visibleFeet: Point, visibleVelocity: Point? = nil, target: Point, at time: Double) {
+        pendingReleaseInterior = nil
         if phase != .held {
             let momentum = visibleVelocity ?? renderedVelocity
             if phase == .hanging { tilt.value = rotation; tilt.speed = -swing.speed }
@@ -53,8 +64,11 @@ struct BodyPhysics: Sendable {
             velocity = momentum
         }
         phase = .held; isWalking = false; jumpTarget = nil; flight = nil
-        let feet = Point(x: clamp(target.x, scene.leftLimit, scene.rightLimit),
-                         y: clamp(target.y + SimulationTuning.grabWeightOffset * scene.scale, scene.ceiling, scene.floor))
+        let limits = dragBounds ?? Rect(x: scene.leftLimit, y: scene.ceiling,
+                                         width: scene.rightLimit - scene.leftLimit,
+                                         height: scene.floor - scene.ceiling)
+        let feet = Point(x: clamp(target.x, limits.minX, limits.maxX),
+                         y: clamp(target.y + SimulationTuning.grabWeightOffset * scene.scale, limits.minY, limits.maxY))
         if let previous = lastDrag, time > previous.time {
             let elapsed = max(time - previous.time, SimulationTuning.step)
             let estimate = (feet - previous.feet) * (1 / elapsed)
@@ -63,18 +77,63 @@ struct BodyPhysics: Sendable {
         }
         lastDrag = (feet, time); heldFeet = feet
     }
+    mutating func beginDesktopDrag(heldBounds: Rect) { dragBounds = heldBounds }
+    mutating func updateDesktopDragBounds(_ heldBounds: Rect) {
+        if phase == .held, heldBounds.isValid, heldBounds.width > 0, heldBounds.height > 0 { dragBounds = heldBounds }
+    }
+    mutating func endDesktopDrag() { dragBounds = nil }
+    mutating func transferDrag(scene nextScene: SceneGeometry, translation delta: Point, heldBounds: Rect) -> Bool {
+        guard phase == .held, delta.isFinite, heldBounds.isValid, heldBounds.width > 0, heldBounds.height > 0,
+              nextScene.scale == scene.scale, jumpTarget == nil, flight == nil,
+              velocity.isFinite, (position + delta).isFinite,
+              heldFeet.map({ ($0 + delta).isFinite }) ?? true,
+              lastDrag.map({ ($0.feet + delta).isFinite && $0.time.isFinite }) ?? true else { return false }
+        let oldHome = scene.homeFeet, newHome = nextScene.homeFeet
+        let nextCatchX = catchX.value + oldHome.x + delta.x - newHome.x
+        let nextCatchY = catchY.value + oldHome.y + delta.y - newHome.y
+        guard nextCatchX.isFinite, nextCatchY.isFinite else { return false }
+        position = position + delta
+        if let heldFeet { self.heldFeet = heldFeet + delta }
+        if let lastDrag { self.lastDrag = (lastDrag.feet + delta, lastDrag.time) }
+        catchX.value = nextCatchX; catchY.value = nextCatchY
+        scene = nextScene; dragBounds = heldBounds
+        wallContact = nil; stagedWallImpulse = 0; hadVerticalImpactThisStep = false
+        return true
+    }
     mutating func release() {
         guard phase == .held else { return }
+        if position.x < scene.leftLimit || position.x > scene.rightLimit
+            || position.y < scene.ceiling || position.y > scene.floor {
+            let inset = 0.5 * scene.scale
+            let interior = Rect(x: scene.leftLimit + inset, y: scene.ceiling + inset,
+                                width: max(0, scene.rightLimit - scene.leftLimit - inset * 2),
+                                height: max(0, scene.floor - scene.ceiling - inset * 2))
+            let target = heldFeet ?? position
+            heldFeet = Point(x: clamp(target.x, interior.minX, interior.maxX),
+                             y: clamp(target.y, interior.minY, interior.maxY))
+            pendingReleaseInterior = Rect(x: scene.leftLimit, y: scene.ceiling,
+                                          width: scene.rightLimit - scene.leftLimit,
+                                          height: scene.floor - scene.ceiling)
+            lastDrag = nil
+            return
+        }
+        finishRelease()
+    }
+    private mutating func finishRelease() {
         if canCatch {
             beginCatch()
         } else {
             phase = .falling
         }
         heldFeet = nil; lastDrag = nil
+        dragBounds = nil
+        pendingReleaseInterior = nil
     }
     mutating func returnHome(immediately: Bool = false) {
         guard phase != .hanging else { return }
         heldFeet = nil; lastDrag = nil; isWalking = false
+        dragBounds = nil
+        pendingReleaseInterior = nil
         if immediately {
             tilt.value = 0; tilt.speed = 0
             position = scene.homeFeet; velocity = .zero
@@ -133,6 +192,24 @@ struct BodyPhysics: Sendable {
         catchX.speed = momentum.x; catchY.speed = momentum.y
         position = incomingPosition - swingOffset; velocity = momentum
     }
+    private mutating func registerVerticalImpact(_ amount: Double) {
+        if lastCompressionAxis == .horizontal { compression.speed = min(0, compression.speed) }
+        compression.impulse(amount)
+        lastCompressionAxis = .vertical
+        hadVerticalImpactThisStep = true
+    }
+    private mutating func stageWallImpact(side: WallSide, incomingSpeed: Double) {
+        guard wallContact != side, incomingSpeed.isFinite, incomingSpeed > scene.scale else { return }
+        let strength = min(8, max(0.8, abs(incomingSpeed) / scene.scale / 140))
+        stagedWallImpulse = max(stagedWallImpulse, strength)
+        wallContact = side
+    }
+    private mutating func applyStagedWallImpact() {
+        guard !hadVerticalImpactThisStep, stagedWallImpulse > 0 else { return }
+        if lastCompressionAxis == .vertical { compression.speed = max(0, compression.speed) }
+        compression.impulse(stagedWallImpulse)
+        lastCompressionAxis = .horizontal
+    }
     /// Preserve free momentum until an actual scene contact. Walls stop only
     /// outward horizontal motion; vertical contacts give a soft, bounded rebound.
     @discardableResult private mutating func resolveSceneContacts() -> Bool {
@@ -140,13 +217,15 @@ struct BodyPhysics: Sendable {
                             y: clamp(position.y, scene.ceiling, scene.floor))
         guard bounded != position else { return false }
         if (position.x < scene.leftLimit && velocity.x < 0) || (position.x > scene.rightLimit && velocity.x > 0) {
+            let side: WallSide = position.x < scene.leftLimit ? .left : .right
+            stageWallImpact(side: side, incomingSpeed: abs(velocity.x))
             velocity.x = 0
         }
         if bounded.y != position.y {
             let direction = position.y < scene.ceiling ? 1.0 : -1.0
             let impactSpeed = -velocity.y * direction
             if impactSpeed > 0 {
-                compression.impulse(-min(8, max(0.8, impactSpeed / 140)))
+                registerVerticalImpact(-min(8, max(0.8, impactSpeed / 140)))
                 velocity.y = direction * min(95, impactSpeed * 0.11)
             }
         }
@@ -154,7 +233,15 @@ struct BodyPhysics: Sendable {
         return true
     }
     mutating func step(_ dt: Double, at time: Double, walkingAmount: Double) {
+        stagedWallImpulse = 0; hadVerticalImpactThisStep = false
         compression.step(dt)
+        if let wallContact {
+            let movedInward = switch wallContact {
+            case .left: position.x >= scene.leftLimit + scene.scale
+            case .right: position.x <= scene.rightLimit - scene.scale
+            }
+            if movedInward { self.wallContact = nil }
+        }
         if phase == .hanging { swing.step(dt) }
         else { tilt.step(dt, target: phase == .held ? clamp(-pointerVelocity.x / 3500, -0.12, 0.12) : 0) }
         switch phase {
@@ -170,11 +257,24 @@ struct BodyPhysics: Sendable {
                     - velocity * (2 * SimulationTuning.dragDamping * frequency)
                 velocity = velocity + acceleration * dt
                 position = position + velocity * dt
-                let bounded = Point(x: clamp(position.x, scene.leftLimit, scene.rightLimit),
-                                    y: clamp(position.y, scene.ceiling, scene.floor))
+                let limits = dragBounds ?? Rect(x: scene.leftLimit, y: scene.ceiling,
+                                                 width: scene.rightLimit - scene.leftLimit,
+                                                 height: scene.floor - scene.ceiling)
+                if position.x < limits.minX && velocity.x < 0 {
+                    stageWallImpact(side: .left, incomingSpeed: abs(velocity.x))
+                } else if position.x > limits.maxX && velocity.x > 0 {
+                    stageWallImpact(side: .right, incomingSpeed: abs(velocity.x))
+                }
+                let bounded = Point(x: clamp(position.x, limits.minX, limits.maxX),
+                                    y: clamp(position.y, limits.minY, limits.maxY))
                 if bounded.x != position.x { velocity.x = 0 }
                 if bounded.y != position.y { velocity.y = 0 }
                 position = bounded
+                if let interior = pendingReleaseInterior, interior.contains(position) ||
+                    (position.x >= interior.minX && position.x <= interior.maxX
+                        && position.y >= interior.minY && position.y <= interior.maxY) {
+                    finishRelease()
+                }
             }
         case .catching:
             catchX.step(dt); catchY.step(dt)
@@ -195,7 +295,7 @@ struct BodyPhysics: Sendable {
             position = sample.position; velocity = sample.velocity
             if jumpToHome && position.y > scene.floor && velocity.y > 0 {
                 position.y = scene.floor
-                compression.impulse(-min(8, max(0.8, velocity.y / 140)))
+                registerVerticalImpact(-min(8, max(0.8, velocity.y / 140)))
                 velocity = .zero; phase = .grounded; landingCount += 1
                 resolveSceneContacts()
                 beginJump(to: scene.homeFeet, home: true)
@@ -206,7 +306,7 @@ struct BodyPhysics: Sendable {
             } else if flightAge >= flight.duration {
                 if jumpToHome { beginCatch() }
                 else {
-                    compression.impulse(-min(8, max(3, abs(velocity.y) / 140)))
+                    registerVerticalImpact(-min(8, max(3, abs(velocity.y) / 140)))
                     phase = .grounded; velocity = .zero; jumpTarget = nil; self.flight = nil; landingCount += 1
                 }
             }
@@ -216,7 +316,7 @@ struct BodyPhysics: Sendable {
                 let hitTime = (-velocity.y + sqrt(max(0, velocity.y * velocity.y + 2 * SimulationTuning.gravity * (scene.floor - position.y)))) / SimulationTuning.gravity
                 position.x += velocity.x * hitTime; position.y = scene.floor
                 let speed = velocity.y + SimulationTuning.gravity * hitTime
-                compression.impulse(-min(8, max(0.8, speed / 140))); landingCount += 1
+                registerVerticalImpact(-min(8, max(0.8, speed / 140))); landingCount += 1
                 if speed > 140 { velocity.y = -min(95, speed * 0.11); velocity.x *= 0.45 }
                 else { velocity = .zero; phase = .grounded }
             } else {
@@ -234,5 +334,6 @@ struct BodyPhysics: Sendable {
                 if position.x <= low { position.x = low; direction = 1 }
             } else { velocity = .zero }
         }
+        applyStagedWallImpact()
     }
 }
