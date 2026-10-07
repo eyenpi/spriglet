@@ -8,6 +8,7 @@ case "${2:-}" in
     --transitions) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --transitions "$task_output" ;;
     --interaction) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --interaction "$task_output" ;;
     --introduction) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --introduction "$task_output" ;;
+    --boredom) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --boredom "$task_output" ;;
     --idle) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --idle "$task_output" ;;
-    *) print -u2 "Usage: ./scripts/preview.sh [OUTPUT_DIRECTORY] [--transitions|--interaction|--introduction|--idle]"; exit 2 ;;
+    *) print -u2 "Usage: ./scripts/preview.sh [OUTPUT_DIRECTORY] [--transitions|--interaction|--introduction|--idle|--boredom]"; exit 2 ;;
 esac

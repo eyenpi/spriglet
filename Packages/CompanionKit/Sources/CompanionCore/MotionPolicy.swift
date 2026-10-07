@@ -8,6 +8,7 @@ public struct RuntimeConditions: Equatable, Sendable {
     public var sessionActive = true
     public var screenUnlocked = true
     public var lowPower = false
+    public var onBattery = false
     public var reduceMotion = false
     public var thermal = ThermalPressure.normal
     public init() {}
@@ -15,6 +16,9 @@ public struct RuntimeConditions: Equatable, Sendable {
         guard systemAwake && displayAwake && sessionActive && screenUnlocked && thermal != .critical else { return 0 }
         if thermal == .serious || reduceMotion { return 15 }
         return lowPower ? 30 : 60
+    }
+    public var allowsIdleMoments: Bool {
+        !isSuspended && !lowPower && !onBattery && !reduceMotion && thermal == .normal
     }
     public var isSuspended: Bool { maximumFrameRate == 0 }
     public func frameRate(presence: Presence, phase: BodyPhase) -> Float {

@@ -173,10 +173,33 @@ import CompanionRendering
     print("Rendered five introduction demos using the production input scripts, core and renderer.")
 }
 
+/// Accelerated review only: each moment and its hover interruption use the
+/// production scheduler, commands, springs and renderer.
+@MainActor func exportBoredom(to folder: URL) throws {
+    let painter = ScenePreviewRenderer()
+    for moment in IdleMoment.allCases {
+        let seed = (UInt64(0)...100).first { seed in
+            var picker = IdleMomentPicker(seed: seed); return picker.next() == moment
+        }!
+        var engine = CompanionEngine(scene: .preview, idleSeed: seed, boredomTiming: BoredomTiming(threshold: 1, cooldown: 2))
+        let output = folder.appendingPathComponent(String(describing: moment))
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        for index in 0..<240 {
+            if index == 110 { engine.send(.pointerMoved(engine.snapshot.hitBounds.center)) }
+            engine.advance(by: 1 / 30.0)
+            if let request = engine.requestedIdleMoment { engine.send(.command(request.command)) }
+            try writeFrame(engine.snapshot, painter: painter, to: output, index: index)
+        }
+    }
+    print("Rendered four boredom moments and hover interruptions with accelerated timing.")
+}
+
 _ = NSApplication.shared
 let args = CommandLine.arguments
 do {
-if args.count == 3 && args[1] == "--icons" {
+if args.count == 3 && args[1] == "--boredom" {
+    try exportBoredom(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--icons" {
     try exportIcons(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--transitions" {
     try exportTransitions(to: URL(fileURLWithPath: args[2]))
@@ -189,7 +212,7 @@ if args.count == 3 && args[1] == "--icons" {
 } else if args.count == 2 {
     try export(to: URL(fileURLWithPath: args[1]))
 } else {
-    print("Usage: companion-preview OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --introduction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
+    print("Usage: companion-preview OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --introduction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --boredom OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
 }
 
 } catch {

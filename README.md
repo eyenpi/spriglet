@@ -118,6 +118,12 @@ Home retraction advances independently of the physics phase. Grabs transfer its 
 
 Free motion respects the scene ceiling, floor and side limits. Momentum continues until contact: vertical impacts produce a damped rebound, catch springs retain their corrected state, and return trajectories rejoin home from the contact position and remaining velocity. The ceiling keeps the body reachable while allowing a grab to begin at the visible resting peek.
 
+`BoredomState.swift` adds rare, short moments after three uninterrupted minutes away from Mallow: a small wander along the home edge, a nap, a doodle or a fidget. Each lasts five to eight seconds and is followed by at least four minutes of quiet. Gentle energy doubles both waits. Hover, click, drag and deliberate commands interrupt immediately; the normal pose springs settle the artwork back to peek while clicks and grabs keep their existing behavior. Wander changes only a bounded presentation offset; physics, home choice and interaction presence stay unchanged. Doodles stay inside the existing character paint bounds and never affect picking.
+
+Core schedules a request using injected simulation time and a seeded shuffled-bag picker. Runtime starts it through `CompanionRuntime.perform(_:)`; unsolicited or stale idle commands are rejected. Rendering receives only the moment/progress snapshot. No Apple Intelligence, network, analytics or screen capture is involved. Moments are disabled on battery power (including an unknown power supply), Low Power Mode, Reduce Motion or serious/critical thermal pressure. The environment observes power-source changes through IOKit and removes that observation on stop. The existing frame cadence is retained.
+
+For visual review, run `./scripts/preview.sh .build/preview/boredom --boredom`. A Debug app launched with `SPRIGLET_BORED_DEMO=1` uses a three-second wait and four-second cooldown for recording; Release builds ignore that variable. Previews and tests inject their own timings. Default shipping timing remains three minutes.
+
 ### Changing the character
 
 Edit `MallowGeometry.swift` for the silhouette and limb geometry, `MallowRenderer.swift` for facial artwork and styling, and the pose contract for expressions. The app, preview, picking and icon share the same vector source. Regenerate icons with `art/app-icon/export_icon_catalog.sh` and run the rendering tests. No spritesheet, frame decoder or separate character manifest is required.

@@ -123,6 +123,24 @@ import CompanionCore
                    drawShadow: frame.phase == .grounded, rotation: frame.rotation,
                    drawArms: false, clipFace: true)
         drawHands(frame)
+        drawIdleDoodle(frame)
+        NSGraphicsContext.restoreGraphicsState()
+    }
+    /// A tiny ephemeral scribble on the visible cheek, inside existing paint
+    /// bounds. It never changes the silhouette or intercepts pointer input.
+    private func drawIdleDoodle(_ frame: CompanionSnapshot) {
+        guard let moment = frame.idleMoment, moment.moment == .doodle else { return }
+        NSGraphicsContext.saveGraphicsState()
+        concatenate(frame.geometry.root); concatenate(frame.geometry.body)
+        artwork.body.addClip()
+        let path = NSBezierPath()
+        let count = Int(moment.progress * 24)
+        for index in 0...count {
+            let t = Double(index) / 24
+            let point = NSPoint(x: 25 + t * 14, y: -34 + frame.pose.lookY + sin(t * .pi * 4) * 2)
+            if index == 0 { path.move(to: point) } else { path.line(to: point) }
+        }
+        stroke(path, 1.2, MallowPalette.ink.withAlphaComponent(0.4 * moment.weight))
         NSGraphicsContext.restoreGraphicsState()
     }
     private func appendWoundRect(_ rect: Rect, to path: NSBezierPath, reversed: Bool) {

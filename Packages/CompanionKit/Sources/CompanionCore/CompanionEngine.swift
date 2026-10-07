@@ -7,6 +7,11 @@ public struct CompanionEngine: Sendable {
     private var interaction = InteractionState()
     private var animator = MotionAnimator()
     private var idle: IdleAnimation
+    private var boredom: BoredomState
+    private var idleOffset = Spring(frequency: 18, damping: 1)
+    private var idleMomentsEnabled = true
+    private var idleCadence: Double { movementAmount < 0.5 ? 2 : 1 }
+    public var requestedIdleMoment: IdleMoment? { boredom.requestedMoment }
     private var presentation = PoseDynamics()
     private var reveal = Spring(value: 0.6, frequency: 12, damping: 0.9)
     private var homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
@@ -26,8 +31,9 @@ public struct CompanionEngine: Sendable {
     public var hasPendingDragRelease: Bool { body.isPendingRelease }
     /// Hosts may supply a fresh session seed; previews and tests default to a
     /// repeatable sequence. The seed is the only external source of randomness.
-    public init(scene: SceneGeometry, idleSeed: UInt64 = 0x4D414C4C4F57) {
+    public init(scene: SceneGeometry, idleSeed: UInt64 = 0x4D414C4C4F57, boredomTiming: BoredomTiming = BoredomTiming()) {
         body = BodyPhysics(scene: scene); idle = IdleAnimation(seed: idleSeed)
+        boredom = BoredomState(seed: idleSeed, timing: boredomTiming)
         attachmentX = Spring(value: scene.home.midX, frequency: 12, damping: 1)
         attachmentY = Spring(value: scene.home.maxY, frequency: 12, damping: 1)
         attachmentTarget = Point(x: scene.home.midX, y: scene.home.maxY)
@@ -35,7 +41,7 @@ public struct CompanionEngine: Sendable {
     public mutating func reconfigure(scene: SceneGeometry) {
         body = BodyPhysics(scene: scene); interaction = InteractionState()
         animator = MotionAnimator(); presentation = PoseDynamics()
-        idle.reset()
+        idle.reset(); boredom.interrupt(at: time, cadence: idleCadence); idleOffset = Spring(frequency: 18, damping: 1)
         reveal = Spring(value: 0.6, frequency: 12, damping: 0.9); gaze = Spring(frequency: 10, damping: 1)
         homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
         homeGrip = Spring(value: 1, frequency: 14, damping: 1)
@@ -74,9 +80,14 @@ public struct CompanionEngine: Sendable {
         dragGeometry = geometry
         return true
     }
+    public mutating func setIdleMomentsEnabled(_ enabled: Bool) {
+        idleMomentsEnabled = enabled
+        if !enabled { boredom.interrupt(at: time, cadence: idleCadence) }
+    }
     public mutating func setMotionPolicy(_ policy: MotionPolicy) {
         guard motionPolicy != policy else { return }
         motionPolicy = policy
+        if policy == .reduced { boredom.interrupt(at: time, cadence: idleCadence); idleOffset = Spring(frequency: 18, damping: 1) }
         if policy == .reduced {
             body.swing.value = 0; body.swing.speed = 0
             // Keep a deliberate grab, but stop autonomous walking, hopping,
@@ -106,13 +117,19 @@ public struct CompanionEngine: Sendable {
             body.swing.value *= ratio; body.swing.speed *= ratio
         }
         movementAmount = next
+        boredom.interrupt(at: time, cadence: idleCadence)
     }
     public mutating func send(_ input: CompanionInput) {
         switch input {
-        case .pointerMoved(let point): if point.isFinite { pointer = point }
+        case .pointerMoved(let point):
+            if point.isFinite {
+                pointer = point
+                if snapshot.contains(point) { boredom.interrupt(at: time, cadence: idleCadence) }
+            }
         case .pointerPressed(let point):
             guard point.isFinite else { return }; pointer = point
             if snapshot.contains(point) {
+                boredom.interrupt(at: time, cadence: idleCadence)
                 interaction.press = point; interaction.dragging = false
                 interaction.dragOffset = Point(x: point.x - snapshot.feet.x,
                                                y: point.y - snapshot.feet.y + SimulationTuning.grabWeightOffset * body.scene.scale)
@@ -120,13 +137,18 @@ public struct CompanionEngine: Sendable {
         case .pointerDragged(let point):
             guard point.isFinite, let start = interaction.press else { return }; pointer = point
             guard interaction.dragging || point.distance(to: start) > 4 else { return }
+            boredom.interrupt(at: time, cadence: idleCadence)
             interaction.dragging = true; interaction.play()
             var velocity = body.renderedVelocity
+            velocity.x += idleOffset.speed * body.scene.scale
             velocity.y -= homeRetraction.speed * body.scene.scale
             body.grab(visibleFeet: snapshot.feet, visibleVelocity: velocity,
                       target: point - interaction.dragOffset, at: time)
             // The visible offset and its velocity now belong to the held body.
             homeRetraction.value = 0; homeRetraction.speed = 0
+            attachmentX.value += idleOffset.value * body.scene.scale
+            attachmentX.speed += idleOffset.speed * body.scene.scale
+            idleOffset = Spring(frequency: 18, damping: 1)
         case .pointerReleased(let point):
             guard interaction.press != nil else { return }
             let dragged = interaction.dragging; interaction.clearPress()
@@ -152,6 +174,7 @@ public struct CompanionEngine: Sendable {
         if motionPolicy == .reduced { updateHomePresentation(SimulationTuning.step) }
     }
     private mutating func activate() {
+        boredom.interrupt(at: time, cadence: idleCadence)
         switch interaction.presence {
         case .peek: interaction.engage(at: time)
         case .engaged:
@@ -163,12 +186,24 @@ public struct CompanionEngine: Sendable {
         }
     }
     private mutating func returnHome() {
+        boredom.interrupt(at: time, cadence: idleCadence)
         interaction.rest()
         if body.phase != .hanging && !body.isReturningHome {
             body.returnHome(immediately: motionPolicy == .reduced)
         }
     }
     private mutating func perform(_ command: CompanionCommand) {
+        let moment: IdleMoment? = switch command {
+        case .idleWander: .wander; case .idleNap: .nap; case .idleDoodle: .doodle; case .idleFidget: .fidget
+        default: nil
+        }
+        if let moment {
+            guard idleMomentsEnabled, motionPolicy == .full, movementAmount > 0,
+                  body.phase == .hanging, interaction.presence == .peek, !hasPointerCapture,
+                  pointer.distance(to: snapshot.feet) >= 260 * body.scene.scale else { return }
+            boredom.begin(moment, at: time); return
+        }
+        boredom.interrupt(at: time, cadence: idleCadence)
         switch command {
         case .returnHome: interaction.clearPress(); returnHome()
         case .greet:
@@ -181,6 +216,7 @@ public struct CompanionEngine: Sendable {
             if command == .swing && body.phase == .hanging && motionPolicy == .full { body.swing.impulse(1.8 * movementAmount) }
         case .walk: if motionPolicy == .full { body.walk() }
         case .hop: if motionPolicy == .full { body.hop() }
+        case .idleWander, .idleNap, .idleDoodle, .idleFidget: break
         }
     }
     public mutating func advance(by elapsed: Double) {
@@ -199,8 +235,11 @@ public struct CompanionEngine: Sendable {
         if body.phase == .hanging && interaction.presence == .playing { interaction.rest() }
         updateHomePresentation(dt)
         let nearby = pointer.distance(to: snapshot.feet) < 260 * body.scene.scale
-        idle.step(dt, quiet: body.phase == .hanging && interaction.presence == .peek && !hasPointerCapture && !nearby,
-                  policy: motionPolicy)
+        let quiet = body.phase == .hanging && interaction.presence == .peek && !hasPointerCapture && !nearby
+        boredom.update(at: time, quiet: quiet, enabled: idleMomentsEnabled && motionPolicy == .full && movementAmount > 0,
+                       cadence: idleCadence)
+        idleOffset.step(dt, target: (boredom.frame?.offset ?? 0) * movementAmount)
+        idle.step(dt, quiet: quiet && boredom.frame == nil, policy: motionPolicy)
         let look = nearby && motionPolicy == .full ? clamp((pointer.x - snapshot.feet.x) / 35, -5, 5) * movementAmount : 0
         gaze.step(dt, target: look)
         var desired = Motion.idle
@@ -213,7 +252,7 @@ public struct CompanionEngine: Sendable {
         } else if body.isWalking && body.phase == .grounded { desired = body.direction > 0 ? .walkRight : .walkLeft }
         if motionPolicy == .reduced { desired = .idle }
         if animator.motion != desired { animator.select(desired, at: time) }
-        animator.advance(to: time, dt: dt, walkingAmount: presentation.pose.walk, idlePose: idle.pose)
+        animator.advance(to: time, dt: dt, walkingAmount: presentation.pose.walk, idlePose: boredom.frame?.applying(to: idle.pose) ?? idle.pose)
         presentation.step(toward: targetPose, dt: dt)
     }
     private mutating func updateHomePresentation(_ dt: Double) {
@@ -250,7 +289,7 @@ public struct CompanionEngine: Sendable {
         pose.arm *= movementAmount
         switch body.phase {
         case .hanging:
-            pose.arm = interaction.gesture == .hello ? pose.arm : 0.4
+            pose.arm = interaction.gesture == .hello ? pose.arm : 0.4 + (boredom.frame?.moment == .doodle ? pose.arm : 0)
             pose.facing = 0
         case .preparingJump:
             pose.height = 1 - body.anticipationProgress * 0.19
@@ -269,7 +308,8 @@ public struct CompanionEngine: Sendable {
     }
     public var snapshot: CompanionSnapshot {
         let open = clamp(reveal.value, 0.6, 1), scene = body.scene
-        var feet = body.renderedFeet - Point(x: 0, y: homeRetraction.value * scene.scale)
+        let offset = Point(x: idleOffset.value * scene.scale, y: 0)
+        var feet = body.renderedFeet + offset - Point(x: 0, y: homeRetraction.value * scene.scale)
         var pose = presentation.pose
         // Reveal keeps evolving after a grab; removing this deformation at the
         // phase boundary would instantly change the silhouette and face height.
@@ -289,10 +329,10 @@ public struct CompanionEngine: Sendable {
             feet = body.phase == .hanging ? Point(x: scene.homeFeet.x, y: scene.homeFeet.y - homeRetraction.value * scene.scale) : feet
         }
         return CompanionSnapshot(scene: scene, presence: interaction.presence, phase: body.phase, pose: pose,
-                                 feet: feet, windowAnchor: body.renderedFeet, rotation: motionPolicy == .full ? body.rotation : 0,
+                                 feet: feet, windowAnchor: body.renderedFeet + offset, rotation: motionPolicy == .full ? body.rotation : 0,
                                  openness: open, homeGrip: clamp(homeGrip.value, 0, 1),
-                                 homeAttachment: Point(x: attachmentX.value, y: attachmentY.value), dragGeometry: dragGeometry,
+                                 homeAttachment: Point(x: attachmentX.value + offset.x, y: attachmentY.value), dragGeometry: dragGeometry,
                                  time: time, gesture: interaction.gesture,
-                                 canCatch: body.canCatch)
+                                 canCatch: body.canCatch, idleMoment: boredom.frame)
     }
 }

@@ -26,6 +26,17 @@ import CompanionCore
     var settingsState: SettingsState { SettingsState(preferences: preferences, displays: displays, controls: controlState) }
     private var context: DisplayContext?
     private var engine: CompanionEngine?
+    private let boredomTiming: BoredomTiming
+    private let idleSeed: UInt64
+    /// Only Debug builds honor the accelerated demo. Release never reads it.
+    private static var defaultBoredomTiming: BoredomTiming {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["SPRIGLET_BORED_DEMO"] == "1" {
+            return BoredomTiming(threshold: 3, cooldown: 4)
+        }
+        #endif
+        return BoredomTiming()
+    }
     private var conditions = RuntimeConditions()
     private var running = false
     private var cadence: Float?
@@ -45,10 +56,13 @@ import CompanionCore
          introductionHost: IntroductionWindowHost = IntroductionWindowHost(),
          introductionPreferences: IntroductionPreferences = IntroductionPreferences(),
          preferenceStore: PreferenceStore = PreferenceStore(),
+         boredomTiming: BoredomTiming? = nil, idleSeed: UInt64? = nil,
          leftButtonIsDown: @escaping () -> Bool = { NSEvent.pressedMouseButtons & 1 != 0 },
          pointerLocation: @escaping () -> Point = {
              let p = NSEvent.mouseLocation; return Point(x: p.x, y: p.y)
          }) {
+        self.boredomTiming = boredomTiming ?? Self.defaultBoredomTiming
+        self.idleSeed = idleSeed ?? UInt64.random(in: .min ... .max)
         self.environment = environment; self.clock = clock; self.host = host
         self.introductionHost = introductionHost; self.introductionPreferences = introductionPreferences
         self.leftButtonIsDown = leftButtonIsDown; self.pointerLocation = pointerLocation
@@ -158,8 +172,9 @@ import CompanionCore
             context = next; host.retarget(context: next); return
         }
         context = next
-        if engine == nil { engine = CompanionEngine(scene: next.scene, idleSeed: UInt64.random(in: .min ... .max)) }
+        if engine == nil { engine = CompanionEngine(scene: next.scene, idleSeed: idleSeed, boredomTiming: boredomTiming) }
         else { engine?.reconfigure(scene: next.scene) }
+        engine?.setIdleMomentsEnabled(conditions.allowsIdleMoments)
         engine?.setMotionPolicy(conditions.reduceMotion ? .reduced : .full)
         engine?.setMovementAmount(preferences.movementIntensity.amount)
         guard let engine else { return }
@@ -173,6 +188,7 @@ import CompanionCore
         let changedSuspension = self.conditions.isSuspended != conditions.isSuspended
         let changedMotion = self.conditions.reduceMotion != conditions.reduceMotion
         self.conditions = conditions
+        engine?.setIdleMomentsEnabled(conditions.allowsIdleMoments)
         engine?.setMotionPolicy(conditions.reduceMotion ? .reduced : .full)
         if changedMotion, let introduction { selectIntroductionStep(introduction.step) }
         if changedSuspension { recover() } else { refresh() }
@@ -195,7 +211,9 @@ import CompanionCore
         if engine?.hasPointerCapture == true && !leftButtonIsDown() { cancelDesktopDrag() }
         let p = pointerLocation()
         engine?.send(.pointerMoved(context.scenePoint(global: p)))
-        engine?.advance(by: elapsed); introduction?.advance(by: elapsed); refresh()
+        engine?.advance(by: elapsed)
+        if let moment = engine?.requestedIdleMoment { perform(moment.command) }
+        introduction?.advance(by: elapsed); refresh()
     }
     private func frameRate(for snapshot: CompanionSnapshot) -> Float {
         let companionRate = conditions.frameRate(presence: snapshot.presence, phase: snapshot.phase)
