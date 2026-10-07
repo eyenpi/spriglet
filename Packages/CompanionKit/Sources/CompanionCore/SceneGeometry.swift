@@ -5,6 +5,13 @@ public struct SceneGeometry: Equatable, Sendable {
     public let floor: Double
     public let scale: Double
     public let hasHardwareNotch: Bool
+    /// Hide artwork behind Home all the way to the display's top edge. A
+    /// synthetic Home may start below that edge to sit beneath the menu bar;
+    /// its attachment geometry must not leave a visible strip above it.
+    public var homeOcclusion: Rect {
+        let top = min(bounds.minY, home.minY)
+        return Rect(x: home.x, y: top, width: home.width, height: home.maxY - top)
+    }
     public var homeFeet: Point { Point(x: home.midX, y: home.maxY + 60 * scale) }
     /// Free motion keeps enough of the body below the display and housing to
     /// remain reachable. The resting peek can be grabbed without a position jump.
@@ -56,12 +63,46 @@ public enum WindowGeometry {
         let contained = Rect(x: x, y: y, width: width, height: height)
         return contained.hasFinitePositiveEdges ? contained : requested
     }
+    /// A persistent input window and independent, display-contained paint
+    /// canvases. The input rectangle and paint envelope are independent, so
+    /// presentation ownership never switches with pointer ownership.
+    public static func desktopLayout(requested: Rect, paint: Rect, activeDisplay: Rect,
+                                     displays: [Rect]) -> DesktopWindowLayout? {
+        guard requested.hasFinitePositiveEdges, activeDisplay.hasFinitePositiveEdges,
+              paint.hasFinitePositiveEdges else { return nil }
+        var frames: [DisplayWindowFrame] = []
+        for display in [activeDisplay] + displays where display.hasFinitePositiveEdges {
+            guard !frames.contains(where: { $0.display == display }) else { continue }
+            let left = max(paint.minX, display.minX), right = min(paint.maxX, display.maxX)
+            let bottom = max(paint.minY, display.minY), top = min(paint.maxY, display.maxY)
+            guard right > left && top > bottom else { continue }
+            // Round outward to whole logical points so native pixel alignment
+            // cannot trim a fractional tile edge. Never extend onto a neighbor.
+            let x = max(left.rounded(.down), display.minX), y = max(bottom.rounded(.down), display.minY)
+            let frame = Rect(x: x, y: y, width: min(right.rounded(.up), display.maxX) - x,
+                             height: min(top.rounded(.up), display.maxY) - y)
+            if frame.hasFinitePositiveEdges { frames.append(DisplayWindowFrame(display: display, frame: frame)) }
+        }
+        return DesktopWindowLayout(inputFrame: containedFrame(requested, in: activeDisplay), canvases: frames)
+    }
     public static func drawingOrigin(window: Rect, display: Rect) -> Point {
         Point(x: display.minX - window.minX, y: window.maxY - display.maxY)
     }
     public static func scenePoint(global: Point, display: Rect) -> Point {
         Point(x: global.x - display.minX, y: display.maxY - global.y)
     }
+}
+
+public struct DisplayWindowFrame: Equatable, Sendable {
+    public let display: Rect
+    public let frame: Rect
+    public init(display: Rect, frame: Rect) { self.display = display; self.frame = frame }
+}
+
+public struct DesktopWindowLayout: Equatable, Sendable {
+    public let inputFrame: Rect
+    public let canvases: [DisplayWindowFrame]
+    public init(inputFrame: Rect, canvases: [DisplayWindowFrame]) { self.inputFrame = inputFrame; self.canvases = canvases }
 }
 
 private extension Rect {

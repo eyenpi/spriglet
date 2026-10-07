@@ -1,42 +1,25 @@
 import AppKit
-import QuartzCore
 import CompanionCore
-import CompanionRendering
 
-@MainActor final class CompanionView: NSView {
+@MainActor final class CompanionView: CompanionCanvasView {
     var onInput: ((CompanionInput) -> Void)?
     var onPointerInput: ((DesktopPointerInput) -> Void)?
     var onControlAction: ((AppControlAction) -> Void)?
-    /// Optional instrumentation owned by the finite profiling tool.
-    var onDraw: ((Double) -> Void)?
     var context: DisplayContext
-    var snapshot: CompanionSnapshot
-    var drawingOrigin = Point.zero
-    private let renderer = MallowRenderer()
     private var presenceDescription = ""
     private var acceptsInput = true
     private var isPaused = false
     private var suppressControlPrimarySequence = false
     init(context: DisplayContext, snapshot: CompanionSnapshot) {
-        self.context = context; self.snapshot = snapshot
+        self.context = context
         super.init(frame: NSRect(x: 0, y: 0, width: WindowGeometry.width * context.scene.scale,
-                                height: WindowGeometry.height * context.scene.scale))
+                                height: WindowGeometry.height * context.scene.scale), snapshot: snapshot)
         setAccessibilityElement(true); setAccessibilityRole(.button)
         setAccessibilityLabel(AppText.companionName); setAccessibilityHelp(AppText.accessibleCharacterHelp)
         refresh(snapshot: snapshot)
     }
     required init?(coder: NSCoder) { fatalError("Use init(context:snapshot:)") }
-    override var isFlipped: Bool { true }
-    override var isOpaque: Bool { false }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
-    override func draw(_ dirtyRect: NSRect) {
-        let started = onDraw == nil ? nil : CACurrentMediaTime()
-        NSGraphicsContext.saveGraphicsState()
-        let transform = NSAffineTransform(); transform.translateX(by: drawingOrigin.x, yBy: drawingOrigin.y); transform.concat()
-        renderer.draw(snapshot)
-        NSGraphicsContext.restoreGraphicsState()
-        if let started { onDraw?(CACurrentMediaTime() - started) }
-    }
     override func hitTest(_ point: NSPoint) -> NSView? {
         let p = convert(point, from: superview)
         return snapshot.contains(Point(x: p.x - drawingOrigin.x, y: p.y - drawingOrigin.y)) ? self : nil

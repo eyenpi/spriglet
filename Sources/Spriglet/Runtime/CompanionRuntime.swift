@@ -309,8 +309,9 @@ import CompanionCore
             let x = display.frame.minX - active.frame.minX
             let y = active.frame.maxY - display.frame.maxY
             let bounds = Rect(x: x, y: y, width: display.frame.width, height: display.frame.height)
-            let housing = Rect(x: x + display.scene.home.x, y: y + display.scene.home.y,
-                               width: display.scene.home.width, height: display.scene.home.height)
+            let occlusion = display.scene.homeOcclusion
+            let housing = Rect(x: x + occlusion.x, y: y + occlusion.y,
+                               width: occlusion.width, height: occlusion.height)
             surfaces.append(DragSurface(bounds: bounds, housing: housing))
             let minX = x + display.scene.leftLimit, maxX = x + display.scene.rightLimit
             let minY = y + display.scene.ceiling, maxY = y + display.scene.floor

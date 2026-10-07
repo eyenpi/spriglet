@@ -58,6 +58,7 @@ import CompanionCore
         let requested = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: context.frame,
                                                     scale: snapshot.scene.scale, visibleBounds: snapshot.hitBounds)
         let contained = WindowGeometry.containedFrame(requested, in: context.frame)
+        let captured = contained
         guard requested != contained else {
             throw Failure.message("Production frozen frame did not exercise R→C: R=\(requested), D=\(context.frame)")
         }
@@ -146,8 +147,8 @@ import CompanionCore
                     "Initial eligible native frame was not expected C: actual=\(rect(panel.frame)), R=\(requested), C=\(contained), D=\(context.frame)")
         try checkCoordinates(panelMustBelongToSelectedDisplay: true)
         host.update(snapshot: snapshot, capturesPointer: true, pointer: target)
-        recordFrame("capture-R", requested: requested, capturesPointer: true)
-        try require(Self.framesWithinNativeTolerance(rect(panel.frame), requested), "Pointer capture did not restore original R")
+        recordFrame("capture-C", requested: captured, capturesPointer: true)
+        try require(Self.framesWithinNativeTolerance(rect(panel.frame), captured), "Pointer capture moved the contained input frame")
         try require(!panel.ignoresMouseEvents, "Captured fixture panel became click-through")
         try checkCoordinates(panelMustBelongToSelectedDisplay: false)
         host.update(snapshot: snapshot, capturesPointer: false, pointer: Point(x: -1000, y: -1000))

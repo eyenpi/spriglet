@@ -4,6 +4,38 @@ import Testing
 @testable import CompanionRendering
 
 @Suite("Production vector rendering") @MainActor struct RendererTests {
+    @Test("A resting unnotched home never exposes a crown above its menu-bar edge", arguments: [0.8, 1.0, 1.2])
+    func unnotchedHomeMask(scale: Double) throws {
+        let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 720, height: 420),
+                                  home: Rect(x: 490, y: 13, width: 180, height: 20),
+                                  floor: 408, scale: scale, hasHardwareNotch: false)
+        var engine = CompanionEngine(scene: scene)
+        let resting = engine.snapshot
+        engine.send(.pointerPressed(resting.hitBounds.center))
+        let began = engine.beginDesktopDrag(geometry: DragGeometry(
+            surfaces: [DragSurface(bounds: scene.bounds, housing: scene.homeOcclusion)], heldBounds: scene.bounds))
+        #expect(began)
+        for frame in [resting, engine.snapshot] {
+            let image = try characterImage(frame)
+            var exposedCrown = 0, hiddenControl = 0, hiddenHits = 0, visibleFace = 0
+            for y in 0..<33 {
+                for x in 490..<670 {
+                    let point = Point(x: Double(x) + 0.5, y: Double(y) + 0.5)
+                    if y < 13 && frame.geometry.contains(point) { hiddenControl += 1 }
+                    if (image.colorAt(x: x, y: y)?.alphaComponent ?? 0) > 0 { exposedCrown += 1 }
+                    if frame.contains(point) { hiddenHits += 1 }
+                }
+            }
+            for y in 33..<93 {
+                for x in 490..<670 where (image.colorAt(x: x, y: y)?.alphaComponent ?? 0) > 0 { visibleFace += 1 }
+            }
+            #expect(hiddenControl > 20, "The unmasked crown must actually reach above the finite Home rectangle")
+            #expect(exposedCrown == 0, "Resting crown leaked above Home: \(exposedCrown) pixels")
+            #expect(hiddenHits == 0, "Hidden artwork must also be click-through")
+            #expect(visibleFace > 400, "The resting face below Home must remain visible")
+        }
+    }
+
     @Test("Picking agrees with painted pixels through peek, stretch, rotation and walking", arguments: [0, 1, 2, 3, 4])
     func paintedSilhouette(variant: Int) throws {
         let scene = SceneGeometry.preview

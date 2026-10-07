@@ -45,7 +45,7 @@ public struct CompanionSnapshot: Sendable {
         if let dragGeometry {
             return dragGeometry.visibleRectangles.contains { $0.contains(point) }
         }
-        return scene.bounds.contains(point) && !scene.home.contains(point)
+        return scene.bounds.contains(point) && !scene.homeOcclusion.contains(point)
     }
     public init(scene: SceneGeometry, presence: Presence, phase: BodyPhase, pose: CharacterPose,
                 feet: Point, windowAnchor: Point, rotation: Double, openness: Double,

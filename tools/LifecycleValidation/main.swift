@@ -1106,6 +1106,13 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                 exit(EXIT_FAILURE)
             }
         }
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-corner-drag" {
+            do { try CornerDragValidation.run(); exit(EXIT_SUCCESS) }
+            catch {
+                FileHandle.standardError.write(Data("Corner drag validation failed: \(error)\n".utf8))
+                exit(EXIT_FAILURE)
+            }
+        }
         // These fixtures stay headless, including while another app is fullscreen.
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--quit-wait-fixture" {
             if CommandLine.arguments[2] == "exit" { exit(EXIT_SUCCESS) }

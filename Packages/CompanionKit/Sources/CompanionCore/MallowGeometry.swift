@@ -39,6 +39,7 @@ public struct CharacterHand: Sendable {
 }
 
 public struct MallowGeometry: Sendable {
+    public static let groundShadowBounds = Rect(x: -49, y: -2, width: 98, height: 10)
     public static let bodyCurves: [CharacterCurve] = [
         CharacterCurve(start: Point(x: -49, y: 0), control1: Point(x: -66, y: -1), control2: Point(x: -66, y: -16), end: Point(x: -61, y: -31)),
         CharacterCurve(start: Point(x: -61, y: -31), control1: Point(x: -57, y: -56), control2: Point(x: -42, y: -76), end: Point(x: -22, y: -77)),
@@ -115,6 +116,13 @@ public struct MallowGeometry: Sendable {
         let handBounds = hands.flatMap { [boundingRect([$0.arm.start, $0.arm.control1, $0.arm.control2, $0.arm.end], padding: scale),
                                         boundingRect(corners($0.palm), padding: 0.95 * scale)] }
         return boundingRect(([bodyBounds] + footBounds + handBounds).flatMap(corners))
+    }
+    /// Full artwork envelope before any display/housing clipping. Picking keeps
+    /// using `bounds`; native canvas placement also needs the decorative shadow.
+    public func paintBounds(drawShadow: Bool) -> Rect {
+        guard drawShadow else { return bounds }
+        let shadow = corners(Self.groundShadowBounds).map(root.apply)
+        return boundingRect(corners(bounds) + shadow)
     }
 }
 
