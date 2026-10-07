@@ -120,19 +120,20 @@ def homepage(context, presentation, favicon_url):
         if (parsed.scheme != "https" or parsed.netloc != "apps.apple.com"
                 or not re.search(r"/id[0-9]+$", parsed.path) or parsed.query or parsed.fragment):
             raise ValueError("storeURL must be a verified HTTPS App Store product URL, or null")
-    for key in ("previewURL", "sourceURL"):
-        parsed = urlsplit(home[key])
-        if (parsed.scheme != "https" or parsed.netloc != "github.com"
-                or not (parsed.path == "/eyenpi/spriglet" or parsed.path.startswith("/eyenpi/spriglet/"))):
-            raise ValueError(f"Invalid homepage {key}")
+    parsed = urlsplit(home["sourceURL"])
+    if (parsed.scheme != "https" or parsed.netloc != "github.com"
+            or not (parsed.path == "/eyenpi/spriglet" or parsed.path.startswith("/eyenpi/spriglet/"))):
+        raise ValueError("Invalid homepage sourceURL")
     values = {**context, **presentation, **home, "faviconURL": favicon_url,
-              "downloadURL": store_url or home["previewURL"],
-              "downloadAction": home["storeAction"] if store_url else home["previewAction"],
-              "availability": home["storeAvailability"] if store_url else home["previewAvailability"],
-              "downloadNote": "" if store_url else home["previewNote"],
-              "detailsURL": context["supportURL"] if store_url else home["previewURL"],
-              "detailsAction": home["storeHelp"] if store_url else home["installLink"]}
+              "primaryAction": home["primaryAction"] if store_url else home["comingSoonAction"],
+              "downloadURL": store_url or "",
+              "downloadAction": home["storeAction"],
+              "availability": home["storeAvailability"] if store_url else home["soonAvailability"],
+              "detailsURL": context["supportURL"], "detailsAction": home["storeHelp"]}
     template = (HERE / "home.html").read_text()
+    # Pending releases contain no download or installation links in the HTML.
+    template = re.sub(r"\{\{#store\}\}(.*?)\{\{/store\}\}",
+                      lambda match: match[1] if store_url else "", template, flags=re.S)
     return re.sub(r"\{\{([A-Za-z][A-Za-z0-9]*)\}\}", lambda match: html.escape(str(values[match[1]]), quote=True), template)
 
 

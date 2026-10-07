@@ -90,7 +90,7 @@
       </section>
       <section id="bring-home" class="bring-home wrap" aria-labelledby="bring-title">
         <div class="home-line" aria-hidden="true"><div class="app-notch"><img src="/spriglet.png" alt="" width="48" height="48"><div>{{appName}}<small>{{brandLine}}</small></div><span>{{getLabel}}</span></div><svg class="home-mallow" viewBox="-72 -93 144 107"><use href="#mallow"/></svg><span class="home-annotation">{{bringAnnotation}}</span></div>
-        <h2 id="bring-title">{{bringTitle}} <em>{{bringAccent}}</em></h2><p class="bring-intro">{{bringBody}}</p><p class="availability">{{availability}}</p><a class="button download" href="{{downloadURL}}">{{downloadAction}} <span aria-hidden="true">↗</span></a><p class="micro platform">{{platform}}</p><p class="preview-note">{{downloadNote}}</p><a class="install-link" href="{{detailsURL}}">{{detailsAction}}</a>
+        <h2 id="bring-title">{{bringTitle}} <em>{{bringAccent}}</em></h2><p class="bring-intro">{{bringBody}}</p><p class="availability">{{availability}}</p>{{#store}}<a class="button download" href="{{downloadURL}}">{{downloadAction}} <span aria-hidden="true">↗</span></a>{{/store}}<p class="micro platform">{{platform}}</p>{{#store}}<a class="install-link" href="{{detailsURL}}">{{detailsAction}}</a>{{/store}}
       </section>
     </main>
   </div>

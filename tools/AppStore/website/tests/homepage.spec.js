@@ -15,9 +15,10 @@ test('field guide, adoption and existing help routes are reachable', async ({ pa
   await expect(page.getByRole('heading', { name: 'Mallow', exact: true })).toBeInViewport();
   await page.locator('.adopt-link').click();
   await expect(page).toHaveURL(/#bring-home$/);
-  const download = page.getByRole('link', { name: source.previewAction, exact: false });
-  await expect(download).toHaveAttribute('href', source.previewURL);
-  await expect(page.locator('.preview-note')).toContainText('not notarized');
+  await expect(page.locator('.availability')).toHaveText(source.soonAvailability);
+  await expect(page.locator('#bring-home a')).toHaveCount(0);
+  await expect(page.locator('a[href*="/releases/"], a[href*="apps.apple.com"]')).toHaveCount(0);
+  await expect(page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: source.comingSoonAction })).toBeVisible();
   await page.getByRole('navigation', { name: 'Footer navigation' }).getByRole('link', { name: 'Support', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Help & Support');
   await page.getByRole('link', { name: 'Privacy', exact: true }).click();
@@ -101,16 +102,17 @@ test('content and primary navigation survive JavaScript being disabled', async (
   await expect(page.getByRole('button', { name: 'Say hello to Mallow' })).toBeDisabled();
   await page.locator('.hero .button').click();
   await expect(page).toHaveURL(/#bring-home$/);
-  await expect(page.locator('.download')).toHaveAttribute('href', source.previewURL);
+  await expect(page.locator('.availability')).toHaveText(source.soonAvailability);
+  await expect(page.locator('#bring-home a')).toHaveCount(0);
   await context.close();
 });
 
-test('missing fonts preserve readable content and the download path', async ({ page }) => {
+test('missing fonts preserve readable content and release availability', async ({ page }) => {
   await page.route('**/*.woff2', route => route.abort());
   await openAt(page);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Someone small');
   await page.locator('.hero .button').click();
-  await expect(page.locator('.download')).toBeInViewport();
+  await expect(page.locator('.availability')).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(await page.evaluate(() => innerWidth));
 });
 
@@ -118,8 +120,8 @@ test('320px reflow and larger text retain all content without horizontal scrolli
   await page.setViewportSize({ width: 320, height: 900 });
   await openAt(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
-  await page.locator('.download').scrollIntoViewIfNeeded();
-  await expect(page.locator('.download')).toBeInViewport();
+  await page.locator('.availability').scrollIntoViewIfNeeded();
+  await expect(page.locator('.availability')).toBeInViewport();
   // 200% text scaling checks fixed ornaments against readable content.
   await page.evaluate(() => {
     const sheet = [...document.styleSheets].find(item => item.href?.endsWith('/home.css'));
