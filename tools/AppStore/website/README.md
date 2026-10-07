@@ -86,4 +86,4 @@ The root redirect has been removed. Preserve `/support` and `/privacy`, which ar
 - [Redirects](https://developers.cloudflare.com/workers/static-assets/redirects/) and [headers](https://developers.cloudflare.com/workers/static-assets/headers/)
 - [Wrangler configuration](https://developers.cloudflare.com/workers/wrangler/configuration/)
 
-Wrangler 4.131.2 and these references were checked on September 15, 2026.
+Wrangler 4.147.0 is pinned in the deployment lockfile and local publishing script. These references were checked on September 15, 2026.
