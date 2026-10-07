@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>{{appName}} — {{brandLine}}</title>
+  <meta name="description" content="{{description}}">
+  <link rel="canonical" href="{{websiteURL}}/">
+  <link rel="icon" type="image/png" sizes="128x128" href="{{faviconURL}}">
+  <link rel="preload" href="/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/instrument-serif-italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/home.css">
+  <script src="/home.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <svg class="art-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="mallow-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#eee5ff"/><stop offset="1" stop-color="#cbb8ef"/></linearGradient>
+      <symbol id="leaf" viewBox="0 0 24 24"><path d="M18 4C9 3 4 8 5 17c8 2 15-3 13-13ZM5 19 16 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <!-- Coordinates and palette from MallowGeometry.swift and MallowRenderer.swift. Website illustration, not an app simulation. -->
+      <g id="mallow">
+        <g stroke="#252647" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <g fill="#dfd3f7" stroke-width="1.9"><ellipse cx="-28" cy="1.5" rx="10" ry="6.5"/><ellipse cx="28" cy="1.5" rx="10" ry="6.5"/></g>
+          <path d="M-49 0C-66-1-66-16-61-31C-57-56-42-76-22-77C-4-89 16-85 29-74C46-65 58-48 60-30C67-12 64-1 49 0C23 5-23 5-49 0Z" fill="url(#mallow-fill)"/>
+          <path d="M-47-29C-56-14-46-9-34-15M47-29C56-14 46-9 34-15" fill="none"/>
+          <g fill="#e8aabd" opacity=".35" stroke="none"><ellipse cx="-25" cy="-35" rx="5" ry="2"/><ellipse cx="25" cy="-35" rx="5" ry="2"/></g>
+          <g class="open-eyes" fill="#252647" stroke="none"><ellipse cx="-14" cy="-47" rx="3.4" ry="4.1"/><ellipse cx="14" cy="-47" rx="3.4" ry="4.1"/></g>
+          <path class="closed-eyes" d="M-18-47C-16-44-12-44-10-47M10-47C12-44 16-44 18-47" fill="none"/>
+          <path d="M-4-37C-2-32 2-32 4-37" fill="none" stroke-width="2"/>
+        </g>
+      </g>
+    </defs>
+  </svg>
+  <div class="opening" data-time-scene>
+    <header class="hero-top">
+    <div class="site-header wrap">
+      <a class="brand" href="/" aria-label="{{homeLink}}"><svg width="21" height="21" aria-hidden="true"><use href="#leaf"/></svg>{{appName}}</a>
+      <nav aria-label="Main navigation">
+        <a href="#field-guide">{{guideLink}}</a><a href="/privacy">{{privacyLink}}</a><a class="source-nav" href="{{sourceURL}}">{{sourceLink}}</a><a class="nav-cta" href="#bring-home">{{primaryAction}} <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+    <aside class="notch-scene" aria-label="Website Mallow and local time">
+      <button class="notch-mallow" type="button" aria-label="{{helloLabel}}" data-greeting="{{greeting}}" disabled>
+        <svg class="hero-mallow" viewBox="-72 -93 144 107" aria-hidden="true"><use href="#mallow"/></svg>
+        <span class="notch" aria-hidden="true"><i></i></span>
+      </button>
+      <span class="notch-note" aria-hidden="true">{{notchNote}}</span>
+      <p class="clock-label micro"><span class="status-dot" aria-hidden="true"></span><span data-clock data-morning="{{clockMorning}}" data-afternoon="{{clockAfternoon}}" data-evening="{{clockEvening}}" data-night="{{clockNight}}">{{clockFallback}}</span></p>
+      <span class="greeting-status" role="status" data-greeting-status></span>
+    </aside>
+    </header>
+    <main id="content" tabindex="-1">
+      <section class="hero wrap" aria-labelledby="hero-title">
+        <h1 id="hero-title">{{heroLineOne}} <em>{{heroAccent}}</em><br>{{heroLineTwo}}<br>{{heroLineThree}}</h1>
+        <div class="hero-copy"><p>{{heroBody}} <strong>{{companionTitle}}</strong></p><a class="button" href="#bring-home">{{primaryAction}} <span aria-hidden="true">↗</span></a><p class="micro platform">{{platform}}</p></div>
+      </section>
+      <section class="poster section-shell" aria-labelledby="poster-title">
+        <div class="poster-main">
+          <p class="micro">{{posterEyebrow}}</p>
+          <div class="poster-art" aria-hidden="true"><span class="scribble">{{posterAside}}</span><svg class="poster-mallow" viewBox="-72 -93 144 107"><use href="#mallow"/></svg><svg class="play-trail" viewBox="0 0 220 150"><path d="M5 145Q35 25 115 30T215 110"/><path class="spark" d="m25 20 6-10m120-3 1-12m45 52 12-2"/></svg><svg class="tiny-mallow" viewBox="-72 -93 144 107"><use href="#mallow"/></svg></div>
+          <h2 id="poster-title"><span>{{posterLineOne}}</span><span>{{posterLineTwo}}</span></h2>
+          <p class="poster-description">{{posterBody}} <strong>{{posterEmphasis}}</strong></p>
+        </div>
+        <div class="behavior-list">
+          <article class="behavior"><div class="peek-illustration" aria-hidden="true"><svg viewBox="-72 -93 144 107"><use href="#mallow"/></svg><span></span></div><div><h3>{{peekTitle}}</h3><p>{{peekBody}}</p></div></article>
+          <article class="behavior"><svg class="playing-illustration" viewBox="-72 -93 144 107" aria-hidden="true"><use href="#mallow"/></svg><div><h3>{{playTitle}}</h3><p>{{playBody}}</p></div></article>
+          <article class="behavior"><svg class="sleepy" viewBox="-72 -93 144 107" aria-hidden="true"><use href="#mallow"/></svg><div><h3>{{waitTitle}}</h3><p>{{waitBody}}</p></div></article>
+        </div>
+      </section>
+      <section id="field-guide" class="field-guide" aria-labelledby="field-title">
+        <div class="field-heading wrap"><p class="micro">{{fieldEyebrow}}</p><h2 id="field-title">{{fieldTitle}}<br><em>{{fieldAccent}}</em></h2><p>{{fieldBody}}</p></div>
+        <article class="specimen wrap" aria-labelledby="mallow-title">
+          <div class="plate-header micro"><span>{{plateNumber}}</span><span>{{plateCaption}}</span><span class="plate-tag">{{plateTag}}</span></div>
+          <div class="specimen-grid">
+            <div class="specimen-description"><h3 id="mallow-title">{{mallowName}}</h3><p class="species"><em>{{species}}</em> <small>{{speciesSuffix}}</small></p><p>{{mallowDescription}}</p><dl class="habits"><div><dt>{{habitatLabel}}</dt><dd>{{habitatValue}}</dd></div><div><dt>{{rangeLabel}}</dt><dd>{{rangeValue}}</dd></div><div><dt>{{dietLabel}}</dt><dd>{{dietValue}}</dd></div><div><dt>{{temperLabel}}</dt><dd>{{temperValue}}</dd></div></dl><a class="adopt-link" href="#bring-home"><svg width="17" height="17" aria-hidden="true"><use href="#leaf"/></svg>{{primaryAction}} <span aria-hidden="true">↗</span></a></div>
+            <figure class="anatomy" aria-label="Mallow, a soft lavender spriglet with a rounded body, small hands and feet, and a curious face.">
+              <svg class="anatomy-lines" viewBox="0 0 440 430" aria-hidden="true"><path d="M70 65 170 236M315 65 248 178M50 367 141 300M355 373 278 336M127 359H316M127 354v10M316 354v10"/><circle cx="170" cy="236" r="2"/><circle cx="248" cy="178" r="2"/><path class="hand-line" d="M380 225 310 260"/><path class="hand-line-mobile" d="M380 125 310 260"/><circle cx="310" cy="260" r="2"/></svg>
+              <svg class="specimen-mallow" viewBox="-72 -93 144 107" aria-hidden="true"><use href="#mallow"/></svg>
+              <figcaption><span class="callout eyes"><strong>{{eyesTitle}}</strong> {{eyesBody}}</span><span class="callout crown"><strong>{{crownTitle}}</strong> {{crownBody}}</span><span class="callout hands"><strong>{{handsTitle}}</strong> {{handsBody}}</span><span class="callout body"><strong>{{bodyTitle}}</strong> {{bodyBody}}</span><span class="callout feet"><strong>{{feetTitle}}</strong> {{feetBody}}</span><span class="micro scale">{{scaleCaption}}</span></figcaption>
+            </figure>
+            <div class="keeping"><h4 class="micro">{{keepingTitle}}</h4><p class="keeping-intro">{{keepingIntro}}</p><dl><div><dt>{{sizeLabel}}</dt><dd>{{sizeValue}}</dd></div><div><dt>{{energyLabel}}</dt><dd>{{energyValue}}</dd></div><div><dt>{{homeLabel}}</dt><dd>{{homeValue}}</dd></div><div><dt>{{hoursLabel}}</dt><dd>{{hoursValue}}</dd></div><div><dt>{{feedingLabel}}</dt><dd>{{feedingValue}}</dd></div></dl></div>
+          </div>
+        </article>
+      </section>
+      <section class="quiet section-shell" aria-labelledby="quiet-title">
+        <div class="quiet-copy"><p class="micro">{{quietEyebrow}}</p><h2 id="quiet-title">{{quietTitle}}<br>{{quietLine}} <em>{{quietAccent}}</em></h2><p class="quiet-intro">{{quietBody}}</p><div class="principles"><div><h3>{{localTitle}}</h3><p>{{localBody}}</p></div><div><h3>{{gentleTitle}}</h3><p>{{gentleBody}}</p></div><div><h3>{{spaceTitle}}</h3><p>{{spaceBody}}</p></div></div><a class="policy-link" href="/privacy">{{policyLink}} <span aria-hidden="true">↗</span></a><p class="hosting-note">{{websitePrivacy}}</p></div>
+        <div class="quiet-art"><div class="receipt"><p class="receipt-title">{{receiptTitle}}</p><p class="receipt-subtitle">{{receiptSubtitle}}</p><dl><div><dt>{{receiptAccount}}</dt><dd>{{receiptNone}}</dd></div><div><dt>{{receiptAnalytics}}</dt><dd>{{receiptNone}}</dd></div><div><dt>{{receiptServers}}</dt><dd>{{receiptNone}}</dd></div><div><dt>{{receiptScreen}}</dt><dd>{{receiptNone}}</dd></div><div><dt>{{receiptSaved}}</dt><dd>{{receiptSettings}}</dd></div></dl><p class="receipt-total"><span>{{receiptTotal}}</span><span>0</span></p><p class="receipt-thanks">{{receiptThanks}}</p></div><div class="sleeping-mallow" aria-hidden="true"><span>z<br>z<br>z</span><svg class="sleepy" viewBox="-72 -93 144 107"><use href="#mallow"/></svg></div></div>
+      </section>
+      <section id="bring-home" class="bring-home wrap" aria-labelledby="bring-title">
+        <div class="home-line" aria-hidden="true"><div class="app-notch"><img src="/spriglet.png" alt="" width="48" height="48"><div>{{appName}}<small>{{brandLine}}</small></div><span>{{getLabel}}</span></div><svg class="home-mallow" viewBox="-72 -93 144 107"><use href="#mallow"/></svg><span class="home-annotation">{{bringAnnotation}}</span></div>
+        <h2 id="bring-title">{{bringTitle}} <em>{{bringAccent}}</em></h2><p class="bring-intro">{{bringBody}}</p><p class="availability">{{availability}}</p><a class="button download" href="{{downloadURL}}">{{downloadAction}} <span aria-hidden="true">↗</span></a><p class="micro platform">{{platform}}</p><p class="preview-note">{{downloadNote}}</p><a class="install-link" href="{{detailsURL}}">{{detailsAction}}</a>
+      </section>
+    </main>
+  </div>
+  <footer class="site-footer"><div class="wrap"><div class="footer-scene"><p><span class="footer-clock" data-footer-clock data-prefix="{{footerClockPrefix}}"></span>{{footerLine}} <em>{{footerAccent}}</em></p><svg class="sleepy" viewBox="-72 -93 144 107" aria-hidden="true"><use href="#mallow"/></svg></div><div class="footer-links"><nav aria-label="Footer navigation"><a href="#field-guide">{{guideLink}}</a><a href="#bring-home">{{primaryAction}}</a><a href="/privacy">{{privacyLink}}</a><a href="/support">{{supportLink}}</a><a href="{{sourceURL}}">{{sourceLink}}</a></nav><span>© {{copyright}}</span></div><p class="micro footer-note">{{footerNote}}</p></div></footer>
+</body>
+</html>

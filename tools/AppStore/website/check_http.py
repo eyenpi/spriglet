@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the served support site, including content, redirects, and error handling."""
+"""Verify the served homepage, support, privacy, assets and error handling."""
 
 import argparse
 from pathlib import Path
@@ -35,8 +35,14 @@ def main():
             return response
 
     try:
-        for route, filename in (("/support", "support.html"), ("/privacy", "privacy.html"),
-                                ("/style.css", "style.css"), ("/spriglet.png", "spriglet.png")):
+        legacy = (public / "_redirects").read_bytes() == b"/ /support 302\n"
+        routes = [("/support", "support.html"), ("/privacy", "privacy.html"),
+                  ("/style.css", "style.css"), ("/spriglet.png", "spriglet.png")]
+        if not legacy:
+            routes += [("/", "index.html"), ("/home.css", "home.css"), ("/home.js", "home.js"),
+                       ("/instrument-serif.woff2", "instrument-serif.woff2"),
+                       ("/instrument-serif-italic.woff2", "instrument-serif-italic.woff2")]
+        for route, filename in routes:
             with fetch(route) as response:
                 if response.status != 200:
                     raise ValueError(f"{route}: expected 200, received {response.status}")
@@ -47,10 +53,11 @@ def main():
                 if "default-src 'none'" not in response.headers.get("Content-Security-Policy", ""):
                     raise ValueError(f"{route}: missing expected content security policy")
             print(f"PASS {route}: exact prepared content and security headers")
-        with fetch("/") as response:
-            if response.status != 302 or response.headers.get("Location") not in {"/support", origin + "/support"}:
-                raise ValueError("Root must temporarily redirect to /support")
-        print("PASS /: temporary redirect to support")
+        if legacy:
+            with fetch("/") as response:
+                if response.status != 302 or response.headers.get("Location") not in {"/support", origin + "/support"}:
+                    raise ValueError("Legacy rollback must redirect the root to /support")
+            print("PASS /: known legacy support redirect")
         with fetch("/missing-spriglet-page") as response:
             if response.status != 404 or response.read() != (public / "404.html").read_bytes():
                 raise ValueError("Unknown routes must serve the prepared 404 page with status 404")

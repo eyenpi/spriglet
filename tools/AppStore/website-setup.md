@@ -4,7 +4,7 @@ Prepared metadata and bundled help use **meetspriglet.com**. The Mallow app make
 
 | Destination | Content or purpose |
 | --- | --- |
-| `https://meetspriglet.com` | Redirect to current companion help; product text is prepared locally |
+| `https://meetspriglet.com` | Prepared homepage introducing Mallow and directing visitors to the available download |
 | `https://meetspriglet.com/support` | Public support page using [support-page.md](support-page.md) |
 | `https://meetspriglet.com/privacy` | The exact current [PRIVACY.md](../../PRIVACY.md), formatted for the website |
 | `support@meetspriglet.com` | One address for app support, privacy questions, and deletion requests |
@@ -13,7 +13,7 @@ Prepared metadata and bundled help use **meetspriglet.com**. The Mallow app make
 
 1. The publisher has selected and added the domain to Cloudflare. Retain control of renewal and DNS.
 2. Deploy the prepared [Cloudflare static website](website/README.md). Its custom-domain configuration manages DNS and certificates. Verify HTTPS and redirect HTTP to HTTPS.
-3. Publish the support and privacy pages at the exact paths above, including mobile-readable layout and working navigation. The root temporarily redirects to support. When the product page is designed, keep support and privacy linked and preserve their URLs.
+3. Publish the homepage, support and privacy pages at the exact paths above, including mobile-readable layout and working navigation. The prepared homepage replaces the root-to-support redirect. Support and privacy remain linked at their original URLs. Local preparation does not mean production has been deployed.
 4. If `www.meetspriglet.com` is configured, redirect it to the canonical apex domain. The app does not depend on `www`.
 5. Keep support and privacy publicly readable without sign-in, a purchase, or a broken consent overlay. Match the policy to the binary being reviewed. Add applicable publisher/contact disclosures for the chosen territories before submission.
 6. Avoid adding advertising or analytics while the privacy answers describe the current local app and simple support flow. Reassess policy disclosures if website services change.
@@ -40,6 +40,6 @@ App Review can use the same email address once monitored. Enter the review conta
 - [ ] Support mail delivery and replies have been tested.
 - [ ] Links in bundled help, prepared metadata and generated website pages use the expected destinations.
 - [ ] Any required publisher/trader disclosures are present and accurate.
-- [ ] After approval, add the real App Store product link to the product page. Do not invent an App Store ID or claim that the app is already available before release.
+- [ ] After approval and public release, verify the real App Store product link and set `home.storeURL` in `Configuration/Shared/website.en-US.json`, regenerate, and deploy. Until then, the homepage links to the older GitHub preview with its signing and feature limitations. Do not invent an App Store ID or claim that the app is already available before release.
 
 Apple requires a support URL with contact information and a public privacy-policy URL: [platform version information](https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information), [app information](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information).

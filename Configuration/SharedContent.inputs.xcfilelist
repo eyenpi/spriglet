@@ -9,6 +9,7 @@ $(SRCROOT)/Configuration/Shared/support.md
 $(SRCROOT)/LICENSE
 $(SRCROOT)/tools/SharedContent/sync.py
 $(SRCROOT)/tools/AppStore/website/build.py
+$(SRCROOT)/tools/AppStore/website/home.html
 $(SRCROOT)/Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/Contents.json
 $(SRCROOT)/Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_128x128@1x.png
 $(SRCROOT)/Sources/Spriglet/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png

@@ -22,7 +22,8 @@ REPOSITORY = 'eyenpi/spriglet'
 WORKFLOW = '.github/workflows/pr-ci.yml'
 LEGACY_WORKFLOW = '.github/workflows/validate.yml'
 ARTIFACT = 'website-static'
-FILES = frozenset(('index.html', 'support.html', 'privacy.html', '404.html', 'style.css', 'spriglet.png', '_headers', '_redirects'))
+LEGACY_FILES = frozenset(('index.html', 'support.html', 'privacy.html', '404.html', 'style.css', 'spriglet.png', '_headers', '_redirects'))
+FILES = LEGACY_FILES | frozenset(('home.css', 'home.js', 'instrument-serif.woff2', 'instrument-serif-italic.woff2'))
 MAX_ARCHIVE = 8 * 1024 * 1024
 MAX_CONTENT = 4 * 1024 * 1024
 REQUIRED_CHECKS = frozenset(('macos', 'security-checks', 'codeql-actions', 'codeql-python', 'codeql-swift'))
@@ -176,8 +177,9 @@ def unpack_static(data, destination, preview):
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
         entries = archive.infolist()
         names = [entry.filename for entry in entries]
-        if len(names) != len(FILES) or set(names) != FILES:
+        if len(names) != len(set(names)) or frozenset(names) not in (FILES, LEGACY_FILES):
             raise ValueError('Artifact must contain exactly the expected flat static website files')
+        legacy = frozenset(names) == LEGACY_FILES
         if sum(entry.file_size for entry in entries) > MAX_CONTENT:
             raise ValueError('Expanded website exceeds the size limit')
         for entry in entries:
@@ -188,6 +190,9 @@ def unpack_static(data, destination, preview):
             if entry.filename == 'spriglet.png':
                 if not content.startswith(b'\x89PNG\r\n\x1a\n'):
                     raise ValueError('Website logo must be a PNG')
+            elif entry.filename.endswith('.woff2'):
+                if not content.startswith(b'wOF2'):
+                    raise ValueError('Website font must be WOFF2')
             else:
                 content.decode('utf-8')
             if entry.filename not in ('_headers', '_redirects'):
@@ -196,9 +201,11 @@ def unpack_static(data, destination, preview):
     public = ROOT / 'tools/AppStore/website/public'
     headers = (public / '_headers').read_text()
     if preview:
-        headers += '  X-Robots-Tag: noindex, nofollow, noarchive\n'
+        headers += '/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n'
     (destination / '_headers').write_text(headers)
-    (destination / '_redirects').write_bytes((public / '_redirects').read_bytes())
+    # Preserve the known legacy route during rollback; never trust artifact rules.
+    redirects = b'/ /support 302\n' if legacy else (public / '_redirects').read_bytes()
+    (destination / '_redirects').write_bytes(redirects)
 
 
 def wait_production_checks(sha):

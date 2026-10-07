@@ -3,33 +3,97 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark">
-  <title>Spriglet support — Spriglet</title>
-  <meta name="description" content="Support and privacy information for Spriglet for Mac.">
-  <link rel="canonical" href="https://meetspriglet.com/support">
+  <meta name="color-scheme" content="light">
+  <title>Spriglet — A little quiet company.</title>
+  <meta name="description" content="Meet Mallow, your first spriglet. A soft lavender desktop companion that quietly peeks beneath your Mac’s notch while you work.">
+  <link rel="canonical" href="https://meetspriglet.com/">
   <link rel="icon" type="image/png" sizes="128x128" href="/spriglet.png?v=7669800f25ba62e3">
-  <link rel="stylesheet" href="/style.css">
+  <link rel="preload" href="/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/instrument-serif-italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/home.css">
+  <script src="/home.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#content">Skip to content</a>
-  <header>
-    <a class="brand" href="/" aria-label="Spriglet home"><img src="/spriglet.png" alt="" width="48" height="48"><span>Spriglet<small>A little quiet company.</small></span></a>
-    <nav aria-label="Main navigation"><a href="/support" aria-current="page">Support</a><a href="/privacy">Privacy</a></nav>
-  </header>
-  <main id="content" tabindex="-1">
-    <div class="page-heading">
-      <div>
-        <div class="eyebrow">Spriglet for Mac</div>
-        <h1>Spriglet support</h1>
-        <p class="page-introduction">A little help for you and your spriglet.</p>
-      </div>
-      <img class="companion-icon" src="/spriglet.png" alt="" width="128" height="128">
+  <svg class="art-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="mallow-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#eee5ff"/><stop offset="1" stop-color="#cbb8ef"/></linearGradient>
+      <symbol id="leaf" viewBox="0 0 24 24"><path d="M18 4C9 3 4 8 5 17c8 2 15-3 13-13ZM5 19 16 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <!-- Coordinates and palette from MallowGeometry.swift and MallowRenderer.swift. Website illustration, not an app simulation. -->
+      <g id="mallow">
+        <g stroke="#252647" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <g fill="#dfd3f7" stroke-width="1.9"><ellipse cx="-28" cy="1.5" rx="10" ry="6.5"/><ellipse cx="28" cy="1.5" rx="10" ry="6.5"/></g>
+          <path d="M-49 0C-66-1-66-16-61-31C-57-56-42-76-22-77C-4-89 16-85 29-74C46-65 58-48 60-30C67-12 64-1 49 0C23 5-23 5-49 0Z" fill="url(#mallow-fill)"/>
+          <path d="M-47-29C-56-14-46-9-34-15M47-29C56-14 46-9 34-15" fill="none"/>
+          <g fill="#e8aabd" opacity=".35" stroke="none"><ellipse cx="-25" cy="-35" rx="5" ry="2"/><ellipse cx="25" cy="-35" rx="5" ry="2"/></g>
+          <g class="open-eyes" fill="#252647" stroke="none"><ellipse cx="-14" cy="-47" rx="3.4" ry="4.1"/><ellipse cx="14" cy="-47" rx="3.4" ry="4.1"/></g>
+          <path class="closed-eyes" d="M-18-47C-16-44-12-44-10-47M10-47C12-44 16-44 18-47" fill="none"/>
+          <path d="M-4-37C-2-32 2-32 4-37" fill="none" stroke-width="2"/>
+        </g>
+      </g>
+    </defs>
+  </svg>
+  <div class="opening" data-time-scene>
+    <header class="hero-top">
+    <div class="site-header wrap">
+      <a class="brand" href="/" aria-label="Spriglet home"><svg width="21" height="21" aria-hidden="true"><use href="#leaf"/></svg>Spriglet</a>
+      <nav aria-label="Main navigation">
+        <a href="#field-guide">Field guide</a><a href="/privacy">Privacy</a><a class="source-nav" href="https://github.com/eyenpi/spriglet">Source</a><a class="nav-cta" href="#bring-home">Bring Mallow home <span aria-hidden="true">↗</span></a>
+      </nav>
     </div>
-    <aside class="companion-note" aria-label="About spriglets">
-      <p><strong>Mallow, your first spriglet.</strong> Spriglet is home to little desktop companions called spriglets. Meet Mallow, the soft lavender spriglet available today.</p>
+    <aside class="notch-scene" aria-label="Website Mallow and local time">
+      <button class="notch-mallow" type="button" aria-label="Say hello to Mallow" data-greeting="Hello, you. ♡" disabled>
+        <svg class="hero-mallow" viewBox="-72 -93 144 107" aria-hidden="true"><use href="#mallow"/></svg>
+        <span class="notch" aria-hidden="true"><i></i></span>
+      </button>
+      <span class="notch-note" aria-hidden="true">psst. up here.</span>
+      <p class="clock-label micro"><span class="status-dot" aria-hidden="true"></span><span data-clock data-morning="Mallow is stretching" data-afternoon="Mallow is awake" data-evening="Mallow is winding down" data-night="Mallow is still here">A little quiet company.</span></p>
+      <span class="greeting-status" role="status" data-greeting-status></span>
     </aside>
-    <article class="document"><p><a href="/support">Visit support</a> or read our <a href="/privacy">privacy policy</a>.</p></article>
-  </main>
-  <footer><span>© 2026 Ali Nabipour</span><a href="mailto:support@meetspriglet.com">support@meetspriglet.com</a></footer>
+    </header>
+    <main id="content" tabindex="-1">
+      <section class="hero wrap" aria-labelledby="hero-title">
+        <h1 id="hero-title">Someone <em>small</em><br>lives under<br>your notch.</h1>
+        <div class="hero-copy"><p>Little desktop companions that blink, breathe, and keep you quiet company while you work. <strong>Mallow, your first spriglet.</strong></p><a class="button" href="#bring-home">Bring Mallow home <span aria-hidden="true">↗</span></a><p class="micro platform">macOS 26+ · Apple silicon</p></div>
+      </section>
+      <section class="poster section-shell" aria-labelledby="poster-title">
+        <div class="poster-main">
+          <p class="micro">What Mallow does</p>
+          <div class="poster-art" aria-hidden="true"><span class="scribble">a little</span><svg class="poster-mallow" viewBox="-72 -93 144 107"><use href="#mallow"/></svg><svg class="play-trail" viewBox="0 0 220 150"><path d="M5 145Q35 25 115 30T215 110"/><path class="spark" d="m25 20 6-10m120-3 1-12m45 52 12-2"/></svg><svg class="tiny-mallow" viewBox="-72 -93 144 107"><use href="#mallow"/></svg></div>
+          <h2 id="poster-title"><span>QUIET</span><span>COMPANY.</span></h2>
+          <p class="poster-description">Mostly, Mallow keeps you company. <strong>When you want to play, it’s soft, light, and lands on its feet.</strong></p>
+        </div>
+        <div class="behavior-list">
+          <article class="behavior"><div class="peek-illustration" aria-hidden="true"><svg viewBox="-72 -93 144 107"><use href="#mallow"/></svg><span></span></div><div><h3>It peeks.</h3><p>Rests beneath your notch with its face showing, blinking and breathing beside your work.</p></div></article>
+          <article class="behavior"><svg class="playing-illustration" viewBox="-72 -93 144 107" aria-hidden="true"><use href="#mallow"/></svg><div><h3>It plays.</h3><p>Invite it out, pick it up, let it go. It lands softly, or catches the notch on its way home.</p></div></article>
+          <article class="behavior"><svg class="sleepy" viewBox="-72 -93 144 107" aria-hidden="true"><use href="#mallow"/></svg><div><h3>It waits.</h3><p>Long, quiet pauses. Empty space around it clicks straight through to your work.</p></div></article>
+        </div>
+      </section>
+      <section id="field-guide" class="field-guide" aria-labelledby="field-title">
+        <div class="field-heading wrap"><p class="micro">A field guide to spriglets · Volume I</p><h2 id="field-title">Mallow is the first.<br><em>It won’t be the last.</em></h2><p>Spriglets are small, soft creatures that live at the top of your screen. Each has its own shape and habits. We’re starting with Mallow; more spriglets are planned.</p></div>
+        <article class="specimen wrap" aria-labelledby="mallow-title">
+          <div class="plate-header micro"><span>Plate I · No. 01</span><span>Catalogued October 2026, beneath a MacBook notch</span><span class="plate-tag">Meet Mallow</span></div>
+          <div class="specimen-grid">
+            <div class="specimen-description"><h3 id="mallow-title">Mallow</h3><p class="species"><em>Mollis inclinavus</em> <small>(Spriglet, 2026)</small></p><p>Soft, lavender, and a little shy. Rests beneath the notch with only its face showing, blinking and breathing beside your work. Comes out when invited.</p><dl class="habits"><div><dt>Habitat</dt><dd>Beneath the notch; upper right on displays without one.</dd></div><div><dt>Range</dt><dd>Apple silicon Macs, macOS 26+.</dd></div><div><dt>Diet</dt><dd>Nothing. No account, no network.</dd></div><div><dt>Temperament</dt><dd>Quiet pauses and small gestures.</dd></div></dl><a class="adopt-link" href="#bring-home"><svg width="17" height="17" aria-hidden="true"><use href="#leaf"/></svg>Bring Mallow home <span aria-hidden="true">↗</span></a></div>
+            <figure class="anatomy" aria-label="Mallow, a soft lavender spriglet with a rounded body, small hands and feet, and a curious face.">
+              <svg class="anatomy-lines" viewBox="0 0 440 430" aria-hidden="true"><path d="M70 65 170 236M315 65 248 178M50 367 141 300M355 373 278 336M127 359H316M127 354v10M316 354v10"/><circle cx="170" cy="236" r="2"/><circle cx="248" cy="178" r="2"/><path class="hand-line" d="M380 225 310 260"/><path class="hand-line-mobile" d="M380 125 310 260"/><circle cx="310" cy="260" r="2"/></svg>
+              <svg class="specimen-mallow" viewBox="-72 -93 144 107" aria-hidden="true"><use href="#mallow"/></svg>
+              <figcaption><span class="callout eyes"><strong>Eyes.</strong> Wide when curious. Sleepy when it’s quiet.</span><span class="callout crown"><strong>Crown.</strong> Rises and falls with each breath.</span><span class="callout hands"><strong>Hands.</strong> Grip the notch’s edge when invited out.</span><span class="callout body"><strong>Body.</strong> Soft lavender. Squishes and settles.</span><span class="callout feet"><strong>Feet.</strong> Small, steady, and ready for a soft landing.</span><span class="micro scale">125 pt across at rest · illustration</span></figcaption>
+            </figure>
+            <div class="keeping"><h4 class="micro">Care &amp; keeping</h4><p class="keeping-intro">In the current app’s native Settings</p><dl><div><dt>Size</dt><dd>Small, Medium, or Large.</dd></div><div><dt>Energy</dt><dd>Gentle, Standard, or Lively.</dd></div><div><dt>Home</dt><dd>The notch, or the top left, center, or right of any display.</dd></div><div><dt>Hours</dt><dd>Optional launch at login, if you like.</dd></div><div><dt>Feeding</dt><dd>Not required.</dd></div></dl></div>
+          </div>
+        </article>
+      </section>
+      <section class="quiet section-shell" aria-labelledby="quiet-title">
+        <div class="quiet-copy"><p class="micro">Quiet by design</p><h2 id="quiet-title">Quiet company<br>keeps <em>quiet.</em></h2><p class="quiet-intro">Spriglets live entirely on your Mac. There is nothing to sign up for and nothing sent anywhere by the app. Mallow stays at its small resting peek until you invite it out.</p><div class="principles"><div><h3>Local</h3><p>No account, app server, analytics, or screen capture.</p></div><div><h3>Gentle</h3><p>Respects Reduce Motion, Low Power Mode, and display sleep.</p></div><div><h3>Out of the way</h3><p>Clicks pass through empty space. Hide or pause from the menu bar.</p></div></div><a class="policy-link" href="/privacy">Read the privacy policy <span aria-hidden="true">↗</span></a><p class="hosting-note">Website hosting is covered separately in the policy.</p></div>
+        <div class="quiet-art"><div class="receipt"><p class="receipt-title">Spriglet · Privacy receipt</p><p class="receipt-subtitle">The app on your Mac</p><dl><div><dt>account</dt><dd>none</dd></div><div><dt>analytics</dt><dd>none</dd></div><div><dt>app server connections</dt><dd>none</dd></div><div><dt>screen contents read</dt><dd>none</dd></div><div><dt>saved on your Mac</dt><dd>settings</dd></div></dl><p class="receipt-total"><span>TOTAL COLLECTED</span><span>0</span></p><p class="receipt-thanks">thank you for visiting ♡</p></div><div class="sleeping-mallow" aria-hidden="true"><span>z<br>z<br>z</span><svg class="sleepy" viewBox="-72 -93 144 107"><use href="#mallow"/></svg></div></div>
+      </section>
+      <section id="bring-home" class="bring-home wrap" aria-labelledby="bring-title">
+        <div class="home-line" aria-hidden="true"><div class="app-notch"><img src="/spriglet.png" alt="" width="48" height="48"><div>Spriglet<small>A little quiet company.</small></div><span>Meet</span></div><svg class="home-mallow" viewBox="-72 -93 144 107"><use href="#mallow"/></svg><span class="home-annotation">then look up at your notch ↑</span></div>
+        <h2 id="bring-title">Bring it <em>home.</em></h2><p class="bring-intro">A little companion for your Apple silicon Mac, running macOS 26 or later.</p><p class="availability">The Mac App Store release is on its way.</p><a class="button download" href="https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1">Try the Mac preview <span aria-hidden="true">↗</span></a><p class="micro platform">macOS 26+ · Apple silicon</p><p class="preview-note">The older 0.3.0 preview is ad hoc signed and not notarized; macOS may block it. It predates the Settings, introduction, and accessibility updates described here.</p><a class="install-link" href="https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1">Preview details &amp; installation</a>
+      </section>
+    </main>
+  </div>
+  <footer class="site-footer"><div class="wrap"><div class="footer-scene"><p><span class="footer-clock" data-footer-clock data-prefix="It’s"></span>See you under <em>the notch.</em></p><svg class="sleepy" viewBox="-72 -93 144 107" aria-hidden="true"><use href="#mallow"/></svg></div><div class="footer-links"><nav aria-label="Footer navigation"><a href="#field-guide">Field guide</a><a href="#bring-home">Bring Mallow home</a><a href="/privacy">Privacy</a><a href="/support">Support</a><a href="https://github.com/eyenpi/spriglet">Source</a></nav><span>© 2026 Ali Nabipour</span></div><p class="micro footer-note">Spriglet is a native, local app. Mallow is original artwork, drawn in code.</p></div></footer>
 </body>
 </html>

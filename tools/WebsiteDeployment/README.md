@@ -1,6 +1,6 @@
 # Website deployment and operations
 
-The app and website share the sources in `Configuration/Shared` and the app icon catalog. CI verifies the generated output before uploading a static artifact. Product page design remains separate; the current root redirects to support.
+The app and website share the sources in `Configuration/Shared` and the app icon catalog. CI verifies the generated homepage, help pages, browser interactions and accessibility before uploading a static artifact. The homepage is served at `/`, with support and privacy at their existing routes.
 
 ## Deployment flow
 
@@ -10,6 +10,10 @@ The app and website share the sources in `Configuration/Shared` and the app icon
 4. Production updates and rollback are explicit local operations. Pushes, release tags, PR closure, and schedules do not launch deployment runners. Existing production content stays live until an explicit deployment.
 
 The new `website-preview.yml` handler becomes active when merged into the default branch. The registered legacy build/security/deploy/monitor workflows remain disabled. External-contributor workflow approval is separate from the owner's `ci-review` approval; neither gives PR code deployment secrets.
+
+The homepage adds `home.css`, `home.js` and two WOFF2 fonts to the exact flat artifact allowlist. The trusted uploader validates font signatures and UTF-8 source, preserves size limits, and rejects every unlisted file. Its policies come from protected `main`; the first homepage PR's automatic preview cannot accept these new assets until the allowlist and headers are merged. Use the local Wrangler preview for that first review. Later previews use the merged policy. Preview `noindex` applies to every path, including the homepage, rather than only the last route-specific header rule.
+
+For rollback, the uploader also accepts the exact legacy eight-file manifest and supplies the known root-to-support redirect itself. Artifact-provided routing is never used. Partial homepage manifests are rejected. HTTP checks recognize that trusted legacy routing and do not request homepage assets absent from a legacy build.
 
 ## GitHub configuration
 
@@ -48,6 +52,8 @@ python3 tools/WebsiteDeployment/monitor.py
 ```
 
 These commands do not start GitHub Actions. There is no periodic GitHub availability workflow. For a new production version, keep the validated revision and public output with the release records. Restore a known-good revision in an isolated checkout and run the same local deployment/HTTP checks; review its domain and security headers first.
+
+`check_http.py` verifies the new homepage and its assets against the prepared bytes. `monitor.py` accepts either a published homepage or the legacy root-to-support redirect while the production site awaits deployment; it continues to enforce help routes, security headers, 404 behavior and HTTPS.
 
 Cleanup is also explicit. With the existing GitHub and scoped preview Cloudflare credentials supplied securely in the local environment (`GH_TOKEN`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`), run:
 

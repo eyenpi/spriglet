@@ -11,11 +11,11 @@ import zipfile
 import deploy
 
 
-def site_archive(replacements=None, extra=None, attributes=None):
+def site_archive(replacements=None, extra=None, attributes=None, files=deploy.FILES):
     data = io.BytesIO()
     public = deploy.ROOT / 'tools/AppStore/website/public'
     with zipfile.ZipFile(data, 'w', zipfile.ZIP_DEFLATED) as archive:
-        for name in sorted(deploy.FILES):
+        for name in sorted(files):
             value = (replacements or {}).get(name, (public / name).read_bytes())
             info = zipfile.ZipInfo(name)
             if name in (attributes or {}):
@@ -42,10 +42,22 @@ class ArtifactTests(unittest.TestCase):
         files = self.unpack(site_archive({'_headers': b'/*\n Content-Security-Policy: *\n', '_redirects': b'/ https://example.invalid 302\n'}))
         self.assertIn(b"default-src 'none'", files['_headers'])
         self.assertIn(b'X-Robots-Tag: noindex', files['_headers'])
-        self.assertEqual(files['_redirects'], b'/ /support 302\n')
+        self.assertEqual(files['_redirects'], (deploy.ROOT / 'tools/AppStore/website/public/_redirects').read_bytes())
+        self.assertNotIn(b'https://example.invalid', files['_redirects'])
+        self.assertIn(b"/*\n  X-Robots-Tag: noindex", files['_headers'])
 
     def test_production_does_not_get_preview_noindex(self):
         self.assertNotIn(b'X-Robots-Tag', self.unpack(site_archive(), preview=False)['_headers'])
+
+    def test_legacy_rollback_keeps_known_redirect_and_trusted_headers(self):
+        files = self.unpack(site_archive({'_redirects': b'/ https://evil.invalid 302\n'}, files=deploy.LEGACY_FILES), preview=False)
+        self.assertEqual(set(files), deploy.LEGACY_FILES)
+        self.assertEqual(files['_redirects'], b'/ /support 302\n')
+        self.assertIn(b"default-src 'none'", files['_headers'])
+
+    def test_incomplete_homepage_asset_set_is_rejected(self):
+        with self.assertRaises(ValueError):
+            self.unpack(site_archive(files=deploy.FILES - {'home.js'}))
 
     def test_traversal_absolute_paths_and_deployment_code_are_rejected(self):
         for name in ('../wrangler.json', '/tmp/site.html', 'wrangler.json', '_worker.js', 'build.sh', 'nested/index.html'):
@@ -66,7 +78,8 @@ class ArtifactTests(unittest.TestCase):
             self.unpack(site_archive({'style.css': b'a' * (deploy.MAX_CONTENT + 1)}))
 
     def test_invalid_logo_and_text_are_rejected(self):
-        for replacements in ({'spriglet.png': b'<script>oops</script>'}, {'support.html': b'\xff'}):
+        for replacements in ({'spriglet.png': b'<script>oops</script>'}, {'support.html': b'\xff'},
+                             {'instrument-serif.woff2': b'<script>oops</script>'}):
             with self.subTest(replacements=replacements), self.assertRaises(ValueError):
                 self.unpack(site_archive(replacements))
 

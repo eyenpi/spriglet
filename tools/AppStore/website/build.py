@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render Spriglet's public support and privacy pages from the reviewed source text."""
+"""Render Spriglet's homepage, support and privacy pages from shared source text."""
 
 import argparse
 import hashlib
@@ -107,15 +107,45 @@ def outputs(context, documents, presentation, icon_bytes):
     return {
         "support.html": page(context, presentation, context["supportTitle"], f"Help with {name}, home to little desktop companions for Mac. Contact support and find answers to common questions.", "support", document(support), favicon_url),
         "privacy.html": page(context, presentation, context["privacyTitle"], f"How {name} handles session state, desktop interaction, support requests, and website visits.", "privacy", document(documents["privacy"]), favicon_url),
-        "index.html": page(context, presentation, f"{name} support", f"Support and privacy information for {name} for Mac.", "support", '<p><a href="/support">Visit support</a> or read our <a href="/privacy">privacy policy</a>.</p>', favicon_url),
+        "index.html": homepage(context, presentation, favicon_url),
         "404.html": page(context, presentation, "Page not found", f"Find support and privacy information for {name}.", "404", '<p>This page could not be found. <a href="/support">Visit support</a> or read the <a href="/privacy">privacy policy</a>.</p>', favicon_url),
     }
 
 
+def homepage(context, presentation, favicon_url):
+    home = presentation["home"]
+    store_url = home.get("storeURL")
+    if store_url is not None:
+        parsed = urlsplit(store_url)
+        if (parsed.scheme != "https" or parsed.netloc != "apps.apple.com"
+                or not re.search(r"/id[0-9]+$", parsed.path) or parsed.query or parsed.fragment):
+            raise ValueError("storeURL must be a verified HTTPS App Store product URL, or null")
+    for key in ("previewURL", "sourceURL"):
+        parsed = urlsplit(home[key])
+        if (parsed.scheme != "https" or parsed.netloc != "github.com"
+                or not (parsed.path == "/eyenpi/spriglet" or parsed.path.startswith("/eyenpi/spriglet/"))):
+            raise ValueError(f"Invalid homepage {key}")
+    values = {**context, **presentation, **home, "faviconURL": favicon_url,
+              "downloadURL": store_url or home["previewURL"],
+              "downloadAction": home["storeAction"] if store_url else home["previewAction"],
+              "availability": home["storeAvailability"] if store_url else home["previewAvailability"],
+              "downloadNote": "" if store_url else home["previewNote"],
+              "detailsURL": context["supportURL"] if store_url else home["previewURL"],
+              "detailsAction": home["storeHelp"] if store_url else home["installLink"]}
+    template = (HERE / "home.html").read_text()
+    return re.sub(r"\{\{([A-Za-z][A-Za-z0-9]*)\}\}", lambda match: html.escape(str(values[match[1]]), quote=True), template)
+
+
 class LinkCheck(HTMLParser):
+    def __init__(self, *, homepage=False):
+        super().__init__()
+        self.homepage = homepage
+
     def handle_starttag(self, tag, attrs):
         values = dict(attrs)
-        if tag == "script": raise ValueError("The support site must have no scripts.")
+        if tag == "script" and (not self.homepage or values.get("src") != "/home.js" or "defer" not in values):
+            raise ValueError("Only the homepage's deferred, local clock script is allowed.")
+        if any(key.startswith("on") for key in values): raise ValueError("Inline event handlers are not allowed.")
         for key in ("src", "href"):
             value = values.get(key, "")
             if value.startswith("/"):
@@ -134,7 +164,7 @@ def main():
     import subprocess
     subprocess.run([sys.executable, str(ROOT / "tools/SharedContent/sync.py"), *(["--check"] if args.check else [])], check=True)
     try:
-        for path in OUTPUT.glob("*.html"): LinkCheck().feed(path.read_text())
+        for path in OUTPUT.glob("*.html"): LinkCheck(homepage=path.name == "index.html").feed(path.read_text())
         print("Shared content, website routes, and assets are valid.")
     except (OSError, ValueError) as error:
         print(str(error), file=sys.stderr)
