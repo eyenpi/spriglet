@@ -41,21 +41,26 @@ class HomepageTests(unittest.TestCase):
             if link.startswith('#'):
                 self.assertIn(link[1:], parsed.ids)
 
-    def test_pending_store_uses_real_preview_and_its_limitations(self):
+    def test_pending_store_has_no_download_or_installation_links(self):
         page = self.render()
-        self.assertIn(self.presentation['home']['previewURL'], page)
-        self.assertIn('not notarized', page)
+        self.assertIn('Will be released soon.', page)
+        self.assertIn('Coming soon', page)
+        self.assertNotIn('releases/', page)
+        self.assertNotIn('class="button download"', page)
+        self.assertNotIn('class="install-link"', page)
         self.assertNotIn('Available on the Mac App Store.', page)
         self.assertNotIn('href="https://apps.apple.com', page)
 
-    def test_verified_store_configuration_replaces_preview_copy_and_link(self):
+    def test_verified_store_configuration_replaces_coming_soon_with_store_links(self):
         # Fixture only: never written into the checked-in website.
         self.presentation['home']['storeURL'] = 'https://apps.apple.com/us/app/spriglet/id1234567890'
         page = self.render()
         self.assertIn('Get on the Mac App Store', page)
         self.assertIn('Available on the Mac App Store.', page)
-        self.assertNotIn(self.presentation['home']['previewURL'], page)
-        self.assertNotIn('not notarized', page)
+        self.assertNotIn('Will be released soon.', page)
+        self.assertNotIn('Coming soon', page)
+        self.assertNotIn('releases/', page)
+        self.assertIn('Bring Mallow home', page)
         self.assertIn('href="https://meetspriglet.com/support">Installation help', page)
 
     def test_unsafe_store_and_source_destinations_are_rejected(self):
@@ -64,7 +69,7 @@ class HomepageTests(unittest.TestCase):
                 self.presentation['home']['storeURL'] = url
                 self.render()
         self.presentation['home']['storeURL'] = None
-        for key in ('sourceURL', 'previewURL'):
+        for key in ('sourceURL',):
             original = self.presentation['home'][key]
             for url in ('https://github.com/eyenpi/spriglet-evil', '//github.com/eyenpi/spriglet', 'https://github.com.evil.invalid/eyenpi/spriglet'):
                 with self.subTest(key=key, url=url), self.assertRaises(ValueError):

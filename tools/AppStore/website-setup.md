@@ -4,7 +4,7 @@ Prepared metadata and bundled help use **meetspriglet.com**. The Mallow app make
 
 | Destination | Content or purpose |
 | --- | --- |
-| `https://meetspriglet.com` | Prepared homepage introducing Mallow and directing visitors to the available download |
+| `https://meetspriglet.com` | Homepage introducing Mallow and showing its coming-soon release status |
 | `https://meetspriglet.com/support` | Public support page using [support-page.md](support-page.md) |
 | `https://meetspriglet.com/privacy` | The exact current [PRIVACY.md](../../PRIVACY.md), formatted for the website |
 | `support@meetspriglet.com` | One address for app support, privacy questions, and deletion requests |
@@ -40,6 +40,6 @@ App Review can use the same email address once monitored. Enter the review conta
 - [ ] Support mail delivery and replies have been tested.
 - [ ] Links in bundled help, prepared metadata and generated website pages use the expected destinations.
 - [ ] Any required publisher/trader disclosures are present and accurate.
-- [ ] After approval and public release, verify the real App Store product link and set `home.storeURL` in `Configuration/Shared/website.en-US.json`, regenerate, and deploy. Until then, the homepage links to the older GitHub preview with its signing and feature limitations. Do not invent an App Store ID or claim that the app is already available before release.
+- [ ] After approval and public release, verify the real App Store product link and set `home.storeURL` in `Configuration/Shared/website.en-US.json`, regenerate, and deploy. Until then, the homepage says “Will be released soon” and exposes no download or installation links. Do not invent an App Store ID or claim that the app is already available before release.
 
 Apple requires a support URL with contact information and a public privacy-policy URL: [platform version information](https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information), [app information](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information).

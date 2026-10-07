@@ -1,7 +1,7 @@
 {
   "brandLine": "A little quiet company.",
   "companionTitle": "Mallow, your first spriglet.",
-  "companionBody": "{{appName}} is home to little desktop companions called spriglets. Meet Mallow, the soft lavender spriglet available today.",
+  "companionBody": "{{appName}} is home to little desktop companions called spriglets. Meet Mallow, the soft lavender spriglet coming soon.",
   "supportIntro": "A little help for you and your spriglet.",
   "privacyIntro": "Quiet company, with your privacy in mind.",
   "home": {
@@ -110,17 +110,14 @@
     "storeURL": null,
     "storeAction": "Get on the Mac App Store",
     "storeAvailability": "Available on the Mac App Store.",
-    "previewURL": "https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1",
-    "previewAction": "Try the Mac preview",
-    "previewAvailability": "The Mac App Store release is on its way.",
-    "previewNote": "The older 0.3.0 preview is ad hoc signed and not notarized; macOS may block it. It predates the Settings, introduction, and accessibility updates described here.",
     "storeHelp": "Installation help",
-    "installLink": "Preview details & installation",
     "sourceURL": "https://github.com/eyenpi/spriglet",
     "getLabel": "Meet",
     "bringAnnotation": "then look up at your notch ↑",
     "footerLine": "See you under",
     "footerAccent": "the notch.",
-    "footerNote": "Spriglet is a native, local app. Mallow is original artwork, drawn in code."
+    "footerNote": "Spriglet is a native, local app. Mallow is original artwork, drawn in code.",
+    "comingSoonAction": "Coming soon",
+    "soonAvailability": "Will be released soon."
   }
 }
