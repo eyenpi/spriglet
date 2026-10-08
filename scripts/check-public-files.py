@@ -8,10 +8,10 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-ROOT_FILES = {".gitignore", "README.md", "CHANGELOG.md", "LICENSE", "ASSETS.md", "PRIVACY.md", "CONTRIBUTING.md", "SECURITY.md"}
+ROOT_FILES = {".gitignore", "AGENTS.md", "README.md", "CHANGELOG.md", "LICENSE", "ASSETS.md", "PRIVACY.md", "CONTRIBUTING.md", "SECURITY.md"}
 ROOT_DIRECTORIES = {".github", "Configuration", "Packages", "Sources", "Spriglet.xcodeproj", "art", "scripts", "tools"}
 LOCAL_PREFIXES = ("tools/PublicRelease/", "tools/DesktopValidation/", "tools/CharacterSampleReview/", "art/sprout/sample-v01/review/")
-LOCAL_NAMES = {"AGENTS.md", ".DS_Store", "verification.json", "verification-before-publication.json", "icon-verification.json", "icon-verification-before-publication.json"}
+LOCAL_NAMES = {".DS_Store", "verification.json", "verification-before-publication.json", "icon-verification.json", "icon-verification-before-publication.json"}
 LOCAL_PARTS = {".build", ".swiftpm", ".wrangler", "node_modules", "xcuserdata", "__pycache__", ".codex", ".claude"}
 HOME_PATH = re.compile(rb"/Users/[A-Za-z0-9_.-]+/")
 KEY_HEADER = re.compile(rb"-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----")
