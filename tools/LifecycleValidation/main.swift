@@ -1048,6 +1048,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                 guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Native validation requires a logged-in Mac with a display") }
                 try nativePicking(screen: screen)
                 try nativeLifecycle(screen: screen)
+                try BoredomValidation.run(screen: screen)
                 try nativeIntroduction(screen: screen)
                 try menuBarControls(screen: screen)
                 try AccessibilityValidation.run(screen: screen)
@@ -1077,6 +1078,15 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         }
     }
     static func main() {
+#if DEBUG
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-debug-idle-argument" {
+            do { try DebugIdleMomentValidation.run(); exit(EXIT_SUCCESS) }
+            catch {
+                FileHandle.standardError.write(Data("Debug idle argument validation failed: \(error)\n".utf8))
+                exit(EXIT_FAILURE)
+            }
+        }
+#endif
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--lease-holder" {
             do {
                 let storage = URL(fileURLWithPath: CommandLine.arguments[2])

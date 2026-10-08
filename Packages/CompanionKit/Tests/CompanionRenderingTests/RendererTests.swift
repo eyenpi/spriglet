@@ -74,6 +74,26 @@ import Testing
         #expect(missedInterior == 0)
         #expect(emptyHits == 0)
     }
+    @Test("Doodling changes visible ink while preserving the paint and picking envelope")
+    func doodleEnvelope() throws {
+        let base = CompanionEngine(scene: .preview).snapshot
+        let doodle = CompanionSnapshot(scene: base.scene, presence: base.presence, phase: base.phase, pose: base.pose,
+                                       feet: base.feet, windowAnchor: base.windowAnchor, rotation: base.rotation,
+                                       openness: base.openness, homeGrip: base.homeGrip, time: base.time,
+                                       gesture: nil, canCatch: false, idleMoment: IdleMomentFrame(moment: .doodle, progress: 0.5))
+        let plain = try characterImage(base), marked = try characterImage(doodle)
+        var changedPixels = 0, changedAlpha = 0
+        for y in 0..<plain.pixelsHigh {
+            for x in 0..<plain.pixelsWide {
+                let a = try #require(plain.colorAt(x: x, y: y)), b = try #require(marked.colorAt(x: x, y: y))
+                if abs(a.alphaComponent - b.alphaComponent) > 0.001 { changedAlpha += 1 }
+                if abs(a.redComponent - b.redComponent) > 0.01 { changedPixels += 1 }
+            }
+        }
+        #expect(changedPixels > 5)
+        #expect(changedAlpha == 0)
+        #expect(base.hitBounds == doodle.hitBounds)
+    }
     private func characterImage(_ frame: CompanionSnapshot) throws -> NSBitmapImageRep {
         let bitmap = try #require(NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 720, pixelsHigh: 420,
                                                   bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,

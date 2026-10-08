@@ -1,4 +1,5 @@
 import AppKit
+import IOKit.ps
 import CompanionCore
 
 /// Owns platform observations and releases every token on stop. Callbacks carry
@@ -29,6 +30,7 @@ import CompanionCore
     private var globalMouse: Any?
     private var localKeys: Any?
     private var running = false
+    private var powerSource: CFRunLoopSource?
 
     init(applicationCenter: NotificationCenter = .default,
          workspaceCenter: NotificationCenter = NSWorkspace.shared.notificationCenter,
@@ -50,6 +52,14 @@ import CompanionCore
         observeLock(Self.screenLocked); observeLock(Self.screenUnlocked)
         observe(NSWorkspace.activeSpaceDidChangeNotification, center: workspaceCenter) { $0.recover() }
         observe(NSWorkspace.accessibilityDisplayOptionsDidChangeNotification, center: workspaceCenter) { $0.refreshConditions() }
+        powerSource = IOPSNotificationCreateRunLoopSource({ context in
+            guard let context else { return }
+            MainActor.assumeIsolated {
+                let environment = Unmanaged<DesktopEnvironment>.fromOpaque(context).takeUnretainedValue()
+                if environment.running { environment.refreshConditions() }
+            }
+        }, Unmanaged.passUnretained(self).toOpaque())?.takeRetainedValue()
+        if let powerSource { CFRunLoopAddSource(CFRunLoopGetMain(), powerSource, .commonModes) }
         observe(.NSProcessInfoPowerStateDidChange, center: applicationCenter) { $0.refreshConditions() }
         observe(ProcessInfo.thermalStateDidChangeNotification, center: applicationCenter) { $0.refreshConditions() }
         globalMouse = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
@@ -71,6 +81,11 @@ import CompanionCore
     }
     func stop() {
         guard running else { return }; running = false
+        if let powerSource {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), powerSource, .commonModes)
+            CFRunLoopSourceInvalidate(powerSource)
+        }
+        powerSource = nil
         for (center, token) in notifications { center.removeObserver(token) }; notifications.removeAll()
         lockCenter.removeObserver(self, name: Self.screenLocked, object: nil)
         lockCenter.removeObserver(self, name: Self.screenUnlocked, object: nil)
@@ -145,6 +160,10 @@ import CompanionCore
     }
     private func refreshConditions() {
         conditions.lowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
+        if let info = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
+           let source = IOPSGetProvidingPowerSourceType(info)?.takeUnretainedValue() {
+            conditions.onBattery = source as String != kIOPSACPowerValue
+        } else { conditions.onBattery = true } // Unknown supply: conserve power.
         conditions.reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         conditions.thermal = switch ProcessInfo.processInfo.thermalState {
         case .nominal, .fair: .normal

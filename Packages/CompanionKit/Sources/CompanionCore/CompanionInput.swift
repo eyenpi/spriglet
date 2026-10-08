@@ -2,6 +2,7 @@
 /// drawing state, pointer monitoring, or the animation clock.
 public enum CompanionCommand: CaseIterable, Sendable {
     case greet, swing, stretch, returnHome, walk, hop
+    case idleWander, idleNap, idleDoodle, idleFidget
 }
 
 public enum CompanionInput: Sendable {

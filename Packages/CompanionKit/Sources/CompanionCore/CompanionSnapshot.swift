@@ -18,6 +18,7 @@ public struct CompanionSnapshot: Sendable {
     public let gesture: CharacterGesture?
     /// Uses the held target, exactly as release does, even while the body follows.
     public let canCatch: Bool
+    public let idleMoment: IdleMomentFrame?
     public var geometry: MallowGeometry { MallowGeometry(self) }
     /// A bounding box for accessibility and broad-phase checks, never a pick shape.
     public var hitBounds: Rect {
@@ -50,11 +51,12 @@ public struct CompanionSnapshot: Sendable {
     public init(scene: SceneGeometry, presence: Presence, phase: BodyPhase, pose: CharacterPose,
                 feet: Point, windowAnchor: Point, rotation: Double, openness: Double,
                 homeGrip: Double, homeAttachment: Point? = nil, dragGeometry: DragGeometry? = nil,
-                time: Double, gesture: CharacterGesture?, canCatch: Bool) {
+                time: Double, gesture: CharacterGesture?, canCatch: Bool, idleMoment: IdleMomentFrame? = nil) {
         self.scene = scene; self.presence = presence; self.phase = phase; self.pose = pose
         self.feet = feet; self.windowAnchor = windowAnchor; self.rotation = rotation
         self.openness = openness; self.homeGrip = homeGrip
         self.homeAttachment = homeAttachment ?? Point(x: scene.home.midX, y: scene.home.maxY)
+        self.idleMoment = idleMoment
         self.dragGeometry = dragGeometry; self.time = time; self.gesture = gesture; self.canCatch = canCatch
     }
 }
