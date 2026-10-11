@@ -27,9 +27,10 @@ This animation uses the production simulation and renderer on a simulated deskto
 
 | Distribution | Version | Status |
 | --- | --- | --- |
-| TestFlight and App Review | 0.3.1 (build 6) | App Store Connect confirms Waiting for App Review and internal TestFlight testing as of October 7, 2026. Public Mac App Store availability requires Apple approval and manual release. |
+| Approved Store version | 0.3.1 (build 6) | Apple’s October 11, 2026 review-completion email confirms approval. The maintainer confirms it has not been released publicly. |
 | [GitHub preview](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1) | 0.3.0 (build 5) | Older public Mallow preview with ad hoc signing and no Apple notarization. |
-| Next update source | 0.3.2 (build 7) | Prepared but not uploaded as of October 7, 2026. Continuous multi-display dragging, simpler controls and the refreshed introduction. Build instructions follow below; upload and publication are separate steps. |
+| Next Store candidate | 0.3.3 (build 8) | Includes multi-display dragging, simpler controls, the refreshed introduction and rare quiet idle moments. Local preparation does not establish Apple upload, processing, approval or public availability. |
+| [GitHub source release](https://github.com/eyenpi/spriglet/releases/tag/v0.3.2) | 0.3.2 (build 7) | Source and release notes; this release does not establish Mac App Store availability. |
 
 The GitHub download predates the current Settings, menu controls, introduction and accessibility work described here. Choose its `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP; macOS may block the download. Historical releases describe their own builds and characters. There is no public App Store download yet. Plugins and assistant services are not implemented.
 

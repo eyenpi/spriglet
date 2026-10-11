@@ -4,6 +4,28 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
+## 0.3.3 — Small moments of curiosity
+
+2026-10-11 · App 0.3.3 · Build 8
+
+Rare, quiet moments give Mallow a little more personality between interactions.
+
+Prepared Mac App Store candidate. Upload, Apple review and manual public release are separate steps; public availability has not been established.
+
+### Added
+
+- Mallow occasionally wanders a short distance, naps, doodles or fidgets after a quiet pause, then settles back home.
+
+### Changed
+
+- Idle moments stop when you interact and respect Reduce Motion, Low Power Mode, thermal conditions, Hide and Pause.
+- Developer previews can trigger each idle moment directly in Debug builds; these triggers are excluded from Release builds.
+
+### Known limitations
+
+- Plugins, assistant services, sound, other-app window awareness and exact Dock shelf inspection are not included.
+- Spoken VoiceOver, physical sleep/lock/display transitions, actual login delivery and sustained battery use need broader device testing.
+
 ## 0.3.2 — Mallow across your displays
 
 2026-10-07 · App 0.3.2 · Build 7

@@ -2,6 +2,29 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "0.3.3",
+      "appVersion": "0.3.3",
+      "build": 8,
+      "date": "2026-10-11",
+      "channel": "stable",
+      "title": "Small moments of curiosity",
+      "summary": "Rare, quiet moments give Mallow a little more personality between interactions.",
+      "distribution": "Prepared Mac App Store candidate. Upload, Apple review and manual public release are separate steps; public availability has not been established.",
+      "changes": {
+        "added": [
+          "Mallow occasionally wanders a short distance, naps, doodles or fidgets after a quiet pause, then settles back home."
+        ],
+        "changed": [
+          "Idle moments stop when you interact and respect Reduce Motion, Low Power Mode, thermal conditions, Hide and Pause.",
+          "Developer previews can trigger each idle moment directly in Debug builds; these triggers are excluded from Release builds."
+        ]
+      },
+      "knownLimitations": [
+        "Plugins, assistant services, sound, other-app window awareness and exact Dock shelf inspection are not included.",
+        "Spoken VoiceOver, physical sleep/lock/display transitions, actual login delivery and sustained battery use need broader device testing."
+      ]
+    },
+    {
       "version": "0.3.2",
       "appVersion": "0.3.2",
       "build": 7,
