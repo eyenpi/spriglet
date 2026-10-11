@@ -1,8 +1,5 @@
 # Local notes, agent instructions, and private project records
-/docs/*
-!/docs/screenshots/
-/docs/screenshots/*
-!/docs/screenshots/drop-to-mallow/
+/docs/
 /.codex/
 /.claude/
 /.local/

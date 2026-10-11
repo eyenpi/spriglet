@@ -63,6 +63,7 @@ nonisolated enum IntakeServiceError: LocalizedError {
 
 /// Persistence is confined to the app container; expiry is checked on every read.
 @MainActor final class IntakeStore {
+    private static let pocketPreferenceName = "mallow.intake.pocket.v1"
     private let defaults: UserDefaults
     private let pocketFile: URL?
     private var entries: [PocketEntry]
@@ -75,7 +76,7 @@ nonisolated enum IntakeServiceError: LocalizedError {
         // Explicit preference injection keeps validation suites isolated. Production
         // image payloads belong in an atomic container file, not large preferences.
         pocketFile = defaults == nil || directory != nil ? storage?.appendingPathComponent("pocket.json") : nil
-        let data = pocketFile.flatMap { try? Data(contentsOf: $0) } ?? (pocketFile == nil ? preferences.data(forKey: "mallow.intake.pocket.v1") : nil)
+        let data = pocketFile.flatMap { try? Data(contentsOf: $0) } ?? (pocketFile == nil ? preferences.data(forKey: Self.pocketPreferenceName) : nil)
         entries = data.flatMap { try? JSONDecoder().decode([PocketEntry].self, from: $0) } ?? []
         learning = preferences.data(forKey: "mallow.intake.learning.v1").flatMap { try? JSONDecoder().decode(IntakeLearning.self, from: $0) } ?? IntakeLearning()
         prune()
@@ -102,7 +103,7 @@ nonisolated enum IntakeServiceError: LocalizedError {
         if let pocketFile {
             try FileManager.default.createDirectory(at: pocketFile.deletingLastPathComponent(), withIntermediateDirectories: true)
             try data.write(to: pocketFile, options: .atomic)
-        } else { defaults.set(data, forKey: "mallow.intake.pocket.v1") }
+        } else { defaults.set(data, forKey: Self.pocketPreferenceName) }
     }
 }
 @MainActor final class LocalIntakeActionContext: IntakeActionContext {
