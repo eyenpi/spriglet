@@ -57,22 +57,37 @@ import CompanionRendering
             let expires = Date().addingTimeInterval(7)
             while !session.card.isVisible && Date() < expires { try await Task.sleep(for: .milliseconds(50)) }
             try LifecycleValidation.require(session.card.isVisible, "Intake card did not finish \(name)")
-            try await Task.sleep(for: .milliseconds(100))
+            try await Task.sleep(for: .milliseconds(400))
             try capture(session: session, name: name, output: output)
             print("\(name) pipeline: \(Date().timeIntervalSince(began)) seconds")
         }
         try await drop("01-text", text: "Call Sam on October 15, 2026 at 9 AM")
         try LifecycleValidation.require(writer.added.isEmpty, "Analysis wrote a reminder without Add")
-        runtime.perform(IntakeCommand.dismiss)
+        guard let compact = session.card.panel, let content = compact.contentView else { throw ValidationFailure(description: "Compact card missing") }
+        try LifecycleValidation.require(compact.frame.width == 320 && compact.frame.height < 250, "Default card is not compact")
+        try LifecycleValidation.require(!descendants(content).contains(where: { $0 is NSDatePicker }), "Compact card exposed editing fields")
+        guard let edit = descendants(content).compactMap({ $0 as? NSButton }).first(where: { $0.title == "Edit" }) else { throw ValidationFailure(description: "Edit missing") }
+        try LifecycleValidation.require(compact.firstResponder === edit, "Medium confidence did not focus Edit")
+        edit.performClick(nil); try await Task.sleep(for: .milliseconds(400))
+        try capture(session: session, name: "05-expanded-edit", output: output)
+        guard let title = descendants(compact.contentView!).compactMap({ $0 as? NSTextField }).first(where: { $0.isEditable && $0.stringValue.contains("Call Sam") }),
+              let done = descendants(compact.contentView!).compactMap({ $0 as? NSButton }).first(where: { $0.title == "Done" }) else { throw ValidationFailure(description: "Inline fields missing") }
+        title.stringValue = "Call Sam"
+        done.performClick(nil); try await Task.sleep(for: .milliseconds(400))
+        try LifecycleValidation.require(session.card.editedAnalysis?.reminders.first?.title == "Call Sam" && compact.frame.height < 250, "Collapse lost edited title or stayed expanded")
+        compact.cancelOperation(nil)
+        try await Task.sleep(for: .milliseconds(100))
         try LifecycleValidation.require(store.items.count == 1, "Dismiss did not Pocket the item")
         runtime.perform(.reopen(store.items[0].id))
         try LifecycleValidation.require(session.card.isVisible, "Pocket did not reopen the card")
         // Use the actual native button and edited/selected fields, not a second action path.
         guard let panel = session.card.panel, let add = descendants(panel.contentView!).compactMap({ $0 as? NSButton }).first(where: { $0.title == "Add" }) else { throw ValidationFailure(description: "Add control missing") }
-        add.performClick(nil); try await Task.sleep(for: .milliseconds(100))
+        add.performClick(nil); try await Task.sleep(for: .milliseconds(400))
         try LifecycleValidation.require(writer.added.count == 1 && writer.added[0].due != nil && writer.notes.contains("Call Sam"), "Confirmed Add lost due date or source notes")
         try capture(session: session, name: "02-undo", output: output)
-        runtime.perform(IntakeCommand.undo)
+        guard let undoPanel = session.card.panel else { throw ValidationFailure(description: "Undo panel missing") }
+        let undoEvent = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: .command, timestamp: 0, windowNumber: undoPanel.windowNumber, context: nil, characters: "z", charactersIgnoringModifiers: "z", isARepeat: false, keyCode: 6)!
+        try LifecycleValidation.require(undoPanel.performKeyEquivalent(with: undoEvent), "Command-Z was not handled")
         try LifecycleValidation.require(writer.deleted.count == 1, "Undo did not delete the created reminder")
         try screenshot.write(to: output.appendingPathComponent("source-screenshot.png"))
         try await drop("03-screenshot-with-date", image: screenshot)
@@ -128,7 +143,7 @@ import CompanionRendering
             NSRect(origin: .zero, size: flow.size).fill()
             NSImage(cgImage: cg, size: NSSize(width: cg.width, height: cg.height)).draw(in: NSRect(x: 75, y: card.bounds.height + 25, width: 280, height: CGFloat(cg.height)))
             if let cardCG = bitmap.cgImage {
-                NSImage(cgImage: cardCG, size: card.bounds.size).draw(in: NSRect(x: 20, y: 20, width: card.bounds.width, height: card.bounds.height))
+                NSImage(cgImage: cardCG, size: card.bounds.size).draw(in: NSRect(x: (430 - card.bounds.width) / 2, y: 20, width: card.bounds.width, height: card.bounds.height))
             }
             flow.unlockFocus()
             if let data = flow.tiffRepresentation, let result = NSBitmapImageRep(data: data)?.representation(using: .png, properties: [:]) {

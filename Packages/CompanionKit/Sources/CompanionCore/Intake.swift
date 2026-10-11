@@ -136,7 +136,7 @@ public struct IntakeCardState: Sendable {
     public var isPerforming = false
     public var error: String?
     public init(item: IntakeItem, analysis: IntakeAnalysis) {
-        self.item = item; self.analysis = analysis; editing = analysis.confidence == .medium
+        self.item = item; self.analysis = analysis; editing = false
     }
     public var focusesAdd: Bool { analysis.confidence == .high && !editing }
 }
