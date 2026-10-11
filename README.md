@@ -138,6 +138,8 @@ Desktop owns an 80-point native drag destination that appears only near Mallow d
 
 Environment owns security-scoped read-only file bookmarks, bounded file/image loading, Vision OCR, on-device guided Foundation Models extraction, data detectors, container persistence and EventKit. Runtime fences analysis at five seconds and drops stale results. Generated or detected fields open for review; Add never runs from analysis. The same `receiveIntake(_:trigger:)` entry accepts explicit paste, hotkey or Services triggers for future integrations; those trigger UIs are not installed in v1.
 
+For a local intake demo, a Debug executable accepts `-SprigletDebugIntakeText "Call Sam on October 15, 2026"` or `-SprigletDebugIntakeImage /path/to/readable.png` at launch. These inject once through the normal intake analysis and card pipeline; they do not simulate native drag acceptance. Image input is bounded to 20 MB and requires existing sandbox access. Both argument handlers and their runtime wiring are compiled out of Release.
+
 A capability requests a `CompanionCommand` through `CompanionRuntime.perform(_:)`. It does not receive a window, renderer, input monitor or mutable engine. This is the extension boundary; a plugin loader, permissions model and assistant services belong in a separate capability layer when there is a concrete feature to build. There are no placeholder registries, service locators or dormant plugin implementations.
 
 ### Lifecycle and resources

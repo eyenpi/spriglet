@@ -33,6 +33,7 @@ import CompanionCore
     private let idleSeed: UInt64
 #if DEBUG
     private var debugIdleMoment: IdleMoment? = DebugIdleMomentArgument.parse(arguments: ProcessInfo.processInfo.arguments)
+    private var debugIntakeItem: IntakeItem? = DebugIntakeArgument.parse(arguments: ProcessInfo.processInfo.arguments)
 #endif
     /// Only Debug builds honor the accelerated demo. Release never reads it.
     private static var defaultBoredomTiming: BoredomTiming {
@@ -215,6 +216,10 @@ import CompanionCore
         host.attach(context: next, snapshot: engine.snapshot)
         resumeClock(); refresh(); introductionHost.setVisible(false); presentIntroduction()
 #if DEBUG
+        if let item = debugIntakeItem {
+            debugIntakeItem = nil
+            receiveIntake(item, trigger: .paste)
+        }
         if let moment = debugIdleMoment {
             debugIdleMoment = nil
             performDebugIdleMoment(moment)
