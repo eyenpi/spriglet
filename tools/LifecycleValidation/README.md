@@ -112,3 +112,14 @@ Home selection uses measured geometry rather than `NSScreen.main`, which follows
 Screen lock uses loginwindow's `com.apple.screenIsLocked`/`com.apple.screenIsUnlocked` distributed broadcasts with immediate delivery for an inactive accessory app. These names are a macOS convention, not a documented AppKit lock API; verify their delivery on supported macOS versions. Public workspace session/display/system-sleep notifications remain independent suspension sources. There is no private framework call or global keyboard monitor. Launching an executable after the Mac is already locked cannot replay an earlier lock broadcast; actual launch-while-locked acceptance remains necessary.
 
 An advisory lock in the app's Application Support directory admits one executable at a time within its container. The file is not unlinked: closing its descriptor or process exit releases the kernel lock, including after a crash. Startup also exits beside an already-launched older Spriglet that predates the lease. Unfinished current contenders are ignored while the lease admits one owner; a concurrently starting older binary without the lease cannot participate in that election.
+
+### Drop to Mallow evidence
+
+After compiling with `./scripts/test-desktop.sh --app-only`, run:
+
+```sh
+.build/lifecycle-validation/lifecycle-validation --intake-preview .build/intake/screenshots
+./scripts/preview.sh .build/preview/intake --intake
+```
+
+The native intake runner uses synthetic text and images, the production drop callback, real Vision OCR and the production detector fallback. It measures each flow with no OCR warm-up; production uses fast Vision recognition within the five-second deadline. It injects isolated Pocket storage and a fake Reminders writer, exercises the native Add button and Undo, and exports only native card views and the production character on a simulated backdrop. It does not capture other apps or write to personal Reminders. Physical drag delivery, cold-start OCR latency, spoken VoiceOver and real EventKit permission/sync still require device acceptance. The production pipeline always retains its five-second timeout, including OCR.

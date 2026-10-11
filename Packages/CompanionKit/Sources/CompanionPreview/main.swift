@@ -194,10 +194,31 @@ import CompanionRendering
     print("Rendered four boredom moments and hover interruptions with accelerated timing.")
 }
 
+@MainActor func exportIntake(to folder: URL) throws {
+    let painter = ScenePreviewRenderer()
+    for reduced in [false, true] {
+        let output = folder.appendingPathComponent(reduced ? "reduced" : "full")
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        var engine = CompanionEngine(scene: .preview)
+        engine.setMotionPolicy(reduced ? .reduced : .full)
+        for index in 0..<240 {
+            let time = Double(index) / 30
+            let feedback: IntakeFeedback = time < 1 ? .ready : time < 1.3 ? .caught : time < 4 ? .analyzing : time < 6 ? .uncertain : .happy
+            let start = time < 1 ? 0.0 : time < 1.3 ? 1 : time < 4 ? 1.3 : time < 6 ? 4 : 6
+            let frame = engine.snapshot.presentingIntake(feedback, age: time - start, reducedMotion: reduced, pocketCount: time >= 4 ? 1 : 0)
+            try writeFrame(frame, painter: painter, to: output, index: index)
+            engine.advance(by: 1 / 30)
+        }
+    }
+    print("Rendered intake readiness, catch, analysis, shrug and success, including Reduce Motion.")
+}
+
 _ = NSApplication.shared
 let args = CommandLine.arguments
 do {
-if args.count == 3 && args[1] == "--boredom" {
+if args.count == 3 && args[1] == "--intake" {
+    try exportIntake(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--boredom" {
     try exportBoredom(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--icons" {
     try exportIcons(to: URL(fileURLWithPath: args[2]))

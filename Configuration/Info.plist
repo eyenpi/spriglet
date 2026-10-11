@@ -16,6 +16,7 @@
     <key>LSApplicationCategoryType</key><string>public.app-category.entertainment</string>
     <key>ITSAppUsesNonExemptEncryption</key><false/>
     <key>NSHumanReadableCopyright</key><string>Copyright © 2026 Ali Nabipour. MIT license.</string>
+    <key>NSRemindersFullAccessUsageDescription</key><string>Add the reminders you confirm and undo your most recent Add. Access is requested only when you choose Add.</string>
     <key>NSPrincipalClass</key><string>NSApplication</string>
 </dict>
 </plist>

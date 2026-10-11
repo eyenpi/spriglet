@@ -87,7 +87,7 @@ enum AppText {
     static let movingPresence = "Moving"
     static let returningPresence = "Returning home"
     static let groundedPresence = "On the ground"
-    static let keyboardHelp = "Use Control-F8 (or Fn-Control-F8) to reach the leaf in the menu bar, then arrow keys and Return to choose Settings or Quit. In Settings, use Tab and Shift-Tab, arrows for choices and Space for buttons, including Show, Animate and Bring Home. When Spriglet is active, Command-comma opens Settings, Command-Shift-H brings Mallow home, Command-Shift-P pauses or resumes, Command-Shift-M shows or hides, and Command-W closes the focused window."
+    static let keyboardHelp = "Use Control-F8 (or Fn-Control-F8) to reach the leaf in the menu bar, then arrow keys and Return to choose Settings, Pocket or Quit. In Settings, use Tab and Shift-Tab, arrows for choices and Space for buttons, including Show, Animate and Bring Home. When Spriglet is active, Command-comma opens Settings, Command-Shift-H brings Mallow home, Command-Shift-P pauses or resumes, Command-Shift-M shows or hides, and Command-W closes the focused window."
     static let swingMallow = "Swing"
     static let stretchMallow = "Stretch"
 }

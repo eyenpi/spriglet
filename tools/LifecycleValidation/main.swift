@@ -581,13 +581,14 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         func checkStatusMenu() throws {
             menuBar.menuNeedsUpdate(statusMenu)
             let items = statusMenu.items
-            try require(items.count == 2 && items.map(\.tag) == [AppControlAction.settings.rawValue, AppControlAction.quit.rawValue],
-                        "Leaf menu did not contain only Settings and Quit in order")
-            try require(items.map(\.title) == [AppText.settingsMenu, AppText.quitApp]
-                        && items.allSatisfy { $0.action != nil && $0.target === menuBar && $0.isEnabled && !$0.isHidden && $0.submenu == nil },
+            try require(items.count == 3 && items.map(\.tag) == [AppControlAction.settings.rawValue, -2, AppControlAction.quit.rawValue],
+                        "Leaf menu did not contain Settings, Pocket and Quit in order")
+            try require(items.map(\.title) == [AppText.settingsMenu, "Pocket", AppText.quitApp]
+                        && [items[0], items[2]].allSatisfy { $0.action != nil && $0.target === menuBar && $0.isEnabled && !$0.isHidden && $0.submenu == nil }
+                        && items[1].submenu != nil,
                         "Leaf menu labels or typed targets changed")
             try require(items[0].keyEquivalent == "," && items[0].keyEquivalentModifierMask == .command
-                        && items[1].keyEquivalent == "q" && items[1].keyEquivalentModifierMask == .command,
+                        && items[2].keyEquivalent == "q" && items[2].keyEquivalentModifierMask == .command,
                         "Leaf menu lost Command-comma Settings or Command-Q Quit")
             try require(menuBar.statusItem === statusIdentity && menuBar.statusItem?.menu === statusMenu,
                         "Leaf refresh replaced or detached the status item")
@@ -766,7 +767,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         delegate.applicationWillTerminate(Notification(name: NSApplication.willTerminateNotification))
         try require(menuBar.statusItem == nil && !window.isVisible && !settings.isVisible && !help.isVisible,
                     "Shutdown leaked a status item, settings/help or companion window")
-        try require(statusMenu.items.count == 2 && statusMenu.items.map(\.tag) == [AppControlAction.settings.rawValue, AppControlAction.quit.rawValue],
+        try require(statusMenu.items.count == 3 && statusMenu.items.map(\.tag) == [AppControlAction.settings.rawValue, -2, AppControlAction.quit.rawValue],
                     "Stopping removed or changed the reusable leaf menu")
         print("Menu-bar controls passed: state labels, Settings/Help, freeze/capture, Hide/recovery, lifecycle choices, focus and cleanup.")
     }
@@ -1037,6 +1038,8 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                 try fullscreenTransition()
                 outcome = "Passed: real fullscreen/Spaces fixture retained keyboard focus and a visible home on entry, reopen and exit."
             } else if appOnly {
+                try IntakeValidation.storage()
+                try IntakeDragValidation.run()
                 try MultiMonitorValidation.verifyFrameComparisonTolerance()
                 try productionWallSnapshots()
                 try launchAtLogin()
@@ -1078,6 +1081,18 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         }
     }
     static func main() {
+        if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--intake-preview" {
+            let app = NSApplication.shared; app.setActivationPolicy(.accessory)
+            let delegate = ValidationDelegate {
+                Task {
+                    do {
+                        guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Intake preview needs a display") }
+                        try await IntakeValidation.run(screen: screen, output: URL(fileURLWithPath: CommandLine.arguments[2])); exit(EXIT_SUCCESS)
+                    } catch { FileHandle.standardError.write(Data("Intake validation failed: \(error)\n".utf8)); exit(EXIT_FAILURE) }
+                }
+            }
+            app.delegate = delegate; withExtendedLifetime(delegate) { app.run() }; return
+        }
 #if DEBUG
         if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-debug-idle-argument" {
             do { try DebugIdleMomentValidation.run(); exit(EXIT_SUCCESS) }
@@ -1206,8 +1221,8 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                     FileHandle.standardError.write(Data("Quit fixture failed: \(error)\n".utf8)); exit(EXIT_FAILURE)
                 }
                 guard let menu = controls.menuBar?.menu,
-                      menu.items.count == 2,
-                      menu.items.map(\.tag) == [AppControlAction.settings.rawValue, AppControlAction.quit.rawValue],
+                      menu.items.count == 3,
+                      menu.items.map(\.tag) == [AppControlAction.settings.rawValue, -2, AppControlAction.quit.rawValue],
                       let quit = menu.items.first(where: { $0.tag == AppControlAction.quit.rawValue }),
                       quit.target === controls.menuBar else {
                     exit(EXIT_FAILURE)

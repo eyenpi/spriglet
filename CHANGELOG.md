@@ -4,6 +4,32 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
+## 0.3.3 — Drop to Mallow
+
+2026-10-11 · App 0.3.3 · Build 8
+
+Review reminders from dropped content, with local analysis, Pocket and Undo.
+
+Source preparation only; not uploaded or publicly distributed. Apple review and release are separate steps.
+
+### Added
+
+- Drop text, URLs, images, screenshots and files near Mallow to review a reminder in a keyboard-accessible card.
+- On-device Vision OCR and guided Foundation Models extraction, with local data-detector fallback and a five-second analysis deadline.
+- Inline reminder editing, task selection, action search, lazy Apple Reminders access and five-second Undo.
+- Local Pocket with seven-day expiry, scoped file bookmarks and action-choice ranking by content type.
+
+### Changed
+
+- The menu-bar leaf includes Pocket alongside Settings and Quit.
+- Privacy notes describe user-supplied content and confirmed reminders saved to Apple Reminders.
+
+### Known limitations
+
+- Physical external dragging, spoken VoiceOver and real EventKit permission/sync behavior need device acceptance.
+- Paste, global hotkey and Services entry points have no trigger UI yet.
+- Generated and date-detector suggestions open for field review; unreadable items offer alternatives.
+
 ## 0.3.2 — Mallow across your displays
 
 2026-10-07 · App 0.3.2 · Build 7

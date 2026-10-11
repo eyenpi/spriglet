@@ -1,0 +1,6 @@
+# Historical false positives: local UserDefaults Pocket storage identifiers,
+# not API credentials. The source now uses a shared preference-name constant.
+# Forward-only repair cannot change this published commit; ignore only these
+# exact commit/file/rule/line fingerprints. All scanner rules remain enabled.
+5c3bfa6af15b7edd7e8a72a1ef0b9758dd637053:Sources/Spriglet/Environment/IntakeServices.swift:generic-api-key:78
+5c3bfa6af15b7edd7e8a72a1ef0b9758dd637053:Sources/Spriglet/Environment/IntakeServices.swift:generic-api-key:105

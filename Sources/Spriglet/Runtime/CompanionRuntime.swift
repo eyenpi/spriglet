@@ -8,6 +8,9 @@ import CompanionCore
         var active: DisplayContext
         var committing = false
     }
+    private let intake: IntakeSession
+    var pocketItems: [PocketEntry] { intake.pocketItems }
+    var onPocketChanged: (() -> Void)?
     private let environment: DesktopEnvironment
     private let clock: ScreenFrameClock
     private let host: CompanionWindowHost
@@ -30,6 +33,7 @@ import CompanionCore
     private let idleSeed: UInt64
 #if DEBUG
     private var debugIdleMoment: IdleMoment? = DebugIdleMomentArgument.parse(arguments: ProcessInfo.processInfo.arguments)
+    private var debugIntakeItem: IntakeItem? = DebugIntakeArgument.parse(arguments: ProcessInfo.processInfo.arguments)
 #endif
     /// Only Debug builds honor the accelerated demo. Release never reads it.
     private static var defaultBoredomTiming: BoredomTiming {
@@ -54,7 +58,7 @@ import CompanionCore
     }
     private var isAnimating: Bool { controlState.isVisible && !paused }
 
-    init(environment: DesktopEnvironment = DesktopEnvironment(), clock: ScreenFrameClock = ScreenFrameClock(),
+    init(intake: IntakeSession = IntakeSession(), environment: DesktopEnvironment = DesktopEnvironment(), clock: ScreenFrameClock = ScreenFrameClock(),
          host: CompanionWindowHost = CompanionWindowHost(),
          introductionHost: IntroductionWindowHost = IntroductionWindowHost(),
          introductionPreferences: IntroductionPreferences = IntroductionPreferences(),
@@ -64,6 +68,7 @@ import CompanionCore
          pointerLocation: @escaping () -> Point = {
              let p = NSEvent.mouseLocation; return Point(x: p.x, y: p.y)
          }) {
+        self.intake = intake
         self.boredomTiming = boredomTiming ?? Self.defaultBoredomTiming
         self.idleSeed = idleSeed ?? UInt64.random(in: .min ... .max)
         self.environment = environment; self.clock = clock; self.host = host
@@ -73,6 +78,17 @@ import CompanionCore
     }
     func start() {
         guard !running else { return }; running = true
+        intake.card.onCommand = { [weak self] in self?.perform($0) }
+        intake.drop.onHover = { [weak self] in self?.intake.hover($0) }
+        intake.drop.onDrop = { [weak self] board in
+            guard let self, !self.intake.isPerforming else { return false }
+            do {
+                guard let item = try IntakeDropReader.read(board) else { return false }
+                self.perform(.receive(item, .drop)); return true
+            } catch { return false }
+        }
+        intake.onChanged = { [weak self] in self?.refresh() }
+        intake.onPocketChanged = { [weak self] in self?.onPocketChanged?(); self?.refresh() }
         host.onInput = { [weak self] input in self?.send(input) }
         host.onPointerInput = { [weak self] input in self?.pointer(input) }
         host.onControlAction = { [weak self] in self?.onControlAction?($0) }
@@ -86,10 +102,11 @@ import CompanionCore
         }
         environment.onConditionsChanged = { [weak self] conditions in self?.apply(conditions) }
         environment.onRecoveryNeeded = { [weak self] in self?.recover() }
-        environment.onOutsidePressed = { [weak self] in self?.send(.outsidePressed) }
+        environment.onOutsidePressed = { [weak self] in self?.perform(IntakeCommand.dismiss); self?.send(.outsidePressed) }
         environment.onEscapePressed = { [weak self] in
             guard let self else { return }
-            if self.introduction != nil { self.dismissIntroduction() }
+            if self.intake.card.isVisible { self.perform(IntakeCommand.dismiss) }
+            else if self.introduction != nil { self.dismissIntroduction() }
             else { self.send(.command(.returnHome)) }
         }
         environment.configureHome(preferences); environment.start()
@@ -97,6 +114,7 @@ import CompanionCore
     func stop() {
         guard running else { return }; running = false
         dragTransaction = nil; availableContexts = []; layoutHome = nil
+        intake.stop(); intake.onChanged = nil; intake.onPocketChanged = nil
         clock.stop(); environment.stop(); host.close(); introductionHost.close()
         host.onInput = nil; host.onPointerInput = nil; host.onControlAction = nil; clock.onTick = nil
         introductionHost.onStepSelected = nil; introductionHost.onDismiss = nil; introduction = nil
@@ -124,6 +142,9 @@ import CompanionCore
         refresh()
     }
     func bringHome() { guard running else { return }; hidden = false; environment.recover() }
+    /// Paste, hotkey and Services integrations can call the same explicit intake entry.
+    func receiveIntake(_ item: IntakeItem, trigger: IntakeTrigger) { perform(.receive(item, trigger)) }
+    func perform(_ command: IntakeCommand) { guard running else { return }; intake.perform(command) }
     func perform(_ command: CompanionCommand) { send(.command(command)) }
 #if DEBUG
     private func performDebugIdleMoment(_ moment: IdleMoment) {
@@ -179,6 +200,7 @@ import CompanionCore
         guard let next else {
             if dragTransaction != nil { engine?.send(.cancelInteraction); dragTransaction = nil }
             context = nil; cadence = nil; clock.stop(); host.close(); introductionHost.setVisible(false)
+            intake.card.setVisible(false); intake.drop.close()
             publishControlState(); return
         }
         if let current = context, samePhysicalLayout(current, next) {
@@ -194,6 +216,10 @@ import CompanionCore
         host.attach(context: next, snapshot: engine.snapshot)
         resumeClock(); refresh(); introductionHost.setVisible(false); presentIntroduction()
 #if DEBUG
+        if let item = debugIntakeItem {
+            debugIntakeItem = nil
+            receiveIntake(item, trigger: .paste)
+        }
         if let moment = debugIdleMoment {
             debugIdleMoment = nil
             performDebugIdleMoment(moment)
@@ -231,6 +257,7 @@ import CompanionCore
         let p = pointerLocation()
         engine?.send(.pointerMoved(context.scenePoint(global: p)))
         engine?.advance(by: elapsed)
+        intake.advance(elapsed)
         if let moment = engine?.requestedIdleMoment { perform(moment.command) }
         introduction?.advance(by: elapsed); refresh()
     }
@@ -241,7 +268,10 @@ import CompanionCore
     private func refresh() {
         defer { publishControlState() }
         guard let engine, let context else { return }
-        let frame = engine.snapshot
+        let frame = engine.snapshot.presentingIntake(intake.feedback, age: intake.feedbackAge,
+            reducedMotion: conditions.reduceMotion, pocketCount: intake.pocketItems.count)
+        intake.update(context: context, snapshot: frame, visible: controlState.isVisible,
+            enabled: isAnimating, playing: engine.hasPointerCapture)
         if isAnimating {
             let rate = frameRate(for: frame)
             if cadence == nil { resumeClock() }

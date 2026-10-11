@@ -124,7 +124,21 @@ import CompanionCore
                    drawArms: false, clipFace: true)
         drawHands(frame)
         drawIdleDoodle(frame)
+        drawIntakeLabels(frame)
         NSGraphicsContext.restoreGraphicsState()
+    }
+    private func drawIntakeLabels(_ frame: CompanionSnapshot) {
+        let hit = frame.hitBounds
+        if frame.intakeFeedback == .ready {
+            let text = NSAttributedString(string: "Remind?", attributes: [.font: NSFont.systemFont(ofSize: 11, weight: .semibold), .foregroundColor: MallowPalette.ink])
+            text.draw(at: NSPoint(x: hit.midX - text.size().width / 2, y: hit.maxY + 3))
+        }
+        if frame.pocketCount > 0 {
+            let text = NSAttributedString(string: String(frame.pocketCount), attributes: [.font: NSFont.systemFont(ofSize: 10, weight: .bold), .foregroundColor: NSColor.white])
+            let badge = NSRect(x: hit.maxX - 12, y: hit.maxY - 15, width: 18, height: 18)
+            oval(badge, fill: color(0x7862A3))
+            text.draw(at: NSPoint(x: badge.midX - text.size().width / 2, y: badge.midY - text.size().height / 2))
+        }
     }
     /// A tiny ephemeral scribble on the visible cheek, inside existing paint
     /// bounds. It never changes the silhouette or intercepts pointer input.

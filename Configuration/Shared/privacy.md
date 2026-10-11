@@ -1,18 +1,26 @@
 # {{privacyTitle}}
 
-Effective date: October 4, 2026.
+Effective date: October 11, 2026.
 
-{{appName}} is a local desktop companion developed by {{publisher}}. This policy describes the current Mallow preview.
+{{appName}} is a local desktop companion developed by {{publisher}}. This policy describes the current Mallow source build.
 
 ## App data
 
-The app has no accounts, advertising, analytics, remote assistant service or server connection. It does not capture the screen, inspect other applications, read documents, record audio or monitor global keyboard events. No plugins are active in this preview.
+The app has no accounts, advertising, analytics, remote assistant service or server connection. It does not capture the screen, inspect other applications, record audio or monitor global keyboard events. It reads only content you explicitly drop on Mallow. No plugins are active in this preview.
 
 Character interaction state is held in memory for the current session. Character size, movement intensity, home location and the chosen display’s macOS UUID are saved in the app’s local preferences and restored after relaunch. Disconnecting a display does not erase the saved choice. The app also saves whether you dismissed the Mallow introduction; no demo progress is saved. These preferences are not transmitted or used to record interaction history. The rewrite does not read or migrate the old companion's saved preferences and does not delete those preferences.
 
 Launch at login is optional and off for a new installation. Only an explicit choice in the shared menu or Settings registers or unregisters the main app with macOS. macOS stores the registration and approval state; the app reads that state instead of saving a separate preference. It does not install a helper or automatically restore a disabled registration.
 
 The app creates an empty lock file in its local Application Support directory to prevent overlapping launches from creating duplicate companions. It contains no personal data or interaction history; macOS releases the lock when the app exits, including after a crash.
+
+## Drop to Mallow
+
+Dropping text, a URL, an image, a screenshot or a file starts analysis on this Mac. Apple Vision reads text in supplied images. Foundation Models uses the on-device Apple Intelligence model when available; otherwise local data detectors suggest dates for your review. URLs are treated as supplied text and are never fetched. No content is sent to an app server. The app does not observe the contents of drags elsewhere on screen.
+
+Add requires your confirmation. Reminders permission is requested only on the first Add. The chosen task, due date, alarm and source notes are saved to Apple Reminders; a five-second Undo removes the reminders from that Add. Apple Reminders may sync its lists according to your Apple account settings. Spriglet has no network entitlement or network client.
+
+Dismissed items go to Pocket in the app's local container. Pocket stores supplied text, image data and security-scoped bookmarks for files, plus suggested fields, for up to seven days. Expired items are removed on the next Pocket read or launch; retained file bookmarks grant read-only access to the supplied file, not its containing folder. Pocket holds at most 100 items and accepts image/file analysis up to 20 MB. Local counts of your chosen actions, grouped by content type, help rank suggestions; those counts contain no source content and stay on this Mac. No card appears without your drop or Pocket selection.
 
 ## Desktop interaction
 

@@ -1,4 +1,5 @@
 import AppKit
+import CompanionCore
 
 @MainActor final class AppDelegate: NSObject, NSApplicationDelegate {
     private let runtime: CompanionRuntime
@@ -13,6 +14,8 @@ import AppKit
         menuBar = MenuBarController(state: { [runtime] in runtime.controlState },
                                     loginState: { [launchAtLogin] in launchAtLogin.refresh() },
                                     onAction: { [weak self] in self?.perform($0) })
+        menuBar?.pocketItems = { [runtime] in runtime.pocketItems }
+        menuBar?.onPocketSelect = { [runtime] in runtime.perform(.reopen($0)) }
         launchAtLogin.onStateChanged = { [weak self] in self?.settings?.updateLoginState($0) }
     }
     func applicationWillFinishLaunching(_ notification: Notification) {
