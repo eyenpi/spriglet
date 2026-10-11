@@ -29,7 +29,7 @@ This animation uses the production simulation and renderer on a simulated deskto
 | --- | --- | --- |
 | TestFlight and App Review | 0.3.1 (build 6) | Apple approval reported by the maintainer on October 11, 2026. Public availability still depends on manual release; approval alone does not establish a live listing. |
 | [GitHub preview](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1) | 0.3.0 (build 5) | Older public Mallow preview with ad hoc signing and no Apple notarization. |
-| Next update source | 0.3.4 (build 9) | Release polish candidate: quieter idle moments and clearer interaction instructions. Local checks do not upload or publish this build. |
+| Next update source | 0.3.2 (build 7) | Release polish candidate: quieter idle moments and clearer interaction instructions. Local checks do not upload or publish this build. |
 
 The GitHub download predates the current Settings, menu controls, introduction and accessibility work described here. Choose its `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP; macOS may block the download. Historical releases describe their own builds and characters. The site keeps its download link disabled until a public App Store listing is verified. Plugins and assistant services are not implemented.
 
@@ -174,6 +174,6 @@ The Mallow release replaces the previous character and interaction system. The b
 
 A release goes through a PR, required security and Mac build checks, then a merge to `main`. Build and package that exact clean revision, mount and verify the DMG, create an immutable annotated tag and publish the matching changelog and checksummed downloads. The publisher refuses mismatched or dirty source. See [release instructions](tools/ReleaseNotes/README.md) and [packaging](tools/ReleaseValidation/README.md).
 
-The maintainer reports Apple approval for the first App Store version, 0.3.1 (build 6), on October 11, 2026. This checkout prepares 0.3.4 (build 9); it does not establish public availability or upload a new build. Archive, export, upload, beta review and public release remain separate steps. See [App Store delivery](tools/AppStore/README.md).
+The maintainer reports Apple approval for the first App Store version, 0.3.1 (build 6), on October 11, 2026. This checkout prepares 0.3.2 (build 7); it does not establish public availability or upload a new build. Archive, export, upload, beta review and public release remain separate steps. See [App Store delivery](tools/AppStore/README.md).
 
 Next steps for this update are broader physical-device acceptance (sleep/wake, display transitions, spoken VoiceOver and sustained energy use), Apple review and manual release. Additional characters are planned, not available in the current app. A future direct-download release needs its own Developer ID signing, notarization and exact-build validation. Future capabilities should use the typed command boundary; no plugin loader, assistant behavior, external-app awareness or 3D runtime is included.

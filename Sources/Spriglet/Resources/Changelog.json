@@ -2,48 +2,28 @@
   "schemaVersion": 1,
   "releases": [
     {
-      "version": "0.3.4",
-      "appVersion": "0.3.4",
-      "build": 9,
-      "date": "2026-10-11",
-      "channel": "stable",
-      "title": "Quiet release polish",
-      "summary": "Clearer first-run interaction tips and less frequent, subtler idle moments.",
-      "distribution": "Source candidate for the next Mac App Store update. Local review does not upload, submit or publish a build.",
-      "changes": {
-        "changed": [
-          "Meet Mallow explicitly explains clicking, dragging and throwing; catch instructions also apply to homes without a notch.",
-          "Optional Launch at Login wording states its default-off behavior and explains pending macOS approval.",
-          "Idle moments wait five quiet minutes initially and at least eight minutes between moments; Gentle doubles both waits. Wander travel is halved.",
-          "Support, privacy and website copy describe local power-source gating and distinguish Apple approval from public availability."
-        ],
-        "fixed": [
-          "Record the already-integrated boredom behavior in release notes, including battery, Low Power Mode, Reduce Motion and thermal gating."
-        ]
-      },
-      "knownLimitations": [
-        "Spoken VoiceOver, actual login delivery, Stage Manager/fullscreen focus, physical sleep/lock/display transitions and sustained battery use require human device acceptance.",
-        "A public App Store download link remains disabled until a live listing is verified."
-      ]
-    },
-    {
       "version": "0.3.2",
       "appVersion": "0.3.2",
       "build": 7,
-      "date": "2026-10-07",
+      "date": "2026-10-11",
       "channel": "stable",
-      "title": "Mallow across your displays",
-      "summary": "Continuous dragging across connected displays, a simpler leaf menu and a refreshed Meet Mallow introduction.",
-      "distribution": "Prepared for TestFlight and a GitHub source-and-release-notes release. Apple processing, beta review and public Mac App Store availability are separate steps; no new public app download is implied.",
+      "title": "Mallow across your displays, quietly polished",
+      "summary": "Continuous dragging across connected displays, simpler controls, clearer first-run tips and rare, subtle idle moments.",
+      "distribution": "Revised source candidate for the next Mac App Store update, 0.3.2 (build 7), which has never been uploaded to Apple. The October 7 GitHub v0.3.2 source-and-notes snapshot remains unchanged; these candidate notes include subsequent integrated work. Local validation does not upload, submit or publish a build.",
       "changes": {
         "added": [
           "Drag Mallow between connected displays while preserving pointer capture, pose and motion; save the destination Home after a successful release.",
-          "Soft squash feedback when Mallow lands against a side wall."
+          "Soft squash feedback when Mallow lands against a side wall.",
+          "Rare, short boredom moments: a small wander, nap, doodle or fidget, gated off on battery or unknown power, Low Power Mode, Reduce Motion and serious or critical thermal pressure."
         ],
         "changed": [
           "The menu-bar leaf now contains Settings and Quit; recovery, visibility, pause and login controls remain in Settings and the native app menu.",
           "Meet Mallow uses a postcard layout with the production character demonstrations.",
-          "Website deployment tooling uses Wrangler 4.147.0."
+          "Website deployment tooling uses Wrangler 4.147.0.",
+          "Meet Mallow explicitly explains clicking, dragging and throwing; catch instructions also apply to homes without a notch.",
+          "Optional Launch at Login wording states its default-off behavior and explains pending macOS approval.",
+          "Idle moments wait five quiet minutes initially and at least eight minutes between moments; Gentle doubles both waits. Wander travel is halved.",
+          "Support, privacy and website copy describe local power-source gating and distinguish Apple approval from public availability."
         ],
         "removed": [
           "The right-click popup over Mallow and the detached wave sparkle."
@@ -55,7 +35,8 @@
       },
       "knownLimitations": [
         "Plugins, assistant services, sound, other-app window awareness and exact Dock shelf inspection are not included.",
-        "Spoken VoiceOver, physical sleep/lock/display transitions, actual login delivery and sustained battery use need broader device testing."
+        "Spoken VoiceOver, actual login delivery, Stage Manager/fullscreen focus, physical sleep/lock/display transitions and sustained battery use require human device acceptance.",
+        "A public App Store download link remains disabled until a live listing is verified."
       ]
     },
     {

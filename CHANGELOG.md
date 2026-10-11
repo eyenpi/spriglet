@@ -4,48 +4,29 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
-## 0.3.4 — Quiet release polish
+## 0.3.2 — Mallow across your displays, quietly polished
 
-2026-10-11 · App 0.3.4 · Build 9
+2026-10-11 · App 0.3.2 · Build 7
 
-Clearer first-run interaction tips and less frequent, subtler idle moments.
+Continuous dragging across connected displays, simpler controls, clearer first-run tips and rare, subtle idle moments.
 
-Source candidate for the next Mac App Store update. Local review does not upload, submit or publish a build.
-
-### Changed
-
-- Meet Mallow explicitly explains clicking, dragging and throwing; catch instructions also apply to homes without a notch.
-- Optional Launch at Login wording states its default-off behavior and explains pending macOS approval.
-- Idle moments wait five quiet minutes initially and at least eight minutes between moments; Gentle doubles both waits. Wander travel is halved.
-- Support, privacy and website copy describe local power-source gating and distinguish Apple approval from public availability.
-
-### Fixed
-
-- Record the already-integrated boredom behavior in release notes, including battery, Low Power Mode, Reduce Motion and thermal gating.
-
-### Known limitations
-
-- Spoken VoiceOver, actual login delivery, Stage Manager/fullscreen focus, physical sleep/lock/display transitions and sustained battery use require human device acceptance.
-- A public App Store download link remains disabled until a live listing is verified.
-
-## 0.3.2 — Mallow across your displays
-
-2026-10-07 · App 0.3.2 · Build 7
-
-Continuous dragging across connected displays, a simpler leaf menu and a refreshed Meet Mallow introduction.
-
-Prepared for TestFlight and a GitHub source-and-release-notes release. Apple processing, beta review and public Mac App Store availability are separate steps; no new public app download is implied.
+Revised source candidate for the next Mac App Store update, 0.3.2 (build 7), which has never been uploaded to Apple. The October 7 GitHub v0.3.2 source-and-notes snapshot remains unchanged; these candidate notes include subsequent integrated work. Local validation does not upload, submit or publish a build.
 
 ### Added
 
 - Drag Mallow between connected displays while preserving pointer capture, pose and motion; save the destination Home after a successful release.
 - Soft squash feedback when Mallow lands against a side wall.
+- Rare, short boredom moments: a small wander, nap, doodle or fidget, gated off on battery or unknown power, Low Power Mode, Reduce Motion and serious or critical thermal pressure.
 
 ### Changed
 
 - The menu-bar leaf now contains Settings and Quit; recovery, visibility, pause and login controls remain in Settings and the native app menu.
 - Meet Mallow uses a postcard layout with the production character demonstrations.
 - Website deployment tooling uses Wrangler 4.147.0.
+- Meet Mallow explicitly explains clicking, dragging and throwing; catch instructions also apply to homes without a notch.
+- Optional Launch at Login wording states its default-off behavior and explains pending macOS approval.
+- Idle moments wait five quiet minutes initially and at least eight minutes between moments; Gentle doubles both waits. Wander travel is halved.
+- Support, privacy and website copy describe local power-source gating and distinguish Apple approval from public availability.
 
 ### Removed
 
@@ -59,7 +40,8 @@ Prepared for TestFlight and a GitHub source-and-release-notes release. Apple pro
 ### Known limitations
 
 - Plugins, assistant services, sound, other-app window awareness and exact Dock shelf inspection are not included.
-- Spoken VoiceOver, physical sleep/lock/display transitions, actual login delivery and sustained battery use need broader device testing.
+- Spoken VoiceOver, actual login delivery, Stage Manager/fullscreen focus, physical sleep/lock/display transitions and sustained battery use require human device acceptance.
+- A public App Store download link remains disabled until a live listing is verified.
 
 ## 0.3.1 — Accessible Mallow
 

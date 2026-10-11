@@ -24,6 +24,10 @@ python3 tools/ReleaseNotes/release_notes.py notes v0.3.0-preview.1
 
 The check rejects malformed data, duplicate versions/builds, incorrect ordering, stale Markdown, and disagreement with the Xcode version. CI also verifies the exact JSON bytes and version information inside both built app configurations.
 
+## Current Store candidate
+
+The pending App Store update is 0.3.2 (build 7), never uploaded to Apple. Its candidate entry now includes the integrated work since the October 7 source-and-notes release. The original GitHub `v0.3.2` tag and release assets preserve that historical snapshot unchanged. This Store-only revision updates the prepared entry rather than reserving another Store version for each branch; all earlier entries and the original 0.3.2 changes remain. Do not publish this revised entry over the existing GitHub release or move its tag. A future GitHub publication requires its own new version and immutable tag.
+
 ## Publish a tag
 
 Commit and push the release changes to `main`. Create a new annotated, `v`-prefixed tag at that commit and push that exact tag. Do not move an already published tag to different code.

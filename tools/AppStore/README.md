@@ -1,6 +1,8 @@
 # App Store preparation
 
-Version 0.3.4, build 9 prepares a release polish update. The maintainer reports Apple approval for the first Store version, 0.3.1 (build 6), on October 11, 2026. Approval and public availability are separate; preserve the approved build while preparing this candidate. The published GitHub preview is a separate older unsigned download. Metadata and policy are generated from `Configuration/Shared`; local validation does not constitute Apple approval. Record live upload, processing and submission status privately with the exact archive.
+Version 0.3.2, build 7 prepares a release polish update. The maintainer reports Apple approval for the first Store version, 0.3.1 (build 6), on October 11, 2026. Approval and public availability are separate; preserve the approved build while preparing this candidate. The published GitHub preview is a separate older unsigned download. Metadata and policy are generated from `Configuration/Shared`; local validation does not constitute Apple approval. Record live upload, processing and submission status privately with the exact archive.
+
+The next Store update remains 0.3.2 (build 7): the October 7 archive/export was never uploaded to Apple. PR #47 initially chose 0.3.4/build 9 to avoid the separate PR #46 0.3.3/build 8 source candidate; those branch reservations do not advance the Store release plan. This candidate folds the integrated multi-display, boredom and polish changes into the pending 0.3.2 update. The existing GitHub `v0.3.2` tag, source snapshot and attached release notes stay immutable. Rebuild and validate this exact revision for Apple; do not reuse the October 7 archive or republish the existing tag.
 
 ```sh
 python3 tools/SharedContent/sync.py --check
