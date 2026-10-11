@@ -2,6 +2,31 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "0.3.4",
+      "appVersion": "0.3.4",
+      "build": 9,
+      "date": "2026-10-11",
+      "channel": "stable",
+      "title": "Quiet release polish",
+      "summary": "Clearer first-run interaction tips and less frequent, subtler idle moments.",
+      "distribution": "Source candidate for the next Mac App Store update. Local review does not upload, submit or publish a build.",
+      "changes": {
+        "changed": [
+          "Meet Mallow explicitly explains clicking, dragging and throwing; catch instructions also apply to homes without a notch.",
+          "Optional Launch at Login wording states its default-off behavior and explains pending macOS approval.",
+          "Idle moments wait five quiet minutes initially and at least eight minutes between moments; Gentle doubles both waits. Wander travel is halved.",
+          "Support, privacy and website copy describe local power-source gating and distinguish Apple approval from public availability."
+        ],
+        "fixed": [
+          "Record the already-integrated boredom behavior in release notes, including battery, Low Power Mode, Reduce Motion and thermal gating."
+        ]
+      },
+      "knownLimitations": [
+        "Spoken VoiceOver, actual login delivery, Stage Manager/fullscreen focus, physical sleep/lock/display transitions and sustained battery use require human device acceptance.",
+        "A public App Store download link remains disabled until a live listing is verified."
+      ]
+    },
+    {
       "version": "0.3.2",
       "appVersion": "0.3.2",
       "build": 7,

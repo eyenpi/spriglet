@@ -4,6 +4,30 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
+## 0.3.4 — Quiet release polish
+
+2026-10-11 · App 0.3.4 · Build 9
+
+Clearer first-run interaction tips and less frequent, subtler idle moments.
+
+Source candidate for the next Mac App Store update. Local review does not upload, submit or publish a build.
+
+### Changed
+
+- Meet Mallow explicitly explains clicking, dragging and throwing; catch instructions also apply to homes without a notch.
+- Optional Launch at Login wording states its default-off behavior and explains pending macOS approval.
+- Idle moments wait five quiet minutes initially and at least eight minutes between moments; Gentle doubles both waits. Wander travel is halved.
+- Support, privacy and website copy describe local power-source gating and distinguish Apple approval from public availability.
+
+### Fixed
+
+- Record the already-integrated boredom behavior in release notes, including battery, Low Power Mode, Reduce Motion and thermal gating.
+
+### Known limitations
+
+- Spoken VoiceOver, actual login delivery, Stage Manager/fullscreen focus, physical sleep/lock/display transitions and sustained battery use require human device acceptance.
+- A public App Store download link remains disabled until a live listing is verified.
+
 ## 0.3.2 — Mallow across your displays
 
 2026-10-07 · App 0.3.2 · Build 7

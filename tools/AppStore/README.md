@@ -1,6 +1,6 @@
 # App Store preparation
 
-Version 0.3.2, build 7 prepares the next TestFlight and Store update. The maintainer reports that version 0.3.1, build 6 is already in TestFlight and the app is under review as of October 7, 2026; preserve that submission while preparing the next build. The published GitHub preview is a separate older unsigned download. Metadata and policy are generated from `Configuration/Shared`; local validation does not constitute Apple approval. Record live upload, processing and submission status privately with the exact archive.
+Version 0.3.4, build 9 prepares a release polish update. The maintainer reports Apple approval for the first Store version, 0.3.1 (build 6), on October 11, 2026. Approval and public availability are separate; preserve the approved build while preparing this candidate. The published GitHub preview is a separate older unsigned download. Metadata and policy are generated from `Configuration/Shared`; local validation does not constitute Apple approval. Record live upload, processing and submission status privately with the exact archive.
 
 ```sh
 python3 tools/SharedContent/sync.py --check
