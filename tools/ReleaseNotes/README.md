@@ -24,6 +24,10 @@ python3 tools/ReleaseNotes/release_notes.py notes v0.3.0-preview.1
 
 The check rejects malformed data, duplicate versions/builds, incorrect ordering, stale Markdown, and disagreement with the Xcode version. CI also verifies the exact JSON bytes and version information inside both built app configurations.
 
+## Current Store candidate
+
+The consolidated App Store candidate is **0.3.3 (build 8)**, combining PR #46’s launch preparation and PR #47’s polish. The polish branch’s 0.3.2/build 7 candidate numbering is superseded. Its user-visible changes belong in the new 0.3.3 entry; preserve the original 0.3.2 entry, published GitHub `v0.3.2` tag and release assets unchanged. Drop to Mallow (#45) is excluded. Rebuild this exact integrated revision for Apple; previous branch archives do not establish validation of the combined candidate.
+
 ## Publish a tag
 
 Commit and push the release changes to `main`. Create a new annotated, `v`-prefixed tag at that commit and push that exact tag. Do not move an already published tag to different code.

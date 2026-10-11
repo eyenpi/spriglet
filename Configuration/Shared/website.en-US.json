@@ -1,7 +1,7 @@
 {
   "brandLine": "A little quiet company.",
   "companionTitle": "Mallow, your first spriglet.",
-  "companionBody": "{{appName}} is home to little desktop companions called spriglets. Meet Mallow, the soft lavender spriglet coming soon.",
+  "companionBody": "{{appName}} is home to little desktop companions called spriglets. Meet Mallow, the soft lavender spriglet.",
   "supportIntro": "A little help for you and your spriglet.",
   "privacyIntro": "Quiet company, with your privacy in mind.",
   "home": {
@@ -84,7 +84,7 @@
     "quietTitle": "Quiet company",
     "quietLine": "keeps",
     "quietAccent": "quiet.",
-    "quietBody": "Spriglets live entirely on your Mac. There is nothing to sign up for and nothing sent anywhere by the app. Mallow mostly rests at its small peek. During long quiet pauses, it may wander a little, nap, doodle or fidget before settling home.",
+    "quietBody": "Spriglets live entirely on your Mac. There is nothing to sign up for and nothing sent anywhere by the app. Mallow rests at its small peek, with occasional brief idle moments when your Mac is plugged in. Click, drag or throw it when you want to play.",
     "localTitle": "Local",
     "localBody": "No account, app server, analytics, or screen capture.",
     "gentleTitle": "Gentle",

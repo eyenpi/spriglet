@@ -2,17 +2,17 @@ import Testing
 @testable import CompanionCore
 
 @Suite("Mallow gets bored") struct BoredomTests {
-    @Test("Three quiet minutes are required; interaction restarts the whole wait")
+    @Test("Five quiet minutes are required; interaction restarts the whole wait")
     func threshold() {
         var state = BoredomState(seed: 42)
         state.update(at: 0, quiet: true, enabled: true)
-        state.update(at: 179.99, quiet: true, enabled: true)
+        state.update(at: 299.99, quiet: true, enabled: true)
         #expect(state.requestedMoment == nil)
-        state.interrupt(at: 179.99)
-        state.update(at: 180, quiet: true, enabled: true)
-        state.update(at: 359.99, quiet: true, enabled: true)
+        state.interrupt(at: 299.99)
+        state.update(at: 300, quiet: true, enabled: true)
+        state.update(at: 599.99, quiet: true, enabled: true)
         #expect(state.requestedMoment == nil)
-        state.update(at: 360, quiet: true, enabled: true)
+        state.update(at: 600, quiet: true, enabled: true)
         #expect(state.requestedMoment != nil)
         #expect(state.frame == nil) // Only a command can start it.
     }
@@ -21,18 +21,18 @@ import Testing
         for interrupted in [false, true] {
             var state = BoredomState(seed: 42)
             state.update(at: 0, quiet: true, enabled: true)
-            state.update(at: 180, quiet: true, enabled: true)
+            state.update(at: 300, quiet: true, enabled: true)
             let moment = try #require(state.requestedMoment)
-            let began = state.begin(moment, at: 180)
+            let began = state.begin(moment, at: 300)
             #expect(began)
-            let end = interrupted ? 182 : 180 + moment.duration
+            let end = interrupted ? 302 : 300 + moment.duration
             if interrupted { state.interrupt(at: end) }
             else { state.update(at: end, quiet: true, enabled: true) }
             #expect(state.frame == nil)
             state.update(at: end + 1, quiet: true, enabled: true)
-            state.update(at: end + 239.99, quiet: true, enabled: true)
+            state.update(at: end + 479.99, quiet: true, enabled: true)
             #expect(state.requestedMoment == nil)
-            state.update(at: end + 240, quiet: true, enabled: true)
+            state.update(at: end + 480, quiet: true, enabled: true)
             #expect(state.requestedMoment != nil)
         }
     }
@@ -71,6 +71,10 @@ import Testing
             { var c = RuntimeConditions(); c.onBattery = true; return c }(),
             { var c = RuntimeConditions(); c.reduceMotion = true; return c }(),
             { var c = RuntimeConditions(); c.thermal = .serious; return c }(),
+            { var c = RuntimeConditions(); c.thermal = .critical; return c }(),
+            { var c = RuntimeConditions(); c.systemAwake = false; return c }(),
+            { var c = RuntimeConditions(); c.displayAwake = false; return c }(),
+            { var c = RuntimeConditions(); c.sessionActive = false; return c }(),
             { var c = RuntimeConditions(); c.screenUnlocked = false; return c }(),
         ]
         #expect(RuntimeConditions().allowsIdleMoments)
@@ -78,11 +82,11 @@ import Testing
             #expect(!conditions.allowsIdleMoments)
             var state = BoredomState(seed: 42)
             state.update(at: 0, quiet: true, enabled: true)
-            state.update(at: 180, quiet: true, enabled: true)
+            state.update(at: 300, quiet: true, enabled: true)
             let moment = try #require(state.requestedMoment)
-            let began = state.begin(moment, at: 180)
+            let began = state.begin(moment, at: 300)
             #expect(began)
-            state.update(at: 181, quiet: true, enabled: conditions.allowsIdleMoments)
+            state.update(at: 301, quiet: true, enabled: conditions.allowsIdleMoments)
             #expect(state.frame == nil && state.requestedMoment == nil)
             state.update(at: 999, quiet: true, enabled: false)
             state.update(at: 1000, quiet: true, enabled: true)
@@ -90,9 +94,9 @@ import Testing
         }
         var gentle = BoredomState(seed: 42)
         gentle.update(at: 0, quiet: true, enabled: true, cadence: 2)
-        gentle.update(at: 359.99, quiet: true, enabled: true, cadence: 2)
+        gentle.update(at: 599.99, quiet: true, enabled: true, cadence: 2)
         #expect(gentle.requestedMoment == nil)
-        gentle.update(at: 360, quiet: true, enabled: true, cadence: 2)
+        gentle.update(at: 600, quiet: true, enabled: true, cadence: 2)
         #expect(gentle.requestedMoment != nil)
     }
     @Test("Fallback visits all four moments, avoids repeats, and reproduces its seed")
@@ -121,7 +125,7 @@ import Testing
             for _ in 0..<180 { engine.advance(by: 1 / 120.0) }
             #expect(engine.snapshot.idleMoment?.moment == moment)
             #expect(engine.snapshot.presence == .peek && engine.snapshot.phase == .hanging)
-            #expect(abs(engine.snapshot.feet.x - engine.snapshot.scene.homeFeet.x) <= 13 * engine.snapshot.scene.scale)
+            #expect(abs(engine.snapshot.feet.x - engine.snapshot.scene.homeFeet.x) <= 7 * engine.snapshot.scene.scale)
             if moment == .nap { #expect(engine.snapshot.pose.eyes < 0.12) }
             let point = engine.snapshot.hitBounds.center
             #expect(engine.snapshot.contains(point))
@@ -157,9 +161,10 @@ import Testing
         for _ in 0..<60 { engine.advance(by: 1 / 120.0) }
         #expect(engine.snapshot.feet.isFinite && engine.snapshot.pose.height.isFinite)
     }
-    @Test("An ignored hour stays rare, finite, and at the original home")
-    func hour() {
+    @Test("An ignored hour stays rare, finite, and at the original home", arguments: [1.0, 0.3])
+    func hour(movement: Double) {
         var engine = CompanionEngine(scene: .preview, idleSeed: 42)
+        engine.setMovementAmount(movement)
         var starts = 0, activeFrames = 0, prior: IdleMoment?
         var safe = true
         for _ in 0..<3600 * 20 {
@@ -171,12 +176,12 @@ import Testing
             if frame.idleMoment == nil { prior = nil }
             safe = safe && frame.phase == .hanging && frame.presence == .peek
                 && frame.gesture == nil && frame.feet.isFinite
-                && abs(frame.feet.x - frame.scene.homeFeet.x) <= 13 * frame.scene.scale
+                && abs(frame.feet.x - frame.scene.homeFeet.x) <= 7 * frame.scene.scale
                 && frame.openness == 0.6
         }
         #expect(safe)
-        #expect((12...15).contains(starts))
-        #expect(Double(activeFrames) / Double(3600 * 20) < 0.04)
+        #expect(starts == (movement < 0.5 ? 4 : 7))
+        #expect(Double(activeFrames) / Double(3600 * 20) < 0.02)
     }
     @Test("Zero energy, reduced motion, recovery and capture never launch overdue moments")
     func safety() {

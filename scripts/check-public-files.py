@@ -8,7 +8,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-ROOT_FILES = {".gitignore", "AGENTS.md", "README.md", "CHANGELOG.md", "LICENSE", "ASSETS.md", "PRIVACY.md", "CONTRIBUTING.md", "SECURITY.md"}
+ROOT_FILES = {".gitignore", ".gitleaksignore", "AGENTS.md", "README.md", "CHANGELOG.md", "LICENSE", "ASSETS.md", "PRIVACY.md", "CONTRIBUTING.md", "SECURITY.md"}
 ROOT_DIRECTORIES = {".github", "Configuration", "Packages", "Sources", "Spriglet.xcodeproj", "art", "scripts", "tools"}
 LOCAL_PREFIXES = ("tools/PublicRelease/", "tools/DesktopValidation/", "tools/CharacterSampleReview/", "art/sprout/sample-v01/review/")
 LOCAL_NAMES = {".DS_Store", "verification.json", "verification-before-publication.json", "icon-verification.json", "icon-verification-before-publication.json"}

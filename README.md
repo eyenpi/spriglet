@@ -17,7 +17,7 @@ This animation uses the production simulation and renderer on a simulated deskto
 ## Meet Mallow
 
 - **Quiet company.** Small glances, blinks and breathing settle back into a resting peek after you move on.
-- **Direct interaction.** Hover for a reaction, click to invite a wave, touch again to swing, or drag to play. Release near home to catch or farther away for a soft landing. Click elsewhere to bring Mallow home.
+- **Direct interaction.** Hover for a reaction, click to invite a wave, touch again to swing, or drag and release while moving to throw. Release near home to catch or farther away for a soft landing. Click elsewhere to bring Mallow home.
 - **Your choice of home.** Native Settings controls size, movement intensity and home display/location. The menu-bar leaf opens Settings or quits; Settings and Spriglet’s native app menu offer recovery and login controls.
 - **Keyboard and VoiceOver actions.** Navigate menus and Settings with the keyboard. Invite, Swing, Stretch and Bring Home are available as character actions. Recovery never requires a precise drag.
 - **Reduce Motion.** Decorative movement and travel become still state changes; deliberate dragging and blinking remain. Every release returns directly home. The five-step Meet Mallow introduction uses still demonstrations.
@@ -29,10 +29,10 @@ This animation uses the production simulation and renderer on a simulated deskto
 | --- | --- | --- |
 | Approved Store version | 0.3.1 (build 6) | Apple’s October 11, 2026 review-completion email confirms approval. The maintainer confirms it has not been released publicly. |
 | [GitHub preview](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1) | 0.3.0 (build 5) | Older public Mallow preview with ad hoc signing and no Apple notarization. |
-| Next Store candidate | 0.3.3 (build 8) | Includes multi-display dragging, simpler controls, the refreshed introduction and rare quiet idle moments. Local preparation does not establish Apple upload, processing, approval or public availability. |
+| Next Store candidate | 0.3.3 (build 8) | Includes multi-display dragging, simpler controls, clearer click/drag/throw instructions and rarer, subtler idle moments. Local preparation does not establish Apple upload, processing, approval or public availability. |
 | [GitHub source release](https://github.com/eyenpi/spriglet/releases/tag/v0.3.2) | 0.3.2 (build 7) | Source and release notes; this release does not establish Mac App Store availability. |
 
-The GitHub download predates the current Settings, menu controls, introduction and accessibility work described here. Choose its `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP; macOS may block the download. Historical releases describe their own builds and characters. There is no public App Store download yet. Plugins and assistant services are not implemented.
+The GitHub download predates the current Settings, menu controls, introduction and accessibility work described here. Choose its `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP; macOS may block the download. Historical releases describe their own builds and characters. The site keeps its download link disabled until a public App Store listing is verified. Plugins and assistant services are not implemented.
 
 ## Build and run
 
@@ -119,11 +119,11 @@ Home retraction advances independently of the physics phase. Grabs transfer its 
 
 Free motion respects the scene ceiling, floor and side limits. Momentum continues until contact: vertical impacts produce a damped rebound, catch springs retain their corrected state, and return trajectories rejoin home from the contact position and remaining velocity. The ceiling keeps the body reachable while allowing a grab to begin at the visible resting peek.
 
-`BoredomState.swift` adds rare, short moments after three uninterrupted minutes away from Mallow: a small wander along the home edge, a nap, a doodle or a fidget. Each lasts five to eight seconds and is followed by at least four minutes of quiet. Gentle energy doubles both waits. Hover, click, drag and deliberate commands interrupt immediately; the normal pose springs settle the artwork back to peek while clicks and grabs keep their existing behavior. Wander changes only a bounded presentation offset; physics, home choice and interaction presence stay unchanged. Doodles stay inside the existing character paint bounds and never affect picking.
+`BoredomState.swift` adds rare, short moments after five uninterrupted minutes away from Mallow: a small wander along the home edge, a nap, a doodle or a fidget. Each lasts five to eight seconds and is followed by at least eight minutes of quiet. Gentle energy doubles both waits. Hover, click, drag and deliberate commands interrupt immediately; the normal pose springs settle the artwork back to peek while clicks and grabs keep their existing behavior. Wander changes only a bounded presentation offset; physics, home choice and interaction presence stay unchanged. Doodles stay inside the existing character paint bounds and never affect picking.
 
 Core schedules a request using injected simulation time and a seeded shuffled-bag picker. Runtime starts it through `CompanionRuntime.perform(_:)`; unsolicited or stale idle commands are rejected. Rendering receives only the moment/progress snapshot. No Apple Intelligence, network, analytics or screen capture is involved. Moments are disabled on battery power (including an unknown power supply), Low Power Mode, Reduce Motion or serious/critical thermal pressure. The environment observes power-source changes through IOKit and removes that observation on stop. The existing frame cadence is retained.
 
-For visual review, run `./scripts/preview.sh .build/preview/boredom --boredom`. A Debug app launched with `SPRIGLET_BORED_DEMO=1` uses a three-second wait and four-second cooldown for recording; Release builds ignore that variable. Previews and tests inject their own timings. Default shipping timing remains three minutes.
+For visual review, run `./scripts/preview.sh .build/preview/boredom --boredom`. A Debug app launched with `SPRIGLET_BORED_DEMO=1` uses a three-second wait and four-second cooldown for recording; Release builds ignore that variable. Previews and tests inject their own timings. Default shipping timing is five minutes before the first moment and eight minutes between moments, with a wander of at most six points at Medium size.
 
 ### Changing the character
 
@@ -175,6 +175,6 @@ The Mallow release replaces the previous character and interaction system. The b
 
 A release goes through a PR, required security and Mac build checks, then a merge to `main`. Build and package that exact clean revision, mount and verify the DMG, create an immutable annotated tag and publish the matching changelog and checksummed downloads. The publisher refuses mismatched or dirty source. See [release instructions](tools/ReleaseNotes/README.md) and [packaging](tools/ReleaseValidation/README.md).
 
-App 0.3.1, build 6 is Waiting for App Review and in internal TestFlight testing, as verified in App Store Connect on October 7, 2026. Version 0.3.2, build 7 is prepared but not uploaded and does not replace that submission. Archive, export, upload, beta review and public release remain separate steps. See [App Store delivery](tools/AppStore/README.md).
+The maintainer reports Apple approval for the first App Store version, 0.3.1 (build 6), on October 11, 2026. This checkout prepares 0.3.3 (build 8), including the launch preparation and release polish; it does not establish public availability or upload a new build. Archive, export, upload, beta review and public release remain separate steps. See [App Store delivery](tools/AppStore/README.md).
 
-Next steps are broader physical-device acceptance (sleep/wake, display transitions, spoken VoiceOver and sustained energy use), Apple review and manual release, and more spriglets. Additional characters are planned, not available in the current app. A future direct-download release needs its own Developer ID signing, notarization and exact-build validation. Future capabilities should use the typed command boundary; no plugin loader, assistant behavior, external-app awareness or 3D runtime is included.
+Next steps for this update are broader physical-device acceptance (sleep/wake, display transitions, spoken VoiceOver and sustained energy use), Apple review and manual release. Additional characters are planned, not available in the current app. A future direct-download release needs its own Developer ID signing, notarization and exact-build validation. Future capabilities should use the typed command boundary; no plugin loader, assistant behavior, external-app awareness or 3D runtime is included.

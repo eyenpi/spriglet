@@ -11,7 +11,7 @@ public enum IdleMoment: Int, CaseIterable, Sendable {
 public struct BoredomTiming: Sendable {
     public let threshold: Double
     public let cooldown: Double
-    public init(threshold: Double = 180, cooldown: Double = 240) {
+    public init(threshold: Double = 300, cooldown: Double = 480) {
         precondition(threshold.isFinite && threshold > 0 && cooldown.isFinite && cooldown > 0)
         self.threshold = threshold; self.cooldown = cooldown
     }
@@ -62,7 +62,7 @@ public struct IdleMomentFrame: Equatable, Sendable {
         pose.width = 1 / pose.height
         return pose
     }
-    var offset: Double { moment == .wander ? sin(progress * 2 * .pi) * 12 * weight : 0 }
+    var offset: Double { moment == .wander ? sin(progress * 2 * .pi) * 6 * weight : 0 }
 }
 
 /// Pure, clock-injected scheduling. A request cannot start itself: Runtime must

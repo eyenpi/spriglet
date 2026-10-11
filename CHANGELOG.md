@@ -4,27 +4,32 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
-## 0.3.3 — Small moments of curiosity
+## 0.3.3 — Small moments of curiosity, quietly polished
 
 2026-10-11 · App 0.3.3 · Build 8
 
-Rare, quiet moments give Mallow a little more personality between interactions.
+Rarer, subtler idle moments and clearer first-run instructions for clicking, dragging, throwing and catching Mallow.
 
 Prepared Mac App Store candidate. Upload, Apple review and manual public release are separate steps; public availability has not been established.
 
 ### Added
 
-- Mallow occasionally wanders a short distance, naps, doodles or fidgets after a quiet pause, then settles back home.
+- Rare, short boredom moments: a small wander, nap, doodle or fidget, gated off on battery or unknown power, Low Power Mode, Reduce Motion and serious or critical thermal pressure.
 
 ### Changed
 
-- Idle moments stop when you interact and respect Reduce Motion, Low Power Mode, thermal conditions, Hide and Pause.
+- Idle moments stop when you interact and respect battery or unknown power, Reduce Motion, Low Power Mode, thermal conditions, Hide and Pause.
 - Developer previews can trigger each idle moment directly in Debug builds; these triggers are excluded from Release builds.
+- Meet Mallow explicitly explains clicking, dragging and throwing; catch instructions also apply to homes without a notch.
+- Optional Launch at Login wording states its default-off behavior and explains pending macOS approval.
+- Idle moments wait five quiet minutes initially and at least eight minutes between moments; Gentle doubles both waits. Wander travel is halved.
+- Support, privacy and website copy describe local power-source gating and distinguish Apple approval from public availability.
 
 ### Known limitations
 
 - Plugins, assistant services, sound, other-app window awareness and exact Dock shelf inspection are not included.
-- Spoken VoiceOver, physical sleep/lock/display transitions, actual login delivery and sustained battery use need broader device testing.
+- Spoken VoiceOver, actual login delivery, Stage Manager/fullscreen focus, physical sleep/lock/display transitions and sustained battery use require human device acceptance.
+- A public App Store download link remains disabled until a live listing is verified.
 
 ## 0.3.2 — Mallow across your displays
 
