@@ -18,9 +18,10 @@ This animation uses the production simulation and renderer on a simulated deskto
 
 - **Quiet company.** Small glances, blinks and breathing settle back into a resting peek after you move on.
 - **Direct interaction.** Hover for a reaction, click to invite a wave, touch again to swing, or drag to play. Release near home to catch or farther away for a soft landing. Click elsewhere to bring Mallow home.
-- **Your choice of home.** Native Settings controls size, movement intensity and home display/location. The menu-bar leaf opens Settings or quits; Settings and Spriglet’s native app menu offer recovery and login controls.
+- **Your choice of home.** Native Settings controls size, movement intensity and home display/location. The menu-bar leaf opens Settings, Pocket or quits; Settings and Spriglet’s native app menu offer recovery and login controls.
 - **Keyboard and VoiceOver actions.** Navigate menus and Settings with the keyboard. Invite, Swing, Stretch and Bring Home are available as character actions. Recovery never requires a precise drag.
 - **Reduce Motion.** Decorative movement and travel become still state changes; deliberate dragging and blinking remain. Every release returns directly home. The five-step Meet Mallow introduction uses still demonstrations.
+- **Drop to Mallow.** Drop text, a URL, an image, a screenshot or a file nearby to review a reminder beneath Mallow. Edit uncertain fields, select multiple tasks, or choose Copy text and Pocket. Add saves to Apple Reminders with a five-second Undo (Command-Z); Escape or click-away keeps the item in Pocket for seven days. Vision and Apple Intelligence work on this Mac, with local date detection when Apple Intelligence is unavailable. Reminders access is requested only on Add.
 - **Local by design.** No account, advertising, analytics or app server connection. Preferences stay on this Mac. Code and original artwork use the [MIT license](LICENSE).
 
 ## Availability
@@ -29,7 +30,7 @@ This animation uses the production simulation and renderer on a simulated deskto
 | --- | --- | --- |
 | TestFlight and App Review | 0.3.1 (build 6) | App Store Connect confirms Waiting for App Review and internal TestFlight testing as of October 7, 2026. Public Mac App Store availability requires Apple approval and manual release. |
 | [GitHub preview](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1) | 0.3.0 (build 5) | Older public Mallow preview with ad hoc signing and no Apple notarization. |
-| Next update source | 0.3.2 (build 7) | Prepared but not uploaded as of October 7, 2026. Continuous multi-display dragging, simpler controls and the refreshed introduction. Build instructions follow below; upload and publication are separate steps. |
+| Next update source | 0.3.3 (build 8) | Source preparation only. Adds Drop to Mallow reminders to the prepared 0.3.2 changes. Build instructions follow below; upload and publication are separate steps. |
 
 The GitHub download predates the current Settings, menu controls, introduction and accessibility work described here. Choose its `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP; macOS may block the download. Historical releases describe their own builds and characters. There is no public App Store download yet. Plugins and assistant services are not implemented.
 
@@ -48,7 +49,7 @@ Builds live under `.build/xcode/Build/Products/`.
 
 ## Controls and accessibility
 
-The leaf menu contains only Settings and Quit. Settings and Spriglet’s native app menu provide Show/Hide, Pause/Resume, Bring Home and Launch at Login. Settings exposes Show and Animate for this session alongside saved preferences and its Bring Home button. Replay and offline Help are available from the native Help menu; direct VoiceOver actions remain on Mallow. Hide and Pause apply for the running session. Pause freezes Mallow and lets clicks pass through, releasing an active drag safely. Hide stops animation and survives sleep, lock, Spaces and display changes. Show, Bring Home and reopening from Finder recover hidden Mallow at its resting home without clearing Pause. Visibility labels reflect actual presentation, with Show unavailable during suspension or without a display. Pause/Resume reflects the user’s animation choice.
+The leaf menu contains Settings, Pocket and Quit. Pocket reopens retained items in the same intake card. Settings and Spriglet’s native app menu provide Show/Hide, Pause/Resume, Bring Home and Launch at Login. Settings exposes Show and Animate for this session alongside saved preferences and its Bring Home button. Replay and offline Help are available from the native Help menu; direct VoiceOver actions remain on Mallow. Hide and Pause apply for the running session. Pause freezes Mallow and lets clicks pass through, releasing an active drag safely. Hide stops animation and survives sleep, lock, Spaces and display changes. Show, Bring Home and reopening from Finder recover hidden Mallow at its resting home without clearing Pause. Visibility labels reflect actual presentation, with Show unavailable during suspension or without a display. Pause/Resume reflects the user’s animation choice.
 
 Reopening the app from Finder returns Mallow to its resting home without activating the app. Settings is also available through a VoiceOver character action. Settings and Meet Mallow support Tab and Shift-Tab even with macOS keyboard navigation off. Use arrow keys and Return in native menus. Opening Settings activates its native window; closing it keeps Mallow running. Help, visibility/animation controls, launch, recovery and character interaction preserve keyboard focus. The introduction opens without activation; clicking its controls allows keyboard navigation. Escape dismisses the introduction when it has keyboard focus, or returns Mallow home outside native windows; native Settings controls keep their usual keyboard behavior. Overlapping launches share one process-held lock, so a second executable exits without creating another companion.
 
@@ -78,9 +79,10 @@ For a finite, reproducible animation preview using the production code:
 ./scripts/preview.sh .build/preview/interaction --interaction
 ./scripts/preview.sh .build/preview/introduction --introduction
 ./scripts/preview.sh .build/preview/idle --idle
+./scripts/preview.sh .build/preview/intake --intake
 ```
 
-The exporter writes PNG frames locally. The transition sequence renders at 60 fps and covers emergence, grabbing during emergence, regrabbing a catch, reversing a retreat, a rapid upward throw and returning during a horizontal reversal. The interaction sequence covers a transparent-corner press, dragging away, returning into catch range, the upward look and release. The introduction sequence exports each five-second demo into its own numbered folder. The idle sequence shows two uninterrupted minutes at the normal 20 fps resting cadence, with reproducible timing and no pointer overlay. It runs no assistant service and reads no desktop content.
+The exporter writes PNG frames locally. The transition sequence renders at 60 fps and covers emergence, grabbing during emergence, regrabbing a catch, reversing a retreat, a rapid upward throw and returning during a horizontal reversal. The interaction sequence covers a transparent-corner press, dragging away, returning into catch range, the upward look and release. The introduction sequence exports each five-second demo into its own numbered folder. The idle sequence shows two uninterrupted minutes at the normal 20 fps resting cadence, with reproducible timing and no pointer overlay. The intake sequence renders catch, analysis, shrug and success poses with full and reduced motion. Previews read no desktop content.
 
 ## Architecture
 
@@ -130,6 +132,12 @@ Edit `MallowGeometry.swift` for the silhouette and limb geometry, `MallowRendere
 
 ### Future capabilities
 
+Intake adds `IntakeItem`, `IntakeAction`, confidence/card state, ranking, local learning values, Pocket expiry and Undo receipts to Core. The three built-in actions are CreateReminder, CopyText and Pocket. Actions use a pure service protocol and flow through `CompanionRuntime.perform(_:)`; new actions use the same card and action search. No plugin loader is involved.
+
+Desktop owns an 80-point native drag destination that appears only near Mallow during a fresh external drag. Ordinary silhouette clicks, double-clicks and throws continue through the existing play path. A separate native card supports Tab, VoiceOver, Return for a high-confidence Add and Command-Z for Undo. It follows the home display, including its upper-right position without a notch. Intake poses decorate immutable snapshots using the existing runtime clock, and decorative intake motion respects Reduce Motion.
+
+Environment owns security-scoped read-only file bookmarks, bounded file/image loading, Vision OCR, on-device guided Foundation Models extraction, data detectors, container persistence and EventKit. Runtime fences analysis at five seconds and drops stale results. Generated or detected fields open for review; Add never runs from analysis. The same `receiveIntake(_:trigger:)` entry accepts explicit paste, hotkey or Services triggers for future integrations; those trigger UIs are not installed in v1.
+
 A capability requests a `CompanionCommand` through `CompanionRuntime.perform(_:)`. It does not receive a window, renderer, input monitor or mutable engine. This is the extension boundary; a plugin loader, permissions model and assistant services belong in a separate capability layer when there is a concrete feature to build. There are no placeholder registries, service locators or dormant plugin implementations.
 
 ### Lifecycle and resources
@@ -174,6 +182,6 @@ The Mallow release replaces the previous character and interaction system. The b
 
 A release goes through a PR, required security and Mac build checks, then a merge to `main`. Build and package that exact clean revision, mount and verify the DMG, create an immutable annotated tag and publish the matching changelog and checksummed downloads. The publisher refuses mismatched or dirty source. See [release instructions](tools/ReleaseNotes/README.md) and [packaging](tools/ReleaseValidation/README.md).
 
-App 0.3.1, build 6 is Waiting for App Review and in internal TestFlight testing, as verified in App Store Connect on October 7, 2026. Version 0.3.2, build 7 is prepared but not uploaded and does not replace that submission. Archive, export, upload, beta review and public release remain separate steps. See [App Store delivery](tools/AppStore/README.md).
+App 0.3.1, build 6 is Waiting for App Review and in internal TestFlight testing, as verified in App Store Connect on October 7, 2026. Version 0.3.3, build 8 is source preparation only and is not uploaded and does not replace that submission. Archive, export, upload, beta review and public release remain separate steps. See [App Store delivery](tools/AppStore/README.md).
 
-Next steps are broader physical-device acceptance (sleep/wake, display transitions, spoken VoiceOver and sustained energy use), Apple review and manual release, and more spriglets. Additional characters are planned, not available in the current app. A future direct-download release needs its own Developer ID signing, notarization and exact-build validation. Future capabilities should use the typed command boundary; no plugin loader, assistant behavior, external-app awareness or 3D runtime is included.
+Next steps are broader physical-device acceptance (sleep/wake, display transitions, spoken VoiceOver and sustained energy use), Apple review and manual release, and more spriglets. Additional characters are planned, not available in the current app. A future direct-download release needs its own Developer ID signing, notarization and exact-build validation. Future capabilities should use the typed command boundary; no plugin loader, remote assistant, external-app awareness or 3D runtime is included.

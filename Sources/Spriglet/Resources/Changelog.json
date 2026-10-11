@@ -2,6 +2,33 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "0.3.3",
+      "appVersion": "0.3.3",
+      "build": 8,
+      "date": "2026-10-11",
+      "channel": "stable",
+      "title": "Drop to Mallow",
+      "summary": "Review reminders from dropped content, with local analysis, Pocket and Undo.",
+      "distribution": "Source preparation only; not uploaded or publicly distributed. Apple review and release are separate steps.",
+      "changes": {
+        "added": [
+          "Drop text, URLs, images, screenshots and files near Mallow to review a reminder in a keyboard-accessible card.",
+          "On-device Vision OCR and guided Foundation Models extraction, with local data-detector fallback and a five-second analysis deadline.",
+          "Inline reminder editing, task selection, action search, lazy Apple Reminders access and five-second Undo.",
+          "Local Pocket with seven-day expiry, scoped file bookmarks and action-choice ranking by content type."
+        ],
+        "changed": [
+          "The menu-bar leaf includes Pocket alongside Settings and Quit.",
+          "Privacy notes describe user-supplied content and confirmed reminders saved to Apple Reminders."
+        ]
+      },
+      "knownLimitations": [
+        "Physical external dragging, spoken VoiceOver and real EventKit permission/sync behavior need device acceptance.",
+        "Paste, global hotkey and Services entry points have no trigger UI yet.",
+        "Generated and date-detector suggestions open for field review; unreadable items offer alternatives."
+      ]
+    },
+    {
       "version": "0.3.2",
       "appVersion": "0.3.2",
       "build": 7,

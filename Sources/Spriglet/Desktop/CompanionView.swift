@@ -68,7 +68,8 @@ import CompanionCore
     func refresh(snapshot: CompanionSnapshot, acceptsInput: Bool = true, isPaused: Bool = false) {
         self.snapshot = snapshot; self.acceptsInput = acceptsInput; self.isPaused = isPaused
         let description: String
-        if isPaused { description = AppText.pausedPresence }
+        if let feedback = snapshot.intakeFeedback { description = feedback.label }
+        else if isPaused { description = AppText.pausedPresence }
         else {
             description = switch snapshot.phase {
             case .held: snapshot.canCatch ? AppText.catchReadyPresence : AppText.heldPresence
@@ -83,8 +84,9 @@ import CompanionCore
                 }
             }
         }
-        if description != presenceDescription {
-            presenceDescription = description; setAccessibilityValue(description)
+        let value = description + (snapshot.pocketCount > 0 ? ", Pocket has \(snapshot.pocketCount) items" : "")
+        if value != presenceDescription {
+            presenceDescription = value; setAccessibilityValue(value)
             if window != nil { NSAccessibility.post(element: self, notification: .valueChanged) }
         }
         needsDisplay = true

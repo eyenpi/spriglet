@@ -40,8 +40,11 @@ def validate_entitlements(value):
     require("com.apple.security.get-task-allow" not in value and "get-task-allow" not in value,
             "Debug get-task-allow entitlement is forbidden in release preparation.")
     require(value.get("com.apple.security.app-sandbox") is True, "The app must remain sandboxed.")
-    # Additional capabilities require an explicit packaging/signing review.
-    require(set(value) == {"com.apple.security.app-sandbox"},
+    # Reviewed intake capabilities: user-dropped files, scoped bookmarks and
+    # EventKit reminders. Network, broad file access and debug remain forbidden.
+    allowed = {"com.apple.security.app-sandbox", "com.apple.security.files.user-selected.read-only",
+               "com.apple.security.files.bookmarks.app-scope", "com.apple.security.personal-information.calendars"}
+    require(set(value).issubset(allowed) and all(setting is True for setting in value.values()),
             "Unexpected entitlement; review the release signing policy before packaging.")
 
 

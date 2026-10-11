@@ -26,6 +26,9 @@ def public_path(name):
     path = PurePosixPath(name)
     if len(path.parts) == 1:
         return name in ROOT_FILES
+    # Explicitly requested sanitized UI evidence; all other docs stay local.
+    if name.startswith("docs/screenshots/drop-to-mallow/"):
+        return len(path.parts) == 4 and path.suffix.lower() in {".png", ".md", ".mp4"}
     if path.parts[0] not in ROOT_DIRECTORIES:
         return False
     if name.startswith(LOCAL_PREFIXES) or path.name in LOCAL_NAMES or LOCAL_PARTS.intersection(path.parts):

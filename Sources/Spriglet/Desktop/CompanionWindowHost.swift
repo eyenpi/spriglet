@@ -90,7 +90,7 @@ import CompanionCore
         let paint = snapshot.geometry.paintBounds(drawShadow: snapshot.phase == .grounded)
         let requested = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: context.frame,
                                                     scale: snapshot.scene.scale,
-                                                    visibleBounds: snapshot.dragGeometry == nil ? snapshot.hitBounds : paint)
+                                                    visibleBounds: snapshot.dragGeometry == nil ? intakePaintBounds(snapshot) : paint)
         let padding = 4 * snapshot.scene.scale
         let protectedPaint = Rect(x: context.frame.minX + paint.minX - padding,
                                   y: context.frame.maxY - paint.maxY - padding,
@@ -109,6 +109,11 @@ import CompanionCore
         if primary.panel.ignoresMouseEvents != passThrough { primary.panel.ignoresMouseEvents = passThrough }
         view.refresh(snapshot: snapshot, acceptsInput: acceptsInput, isPaused: isPaused)
         updatePassive(layout?.canvases ?? [], context: context, snapshot: snapshot)
+    }
+    private func intakePaintBounds(_ snapshot: CompanionSnapshot) -> Rect {
+        guard snapshot.intakeFeedback == .ready || snapshot.pocketCount > 0 else { return snapshot.hitBounds }
+        return Rect(x: snapshot.hitBounds.x - 16, y: snapshot.hitBounds.y,
+                    width: snapshot.hitBounds.width + 32, height: snapshot.hitBounds.height + 26)
     }
     private func updatePassive(_ frames: [DisplayWindowFrame], context: DisplayContext, snapshot: CompanionSnapshot) {
         // Keep canvases on their physical display when the logical scene changes.

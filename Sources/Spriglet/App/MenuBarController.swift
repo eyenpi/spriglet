@@ -1,8 +1,11 @@
 import AppKit
+import CompanionCore
 
 /// Owns the persistent Settings recovery entry and the full character/application menus.
 /// Actions carry values; registration and character behavior stay with their owners.
 @MainActor final class MenuBarController: NSObject, NSMenuDelegate {
+    var pocketItems: (() -> [PocketEntry])?
+    var onPocketSelect: ((UUID) -> Void)?
     let menu = NSMenu()
     private(set) var statusItem: NSStatusItem?
     private let state: () -> CompanionControlState
@@ -47,6 +50,7 @@ import AppKit
         return menu
     }
     func menuNeedsUpdate(_ menu: NSMenu) {
+        if menu.title == "Pocket" { populatePocket(menu); return }
         if menu === self.menu { populateStatusMenu() }
         else { populateFullMenu(menu) }
     }
@@ -67,9 +71,27 @@ import AppKit
     private func populateStatusMenu() {
         menu.delegate = self; menu.autoenablesItems = false; menu.removeAllItems()
         menu.addItem(makeItem(.settings, title: AppText.settingsMenu, keyEquivalent: ",", modifiers: .command))
+        if pocketItems != nil {
+            let item = NSMenuItem(title: "Pocket", action: nil, keyEquivalent: "")
+            let pocket = NSMenu(title: "Pocket"); populatePocket(pocket); item.submenu = pocket; item.tag = -2
+            menu.addItem(item)
+        }
         menu.addItem(makeItem(.quit, title: AppText.quitApp, keyEquivalent: "q", modifiers: .command))
     }
 
+    private func populatePocket(_ menu: NSMenu) {
+        menu.delegate = self; menu.autoenablesItems = false; menu.removeAllItems()
+        let entries = pocketItems?() ?? []
+        if entries.isEmpty { let empty = NSMenuItem(title: "Pocket is empty", action: nil, keyEquivalent: ""); empty.isEnabled = false; menu.addItem(empty) }
+        for entry in entries.reversed() {
+            let item = NSMenuItem(title: entry.item.label, action: #selector(reopenPocket(_:)), keyEquivalent: "")
+            item.target = self; item.representedObject = entry.id.uuidString; menu.addItem(item)
+        }
+    }
+    @objc private func reopenPocket(_ sender: NSMenuItem) {
+        guard let value = sender.representedObject as? String, let id = UUID(uuidString: value) else { return }
+        onPocketSelect?(id)
+    }
     private func populateFullMenu(_ menu: NSMenu) {
         let controls = state(), login = loginState()
         menu.delegate = self; menu.autoenablesItems = false; menu.removeAllItems()
