@@ -63,7 +63,9 @@ import CompanionCore
         let token = UUID(); generation = token; setFeedback(.caught)
         task = Task { [weak self, analyzer] in
             do {
-                let enriched = try await analyzer.enrich(item)
+                let enriched = try await analyzer.enrich(item, onProgress: { [weak self] progress in
+                    await self?.enrichmentProgress(progress, token: token)
+                })
                 try Task.checkCancellation()
                 guard let self, self.generation == token else { return }
                 self.current?.item = enriched
@@ -83,6 +85,10 @@ import CompanionCore
             fallback.explanation = "Analysis timed out. " + fallback.explanation
             self.finish(fallback, token: token)
         }
+    }
+    private func enrichmentProgress(_ item: IntakeItem, token: UUID) {
+        guard generation == token else { return }
+        current?.item = item
     }
     private func finish(_ result: IntakeAnalysis, token: UUID) {
         var analysis = result

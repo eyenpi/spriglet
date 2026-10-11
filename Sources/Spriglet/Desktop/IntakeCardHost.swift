@@ -193,7 +193,7 @@ import CompanionCore
         guard let due = draft.due else { return "No date" }
         let formatter = DateFormatter(); formatter.dateStyle = .long; formatter.timeStyle = .short
         formatter.timeZone = TimeZone(identifier: draft.timeZoneID) ?? .current
-        return formatter.string(from: due)
+        return formatter.string(from: due) + " · " + draft.timeZoneID + (draft.usesDefaultTime == true ? " (09:00 default)" : "")
     }
     private func dismissCard() {
         if let analysis = collect(), state?.isPerforming != true { onCommand?(.choose("pocket", analysis)) }
@@ -210,6 +210,7 @@ import CompanionCore
             analysis.reminders = rows.map { fields in
                 var draft = fields.draft
                 draft.title = fields.title.stringValue; draft.selected = fields.selected.state == .on
+                if fields.date.dateValue != draft.due || fields.zone.titleOfSelectedItem != draft.timeZoneID { draft.usesDefaultTime = false }
                 draft.due = fields.hasDate.state == .on ? fields.date.dateValue : nil
                 draft.timeZoneID = fields.zone.titleOfSelectedItem ?? TimeZone.current.identifier
                 draft.listID = fields.list.selectedItem?.representedObject as? String

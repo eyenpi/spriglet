@@ -33,11 +33,13 @@ public struct ReminderDraft: Identifiable, Codable, Equatable, Sendable {
     public var listID: String?
     public var listName: String
     public var uncertain: Set<ReminderField>
+    /// Optional for compatibility with previously saved Pocket entries.
+    public var usesDefaultTime: Bool?
     public var selected: Bool
     public init(id: UUID = UUID(), title: String, due: Date? = nil, timeZoneID: String = TimeZone.current.identifier,
-                listID: String? = nil, listName: String = "Default Reminders list", uncertain: Set<ReminderField> = [], selected: Bool = true) {
+                listID: String? = nil, listName: String = "Default Reminders list", uncertain: Set<ReminderField> = [], selected: Bool = true, usesDefaultTime: Bool = false) {
         self.id = id; self.title = title; self.due = due; self.timeZoneID = timeZoneID
-        self.listID = listID; self.listName = listName; self.uncertain = uncertain; self.selected = selected
+        self.listID = listID; self.listName = listName; self.uncertain = uncertain; self.selected = selected; self.usesDefaultTime = usesDefaultTime
     }
 }
 public struct IntakeAnalysis: Codable, Equatable, Sendable {
