@@ -1,12 +1,12 @@
 # {{privacyTitle}}
 
-Effective date: October 4, 2026.
+Effective date: October 11, 2026.
 
-{{appName}} is a local desktop companion developed by {{publisher}}. This policy describes the current Mallow preview.
+{{appName}} is a local desktop companion developed by {{publisher}}. This policy describes the Mallow app.
 
 ## App data
 
-The app has no accounts, advertising, analytics, remote assistant service or server connection. It does not capture the screen, inspect other applications, read documents, record audio or monitor global keyboard events. No plugins are active in this preview.
+The app has no accounts, advertising, analytics, remote assistant service or server connection. It does not capture the screen, inspect other applications, read documents, record audio or monitor global keyboard events. No plugins are included.
 
 Character interaction state is held in memory for the current session. Character size, movement intensity, home location and the chosen display’s macOS UUID are saved in the app’s local preferences and restored after relaunch. Disconnecting a display does not erase the saved choice. The app also saves whether you dismissed the Mallow introduction; no demo progress is saved. These preferences are not transmitted or used to record interaction history. The rewrite does not read or migrate the old companion's saved preferences and does not delete those preferences.
 
@@ -16,7 +16,7 @@ The app creates an empty lock file in its local Application Support directory to
 
 ## Desktop interaction
 
-macOS supplies display measurements, pointer position, display/session notifications, Reduce Motion, Low Power Mode and thermal state. The app uses these locally to place and animate the character. It observes outside mouse clicks only to return Mallow to its resting peek; it neither records click histories nor reads clicked content. Escape is handled only when this app receives keyboard input.
+macOS supplies display measurements, pointer position, display/session notifications, Reduce Motion, Low Power Mode, power source and thermal state. The app uses these locally to place and animate the character. Occasional idle moments are disabled on battery power or when the power source is unknown, with Low Power Mode or Reduce Motion, or under serious thermal pressure. It observes outside mouse clicks only to return Mallow to its resting peek; it neither records click histories nor reads clicked content. Escape is handled only when this app receives keyboard input.
 
 ## Local development tools
 

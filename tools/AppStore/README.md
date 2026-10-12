@@ -1,6 +1,8 @@
 # App Store preparation
 
-Version 0.3.2, build 7 prepares the next TestFlight and Store update. The maintainer reports that version 0.3.1, build 6 is already in TestFlight and the app is under review as of October 7, 2026; preserve that submission while preparing the next build. The published GitHub preview is a separate older unsigned download. Metadata and policy are generated from `Configuration/Shared`; local validation does not constitute Apple approval. Record live upload, processing and submission status privately with the exact archive.
+Version 0.3.3, build 8 prepares the next Store candidate from integrated main, including clearer first-run instructions and rarer, subtler idle moments. Apple’s October 11, 2026 review-completion email confirms approval of 0.3.1, build 6; the maintainer confirms it has not been released publicly. Preserve that approved submission until the replacement candidate and its acceptance evidence are ready. App Store Connect was checked on October 11: 0.3.1 (6) is Pending Developer Release, and build 6 is the only listed upload; candidate build 8 exceeds it. The published GitHub preview is a separate older unsigned download, and the 0.3.2 GitHub release contains source and release notes. Metadata and policy are generated from `Configuration/Shared`; local validation does not constitute Apple approval. Record live upload, processing and submission status privately with the exact archive.
+
+The consolidated candidate remains **0.3.3 (build 8)**. PR #47’s 0.3.2/build 7 candidate numbering is superseded by PR #46’s launch-prep version. Drop to Mallow (#45) is excluded. Keep the published `v0.3.2` tag, release assets and historical changelog entry unchanged. Rebuild and validate this exact integrated revision; earlier launch-prep or polish archives do not contain the combined candidate.
 
 ```sh
 python3 tools/SharedContent/sync.py --check

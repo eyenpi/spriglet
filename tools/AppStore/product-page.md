@@ -8,7 +8,7 @@ Spriglet is a native, local app for Apple silicon Macs running macOS 26 or later
 
 ### Everything happens through the character
 
-Hover to get a reaction. Click to invite. Drag to play. Click elsewhere to return home.
+Hover to get a reaction. Click to invite. Drag to pick up, then release while moving to throw. Click elsewhere to return home.
 
 A second touch brings a wave or a gentle swing. Release near the notch to let Mallow catch it; release farther away to try gravity and a soft, squishy landing. Clicking elsewhere brings it home. Displays without a notch use a small home at the upper right edge.
 
