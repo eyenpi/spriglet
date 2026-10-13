@@ -38,18 +38,21 @@ import CompanionCore
 @MainActor private struct MallowArtwork {
     let body: NSBezierPath
     init() {
+        body = Self.path(MallowGeometry.bodyCurves)
+    }
+    static func path(_ curves: [CharacterCurve]) -> NSBezierPath {
         let body = NSBezierPath()
-        body.move(to: native(MallowGeometry.bodyCurves[0].start))
-        for curve in MallowGeometry.bodyCurves {
+        body.move(to: native(curves[0].start))
+        for curve in curves {
             body.curve(to: native(curve.end), controlPoint1: native(curve.control1), controlPoint2: native(curve.control2))
         }
         body.close()
         body.lineWidth = 2.3; body.lineCapStyle = .round; body.lineJoinStyle = .round
-        self.body = body
+        return body
     }
 }
 
-@MainActor private func drawMallow(_ pose: CharacterPose, artwork: MallowArtwork, center: NSPoint, scale: CGFloat = 1, drawShadow: Bool = true, rotation: Double = 0, drawArms: Bool = true, clipFace: Bool = false) {
+@MainActor private func drawMallow(_ pose: CharacterPose, artwork: MallowArtwork, center: NSPoint, scale: CGFloat = 1, drawShadow: Bool = true, rotation: Double = 0, drawArms: Bool = true, clipFace: Bool = false, geometry: MallowGeometry? = nil, relaxation: Double = 0) {
     NSGraphicsContext.saveGraphicsState()
     concatenate(CharacterTransform(origin: Point(x: center.x, y: center.y), rotation: rotation, scaleX: scale, scaleY: scale))
     if drawShadow {
@@ -57,12 +60,14 @@ import CompanionCore
     }
     // 60% of each stride is planted. During that phase, feet move backwards
     // relative to the body at the same speed as the desktop window moves forward.
-    for foot in MallowGeometry.feet(for: pose) {
+    for foot in geometry?.feet ?? MallowGeometry.feet(for: pose) {
         oval(native(foot), fill: MallowPalette.feet, outline: true)
     }
     NSGraphicsContext.saveGraphicsState()
     concatenate(MallowGeometry.bodyTransform(for: pose))
-    let body = artwork.body
+    let body: NSBezierPath
+    if let geometry, relaxation > 0 { body = MallowArtwork.path(geometry.bodyContour) }
+    else { body = artwork.body }
     MallowPalette.bodyGradient.draw(in: body, angle: 90)
     MallowPalette.ink.setStroke(); body.stroke()
     // Separate arms can gesture while the body continues to breathe.
@@ -77,26 +82,30 @@ import CompanionCore
         stroke(arm, 2)
     }
     let faceX = pose.look + pose.facing * 18
-    let eyeSpacing = 14 - abs(pose.facing) * 5
+    func blend(_ standard: Double, _ relaxed: Double) -> Double { standard + (relaxed - standard) * relaxation }
+    let eyeSpacing = blend(14, 12) - abs(pose.facing) * 5
+    let eyeY = blend(-47, -15), eyeWidth = blend(6.8, 4.4), eyeHeight = blend(8.2, 5.4)
+    let cheekY = blend(-37, -10), smileY = blend(-37, -9)
     NSGraphicsContext.saveGraphicsState()
     if clipFace { body.addClip() }
-    let faceTransform = NSAffineTransform(); faceTransform.translateX(by: 0, yBy: pose.lookY); faceTransform.concat()
+    let faceTransform = NSAffineTransform(); faceTransform.translateX(by: 0, yBy: pose.lookY * (1 - relaxation)); faceTransform.concat()
     for side in [-1.0, 1.0] {
         let x = side * eyeSpacing + faceX
         let eyeAlpha = side * pose.facing < 0 ? 1 - min(1, abs(pose.facing) / 0.82) : 1
         if pose.eyes < 0.12 {
             let lid = NSBezierPath()
-            lid.move(to: NSPoint(x: x - 4, y: -47))
-            lid.curve(to: NSPoint(x: x + 4, y: -47), controlPoint1: NSPoint(x: x - 2, y: -44), controlPoint2: NSPoint(x: x + 2, y: -44))
+            lid.move(to: NSPoint(x: x - eyeWidth / 2 - 0.6, y: eyeY))
+            lid.curve(to: NSPoint(x: x + eyeWidth / 2 + 0.6, y: eyeY), controlPoint1: NSPoint(x: x - eyeWidth / 3.4, y: eyeY + 3), controlPoint2: NSPoint(x: x + eyeWidth / 3.4, y: eyeY + 3))
             stroke(lid, 2.5, MallowPalette.ink.withAlphaComponent(eyeAlpha))
         } else {
-            oval(NSRect(x: x - 3.4, y: -47 - 4.1 * pose.eyes, width: 6.8, height: 8.2 * pose.eyes), fill: MallowPalette.ink.withAlphaComponent(eyeAlpha))
+            oval(NSRect(x: x - eyeWidth / 2, y: eyeY - eyeHeight / 2 * pose.eyes, width: eyeWidth, height: eyeHeight * pose.eyes), fill: MallowPalette.ink.withAlphaComponent(eyeAlpha))
         }
-        oval(NSRect(x: side * 25 + faceX - 5, y: -37, width: 10, height: 4), fill: MallowPalette.blush)
+        let cheekWidth = blend(10, 7)
+        oval(NSRect(x: side * blend(25, 22) + faceX - cheekWidth / 2, y: cheekY, width: cheekWidth, height: blend(4, 3)), fill: MallowPalette.blush)
     }
     let smile = NSBezierPath()
-    smile.move(to: NSPoint(x: faceX - 4, y: -37))
-    smile.curve(to: NSPoint(x: faceX + 4, y: -37), controlPoint1: NSPoint(x: faceX - 2, y: -32), controlPoint2: NSPoint(x: faceX + 2, y: -32))
+    smile.move(to: NSPoint(x: faceX - 4, y: smileY))
+    smile.curve(to: NSPoint(x: faceX + 4, y: smileY), controlPoint1: NSPoint(x: faceX - 2, y: smileY + blend(5, 3.5)), controlPoint2: NSPoint(x: faceX + 2, y: smileY + blend(5, 3.5)))
     stroke(smile, 2)
     NSGraphicsContext.restoreGraphicsState()
     NSGraphicsContext.restoreGraphicsState()
@@ -108,7 +117,7 @@ import CompanionCore
     private let artwork = MallowArtwork()
     public init() {}
     public func draw(_ frame: CompanionSnapshot) {
-        let scene = frame.scene, scale = scene.scale
+        let scene = frame.scene, scale = scene.scale, geometry = frame.geometry
         NSGraphicsContext.saveGraphicsState()
         let visible = NSBezierPath(); visible.windingRule = .nonZero
         if let dragGeometry = frame.dragGeometry {
@@ -121,23 +130,24 @@ import CompanionCore
         drawMallow(frame.pose, artwork: artwork,
                    center: NSPoint(x: frame.feet.x, y: frame.feet.y - 7 * scale), scale: scale,
                    drawShadow: frame.phase == .grounded, rotation: frame.rotation,
-                   drawArms: false, clipFace: true)
-        drawHands(frame)
-        drawIdleDoodle(frame)
+                   drawArms: false, clipFace: true, geometry: geometry, relaxation: frame.relaxation)
+        drawHands(geometry, scale: scale)
+        drawIdleDoodle(frame, geometry: geometry)
         NSGraphicsContext.restoreGraphicsState()
     }
     /// A tiny ephemeral scribble on the visible cheek, inside existing paint
     /// bounds. It never changes the silhouette or intercepts pointer input.
-    private func drawIdleDoodle(_ frame: CompanionSnapshot) {
+    private func drawIdleDoodle(_ frame: CompanionSnapshot, geometry: MallowGeometry) {
         guard let moment = frame.idleMoment, moment.moment == .doodle else { return }
         NSGraphicsContext.saveGraphicsState()
-        concatenate(frame.geometry.root); concatenate(frame.geometry.body)
-        artwork.body.addClip()
+        concatenate(geometry.root); concatenate(geometry.body)
+        let relaxation = frame.relaxation
+        (relaxation > 0 ? MallowArtwork.path(geometry.bodyContour) : artwork.body).addClip()
         let path = NSBezierPath()
         let count = Int(moment.progress * 24)
         for index in 0...count {
             let t = Double(index) / 24
-            let point = NSPoint(x: 25 + t * 14, y: -34 + frame.pose.lookY + sin(t * .pi * 4) * 2)
+            let point = NSPoint(x: 25 + t * 14, y: -34 + 22 * relaxation + frame.pose.lookY * (1 - relaxation) + sin(t * .pi * 4) * 2)
             if index == 0 { path.move(to: point) } else { path.line(to: point) }
         }
         stroke(path, 1.2, MallowPalette.ink.withAlphaComponent(0.4 * moment.weight))
@@ -153,9 +163,8 @@ import CompanionCore
         for point in points.dropFirst() { path.line(to: native(point)) }
         path.close()
     }
-    private func drawHands(_ frame: CompanionSnapshot) {
-        let s = frame.scene.scale
-        for hand in frame.geometry.hands {
+    private func drawHands(_ geometry: MallowGeometry, scale s: Double) {
+        for hand in geometry.hands {
             let arm = NSBezierPath(); arm.move(to: native(hand.arm.start))
             arm.curve(to: native(hand.arm.end), controlPoint1: native(hand.arm.control1), controlPoint2: native(hand.arm.control2))
             stroke(arm, 2 * s)

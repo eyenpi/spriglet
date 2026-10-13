@@ -155,7 +155,9 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
         try require(!window.isVisible, "Unplug left the old host visible")
         window = try visiblePanel(); try assertHome(window)
-        try require(view(window).context.id == fallback.id && view(window).snapshot.scene == fallbackScene, "Unplug failed to choose fallback home")
+        try require(view(window).context.id == fallback.id
+                    && view(window).snapshot.scene == fallback.placingHome(size: .medium, location: .automatic).scene,
+                    "Unplug failed to choose fallback home")
         available = []
         application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
         try require(!window.isVisible, "No displays left a stale host visible")
@@ -169,7 +171,8 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         available = [resized, fallback]
         application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
         window = try visiblePanel(); try assertHome(window)
-        try require(view(window).snapshot.scene == resizedScene, "Resolution change kept stale geometry")
+        try require(view(window).snapshot.scene == resized.placingHome(size: .medium, location: .automatic).scene,
+                    "Resolution change kept stale geometry")
         workspace.post(name: NSWorkspace.screensDidSleepNotification, object: nil)
         available = [fallback]
         application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
@@ -701,7 +704,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         try choose(.bringHome)
         window = try visiblePanel(); try assertHome(window)
         try require(runtime.controlState.isPaused && animation.state == .off, "Bring Home cleared Pause")
-        try require(view(window).snapshot.scene.scale == 0.8 && view(window).snapshot.scene.home.minX == 20,
+        try require(view(window).snapshot.scene.scale == 0.6 && view(window).snapshot.scene.form == .relaxed && view(window).snapshot.scene.home.minX == 20,
                     "Recovery discarded saved size/home")
         let homeTime = view(window).snapshot.time
         pump(0.12)

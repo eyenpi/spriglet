@@ -1,3 +1,6 @@
+/// A character presentation, independent of native preference labels.
+public enum MallowForm: Equatable, Sendable { case standard, relaxed }
+
 /// macOS supplies measurements; the simulation never queries a display itself.
 public struct SceneGeometry: Equatable, Sendable {
     public let bounds: Rect
@@ -5,6 +8,7 @@ public struct SceneGeometry: Equatable, Sendable {
     public let floor: Double
     public let scale: Double
     public let hasHardwareNotch: Bool
+    public let form: MallowForm
     /// Hide artwork behind Home all the way to the display's top edge. A
     /// synthetic Home may start below that edge to sit beneath the menu bar;
     /// its attachment geometry must not leave a visible strip above it.
@@ -20,12 +24,14 @@ public struct SceneGeometry: Equatable, Sendable {
     }
     public var leftLimit: Double { bounds.minX + min(55 * scale, bounds.width / 4) }
     public var rightLimit: Double { bounds.maxX - min(55 * scale, bounds.width / 4) }
-    public init(bounds: Rect, home: Rect, floor: Double, scale: Double = 1, hasHardwareNotch: Bool = true) {
+    public init(bounds: Rect, home: Rect, floor: Double, scale: Double = 1, hasHardwareNotch: Bool = true,
+                form: MallowForm = .standard) {
         precondition(bounds.isValid && bounds.width > 0 && bounds.height > 0)
         precondition(home.isValid && home.width > 0 && home.height > 0)
         precondition(scale.isFinite && scale > 0 && floor.isFinite && floor > home.maxY && floor <= bounds.maxY)
         self.bounds = bounds; self.home = home; self.floor = floor; self.scale = scale
         self.hasHardwareNotch = hasHardwareNotch
+        self.form = form
     }
     public static let preview = SceneGeometry(
         bounds: Rect(x: 0, y: 0, width: 720, height: 420),

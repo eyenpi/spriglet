@@ -161,6 +161,10 @@ import CompanionCore
     }
 
     static func run() throws {
+        for size in [CharacterSize.medium, .small] { try run(size: size) }
+    }
+
+    private static func run(size: CharacterSize) throws {
         let measured = NSScreen.screens.map(DisplayContext.init(screen:))
         var logical: [DisplayContext] = []
         for context in measured {
@@ -181,6 +185,10 @@ import CompanionCore
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
         let store = PreferenceStore(defaults: defaults)
+        if size == .small {
+            var preferences = CompanionPreferences(); preferences.characterSize = .small
+            store.save(preferences)
+        }
         let originalPreferences = store.load()
         let host = CompanionWindowHost()
         let environment = DesktopEnvironment(displays: { measured })
@@ -193,9 +201,11 @@ import CompanionCore
         let sourcePanel = try LifecycleValidation.visiblePanel()
         let sourceView = sourcePanel.contentView as! CompanionView
         let source = sourceView.context
-        guard let destination = logical.first(where: { !$0.isSameLogicalDisplay(as: source) }) else {
+        guard let destinationDisplay = logical.first(where: { !$0.isSameLogicalDisplay(as: source) }) else {
             throw Failure.message("Could not choose a distinct destination display")
         }
+        let destination = destinationDisplay.placingHome(size: originalPreferences.characterSize,
+                                                        location: originalPreferences.homeLocation)
         try beginDrag(host: host, view: sourceView, context: source)
         try LifecycleValidation.require(!sourcePanel.ignoresMouseEvents,
                                         "Native panel did not capture the pointer press")

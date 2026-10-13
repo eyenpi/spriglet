@@ -19,6 +19,13 @@ public struct CompanionSnapshot: Sendable {
     /// Uses the held target, exactly as release does, even while the body follows.
     public let canCatch: Bool
     public let idleMoment: IdleMomentFrame?
+    /// Reuse continuous reveal and grip state so grabs and catches never switch
+    /// artwork at a phase boundary. Detached and invited poses unfold normally.
+    public var relaxation: Double {
+        guard scene.form == .relaxed else { return 0 }
+        let reveal = clamp((openness - 0.6) / 0.4, 0, 1)
+        return (1 - reveal * reveal * (3 - 2 * reveal)) * clamp(homeGrip, 0, 1)
+    }
     public var geometry: MallowGeometry { MallowGeometry(self) }
     /// A bounding box for accessibility and broad-phase checks, never a pick shape.
     public var hitBounds: Rect {

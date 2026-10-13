@@ -15,10 +15,15 @@ public enum BitmapRenderingError: Error, Equatable { case invalidSize, allocatio
                                   ending: NSColor(calibratedRed: 1, green: 0.93, blue: 0.89, alpha: 1))!
         gradient.draw(in: NSRect(x: 20, y: 0, width: scene.bounds.width - 40, height: scene.bounds.height - 20), angle: 80)
         character.draw(snapshot)
-        NSColor(calibratedRed: 0.145, green: 0.149, blue: 0.278, alpha: 1).setFill()
-        NSBezierPath(roundedRect: NSRect(x: scene.home.x, y: scene.home.y, width: scene.home.width, height: scene.home.height), xRadius: 16, yRadius: 16).fill()
-        NSColor(calibratedRed: 0.318, green: 0.298, blue: 0.416, alpha: 1).setFill()
-        NSBezierPath(ovalIn: NSRect(x: scene.home.midX - 3, y: scene.home.minY + 17, width: 6, height: 6)).fill()
+        if scene.hasHardwareNotch {
+            NSColor(calibratedRed: 0.145, green: 0.149, blue: 0.278, alpha: 1).setFill()
+            NSBezierPath(roundedRect: NSRect(x: scene.home.x, y: scene.home.y, width: scene.home.width, height: scene.home.height), xRadius: 16, yRadius: 16).fill()
+            NSColor(calibratedRed: 0.318, green: 0.298, blue: 0.416, alpha: 1).setFill()
+            NSBezierPath(ovalIn: NSRect(x: scene.home.midX - 3, y: scene.home.minY + 17, width: 6, height: 6)).fill()
+        } else {
+            NSColor(calibratedWhite: 0.94, alpha: 1).setFill()
+            NSRect(x: 0, y: 0, width: scene.bounds.width, height: scene.home.maxY).fill()
+        }
         if let pointer { drawPointer(pointer, pressed: pressed) }
     }
     private func drawPointer(_ point: Point, pressed: Bool) {

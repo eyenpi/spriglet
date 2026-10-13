@@ -3,15 +3,26 @@ import Foundation
 /// A dedicated namespace leaves retired companion preferences untouched.
 /// Decode fields independently so a bad or future value cannot discard other choices.
 @MainActor final class PreferenceStore {
-    static let storageKey = "mallow.preferences.v1"
+    static let storageKey = "mallow.preferences.v2"
+    private static let legacyStorageKey = "mallow.preferences.v1"
     private let defaults: UserDefaults
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
+    /// Migrate once when the current schema is absent; retain v1 for rollback.
     func load() -> CompanionPreferences {
-        let values = defaults.dictionary(forKey: Self.storageKey) ?? [:]
+        if defaults.object(forKey: Self.storageKey) == nil,
+           let legacy = defaults.dictionary(forKey: Self.legacyStorageKey) {
+            let migrated = decode(legacy, legacySizes: true)
+            save(migrated)
+            return migrated
+        }
+        return decode(defaults.dictionary(forKey: Self.storageKey) ?? [:])
+    }
+
+    private func decode(_ values: [String: Any], legacySizes: Bool = false) -> CompanionPreferences {
         var preferences = CompanionPreferences()
         if let value = values["characterSize"] as? String, let size = CharacterSize(rawValue: value) {
-            preferences.characterSize = size
+            preferences.characterSize = legacySizes ? (size == .small ? .medium : .large) : size
         }
         if let value = values["movementIntensity"] as? String, let intensity = MovementIntensity(rawValue: value) {
             preferences.movementIntensity = intensity

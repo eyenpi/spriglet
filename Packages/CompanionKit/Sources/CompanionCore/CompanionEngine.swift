@@ -67,7 +67,7 @@ public struct CompanionEngine: Sendable {
     @discardableResult public mutating func transferDrag(scene: SceneGeometry, translation: Point,
                                                           geometry: DragGeometry) -> Bool {
         guard isDragging, hasPointerCapture, translation.isFinite, geometry.isValid,
-              scene.scale == body.scene.scale, (pointer + translation).isFinite,
+              scene.scale == body.scene.scale, scene.form == body.scene.form, (pointer + translation).isFinite,
               (attachmentTarget + translation).isFinite,
               (attachmentX.value + translation.x).isFinite,
               (attachmentY.value + translation.y).isFinite else { return false }

@@ -1,10 +1,12 @@
 import Foundation
+import CompanionCore
 
 enum CharacterSize: String, CaseIterable {
     case small, medium, large
     var scale: Double {
-        switch self { case .small: 0.8; case .medium: 1; case .large: 1.2 }
+        switch self { case .small: 0.6; case .medium: 0.8; case .large: 1 }
     }
+    var form: MallowForm { self == .small ? .relaxed : .standard }
 }
 
 enum MovementIntensity: String, CaseIterable {

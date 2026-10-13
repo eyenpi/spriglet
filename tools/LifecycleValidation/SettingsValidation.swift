@@ -13,6 +13,25 @@ import CompanionCore
         defer { defaults.removePersistentDomain(forName: suite) }
         let store = PreferenceStore(defaults: defaults)
         try LifecycleValidation.require(store.load() == CompanionPreferences(), "First launch has unexpected preferences")
+        try LifecycleValidation.require(store.load().characterSize == .medium && store.load().characterSize.scale == 0.8,
+                                       "New installs must use the previous Small as default Medium")
+        for (legacy, expected) in [("small", CharacterSize.medium), ("medium", .large), ("large", .large), ("future", .medium)] {
+            defaults.removeObject(forKey: PreferenceStore.storageKey)
+            defaults.set(["characterSize": legacy, "movementIntensity": "gentle", "homeLocation": "left",
+                          "homeDisplayID": savedDisplayID], forKey: "mallow.preferences.v1")
+            let restored = store.load()
+            try LifecycleValidation.require(restored.characterSize == expected && restored.movementIntensity == .gentle
+                                            && restored.homeLocation == .left && restored.homeDisplayID == savedDisplayID,
+                                            "Size migration lost a size or unrelated saved choice")
+            try LifecycleValidation.require(defaults.dictionary(forKey: "mallow.preferences.v1")?["characterSize"] as? String == legacy,
+                                            "Size migration modified rollback preferences")
+            var chosen = restored; chosen.characterSize = .small
+            store.save(chosen)
+            try LifecycleValidation.require(PreferenceStore(defaults: defaults).load() == chosen,
+                                            "Repeated migration overwrote the new Small choice")
+        }
+        defaults.removeObject(forKey: PreferenceStore.storageKey)
+        defaults.removeObject(forKey: "mallow.preferences.v1")
         defaults.set("bad root", forKey: PreferenceStore.storageKey)
         try LifecycleValidation.require(store.load() == CompanionPreferences(), "Malformed preferences root did not use defaults")
         defaults.set(["characterSize": 42, "movementIntensity": "gentle", "homeLocation": "future-value",
@@ -34,7 +53,7 @@ import CompanionCore
         try LifecycleValidation.require(process.terminationStatus == 0, "Fresh process did not restore saved preferences")
         store.save(CompanionPreferences())
         try LifecycleValidation.require(store.load().homeDisplayID == nil, "Automatic display retained a stale saved ID")
-        print("Preferences passed: defaults, malformed/partial values, isolated storage and fresh-process restoration.")
+        print("Preferences passed: default sizing, one-time size migration, malformed/partial values and fresh-process restoration.")
     }
     static func runtime(screen: NSScreen) throws {
         let suite = "dev.spriglet.settings-runtime.\(UUID().uuidString)"
@@ -58,11 +77,11 @@ import CompanionCore
         var panel = try LifecycleValidation.visiblePanel()
         try LifecycleValidation.assertHome(panel)
         try LifecycleValidation.require(LifecycleValidation.view(panel).context.id == external.id, "Launch ignored saved home display")
-        try LifecycleValidation.require(LifecycleValidation.view(panel).snapshot.scene.scale == 1.2
+        try LifecycleValidation.require(LifecycleValidation.view(panel).snapshot.scene.scale == 1.0
                                        && LifecycleValidation.view(panel).snapshot.scene.home.midX == 512,
                                        "Launch ignored saved size/location")
-        try LifecycleValidation.require(panel.frame.width == WindowGeometry.width * 1.2
-                                       && panel.frame.height == WindowGeometry.height * 1.2,
+        try LifecycleValidation.require(panel.frame.width == WindowGeometry.width
+                                       && panel.frame.height == WindowGeometry.height,
                                        "Large character kept an unscaled native canvas")
 
         LifecycleValidation.beginDrag(host: host, window: panel, clock: clock)
@@ -76,7 +95,7 @@ import CompanionCore
         runtime.updatePreferences(choices)
         panel = try LifecycleValidation.visiblePanel(); try LifecycleValidation.assertHome(panel)
         let changedScene = LifecycleValidation.view(panel).snapshot.scene
-        try LifecycleValidation.require(changedScene.scale == 0.8 && changedScene.home.minX == 20,
+        try LifecycleValidation.require(changedScene.scale == 0.6 && changedScene.form == .relaxed && changedScene.home.minX == 20,
                                        "Size/location did not apply immediately")
         try LifecycleValidation.require(store.load() == choices, "Runtime failed to persist an immediate change")
 
@@ -103,7 +122,7 @@ import CompanionCore
         events.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
         panel = try LifecycleValidation.visiblePanel(); try LifecycleValidation.assertHome(panel)
         try LifecycleValidation.require(LifecycleValidation.view(panel).context.id == reconnected.id
-                                       && LifecycleValidation.view(panel).snapshot.scene.scale == 1.2,
+                                       && LifecycleValidation.view(panel).snapshot.scene.scale == 1.0,
                                        "Reconnect lost saved display identity or updated settings")
         runtime.setVisible(false); runtime.setPaused(true)
         runtime.stop()
