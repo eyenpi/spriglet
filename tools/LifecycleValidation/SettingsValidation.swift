@@ -98,7 +98,7 @@ import CompanionCore
         runtime.updatePreferences(choices)
         panel = try LifecycleValidation.visiblePanel(); try LifecycleValidation.assertHome(panel)
         let changedScene = LifecycleValidation.view(panel).snapshot.scene
-        try LifecycleValidation.require(changedScene.scale == 0.6 && changedScene.form == .relaxed && changedScene.home.minX == 20,
+        try LifecycleValidation.require(changedScene.scale == CharacterSize.medium.scale && changedScene.form == .fingertipGrip && changedScene.home.minX == 20,
                                        "Size/location did not apply immediately")
         try LifecycleValidation.require(store.load() == choices, "Runtime failed to persist an immediate change")
 

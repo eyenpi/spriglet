@@ -4,9 +4,9 @@ import CompanionCore
 enum CharacterSize: String, CaseIterable {
     case small, medium, large
     var scale: Double {
-        switch self { case .small: 0.6; case .medium: 0.8; case .large: 1 }
+        switch self { case .small, .medium: 0.8; case .large: 1 }
     }
-    var form: MallowForm { self == .small ? .relaxed : .standard }
+    var form: MallowForm { self == .small ? .fingertipGrip : .standard }
 }
 
 enum MovementIntensity: String, CaseIterable {

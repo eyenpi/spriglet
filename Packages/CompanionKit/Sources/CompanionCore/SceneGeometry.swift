@@ -1,5 +1,5 @@
 /// A character presentation, independent of native preference labels.
-public enum MallowForm: Equatable, Sendable { case standard, relaxed }
+public enum MallowForm: Equatable, Sendable { case standard, fingertipGrip }
 
 /// macOS supplies measurements; the simulation never queries a display itself.
 public struct SceneGeometry: Equatable, Sendable {
@@ -16,6 +16,8 @@ public struct SceneGeometry: Equatable, Sendable {
         let top = min(bounds.minY, home.minY)
         return Rect(x: home.x, y: top, width: home.width, height: home.maxY - top)
     }
+    /// Retract the intact body behind Home for the fingertip resting mode.
+    var homeRetractionDistance: Double { form == .fingertipGrip ? 170 : 75 }
     public var homeFeet: Point { Point(x: home.midX, y: home.maxY + 60 * scale) }
     /// Free motion keeps enough of the body below the display and housing to
     /// remain reachable. The resting peek can be grabbed without a position jump.

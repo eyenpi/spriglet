@@ -52,13 +52,10 @@ public struct MallowGeometry: Sendable {
     private static let bodyOutline = bodyCurves.flatMap { $0.outline.dropLast() }
     private static let bodyStroke = bodyOutline + [bodyOutline[0]]
     private static let bodyBounds = boundingRect(bodyOutline, padding: 1.15)
-    private static let relaxedStroke = RelaxedMallow.outline + [RelaxedMallow.outline[0]]
-    private static let relaxedBounds = boundingRect(RelaxedMallow.outline, padding: 1.15)
     public let root: CharacterTransform
     public let body: CharacterTransform
     public let feet: [Rect]
     public let hands: [CharacterHand]
-    public let bodyContour: [CharacterCurve]
     private let outline: [Point]
     private let strokeOutline: [Point]
     private let localBodyBounds: Rect
@@ -78,24 +75,13 @@ public struct MallowGeometry: Sendable {
         }
     }
     public init(_ frame: CompanionSnapshot) {
-        let s = frame.scene.scale, pose = frame.pose, grip = frame.homeGrip, relaxation = frame.relaxation
+        let s = frame.scene.scale, pose = frame.pose, grip = frame.homeGrip, tuck = frame.fingertipGrip
         scale = s
-        if relaxation == 0 {
-            bodyContour = Self.bodyCurves; outline = Self.bodyOutline
-            strokeOutline = Self.bodyStroke; localBodyBounds = Self.bodyBounds
-        } else if relaxation == 1 {
-            bodyContour = RelaxedMallow.bodyCurves; outline = RelaxedMallow.outline
-            strokeOutline = Self.relaxedStroke; localBodyBounds = Self.relaxedBounds
-        } else {
-            bodyContour = zip(Self.bodyCurves, RelaxedMallow.bodyCurves).map { $0.interpolated(to: $1, amount: relaxation) }
-            let points = zip(Self.bodyOutline, RelaxedMallow.outline).map { $0 + ($1 - $0) * relaxation }
-            outline = points; strokeOutline = points + [points[0]]
-            localBodyBounds = boundingRect(points, padding: 1.15)
-        }
+        outline = Self.bodyOutline; strokeOutline = Self.bodyStroke; localBodyBounds = Self.bodyBounds
         let root = CharacterTransform(origin: frame.feet - Point(x: 0, y: 7 * s), rotation: frame.rotation, scaleX: s, scaleY: s)
         let body = Self.bodyTransform(for: pose)
         self.root = root; self.body = body
-        feet = Self.feet(for: pose).map { Rect(x: $0.x, y: $0.y - 36 * relaxation, width: $0.width, height: $0.height) }
+        feet = Self.feet(for: pose)
         let reveal = clamp((frame.openness - 0.6) / 0.4, 0, 1)
         let emergence = reveal * reveal * (3 - 2 * reveal)
         func bodyPoint(_ x: Double, _ y: Double) -> Point { root.apply(body.apply(Point(x: x, y: y))) }
@@ -113,12 +99,15 @@ public struct MallowGeometry: Sendable {
                 control1: blend(bodyPoint(side * (56 + pose.arm * 6), -14 - raise), shoulder + Point(x: side * 8 * s, y: -9 * s)),
                 control2: blend(bodyPoint(side * 46, -9 - raise * 0.5), homeHand + Point(x: side * 6 * s, y: 12 * s)), end: hand),
                 palm: Rect(x: hand.x - 5 * s, y: hand.y - 3 * s, width: 10 * s, height: 8 * s))
-            guard relaxation > 0 else { return standard }
-            let tuckedHand = bodyPoint(side * 87, -21)
-            let tuckedArm = CharacterCurve(start: bodyPoint(side * 36, -8),
-                control1: bodyPoint(side * 52, -6), control2: bodyPoint(side * 69, -16), end: tuckedHand)
-            let center = standard.arm.end + (tuckedHand - standard.arm.end) * relaxation
-            return CharacterHand(arm: standard.arm.interpolated(to: tuckedArm, amount: relaxation),
+            guard tuck > 0 else { return standard }
+            // Only the lower caps of the normal palms clear Home. Arms stay
+            // behind the edge; a hover squeezes inward without revealing a face.
+            let fingertip = Point(x: frame.homeAttachment.x + side * (18 - 2 * frame.gripSqueeze) * s,
+                                  y: frame.homeAttachment.y - 1.5 * s)
+            let tuckedArm = CharacterCurve(start: shoulder, control1: shoulder,
+                control2: fingertip - Point(x: 0, y: 8 * s), end: fingertip)
+            let center = standard.arm.end + (fingertip - standard.arm.end) * tuck
+            return CharacterHand(arm: standard.arm.interpolated(to: tuckedArm, amount: tuck),
                                  palm: Rect(x: center.x - 5 * s, y: center.y - 3 * s, width: 10 * s, height: 8 * s))
         }
     }
@@ -182,4 +171,12 @@ private func corners(_ rect: Rect) -> [Point] {
 private func boundingRect(_ points: [Point], padding: Double = 0) -> Rect {
     let minX = points.map(\.x).min()! - padding, minY = points.map(\.y).min()! - padding
     return Rect(x: minX, y: minY, width: points.map(\.x).max()! + padding - minX, height: points.map(\.y).max()! + padding - minY)
+}
+
+extension CharacterCurve {
+    func interpolated(to other: CharacterCurve, amount: Double) -> CharacterCurve {
+        func blend(_ a: Point, _ b: Point) -> Point { a + (b - a) * amount }
+        return CharacterCurve(start: blend(start, other.start), control1: blend(control1, other.control1),
+                              control2: blend(control2, other.control2), end: blend(end, other.end))
+    }
 }

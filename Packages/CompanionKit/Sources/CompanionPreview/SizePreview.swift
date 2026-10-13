@@ -5,7 +5,7 @@ import CompanionRendering
 /// Reproducible size and transition review using the production snapshots and renderer.
 @MainActor enum SizePreview {
     private static let examples: [(name: String, scale: Double, form: MallowForm)] = [
-        ("Small", 0.6, .relaxed), ("Medium", 0.8, .standard), ("Large", 1, .standard),
+        ("Small", 0.8, .fingertipGrip), ("Medium", 0.8, .standard), ("Large", 1, .standard),
     ]
 
     private static func scene(scale: Double, form: MallowForm, notch: Bool, width: Double = 720,
@@ -34,14 +34,15 @@ import CompanionRendering
     private static func transitions(to directory: URL, notch: Bool) throws {
         let folder = directory.appendingPathComponent("small-\(notch ? "notched" : "unnotched")-transitions")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        var engine = CompanionEngine(scene: scene(scale: 0.6, form: .relaxed, notch: notch))
+        var engine = CompanionEngine(scene: scene(scale: 0.8, form: .fingertipGrip, notch: notch))
         let painter = ScenePreviewRenderer()
         var start = Point.zero, pointer = Point(x: 625, y: 190)
         for index in 0..<480 {
-            if index == 30 { engine.send(.activate) }
+            if index == 5 { pointer = engine.snapshot.geometry.hands[0].palm.center + Point(x: 0, y: 2) }
+            if index == 30 { engine.send(.activate); pointer = Point(x: 625, y: 190) }
             if index == 105 { engine.send(.outsidePressed) }
             if index == 165 {
-                start = engine.snapshot.hitBounds.center; pointer = start
+                start = engine.snapshot.geometry.hands[0].palm.center + Point(x: 0, y: 2); pointer = start
                 engine.send(.pointerPressed(pointer))
             }
             if (166..<226).contains(index) {
@@ -77,7 +78,7 @@ import CompanionRendering
         for (index, example) in examples.enumerated() {
             let x = Double(index * 352 + 24)
             label(example.name, x: x, y: 65, size: 23)
-            label(["Relax", "Default · previous Small", "Previous Medium"][index], x: x, y: 95)
+            label(["Fingertip grip", "Default · previous Small", "Previous Medium"][index], x: x, y: 95)
             for (row, notch) in [true, false].enumerated() {
                 let frame = CompanionEngine(scene: scene(scale: example.scale, form: example.form, notch: notch,
                                                          width: 320, height: 180)).snapshot

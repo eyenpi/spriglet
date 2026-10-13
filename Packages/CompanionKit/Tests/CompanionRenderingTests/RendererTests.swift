@@ -71,33 +71,49 @@ import Testing
         #expect(changedAlpha == 0)
         #expect(base.hitBounds == doodle.hitBounds)
     }
-    @Test("Relaxed drawing and picking agree through emergence and grabbing", arguments: [true, false])
-    func relaxedSilhouette(notch: Bool) throws {
+    @Test("Fingertip drawing and picking agree through emergence and grabbing", arguments: [true, false])
+    func fingertipSilhouette(notch: Bool) throws {
         let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 720, height: 420),
                                   home: Rect(x: 260, y: notch ? 0 : 13, width: 200, height: notch ? 54 : 20),
-                                  floor: 365, scale: 0.6, hasHardwareNotch: notch, form: .relaxed)
+                                  floor: 365, scale: 0.8, hasHardwareNotch: notch, form: .fingertipGrip)
         var engine = CompanionEngine(scene: scene)
-        try assertPaintedSilhouette(engine.snapshot, minimumHits: 120)
+        try assertPaintedSilhouette(engine.snapshot, minimumHits: 2)
         let resting = try characterImage(engine.snapshot).representation(using: .png, properties: [:])
-        let point = engine.snapshot.hitBounds.center
+        let point = Point(x: engine.snapshot.geometry.hands[0].palm.midX, y: scene.home.maxY + 1)
         engine.send(.pointerPressed(point)); engine.send(.pointerDragged(point + Point(x: 10, y: 0)))
         #expect(try characterImage(engine.snapshot).representation(using: .png, properties: [:]) == resting)
         for index in 0..<120 {
             engine.advance(by: 1 / 120.0)
             if [5, 15, 30, 60, 119].contains(index) {
-                try assertPaintedSilhouette(engine.snapshot, minimumHits: 120)
+                try assertPaintedSilhouette(engine.snapshot, minimumHits: 2)
             }
         }
         engine.send(.cancelInteraction); engine.send(.activate)
         for index in 0..<120 {
             engine.advance(by: 1 / 120.0)
             if [5, 15, 30, 60, 119].contains(index) {
-                try assertPaintedSilhouette(engine.snapshot, minimumHits: 120)
+                try assertPaintedSilhouette(engine.snapshot, minimumHits: 2)
             }
         }
         engine.send(.outsidePressed)
         for _ in 0..<180 { engine.advance(by: 1 / 120.0) }
-        try assertPaintedSilhouette(engine.snapshot, minimumHits: 120)
+        try assertPaintedSilhouette(engine.snapshot, minimumHits: 2)
+    }
+
+    @Test("Fully emerged Small renders exactly the same pixels as Medium", arguments: [true, false])
+    func emergedSmallMatchesMedium(notch: Bool) throws {
+        func frame(form: MallowForm) -> CompanionSnapshot {
+            let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 720, height: 420),
+                                      home: Rect(x: 260, y: 0, width: 200, height: 54),
+                                      floor: 365, scale: 0.8, hasHardwareNotch: notch, form: form)
+            var pose = CharacterPose(); pose.arm = 0.7; pose.look = 2
+            return CompanionSnapshot(scene: scene, presence: .engaged, phase: .hanging, pose: pose,
+                                     feet: scene.homeFeet, windowAnchor: scene.homeFeet, rotation: 0,
+                                     openness: 1, homeGrip: 1, time: 1, gesture: .hello, canCatch: false)
+        }
+        let small = try characterImage(frame(form: .fingertipGrip)).representation(using: .png, properties: [:])
+        let medium = try characterImage(frame(form: .standard)).representation(using: .png, properties: [:])
+        #expect(small == medium)
     }
 
     private func assertPaintedSilhouette(_ frame: CompanionSnapshot, minimumHits: Int) throws {

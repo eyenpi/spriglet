@@ -19,10 +19,12 @@ public struct CompanionSnapshot: Sendable {
     /// Uses the held target, exactly as release does, even while the body follows.
     public let canCatch: Bool
     public let idleMoment: IdleMomentFrame?
-    /// Reuse continuous reveal and grip state so grabs and catches never switch
-    /// artwork at a phase boundary. Detached and invited poses unfold normally.
-    public var relaxation: Double {
-        guard scene.form == .relaxed else { return 0 }
+    /// Continuous, deliberate hover response. The body stays hidden while the
+    /// fingertips move slightly together; it does not invite the character.
+    public let gripSqueeze: Double
+    /// Hands transition independently while the original body emerges intact.
+    public var fingertipGrip: Double {
+        guard scene.form == .fingertipGrip else { return 0 }
         let reveal = clamp((openness - 0.6) / 0.4, 0, 1)
         return (1 - reveal * reveal * (3 - 2 * reveal)) * clamp(homeGrip, 0, 1)
     }
@@ -58,11 +60,12 @@ public struct CompanionSnapshot: Sendable {
     public init(scene: SceneGeometry, presence: Presence, phase: BodyPhase, pose: CharacterPose,
                 feet: Point, windowAnchor: Point, rotation: Double, openness: Double,
                 homeGrip: Double, homeAttachment: Point? = nil, dragGeometry: DragGeometry? = nil,
-                time: Double, gesture: CharacterGesture?, canCatch: Bool, idleMoment: IdleMomentFrame? = nil) {
+                time: Double, gesture: CharacterGesture?, canCatch: Bool, idleMoment: IdleMomentFrame? = nil, gripSqueeze: Double = 0) {
         self.scene = scene; self.presence = presence; self.phase = phase; self.pose = pose
         self.feet = feet; self.windowAnchor = windowAnchor; self.rotation = rotation
         self.openness = openness; self.homeGrip = homeGrip
         self.homeAttachment = homeAttachment ?? Point(x: scene.home.midX, y: scene.home.maxY)
+        self.gripSqueeze = gripSqueeze
         self.idleMoment = idleMoment
         self.dragGeometry = dragGeometry; self.time = time; self.gesture = gesture; self.canCatch = canCatch
     }

@@ -46,7 +46,10 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                     "Companion cannot join Spaces/fullscreen or is in window cycling")
     }
     static func beginDrag(host: CompanionWindowHost, window: NSWindow, clock: ScreenFrameClock) {
-        host.onInput?(.pointerPressed(view(window).snapshot.hitBounds.center))
+        let frame = view(window).snapshot
+        let start = frame.contains(frame.hitBounds.center) ? frame.hitBounds.center
+            : Point(x: frame.geometry.hands[0].palm.midX, y: frame.scene.home.maxY + 1)
+        host.onInput?(.pointerPressed(start))
         host.onInput?(.pointerDragged(Point(x: 500, y: 250)))
         clock.onTick?(0.05)
     }
@@ -704,7 +707,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         try choose(.bringHome)
         window = try visiblePanel(); try assertHome(window)
         try require(runtime.controlState.isPaused && animation.state == .off, "Bring Home cleared Pause")
-        try require(view(window).snapshot.scene.scale == 0.6 && view(window).snapshot.scene.form == .relaxed && view(window).snapshot.scene.home.minX == 20,
+        try require(view(window).snapshot.scene.scale == CharacterSize.medium.scale && view(window).snapshot.scene.form == .fingertipGrip && view(window).snapshot.scene.home.minX == 20,
                     "Recovery discarded saved size/home")
         let homeTime = view(window).snapshot.time
         pump(0.12)

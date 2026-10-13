@@ -15,6 +15,7 @@ public struct CompanionEngine: Sendable {
     private var presentation = PoseDynamics()
     private var reveal = Spring(value: 0.6, frequency: 12, damping: 0.9)
     private var homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
+    private var gripSqueeze = Spring(frequency: 14, damping: 1)
     private var homeGrip = Spring(value: 1, frequency: 14, damping: 1)
     private var attachmentX = Spring(frequency: 12, damping: 1)
     private var attachmentY = Spring(frequency: 12, damping: 1)
@@ -32,6 +33,7 @@ public struct CompanionEngine: Sendable {
     /// Hosts may supply a fresh session seed; previews and tests default to a
     /// repeatable sequence. The seed is the only external source of randomness.
     public init(scene: SceneGeometry, idleSeed: UInt64 = 0x4D414C4C4F57, boredomTiming: BoredomTiming = BoredomTiming()) {
+        homeRetraction = Spring(value: 0.4 * scene.homeRetractionDistance, frequency: 12, damping: 0.9)
         body = BodyPhysics(scene: scene); idle = IdleAnimation(seed: idleSeed)
         boredom = BoredomState(seed: idleSeed, timing: boredomTiming)
         attachmentX = Spring(value: scene.home.midX, frequency: 12, damping: 1)
@@ -43,7 +45,8 @@ public struct CompanionEngine: Sendable {
         animator = MotionAnimator(); presentation = PoseDynamics()
         idle.reset(); boredom.interrupt(at: time, cadence: idleCadence); idleOffset = Spring(frequency: 18, damping: 1)
         reveal = Spring(value: 0.6, frequency: 12, damping: 0.9); gaze = Spring(frequency: 10, damping: 1)
-        homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
+        homeRetraction = Spring(value: 0.4 * scene.homeRetractionDistance, frequency: 12, damping: 0.9)
+        gripSqueeze = Spring(frequency: 14, damping: 1)
         homeGrip = Spring(value: 1, frequency: 14, damping: 1)
         attachmentX = Spring(value: scene.home.midX, frequency: 12, damping: 1)
         attachmentY = Spring(value: scene.home.maxY, frequency: 12, damping: 1)
@@ -246,7 +249,7 @@ public struct CompanionEngine: Sendable {
         updateHomePresentation(dt)
         let nearby = pointer.distance(to: snapshot.feet) < 260 * body.scene.scale
         let quiet = body.phase == .hanging && interaction.presence == .peek && !hasPointerCapture && !nearby
-        boredom.update(at: time, quiet: quiet, enabled: idleMomentsEnabled && motionPolicy == .full && movementAmount > 0,
+        boredom.update(at: time, quiet: quiet, enabled: idleMomentsEnabled && body.scene.form != .fingertipGrip && motionPolicy == .full && movementAmount > 0,
                        cadence: idleCadence)
         idleOffset.step(dt, target: (boredom.frame?.offset ?? 0) * movementAmount)
         idle.step(dt, quiet: quiet && boredom.frame == nil, policy: motionPolicy)
@@ -266,8 +269,14 @@ public struct CompanionEngine: Sendable {
         presentation.step(toward: targetPose, dt: dt)
     }
     private mutating func updateHomePresentation(_ dt: Double) {
-        let openTarget = body.phase != .hanging || interaction.presence != .peek ? 1.0 : interaction.hoverAge > 0.35 ? 0.66 : 0.6
-        let retractionTarget = body.phase == .hanging ? (1 - openTarget) * 75 : 0
+        let tucked = body.scene.form == .fingertipGrip
+        let resting = body.phase == .hanging && interaction.presence == .peek
+        let hovering = interaction.hoverAge > 0.35
+        let openTarget = resting ? (!tucked && hovering ? 0.66 : 0.6) : 1.0
+        let retractionTarget = body.phase == .hanging ? (1 - openTarget) * body.scene.homeRetractionDistance : 0
+        let squeezeTarget = tucked && resting && hovering ? min(movementAmount, 1) : 0
+        if motionPolicy == .reduced { gripSqueeze = Spring(frequency: 14, damping: 1) }
+        else { gripSqueeze.step(dt, target: squeezeTarget) }
         let gripTarget = body.phase == .hanging || body.phase == .catching ? 1.0 : 0
         if motionPolicy == .reduced {
             reveal.value = openTarget; reveal.speed = 0
@@ -343,6 +352,6 @@ public struct CompanionEngine: Sendable {
                                  openness: open, homeGrip: clamp(homeGrip.value, 0, 1),
                                  homeAttachment: Point(x: attachmentX.value + offset.x, y: attachmentY.value), dragGeometry: dragGeometry,
                                  time: time, gesture: interaction.gesture,
-                                 canCatch: body.canCatch, idleMoment: boredom.frame)
+                                 canCatch: body.canCatch, idleMoment: boredom.frame, gripSqueeze: clamp(gripSqueeze.value, 0, 1))
     }
 }

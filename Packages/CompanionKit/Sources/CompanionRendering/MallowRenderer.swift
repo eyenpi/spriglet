@@ -52,7 +52,7 @@ import CompanionCore
     }
 }
 
-@MainActor private func drawMallow(_ pose: CharacterPose, artwork: MallowArtwork, center: NSPoint, scale: CGFloat = 1, drawShadow: Bool = true, rotation: Double = 0, drawArms: Bool = true, clipFace: Bool = false, geometry: MallowGeometry? = nil, relaxation: Double = 0) {
+@MainActor private func drawMallow(_ pose: CharacterPose, artwork: MallowArtwork, center: NSPoint, scale: CGFloat = 1, drawShadow: Bool = true, rotation: Double = 0, drawArms: Bool = true, clipFace: Bool = false, geometry: MallowGeometry? = nil) {
     NSGraphicsContext.saveGraphicsState()
     concatenate(CharacterTransform(origin: Point(x: center.x, y: center.y), rotation: rotation, scaleX: scale, scaleY: scale))
     if drawShadow {
@@ -65,9 +65,7 @@ import CompanionCore
     }
     NSGraphicsContext.saveGraphicsState()
     concatenate(MallowGeometry.bodyTransform(for: pose))
-    let body: NSBezierPath
-    if let geometry, relaxation > 0 { body = MallowArtwork.path(geometry.bodyContour) }
-    else { body = artwork.body }
+    let body = artwork.body
     MallowPalette.bodyGradient.draw(in: body, angle: 90)
     MallowPalette.ink.setStroke(); body.stroke()
     // Separate arms can gesture while the body continues to breathe.
@@ -82,13 +80,12 @@ import CompanionCore
         stroke(arm, 2)
     }
     let faceX = pose.look + pose.facing * 18
-    func blend(_ standard: Double, _ relaxed: Double) -> Double { standard + (relaxed - standard) * relaxation }
-    let eyeSpacing = blend(14, 12) - abs(pose.facing) * 5
-    let eyeY = blend(-47, -15), eyeWidth = blend(6.8, 4.4), eyeHeight = blend(8.2, 5.4)
-    let cheekY = blend(-37, -10), smileY = blend(-37, -9)
+    let eyeSpacing = 14 - abs(pose.facing) * 5
+    let eyeY = -47.0, eyeWidth = 6.8, eyeHeight = 8.2
+    let cheekY = -37.0, smileY = -37.0
     NSGraphicsContext.saveGraphicsState()
     if clipFace { body.addClip() }
-    let faceTransform = NSAffineTransform(); faceTransform.translateX(by: 0, yBy: pose.lookY * (1 - relaxation)); faceTransform.concat()
+    let faceTransform = NSAffineTransform(); faceTransform.translateX(by: 0, yBy: pose.lookY); faceTransform.concat()
     for side in [-1.0, 1.0] {
         let x = side * eyeSpacing + faceX
         let eyeAlpha = side * pose.facing < 0 ? 1 - min(1, abs(pose.facing) / 0.82) : 1
@@ -100,12 +97,12 @@ import CompanionCore
         } else {
             oval(NSRect(x: x - eyeWidth / 2, y: eyeY - eyeHeight / 2 * pose.eyes, width: eyeWidth, height: eyeHeight * pose.eyes), fill: MallowPalette.ink.withAlphaComponent(eyeAlpha))
         }
-        let cheekWidth = blend(10, 7)
-        oval(NSRect(x: side * blend(25, 22) + faceX - cheekWidth / 2, y: cheekY, width: cheekWidth, height: blend(4, 3)), fill: MallowPalette.blush)
+        let cheekWidth = 10.0
+        oval(NSRect(x: side * 25 + faceX - cheekWidth / 2, y: cheekY, width: cheekWidth, height: 4), fill: MallowPalette.blush)
     }
     let smile = NSBezierPath()
     smile.move(to: NSPoint(x: faceX - 4, y: smileY))
-    smile.curve(to: NSPoint(x: faceX + 4, y: smileY), controlPoint1: NSPoint(x: faceX - 2, y: smileY + blend(5, 3.5)), controlPoint2: NSPoint(x: faceX + 2, y: smileY + blend(5, 3.5)))
+    smile.curve(to: NSPoint(x: faceX + 4, y: smileY), controlPoint1: NSPoint(x: faceX - 2, y: smileY + 5), controlPoint2: NSPoint(x: faceX + 2, y: smileY + 5))
     stroke(smile, 2)
     NSGraphicsContext.restoreGraphicsState()
     NSGraphicsContext.restoreGraphicsState()
@@ -130,7 +127,7 @@ import CompanionCore
         drawMallow(frame.pose, artwork: artwork,
                    center: NSPoint(x: frame.feet.x, y: frame.feet.y - 7 * scale), scale: scale,
                    drawShadow: frame.phase == .grounded, rotation: frame.rotation,
-                   drawArms: false, clipFace: true, geometry: geometry, relaxation: frame.relaxation)
+                   drawArms: false, clipFace: true, geometry: geometry)
         drawHands(geometry, scale: scale)
         drawIdleDoodle(frame, geometry: geometry)
         NSGraphicsContext.restoreGraphicsState()
@@ -141,13 +138,12 @@ import CompanionCore
         guard let moment = frame.idleMoment, moment.moment == .doodle else { return }
         NSGraphicsContext.saveGraphicsState()
         concatenate(geometry.root); concatenate(geometry.body)
-        let relaxation = frame.relaxation
-        (relaxation > 0 ? MallowArtwork.path(geometry.bodyContour) : artwork.body).addClip()
+        artwork.body.addClip()
         let path = NSBezierPath()
         let count = Int(moment.progress * 24)
         for index in 0...count {
             let t = Double(index) / 24
-            let point = NSPoint(x: 25 + t * 14, y: -34 + 22 * relaxation + frame.pose.lookY * (1 - relaxation) + sin(t * .pi * 4) * 2)
+            let point = NSPoint(x: 25 + t * 14, y: -34 + frame.pose.lookY + sin(t * .pi * 4) * 2)
             if index == 0 { path.move(to: point) } else { path.line(to: point) }
         }
         stroke(path, 1.2, MallowPalette.ink.withAlphaComponent(0.4 * moment.weight))
