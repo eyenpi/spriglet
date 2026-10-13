@@ -135,6 +135,8 @@ import CompanionCore
         guard let window = controller.window, let content = window.contentView else {
             throw ValidationFailure(description: "Settings has no native window")
         }
+        try LifecycleValidation.require(window.level == .normal && !(window is NSPanel),
+                                       "Settings must remain an ordinary, nonfloating window")
         func presentInFront() throws {
             func frontWindowNumber() -> Int? {
                 let windows = CGWindowListCopyWindowInfo(.optionOnScreenOnly, kCGNullWindowID) as? [[String: Any]] ?? []

@@ -73,9 +73,11 @@ Open the resulting `.build/lifecycle-validation/FullscreenFixture.app` in Finder
 ./scripts/test-desktop.sh --prepare-daily-use
 ```
 
-Open the printed `Daily-UseFixture.app`. It runs the production app delegate, runtime, menus, Settings and character with disposable preferences and fake login registration, skips the introduction, and quits after five minutes. It can coexist with the ordinary app without editing its preferences. Its app menu is named “Mallow Lifecycle Fixture”; its leaf uses the ordinary “Spriglet controls” accessibility label. Quit the fixture when finished.
+Open the printed `Daily-UseFixture.app`. It runs the production app delegate, runtime, menus, Settings and character with disposable preferences and fake login registration, skips the introduction, and quits after five minutes. It can coexist with the ordinary app without editing its preferences. Each prepared daily-use fixture has a fresh bundle identifier so macOS cannot select an older copy from another checkout. Its app menu is named “Mallow Lifecycle Fixture”; its leaf uses the ordinary “Spriglet controls” accessibility label. Quit the fixture when finished.
 
 Use Control-F8 (or Fn-Control-F8), arrows and Return to choose a menu action. Open Settings with the menu or Command-comma; Tab and Shift-Tab traverse all enabled controls, popup arrows choose values, and Space operates buttons. Repeat with macOS keyboard navigation off and on. Verify Command-Shift-H/P/M and Command-W with a real focused Settings window. The unbundled regression runner can be denied activation by WindowServer: it reports this explicitly and exercises the native close target directly instead of claiming responder-chain Command-W acceptance.
+
+For opt-in desktop-wide synthetic regression coverage, see [Settings focus validation](../SettingsFocusValidation/README.md). It requires a bundled fixture and an empty disposable TextEdit probe, checks global keyboard routing over repeated close/switch/reopen cycles, and rejects outside-input runs. Do not run it alongside another desktop test.
 
 First-launch nonactivation and passive recovery focus are tested separately from explicit introduction-button navigation, which may acquire keyboard focus. Character, Help, visibility, pause and recovery actions preserve the existing focus. Settings explicitly requests activation.
 
