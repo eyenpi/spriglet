@@ -12,17 +12,20 @@ import Foundation
     func load() -> CompanionPreferences {
         if defaults.object(forKey: Self.storageKey) == nil,
            let legacy = defaults.dictionary(forKey: Self.legacyStorageKey) {
-            let migrated = decode(legacy, legacySizes: true)
+            var migrated = decode(legacy)
+            // The old Medium was also the default; v1 cannot distinguish it
+            // from an explicit choice. Start the new lineup at its new default.
+            migrated.characterSize = .medium
             save(migrated)
             return migrated
         }
         return decode(defaults.dictionary(forKey: Self.storageKey) ?? [:])
     }
 
-    private func decode(_ values: [String: Any], legacySizes: Bool = false) -> CompanionPreferences {
+    private func decode(_ values: [String: Any]) -> CompanionPreferences {
         var preferences = CompanionPreferences()
         if let value = values["characterSize"] as? String, let size = CharacterSize(rawValue: value) {
-            preferences.characterSize = legacySizes ? (size == .small ? .medium : .large) : size
+            preferences.characterSize = size
         }
         if let value = values["movementIntensity"] as? String, let intensity = MovementIntensity(rawValue: value) {
             preferences.movementIntensity = intensity

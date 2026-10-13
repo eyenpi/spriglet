@@ -15,20 +15,23 @@ import CompanionCore
         try LifecycleValidation.require(store.load() == CompanionPreferences(), "First launch has unexpected preferences")
         try LifecycleValidation.require(store.load().characterSize == .medium && store.load().characterSize.scale == 0.8,
                                        "New installs must use the previous Small as default Medium")
-        for (legacy, expected) in [("small", CharacterSize.medium), ("medium", .large), ("large", .large), ("future", .medium)] {
+        for legacy in ["small", "medium", "large", "future"] {
             defaults.removeObject(forKey: PreferenceStore.storageKey)
             defaults.set(["characterSize": legacy, "movementIntensity": "gentle", "homeLocation": "left",
                           "homeDisplayID": savedDisplayID], forKey: "mallow.preferences.v1")
             let restored = store.load()
-            try LifecycleValidation.require(restored.characterSize == expected && restored.movementIntensity == .gentle
+            try LifecycleValidation.require(restored.characterSize == .medium && restored.characterSize.scale == 0.8
+                                            && restored.movementIntensity == .gentle
                                             && restored.homeLocation == .left && restored.homeDisplayID == savedDisplayID,
-                                            "Size migration lost a size or unrelated saved choice")
+                                            "Upgrade did not start at the new default or lost unrelated saved choices")
             try LifecycleValidation.require(defaults.dictionary(forKey: "mallow.preferences.v1")?["characterSize"] as? String == legacy,
                                             "Size migration modified rollback preferences")
-            var chosen = restored; chosen.characterSize = .small
-            store.save(chosen)
-            try LifecycleValidation.require(PreferenceStore(defaults: defaults).load() == chosen,
-                                            "Repeated migration overwrote the new Small choice")
+            for size in CharacterSize.allCases {
+                var chosen = restored; chosen.characterSize = size
+                store.save(chosen)
+                try LifecycleValidation.require(PreferenceStore(defaults: defaults).load() == chosen,
+                                                "Repeated migration overwrote an explicit new size choice")
+            }
         }
         defaults.removeObject(forKey: PreferenceStore.storageKey)
         defaults.removeObject(forKey: "mallow.preferences.v1")
