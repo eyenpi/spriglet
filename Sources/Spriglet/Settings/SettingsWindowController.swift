@@ -89,13 +89,13 @@ import AppKit
     required init?(coder: NSCoder) { fatalError("Use init(state:loginState:)") }
 
     func present() {
-        // Let the menu finish tracking before requesting focus. Activation is
-        // asynchronous, so also order this window ahead of the active app.
-        // Only the explicit Settings action takes this foreground path.
+        // Request activation while handling the explicit Settings action, before
+        // menu dismissal returns control to the previously active application.
+        NSApp.activate()
+        // Let the menu dismiss before ordering the ordinary Settings window.
         DispatchQueue.main.async { [weak self] in
             guard let self, let window = self.window else { return }
             self.showWindow(nil)
-            NSApp.activate()
             window.makeKeyAndOrderFront(nil)
             window.orderFrontRegardless()
         }
