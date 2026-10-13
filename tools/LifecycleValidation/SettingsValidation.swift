@@ -135,7 +135,27 @@ import CompanionCore
         guard let window = controller.window, let content = window.contentView else {
             throw ValidationFailure(description: "Settings has no native window")
         }
-        controller.showWindow(nil); LifecycleValidation.pump(0.1); content.layoutSubtreeIfNeeded()
+        func presentInFront() throws {
+            func frontWindowNumber() -> Int? {
+                let windows = CGWindowListCopyWindowInfo(.optionOnScreenOnly, kCGNullWindowID) as? [[String: Any]] ?? []
+                return windows.first {
+                    ($0[kCGWindowLayer as String] as? Int) == 0 && ($0[kCGWindowAlpha as String] as? Double ?? 0) > 0
+                }?[kCGWindowNumber as String] as? Int
+            }
+            controller.present()
+            let deadline = Date().addingTimeInterval(1)
+            repeat { LifecycleValidation.pump(0.02) }
+            while frontWindowNumber() != window.windowNumber && Date() < deadline
+            try LifecycleValidation.require(frontWindowNumber() == window.windowNumber,
+                                           "Settings opened behind another app's ordinary window")
+            if NSApp.isActive {
+                try LifecycleValidation.require(window.isKeyWindow && NSApp.keyWindow === window,
+                                               "Active Settings did not acquire keyboard focus")
+            } else {
+                print("Settings foreground ordering passed; activation unavailable in the unbundled fixture. Device keyboard focus remains separate.")
+            }
+        }
+        try presentInFront(); content.layoutSubtreeIfNeeded()
         let popups = controls(in: content)
         try LifecycleValidation.require(popups.count == 4, "Settings lacks required controls")
         for control in popups {
@@ -166,7 +186,7 @@ import CompanionCore
         display.selectItem(at: 0)
         NSApp.sendAction(display.action!, to: display.target, from: display)
         try LifecycleValidation.require(emitted?.homeDisplayID == nil, "Automatic display selection did not clear the saved ID")
-        controller.close(); controller.showWindow(nil)
+        controller.close(); try presentInFront()
         try LifecycleValidation.require(controller.window === window && window.isVisible, "Reopening settings duplicated or lost the window")
         print("Native Settings passed: accessible controls, live edits, disconnected selection, close/reopen and control layout.")
     }
