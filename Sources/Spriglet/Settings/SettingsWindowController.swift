@@ -89,8 +89,16 @@ import AppKit
     required init?(coder: NSCoder) { fatalError("Use init(state:loginState:)") }
 
     func present() {
-        // Only an explicit Settings action activates the accessory app.
-        NSApp.activate(); showWindow(nil); window?.makeKeyAndOrderFront(nil)
+        // Let the menu finish tracking before requesting focus. Activation is
+        // asynchronous, so also order this window ahead of the active app.
+        // Only the explicit Settings action takes this foreground path.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let window = self.window else { return }
+            self.showWindow(nil)
+            NSApp.activate()
+            window.makeKeyAndOrderFront(nil)
+            window.orderFrontRegardless()
+        }
     }
     func update(_ state: SettingsState) {
         preferences = state.preferences
