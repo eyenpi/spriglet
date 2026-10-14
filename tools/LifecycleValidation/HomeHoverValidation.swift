@@ -59,8 +59,8 @@ import CompanionCore
             try LifecycleValidation.require(!panel.ignoresMouseEvents && picks(face), "Visible face was not immediately pickable")
             let above = Point(x: area.midX, y: area.minY - 1)
             try LifecycleValidation.require(!picks(above) && !picks(outside), "Painted target covered housing or unrelated empty space")
-            func event(_ type: NSEvent.EventType) throws -> NSEvent {
-                let local = NSPoint(x: face.x + view.drawingOrigin.x, y: face.y + view.drawingOrigin.y)
+            func event(_ type: NSEvent.EventType, at point: Point) throws -> NSEvent {
+                let local = NSPoint(x: point.x + view.drawingOrigin.x, y: point.y + view.drawingOrigin.y)
                 guard let event = NSEvent.mouseEvent(with: type, location: view.convert(local, to: nil),
                     modifierFlags: [], timestamp: 0, windowNumber: panel.windowNumber, context: nil,
                     eventNumber: 1, clickCount: 1, pressure: type == .leftMouseDown ? 1 : 0) else {
@@ -68,8 +68,8 @@ import CompanionCore
                 }
                 return event
             }
-            view.mouseDown(with: try event(.leftMouseDown))
-            view.mouseUp(with: try event(.leftMouseUp))
+            view.mouseDown(with: try event(.leftMouseDown, at: face))
+            view.mouseUp(with: try event(.leftMouseUp, at: face))
             try LifecycleValidation.require(view.snapshot.presence == .engaged && view.snapshot.homeHoverBounds == nil,
                                             "Native click on the revealed face did not invite Mallow")
             runtime.bringHome()
@@ -86,6 +86,18 @@ import CompanionCore
             for _ in 0..<24 { clock.onTick?(0.05) }
             try LifecycleValidation.require(view.snapshot.homeTuck == 1 && view.snapshot.hitBounds.height < 4 && panel.ignoresMouseEvents,
                                             "Leaving did not restore the tiny resting grip")
+            let fingertip = Point(x: view.snapshot.geometry.hands[0].palm.midX,
+                                  y: view.snapshot.scene.home.maxY + 1)
+            pointer = context.globalPoint(scene: fingertip)
+            clock.onTick?(1 / 120.0)
+            try LifecycleValidation.require(picks(fingertip) && !panel.ignoresMouseEvents,
+                                            "Resting fingertip was not natively pickable")
+            view.mouseDown(with: try event(.leftMouseDown, at: fingertip))
+            clock.onTick?(2 / 120.0)
+            try LifecycleValidation.require(picks(fingertip), "Press moved the fingertip away before release")
+            view.mouseUp(with: try event(.leftMouseUp, at: fingertip))
+            try LifecycleValidation.require(view.snapshot.presence == .engaged,
+                                            "Native fingertip click was lost between animation frames")
             preferences.characterSize = .medium; runtime.updatePreferences(preferences)
             view = LifecycleValidation.view(try LifecycleValidation.visiblePanel())
             try LifecycleValidation.require(view.snapshot.homeHoverBounds == nil, "Medium inherited the broad target")

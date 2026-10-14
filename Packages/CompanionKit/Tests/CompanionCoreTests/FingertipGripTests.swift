@@ -60,6 +60,38 @@ import Testing
         #expect(engine.snapshot.fingertipGrip == 1 && !engine.hasPointerCapture)
     }
 
+    @Test("A fingertip click survives the reveal during a normal mouse-down interval", arguments: [1 / 120.0, 2 / 120.0, 3 / 120.0, 4 / 120.0, 0.05, 0.1, 0.2, 0.5])
+    func fingertipClick(duration: Double) {
+        for notch in [true, false] {
+            for policy in [MotionPolicy.full, .reduced] {
+                for side in [0, 1] {
+                    for x in -4...4 {
+                        var engine = CompanionEngine(scene: scene(notch: notch))
+                        engine.setMotionPolicy(policy)
+                        let point = Point(x: engine.snapshot.geometry.hands[side].palm.midX + Double(x),
+                                          y: engine.snapshot.scene.home.maxY + 1)
+                        guard engine.snapshot.contains(point) else { continue }
+                        engine.send(.pointerPressed(point))
+                        advance(&engine, seconds: duration)
+                        engine.send(.pointerReleased(point))
+                        #expect(engine.snapshot.presence == .engaged, "duration=\(duration), side=\(side), x=\(x), policy=\(policy)")
+                        #expect(!engine.hasPointerCapture)
+                    }
+                }
+            }
+        }
+    }
+
+    @Test("Releasing a fingertip press outside the character cancels the click")
+    func fingertipReleaseOutside() {
+        var engine = CompanionEngine(scene: scene())
+        let point = fingertip(engine.snapshot)
+        engine.send(.pointerPressed(point))
+        advance(&engine, seconds: 0.1)
+        engine.send(.pointerReleased(point + Point(x: 100, y: 100)))
+        #expect(engine.snapshot.presence == .peek && !engine.hasPointerCapture)
+    }
+
     @Test("Reduce Motion uses intact peek and invited artwork with safe recovery")
     func reducedMotion() {
         var engine = CompanionEngine(scene: scene(notch: false))

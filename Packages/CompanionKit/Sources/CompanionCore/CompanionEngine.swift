@@ -284,7 +284,8 @@ public struct CompanionEngine: Sendable {
         let openTarget = resting ? (!tucked && hovering ? 0.66 : 0.6) : 1.0
         let retractionTarget = body.phase == .hanging ? (1 - openTarget) * 75 : 0
         let tuckTarget = tucked && resting && !hovering && !hasPointerCapture ? 1.0 : 0
-        if motionPolicy == .reduced { homeTuck.value = tuckTarget; homeTuck.speed = 0 }
+        if hasPointerCapture && body.phase == .hanging { homeTuck.speed = 0 }
+        else if motionPolicy == .reduced { homeTuck.value = tuckTarget; homeTuck.speed = 0 }
         else {
             homeTuck = Spring(value: homeTuck.value, speed: homeTuck.speed,
                               frequency: tuckTarget == 1 ? 18 : 28, damping: 1)
