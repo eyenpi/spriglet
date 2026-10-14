@@ -27,8 +27,8 @@ import CompanionCore
             var panel = try LifecycleValidation.visiblePanel()
             var view = LifecycleValidation.view(panel)
             guard let area = view.snapshot.homeHoverBounds else { throw ValidationFailure(description: "Small has no hover area") }
-            let target = notch ? Point(x: area.midX, y: view.snapshot.scene.home.maxY - 4)
-                : Point(x: area.maxX - 3, y: area.maxY - 3)
+            let target = notch ? Point(x: area.midX, y: view.snapshot.scene.home.maxY - 16)
+                : Point(x: area.midX - 20, y: area.maxY - 3)
             try LifecycleValidation.require(view.snapshot.containsHoverTarget(target) && !view.snapshot.contains(target),
                                             "Lower-notch or notchless hover target did not stay click-through")
             pointer = context.globalPoint(scene: target)
@@ -42,8 +42,13 @@ import CompanionCore
             let outside = Point(x: area.maxX + 80, y: area.midY)
             pointer = context.globalPoint(scene: outside); clock.onTick?(0.05)
             try LifecycleValidation.require(view.snapshot.homeTuck == 1, "Crossing toward another display revealed Mallow")
-            pointer = context.globalPoint(scene: target)
-            for _ in 0..<14 { clock.onTick?(0.05) }
+            for sample in 0..<4 {
+                pointer = context.globalPoint(scene: target + Point(x: Double(sample) * 8, y: 0))
+                clock.onTick?(0.05)
+            }
+            try LifecycleValidation.require(view.snapshot.homeTuck < 1,
+                                            "An ordinary moving approach kept resetting native hover intent")
+            for _ in 0..<10 { clock.onTick?(0.05) }
             try LifecycleValidation.require(view.snapshot.homeTuck == 0 && view.snapshot.hitBounds.height > 24,
                                             "Peek did not reveal the normal face")
             let corner = Point(x: view.snapshot.hitBounds.minX + 1, y: view.snapshot.hitBounds.maxY - 1)
@@ -75,7 +80,7 @@ import CompanionCore
             try LifecycleValidation.require(panel.ignoresMouseEvents && !picks(face), "Pause retained pointer input")
             runtime.setPaused(false)
             pointer = context.globalPoint(scene: outside)
-            clock.onTick?(0.1)
+            clock.onTick?(0.25)
             try LifecycleValidation.require(view.snapshot.homeTuck == 0 && panel.ignoresMouseEvents,
                                             "Brief pointer exit reversed the peek or retained input capture")
             for _ in 0..<24 { clock.onTick?(0.05) }

@@ -1,8 +1,8 @@
 struct HomePeekState: Sendable {
-    private static let intentRadius = 6.0
+    private static let intentRadius = 24.0
     private static let intentDuration = 0.08
     private static let minimumPeekDuration = 0.45
-    private static let exitGraceDuration = 0.18
+    private static let exitGraceDuration = 0.3
     private enum Phase: Sendable {
         case tucked
         case tracking(anchor: Point, age: Double)
@@ -24,7 +24,7 @@ struct HomePeekState: Sendable {
             if isOver { phase = .tracking(anchor: pointer, age: dt) }
         case .tracking(let anchor, let age):
             guard isOver else { phase = .tucked; return }
-            // A passing pointer never settles inside this small neighborhood.
+            // Allow normal approaches and corrections; reject fast traversal.
             if pointer.distance(to: anchor) > Self.intentRadius {
                 phase = .tracking(anchor: pointer, age: dt)
             } else if age + dt >= Self.intentDuration {

@@ -83,7 +83,10 @@ import CompanionRendering
             }
             if index == 15 || index == 34 { pointer = away }
             if index == 30 || index == 70 {
-                pointer = notch ? Point(x: area.midX, y: engine.snapshot.scene.home.maxY - 4) : area.center
+                pointer = notch ? Point(x: area.midX, y: engine.snapshot.scene.home.maxY - 16) : area.center
+            }
+            if (71..<77).contains(index) {
+                pointer.x += 200 / 30.0
             }
             if index == 100 {
                 pointer = engine.snapshot.hitBounds.center
