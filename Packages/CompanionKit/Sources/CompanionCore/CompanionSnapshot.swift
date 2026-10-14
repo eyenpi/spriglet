@@ -28,6 +28,31 @@ public struct CompanionSnapshot: Sendable {
         let reveal = clamp((openness - 0.6) / 0.4, 0, 1)
         return (1 - reveal * reveal * (3 - 2 * reveal)) * clamp(homeGrip, 0, 1)
     }
+    public let homeHoverArmed: Bool
+    /// The resting invitation target is independent of the painted silhouette.
+    /// Keep it below the menu bar/housing so it cannot cover menu controls.
+    public var homeHoverBounds: Rect? {
+        guard scene.form == .fingertipGrip, phase == .hanging, presence == .peek else { return nil }
+        let width = min(scene.hasHardwareNotch ? scene.home.width : 96, scene.bounds.width)
+        let x = clamp(scene.home.midX - width / 2, scene.bounds.minX, scene.bounds.maxX - width)
+        let top = max(scene.home.maxY, scene.bounds.minY)
+        let height = min(20, scene.bounds.maxY - top)
+        guard height > 0 else { return nil }
+        return Rect(x: x, y: top, width: width, height: height)
+    }
+    public var inputBounds: Rect {
+        guard let hover = homeHoverBounds else { return hitBounds }
+        let paint = hitBounds
+        let left = min(hover.minX, paint.minX), top = min(hover.minY, paint.minY)
+        return Rect(x: left, y: top, width: max(hover.maxX, paint.maxX) - left,
+                    height: max(hover.maxY, paint.maxY) - top)
+    }
+    public func containsHoverTarget(_ point: Point) -> Bool {
+        contains(point) || (point.isFinite && homeHoverBounds?.contains(point) == true)
+    }
+    public func acceptsPress(_ point: Point) -> Bool {
+        contains(point) || (homeHoverArmed && point.isFinite && homeHoverBounds?.contains(point) == true)
+    }
     public var geometry: MallowGeometry { MallowGeometry(self) }
     /// A bounding box for accessibility and broad-phase checks, never a pick shape.
     public var hitBounds: Rect {
@@ -60,11 +85,12 @@ public struct CompanionSnapshot: Sendable {
     public init(scene: SceneGeometry, presence: Presence, phase: BodyPhase, pose: CharacterPose,
                 feet: Point, windowAnchor: Point, rotation: Double, openness: Double,
                 homeGrip: Double, homeAttachment: Point? = nil, dragGeometry: DragGeometry? = nil,
-                time: Double, gesture: CharacterGesture?, canCatch: Bool, idleMoment: IdleMomentFrame? = nil, gripSqueeze: Double = 0) {
+                time: Double, gesture: CharacterGesture?, canCatch: Bool, idleMoment: IdleMomentFrame? = nil, gripSqueeze: Double = 0, homeHoverArmed: Bool = false) {
         self.scene = scene; self.presence = presence; self.phase = phase; self.pose = pose
         self.feet = feet; self.windowAnchor = windowAnchor; self.rotation = rotation
         self.openness = openness; self.homeGrip = homeGrip
         self.homeAttachment = homeAttachment ?? Point(x: scene.home.midX, y: scene.home.maxY)
+        self.homeHoverArmed = homeHoverArmed
         self.gripSqueeze = gripSqueeze
         self.idleMoment = idleMoment
         self.dragGeometry = dragGeometry; self.time = time; self.gesture = gesture; self.canCatch = canCatch

@@ -118,6 +118,9 @@ import CompanionCore
         guard running, self.paused != paused else { return }
         if paused { cancelDesktopDrag() }
         self.paused = paused
+        if engine?.snapshot.homeHoverBounds != nil {
+            engine?.send(.pointerMoved(Point(x: -1_000_000, y: -1_000_000)))
+        }
         if engine?.hasPointerCapture == true || engine?.hasPendingDragRelease == true {
             engine?.send(.cancelInteraction)
         }

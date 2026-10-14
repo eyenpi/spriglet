@@ -38,8 +38,13 @@ import CompanionRendering
         let painter = ScenePreviewRenderer()
         var start = Point.zero, pointer = Point(x: 625, y: 190)
         for index in 0..<480 {
-            if index == 5 { pointer = engine.snapshot.geometry.hands[0].palm.center + Point(x: 0, y: 2) }
-            if index == 30 { engine.send(.activate); pointer = Point(x: 625, y: 190) }
+            if index == 5, let area = engine.snapshot.homeHoverBounds {
+                pointer = Point(x: area.maxX - 12, y: area.maxY - 6)
+            }
+            if index == 30 {
+                engine.send(.pointerPressed(pointer)); engine.send(.pointerReleased(pointer))
+                pointer = Point(x: 625, y: 190)
+            }
             if index == 105 { engine.send(.outsidePressed) }
             if index == 165 {
                 start = engine.snapshot.geometry.hands[0].palm.center + Point(x: 0, y: 2); pointer = start

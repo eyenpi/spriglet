@@ -90,7 +90,7 @@ import CompanionCore
         let paint = snapshot.geometry.paintBounds(drawShadow: snapshot.phase == .grounded)
         let requested = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: context.frame,
                                                     scale: snapshot.scene.scale,
-                                                    visibleBounds: snapshot.dragGeometry == nil ? snapshot.hitBounds : paint)
+                                                    visibleBounds: snapshot.dragGeometry == nil ? snapshot.inputBounds : paint)
         let padding = 4 * snapshot.scene.scale
         let protectedPaint = Rect(x: context.frame.minX + paint.minX - padding,
                                   y: context.frame.maxY - paint.maxY - padding,
@@ -105,7 +105,7 @@ import CompanionCore
         view.drawsSnapshot = layout == nil
         primary.update(frame: layout?.inputFrame ?? WindowGeometry.containedFrame(requested, in: context.frame),
                        surface: context.frame, context: context, snapshot: snapshot)
-        let passThrough = !acceptsInput || (!capturesPointer && !snapshot.contains(pointer))
+        let passThrough = !acceptsInput || (!capturesPointer && !snapshot.acceptsPress(pointer))
         if primary.panel.ignoresMouseEvents != passThrough { primary.panel.ignoresMouseEvents = passThrough }
         view.refresh(snapshot: snapshot, acceptsInput: acceptsInput, isPaused: isPaused)
         updatePassive(layout?.canvases ?? [], context: context, snapshot: snapshot)

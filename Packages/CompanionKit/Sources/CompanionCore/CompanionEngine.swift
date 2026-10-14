@@ -137,11 +137,12 @@ public struct CompanionEngine: Sendable {
         case .pointerMoved(let point):
             if point.isFinite {
                 pointer = point
-                if snapshot.contains(point) { boredom.interrupt(at: time, cadence: idleCadence) }
+                if snapshot.containsHoverTarget(point) { boredom.interrupt(at: time, cadence: idleCadence) }
+                else if snapshot.homeHoverBounds != nil { interaction.clearHover() }
             }
         case .pointerPressed(let point):
             guard point.isFinite else { return }; pointer = point
-            if snapshot.contains(point) {
+            if snapshot.acceptsPress(point) {
                 boredom.interrupt(at: time, cadence: idleCadence)
                 interaction.press = point; interaction.dragging = false
                 interaction.dragOffset = Point(x: point.x - snapshot.feet.x,
@@ -175,7 +176,7 @@ public struct CompanionEngine: Sendable {
                 }
                 if !body.isPendingRelease { endDesktopDrag() }
             }
-            else if point.isFinite && snapshot.contains(point) { activate() }
+            else if point.isFinite && snapshot.acceptsPress(point) { activate() }
             if !dragged { endDesktopDrag() }
         case .cancelInteraction:
             reconfigure(scene: body.scene)
@@ -242,7 +243,7 @@ public struct CompanionEngine: Sendable {
     }
     private mutating func step(_ dt: Double) {
         time += dt
-        if interaction.step(dt, at: time, pointerOver: snapshot.contains(pointer)) { returnHome() }
+        if interaction.step(dt, at: time, pointerOver: snapshot.containsHoverTarget(pointer)) { returnHome() }
         body.step(dt, at: time, walkingAmount: presentation.pose.walk)
         if !hasPointerCapture, dragGeometry != nil, !body.isPendingRelease { endDesktopDrag() }
         if body.phase == .hanging && interaction.presence == .playing { interaction.rest() }
@@ -271,7 +272,7 @@ public struct CompanionEngine: Sendable {
     private mutating func updateHomePresentation(_ dt: Double) {
         let tucked = body.scene.form == .fingertipGrip
         let resting = body.phase == .hanging && interaction.presence == .peek
-        let hovering = interaction.hoverAge > 0.35
+        let hovering = tucked ? interaction.hoverAge >= SceneGeometry.fingertipHoverDelay : interaction.hoverAge > 0.35
         let openTarget = resting ? (!tucked && hovering ? 0.66 : 0.6) : 1.0
         let retractionTarget = body.phase == .hanging ? (1 - openTarget) * body.scene.homeRetractionDistance : 0
         let squeezeTarget = tucked && resting && hovering ? min(movementAmount, 1) : 0
@@ -352,6 +353,8 @@ public struct CompanionEngine: Sendable {
                                  openness: open, homeGrip: clamp(homeGrip.value, 0, 1),
                                  homeAttachment: Point(x: attachmentX.value + offset.x, y: attachmentY.value), dragGeometry: dragGeometry,
                                  time: time, gesture: interaction.gesture,
-                                 canCatch: body.canCatch, idleMoment: boredom.frame, gripSqueeze: clamp(gripSqueeze.value, 0, 1))
+                                 canCatch: body.canCatch, idleMoment: boredom.frame, gripSqueeze: clamp(gripSqueeze.value, 0, 1),
+                                 homeHoverArmed: scene.form == .fingertipGrip && body.phase == .hanging
+                                    && interaction.presence == .peek && interaction.hoverAge >= SceneGeometry.fingertipHoverDelay)
     }
 }

@@ -1053,6 +1053,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             } else {
                 guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Native validation requires a logged-in Mac with a display") }
                 try nativePicking(screen: screen)
+                try HomeHoverValidation.run(screen: screen)
                 try nativeLifecycle(screen: screen)
                 try BoredomValidation.run(screen: screen)
                 try nativeIntroduction(screen: screen)

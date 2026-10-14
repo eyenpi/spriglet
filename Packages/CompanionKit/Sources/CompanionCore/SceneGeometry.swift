@@ -16,6 +16,7 @@ public struct SceneGeometry: Equatable, Sendable {
         let top = min(bounds.minY, home.minY)
         return Rect(x: home.x, y: top, width: home.width, height: home.maxY - top)
     }
+    static let fingertipHoverDelay = 0.3
     /// Retract the intact body behind Home for the fingertip resting mode.
     var homeRetractionDistance: Double { form == .fingertipGrip ? 170 : 75 }
     public var homeFeet: Point { Point(x: home.midX, y: home.maxY + 60 * scale) }

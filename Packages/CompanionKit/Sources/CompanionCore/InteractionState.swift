@@ -19,6 +19,7 @@ struct InteractionState: Sendable {
     mutating func rest() {
         presence = .peek; gesture = nil; hoverAge = 0; leaveAge = 0
     }
+    mutating func clearHover() { hoverAge = 0 }
     mutating func clearPress() { press = nil; dragging = false }
     mutating func step(_ dt: Double, at time: Double, pointerOver: Bool) -> Bool {
         hoverAge = pointerOver ? hoverAge + dt : 0
