@@ -27,7 +27,10 @@ import CompanionCore
             var panel = try LifecycleValidation.visiblePanel()
             var view = LifecycleValidation.view(panel)
             guard let area = view.snapshot.homeHoverBounds else { throw ValidationFailure(description: "Small has no hover area") }
-            let target = Point(x: area.maxX - 3, y: area.maxY - 3)
+            let target = notch ? Point(x: area.midX, y: view.snapshot.scene.home.maxY - 4)
+                : Point(x: area.maxX - 3, y: area.maxY - 3)
+            try LifecycleValidation.require(view.snapshot.containsHoverTarget(target) && !view.snapshot.contains(target),
+                                            "Lower-notch or notchless hover target did not stay click-through")
             pointer = context.globalPoint(scene: target)
             func picks(_ point: Point) -> Bool {
                 let local = NSPoint(x: point.x + view.drawingOrigin.x, y: point.y + view.drawingOrigin.y)

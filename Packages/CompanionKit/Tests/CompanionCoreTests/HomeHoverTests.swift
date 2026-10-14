@@ -11,16 +11,32 @@ import Testing
         for _ in 0..<Int(seconds * 120) { engine.advance(by: 1 / 120.0) }
     }
 
-    @Test("The broad hover area excludes the housing and menu bar", arguments: [true, false])
+    @Test("Hover includes the lower hardware notch and excludes synthetic menu-bar homes", arguments: [true, false])
     func area(notch: Bool) throws {
         let frame = CompanionEngine(scene: scene(notch: notch)).snapshot
         let target = try #require(frame.homeHoverBounds)
-        #expect(target.width == (notch ? 200 : 96) && target.height == 20)
-        #expect(target.midX == frame.scene.home.midX && target.minY == frame.scene.home.maxY)
+        #expect(target.width == (notch ? 200 : 96) && target.height == (notch ? 28 : 20))
+        #expect(target.midX == frame.scene.home.midX)
+        #expect(target.minY == frame.scene.home.maxY - (notch ? 8 : 0))
+        #expect(target.maxY == frame.scene.home.maxY + 20)
         #expect(frame.containsHoverTarget(target.center) && !frame.contains(target.center))
         #expect(!frame.containsHoverTarget(Point(x: target.midX, y: target.minY - 1)))
         #expect(!frame.containsHoverTarget(Point(x: target.maxX + 1, y: target.midY)))
-        #expect(frame.hitBounds.height < 4 && frame.inputBounds.height == 20)
+        #expect(frame.hitBounds.height < 4 && frame.inputBounds.height == (notch ? 28 : 20))
+    }
+
+    @Test("The lower notch reveals Mallow while remaining click-through", arguments: [true, false])
+    func upperHover(notch: Bool) {
+        var engine = CompanionEngine(scene: scene(notch: notch))
+        let point = Point(x: engine.snapshot.scene.home.midX, y: engine.snapshot.scene.home.maxY - 4)
+        #expect(engine.snapshot.containsHoverTarget(point) == notch)
+        #expect(!engine.snapshot.contains(point))
+        engine.send(.pointerMoved(point)); advance(&engine, seconds: 0.8)
+        #expect(engine.snapshot.homeTuck == (notch ? 0 : 1))
+        #expect(engine.snapshot.presence == .peek && !engine.hasPointerCapture)
+        #expect(!engine.snapshot.contains(point))
+        engine.send(.pointerPressed(point))
+        #expect(!engine.hasPointerCapture)
     }
 
     @Test("Briefly settling reveals the face with no click gate", arguments: [true, false])

@@ -27,13 +27,15 @@ public struct CompanionSnapshot: Sendable {
     }
     public var isHomeTransitioning: Bool { homeTuck > 0 && homeTuck < 1 }
     /// The resting invitation target is independent of the painted silhouette.
-    /// Keep it below the menu bar/housing so it cannot cover menu controls.
+    /// Only a hardware notch extends above Home; synthetic homes stay below
+    /// menu controls. This is a hover region, never a click-picking shape.
     public var homeHoverBounds: Rect? {
         guard scene.form == .fingertipGrip, phase == .hanging, presence == .peek else { return nil }
         let width = min(scene.hasHardwareNotch ? scene.home.width : 96, scene.bounds.width)
         let x = clamp(scene.home.midX - width / 2, scene.bounds.minX, scene.bounds.maxX - width)
-        let top = max(scene.home.maxY, scene.bounds.minY)
-        let height = min(20, scene.bounds.maxY - top)
+        let upperInset = scene.hasHardwareNotch ? min(8, scene.home.height) : 0
+        let top = max(scene.home.maxY - upperInset, scene.bounds.minY)
+        let height = min(scene.home.maxY + 20, scene.bounds.maxY) - top
         guard height > 0 else { return nil }
         return Rect(x: x, y: top, width: width, height: height)
     }

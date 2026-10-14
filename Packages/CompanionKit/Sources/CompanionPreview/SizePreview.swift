@@ -82,7 +82,9 @@ import CompanionRendering
                 pointer = Point(x: area.minX + progress * area.width, y: area.minY + progress * area.height)
             }
             if index == 15 || index == 34 { pointer = away }
-            if index == 30 || index == 70 { pointer = area.center }
+            if index == 30 || index == 70 {
+                pointer = notch ? Point(x: area.midX, y: engine.snapshot.scene.home.maxY - 4) : area.center
+            }
             if index == 100 {
                 pointer = engine.snapshot.hitBounds.center
                 engine.send(.pointerPressed(pointer)); engine.send(.pointerReleased(pointer))
