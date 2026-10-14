@@ -27,7 +27,10 @@ import CompanionRendering
             }
         }
         try comparison(to: folder.appendingPathComponent("size-comparison.png"))
-        for notch in [true, false] { try transitions(to: folder, notch: notch) }
+        for notch in [true, false] {
+            try transitions(to: folder, notch: notch)
+            try hoverPasses(to: folder, notch: notch)
+        }
         print("Rendered all three sizes, both homes and Small's invite, retuck, drag, landing and return transitions.")
     }
 
@@ -59,6 +62,31 @@ import CompanionRendering
             }
             if index == 226 { engine.send(.pointerReleased(pointer)); pointer = Point(x: 625, y: 190) }
             if index == 315 { engine.send(.command(.returnHome)) }
+            engine.send(.pointerMoved(pointer)); engine.advance(by: 1 / 30.0)
+            try writeFrame(engine.snapshot, painter: painter, to: folder, index: index,
+                           pointer: pointer, pressed: engine.hasPointerCapture)
+        }
+    }
+
+    private static func hoverPasses(to directory: URL, notch: Bool) throws {
+        let folder = directory.appendingPathComponent("small-\(notch ? "notched" : "unnotched")-hover")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        var engine = CompanionEngine(scene: scene(scale: 0.8, form: .fingertipGrip, notch: notch))
+        guard let area = engine.snapshot.homeHoverBounds else { throw BitmapRenderingError.invalidSize }
+        let painter = ScenePreviewRenderer()
+        let away = Point(x: 625, y: 190)
+        var pointer = away
+        for index in 0..<150 {
+            if (10..<15).contains(index) {
+                let progress = Double(index - 10) / 4
+                pointer = Point(x: area.minX + progress * area.width, y: area.minY + progress * area.height)
+            }
+            if index == 15 || index == 34 { pointer = away }
+            if index == 30 || index == 70 { pointer = area.center }
+            if index == 100 {
+                pointer = engine.snapshot.hitBounds.center
+                engine.send(.pointerPressed(pointer)); engine.send(.pointerReleased(pointer))
+            }
             engine.send(.pointerMoved(pointer)); engine.advance(by: 1 / 30.0)
             try writeFrame(engine.snapshot, painter: painter, to: folder, index: index,
                            pointer: pointer, pressed: engine.hasPointerCapture)

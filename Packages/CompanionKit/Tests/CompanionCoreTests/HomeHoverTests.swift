@@ -18,18 +18,19 @@ import Testing
         #expect(target.width == (notch ? 200 : 96) && target.height == 20)
         #expect(target.midX == frame.scene.home.midX && target.minY == frame.scene.home.maxY)
         #expect(frame.containsHoverTarget(target.center) && !frame.contains(target.center))
-        #expect(!frame.contains(target.center))
         #expect(!frame.containsHoverTarget(Point(x: target.midX, y: target.minY - 1)))
         #expect(!frame.containsHoverTarget(Point(x: target.maxX + 1, y: target.midY)))
         #expect(frame.hitBounds.height < 4 && frame.inputBounds.height == 20)
     }
 
-    @Test("Hover starts peeking on the first step, and only the visible face can be clicked", arguments: [true, false])
-    func immediatePeek(notch: Bool) throws {
+    @Test("Briefly settling reveals the face with no click gate", arguments: [true, false])
+    func deliberatePeek(notch: Bool) throws {
         var engine = CompanionEngine(scene: scene(notch: notch))
         let region = try #require(engine.snapshot.homeHoverBounds)
         let empty = Point(x: region.maxX - 4, y: region.maxY - 4)
         engine.send(.pointerMoved(empty)); engine.advance(by: 1 / 120.0)
+        #expect(engine.snapshot.homeTuck == 1 && !engine.snapshot.isHomeTransitioning)
+        advance(&engine, seconds: 0.1)
         #expect(engine.snapshot.homeTuck < 1 && engine.snapshot.isHomeTransitioning)
         advance(&engine, seconds: 0.6)
         #expect(engine.snapshot.homeTuck == 0 && !engine.snapshot.isHomeTransitioning)
@@ -43,21 +44,84 @@ import Testing
         #expect(engine.snapshot.homeHoverBounds == nil)
     }
 
+    @Test("Diagonal crossings and one-sample passes stay tucked at desktop resting cadences", arguments: [true, false])
+    func passingPointer(notch: Bool) throws {
+        for interval in [1 / 120.0, 1 / 20.0, 1 / 15.0] {
+            var engine = CompanionEngine(scene: scene(notch: notch))
+            let area = try #require(engine.snapshot.homeHoverBounds)
+            for sample in 0..<5 {
+                let progress = Double(sample) / 4
+                let point = Point(x: area.minX + progress * area.width, y: area.minY + progress * area.height)
+                engine.send(.pointerMoved(point)); engine.advance(by: interval)
+                #expect(engine.snapshot.homeTuck == 1 && engine.snapshot.hitBounds.height < 4)
+            }
+            engine.send(.pointerMoved(Point(x: area.midX, y: area.maxY + 100)))
+            advance(&engine, seconds: 0.2)
+            #expect(engine.snapshot.homeTuck == 1)
+            engine.send(.pointerMoved(area.center)); engine.advance(by: interval)
+            engine.send(.pointerMoved(Point(x: area.midX, y: area.minY - 1)))
+            advance(&engine, seconds: 0.2)
+            #expect(engine.snapshot.homeTuck == 1 && !engine.snapshot.isHomeTransitioning)
+        }
+    }
+
+    @Test("Once started, a peek finishes even when the pointer leaves immediately", arguments: [true, false])
+    func completedPeek(notch: Bool) throws {
+        var engine = CompanionEngine(scene: scene(notch: notch))
+        let point = try #require(engine.snapshot.homeHoverBounds).center
+        engine.send(.pointerMoved(point)); advance(&engine, seconds: 0.1)
+        #expect(engine.snapshot.homeTuck < 1)
+        engine.send(.pointerMoved(Point(x: point.x, y: point.y + 100)))
+        advance(&engine, seconds: 0.3)
+        #expect(engine.snapshot.homeTuck < 0.01 && engine.snapshot.hitBounds.height > 24)
+        advance(&engine, seconds: 1.2)
+        #expect(engine.snapshot.homeTuck == 1 && engine.snapshot.hitBounds.height < 4)
+    }
+
+    @Test("Separate brief visits do not accumulate into hover intent")
+    func interruptedIntent() throws {
+        var engine = CompanionEngine(scene: scene())
+        let area = try #require(engine.snapshot.homeHoverBounds)
+        for _ in 0..<4 {
+            engine.send(.pointerMoved(area.center)); advance(&engine, seconds: 0.05)
+            engine.send(.pointerMoved(Point(x: area.midX, y: area.minY - 1)))
+            engine.send(.pointerMoved(area.center))
+            #expect(engine.snapshot.homeTuck == 1)
+        }
+        engine.send(.cancelInteraction)
+        advance(&engine, seconds: 0.2)
+        #expect(engine.snapshot.homeTuck == 1)
+    }
+
+    @Test("A held face press stays visible until release")
+    func heldPress() throws {
+        var engine = CompanionEngine(scene: scene())
+        engine.send(.pointerMoved(try #require(engine.snapshot.homeHoverBounds).center))
+        advance(&engine, seconds: 0.8)
+        let face = engine.snapshot.hitBounds.center
+        engine.send(.pointerPressed(face)); advance(&engine, seconds: 1)
+        #expect(engine.hasPointerCapture && engine.snapshot.homeTuck == 0)
+        engine.send(.pointerReleased(face))
+        #expect(!engine.hasPointerCapture && engine.snapshot.presence == .engaged)
+    }
+
     @Test("Leaving retucks smoothly, reentry reverses smoothly, and recovery restores fingertips")
     func leaveAndRecovery() throws {
         var engine = CompanionEngine(scene: scene())
         let point = try #require(engine.snapshot.homeHoverBounds).center
-        engine.send(.pointerMoved(point)); advance(&engine, seconds: 0.6)
+        engine.send(.pointerMoved(point)); advance(&engine, seconds: 0.8)
         #expect(engine.snapshot.homeTuck == 0)
         engine.send(.pointerMoved(Point(x: point.x, y: point.y + 80)))
-        engine.advance(by: 1 / 120.0)
+        advance(&engine, seconds: 0.1)
+        #expect(engine.snapshot.homeTuck == 0)
+        advance(&engine, seconds: 0.12)
         let retreat = engine.snapshot
         #expect(retreat.homeTuck > 0 && retreat.homeTuck < 1)
         engine.send(.pointerMoved(point)); engine.advance(by: 1 / 120.0)
         #expect(engine.snapshot.feet.distance(to: retreat.feet) < 3)
-        advance(&engine, seconds: 0.6)
+        advance(&engine, seconds: 0.8)
         #expect(engine.snapshot.homeTuck == 0)
-        engine.send(.pointerMoved(Point(x: -1000, y: -1000))); advance(&engine, seconds: 0.6)
+        engine.send(.pointerMoved(Point(x: -1000, y: -1000))); advance(&engine, seconds: 1.2)
         #expect(engine.snapshot.homeTuck == 1 && engine.snapshot.hitBounds.height < 4)
         engine.send(.cancelInteraction)
         #expect(engine.snapshot.homeTuck == 1)
@@ -79,12 +143,14 @@ import Testing
         #expect(!engine.hasPointerCapture)
     }
 
-    @Test("Reduce Motion reveals the intact face immediately and retucks without animation")
+    @Test("Reduce Motion filters passing pointers and uses still revealed and tucked states")
     func reducedMotion() throws {
         var engine = CompanionEngine(scene: scene(notch: false))
         engine.setMotionPolicy(.reduced)
         let point = try #require(engine.snapshot.homeHoverBounds).center
         engine.send(.pointerMoved(point)); engine.advance(by: 1 / 120.0)
+        #expect(engine.snapshot.homeTuck == 1)
+        advance(&engine, seconds: 0.1)
         #expect(engine.snapshot.homeTuck == 0 && !engine.snapshot.isHomeTransitioning)
         let face = engine.snapshot.hitBounds.center
         engine.send(.pointerPressed(face)); engine.send(.pointerReleased(face))
