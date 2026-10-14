@@ -30,7 +30,7 @@ public struct CharacterCurve: Sendable {
         let u = 1 - t
         return start * (u * u * u) + control1 * (3 * u * u * t) + control2 * (3 * u * t * t) + end * (t * t * t)
     }
-    fileprivate var outline: [Point] { (0...24).map { point(at: Double($0) / 24) } }
+    var outline: [Point] { (0...24).map { point(at: Double($0) / 24) } }
 }
 
 public struct CharacterHand: Sendable {
@@ -56,6 +56,9 @@ public struct MallowGeometry: Sendable {
     public let body: CharacterTransform
     public let feet: [Rect]
     public let hands: [CharacterHand]
+    private let outline: [Point]
+    private let strokeOutline: [Point]
+    private let localBodyBounds: Rect
     private let scale: Double
 
     public static func bodyTransform(for pose: CharacterPose) -> CharacterTransform {
@@ -72,11 +75,13 @@ public struct MallowGeometry: Sendable {
         }
     }
     public init(_ frame: CompanionSnapshot) {
-        let s = frame.scene.scale, pose = frame.pose, grip = frame.homeGrip
+        let s = frame.scene.scale, pose = frame.pose, grip = frame.homeGrip, tuck = frame.fingertipGrip
         scale = s
+        outline = Self.bodyOutline; strokeOutline = Self.bodyStroke; localBodyBounds = Self.bodyBounds
         let root = CharacterTransform(origin: frame.feet - Point(x: 0, y: 7 * s), rotation: frame.rotation, scaleX: s, scaleY: s)
         let body = Self.bodyTransform(for: pose)
-        self.root = root; self.body = body; feet = Self.feet(for: pose)
+        self.root = root; self.body = body
+        feet = Self.feet(for: pose)
         let reveal = clamp((frame.openness - 0.6) / 0.4, 0, 1)
         let emergence = reveal * reveal * (3 - 2 * reveal)
         func bodyPoint(_ x: Double, _ y: Double) -> Point { root.apply(body.apply(Point(x: x, y: y))) }
@@ -89,18 +94,28 @@ public struct MallowGeometry: Sendable {
             let homeHand = Point(x: frame.homeAttachment.x + side * 43 * s,
                                  y: frame.homeAttachment.y + (-8 + emergence * 10 + wave) * s)
             let hand = blend(bodyPoint(side * 34, -15 - raise * 0.6), homeHand)
-            return CharacterHand(arm: CharacterCurve(
+            let standard = CharacterHand(arm: CharacterCurve(
                 start: blend(bodyPoint(side * 47, -29 - raise), shoulder),
                 control1: blend(bodyPoint(side * (56 + pose.arm * 6), -14 - raise), shoulder + Point(x: side * 8 * s, y: -9 * s)),
                 control2: blend(bodyPoint(side * 46, -9 - raise * 0.5), homeHand + Point(x: side * 6 * s, y: 12 * s)), end: hand),
                 palm: Rect(x: hand.x - 5 * s, y: hand.y - 3 * s, width: 10 * s, height: 8 * s))
+            guard tuck > 0 else { return standard }
+            // Only the lower caps of the normal palms clear Home. Arms stay
+            // behind the edge until the intact character peeks into view.
+            let fingertip = Point(x: frame.homeAttachment.x + side * 18 * s,
+                                  y: frame.homeAttachment.y - 1.5 * s)
+            let tuckedArm = CharacterCurve(start: shoulder, control1: shoulder,
+                control2: fingertip - Point(x: 0, y: 8 * s), end: fingertip)
+            let center = standard.arm.end + (fingertip - standard.arm.end) * tuck
+            return CharacterHand(arm: standard.arm.interpolated(to: tuckedArm, amount: tuck),
+                                 palm: Rect(x: center.x - 5 * s, y: center.y - 3 * s, width: 10 * s, height: 8 * s))
         }
     }
     public func contains(_ point: Point) -> Bool {
         guard point.isFinite else { return false }
         let local = root.inverse(point), bodyPoint = body.inverse(local)
-        if Self.bodyBounds.contains(bodyPoint),
-           polygonContains(bodyPoint, Self.bodyOutline) || strokeContains(bodyPoint, Self.bodyStroke, radius: 1.15) { return true }
+        if localBodyBounds.contains(bodyPoint),
+           polygonContains(bodyPoint, outline) || strokeContains(bodyPoint, strokeOutline, radius: 1.15) { return true }
         if feet.contains(where: { ellipseContains(local, $0, outline: 0.95) }) { return true }
         return hands.contains { hand in
             if ellipseContains(point, hand.palm, outline: 0.95 * scale) { return true }
@@ -111,7 +126,7 @@ public struct MallowGeometry: Sendable {
     public var bounds: Rect {
         // Include the painted outlines after both body and scene transforms.
         let padding = 1.15 * max(abs(body.scaleX), abs(body.scaleY)) * scale
-        let bodyBounds = boundingRect(Self.bodyOutline.map { root.apply(body.apply($0)) }, padding: padding)
+        let bodyBounds = boundingRect(outline.map { root.apply(body.apply($0)) }, padding: padding)
         let footBounds = feet.map { boundingRect(corners($0).map(root.apply), padding: 0.95 * scale) }
         let handBounds = hands.flatMap { [boundingRect([$0.arm.start, $0.arm.control1, $0.arm.control2, $0.arm.end], padding: scale),
                                         boundingRect(corners($0.palm), padding: 0.95 * scale)] }
@@ -156,4 +171,12 @@ private func corners(_ rect: Rect) -> [Point] {
 private func boundingRect(_ points: [Point], padding: Double = 0) -> Rect {
     let minX = points.map(\.x).min()! - padding, minY = points.map(\.y).min()! - padding
     return Rect(x: minX, y: minY, width: points.map(\.x).max()! + padding - minX, height: points.map(\.y).max()! + padding - minY)
+}
+
+extension CharacterCurve {
+    func interpolated(to other: CharacterCurve, amount: Double) -> CharacterCurve {
+        func blend(_ a: Point, _ b: Point) -> Point { a + (b - a) * amount }
+        return CharacterCurve(start: blend(start, other.start), control1: blend(control1, other.control1),
+                              control2: blend(control2, other.control2), end: blend(end, other.end))
+    }
 }

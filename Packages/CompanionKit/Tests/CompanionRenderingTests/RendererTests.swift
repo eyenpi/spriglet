@@ -49,6 +49,74 @@ import Testing
             windowAnchor: scene.homeFeet, rotation: variant == 2 ? 0.5 : -0.15,
             openness: variant == 4 ? 0.85 : 1, homeGrip: variant == 4 ? 0.75 : 0,
             time: 0, gesture: nil, canCatch: false)
+        try assertPaintedSilhouette(frame, minimumHits: 400)
+    }
+    @Test("Doodling changes visible ink while preserving the paint and picking envelope")
+    func doodleEnvelope() throws {
+        let base = CompanionEngine(scene: .preview).snapshot
+        let doodle = CompanionSnapshot(scene: base.scene, presence: base.presence, phase: base.phase, pose: base.pose,
+                                       feet: base.feet, windowAnchor: base.windowAnchor, rotation: base.rotation,
+                                       openness: base.openness, homeGrip: base.homeGrip, time: base.time,
+                                       gesture: nil, canCatch: false, idleMoment: IdleMomentFrame(moment: .doodle, progress: 0.5))
+        let plain = try characterImage(base), marked = try characterImage(doodle)
+        var changedPixels = 0, changedAlpha = 0
+        for y in 0..<plain.pixelsHigh {
+            for x in 0..<plain.pixelsWide {
+                let a = try #require(plain.colorAt(x: x, y: y)), b = try #require(marked.colorAt(x: x, y: y))
+                if abs(a.alphaComponent - b.alphaComponent) > 0.001 { changedAlpha += 1 }
+                if abs(a.redComponent - b.redComponent) > 0.01 { changedPixels += 1 }
+            }
+        }
+        #expect(changedPixels > 5)
+        #expect(changedAlpha == 0)
+        #expect(base.hitBounds == doodle.hitBounds)
+    }
+    @Test("Fingertip drawing and picking agree through emergence and grabbing", arguments: [true, false])
+    func fingertipSilhouette(notch: Bool) throws {
+        let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 720, height: 420),
+                                  home: Rect(x: 260, y: notch ? 0 : 13, width: 200, height: notch ? 54 : 20),
+                                  floor: 365, scale: 0.8, hasHardwareNotch: notch, form: .fingertipGrip)
+        var engine = CompanionEngine(scene: scene)
+        try assertPaintedSilhouette(engine.snapshot, minimumHits: 2)
+        let resting = try characterImage(engine.snapshot).representation(using: .png, properties: [:])
+        let point = Point(x: engine.snapshot.geometry.hands[0].palm.midX, y: scene.home.maxY + 1)
+        engine.send(.pointerPressed(point)); engine.send(.pointerDragged(point + Point(x: 10, y: 0)))
+        #expect(try characterImage(engine.snapshot).representation(using: .png, properties: [:]) == resting)
+        for index in 0..<120 {
+            engine.advance(by: 1 / 120.0)
+            if [5, 15, 30, 60, 119].contains(index) {
+                try assertPaintedSilhouette(engine.snapshot, minimumHits: 2)
+            }
+        }
+        engine.send(.cancelInteraction); engine.send(.activate)
+        for index in 0..<120 {
+            engine.advance(by: 1 / 120.0)
+            if [5, 15, 30, 60, 119].contains(index) {
+                try assertPaintedSilhouette(engine.snapshot, minimumHits: 2)
+            }
+        }
+        engine.send(.outsidePressed)
+        for _ in 0..<180 { engine.advance(by: 1 / 120.0) }
+        try assertPaintedSilhouette(engine.snapshot, minimumHits: 2)
+    }
+
+    @Test("Fully emerged Small renders exactly the same pixels as Medium", arguments: [true, false])
+    func emergedSmallMatchesMedium(notch: Bool) throws {
+        func frame(form: MallowForm) -> CompanionSnapshot {
+            let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 720, height: 420),
+                                      home: Rect(x: 260, y: 0, width: 200, height: 54),
+                                      floor: 365, scale: 0.8, hasHardwareNotch: notch, form: form)
+            var pose = CharacterPose(); pose.arm = 0.7; pose.look = 2
+            return CompanionSnapshot(scene: scene, presence: .engaged, phase: .hanging, pose: pose,
+                                     feet: scene.homeFeet, windowAnchor: scene.homeFeet, rotation: 0,
+                                     openness: 1, homeGrip: 1, time: 1, gesture: .hello, canCatch: false)
+        }
+        let small = try characterImage(frame(form: .fingertipGrip)).representation(using: .png, properties: [:])
+        let medium = try characterImage(frame(form: .standard)).representation(using: .png, properties: [:])
+        #expect(small == medium)
+    }
+
+    private func assertPaintedSilhouette(_ frame: CompanionSnapshot, minimumHits: Int) throws {
         let image = try characterImage(frame)
         var missedInterior = 0, emptyHits = 0, paintedHits = 0
         let bounds = frame.hitBounds
@@ -70,29 +138,9 @@ import Testing
                 }
             }
         }
-        #expect(paintedHits > 400)
+        #expect(paintedHits > minimumHits)
         #expect(missedInterior == 0)
         #expect(emptyHits == 0)
-    }
-    @Test("Doodling changes visible ink while preserving the paint and picking envelope")
-    func doodleEnvelope() throws {
-        let base = CompanionEngine(scene: .preview).snapshot
-        let doodle = CompanionSnapshot(scene: base.scene, presence: base.presence, phase: base.phase, pose: base.pose,
-                                       feet: base.feet, windowAnchor: base.windowAnchor, rotation: base.rotation,
-                                       openness: base.openness, homeGrip: base.homeGrip, time: base.time,
-                                       gesture: nil, canCatch: false, idleMoment: IdleMomentFrame(moment: .doodle, progress: 0.5))
-        let plain = try characterImage(base), marked = try characterImage(doodle)
-        var changedPixels = 0, changedAlpha = 0
-        for y in 0..<plain.pixelsHigh {
-            for x in 0..<plain.pixelsWide {
-                let a = try #require(plain.colorAt(x: x, y: y)), b = try #require(marked.colorAt(x: x, y: y))
-                if abs(a.alphaComponent - b.alphaComponent) > 0.001 { changedAlpha += 1 }
-                if abs(a.redComponent - b.redComponent) > 0.01 { changedPixels += 1 }
-            }
-        }
-        #expect(changedPixels > 5)
-        #expect(changedAlpha == 0)
-        #expect(base.hitBounds == doodle.hitBounds)
     }
     private func characterImage(_ frame: CompanionSnapshot) throws -> NSBitmapImageRep {
         let bitmap = try #require(NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 720, pixelsHigh: 420,

@@ -197,7 +197,9 @@ import CompanionRendering
 _ = NSApplication.shared
 let args = CommandLine.arguments
 do {
-if args.count == 3 && args[1] == "--boredom" {
+if args.count == 3 && args[1] == "--sizes" {
+    try SizePreview.export(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--boredom" {
     try exportBoredom(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--icons" {
     try exportIcons(to: URL(fileURLWithPath: args[2]))
@@ -212,7 +214,7 @@ if args.count == 3 && args[1] == "--boredom" {
 } else if args.count == 2 {
     try export(to: URL(fileURLWithPath: args[1]))
 } else {
-    print("Usage: companion-preview OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --introduction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --boredom OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
+    print("Usage: companion-preview OUTPUT_DIRECTORY | --sizes OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --introduction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --boredom OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
 }
 
 } catch {

@@ -118,6 +118,9 @@ import CompanionCore
         guard running, self.paused != paused else { return }
         if paused { cancelDesktopDrag() }
         self.paused = paused
+        if engine?.snapshot.homeHoverBounds != nil {
+            engine?.send(.pointerMoved(Point(x: -1_000_000, y: -1_000_000)))
+        }
         if engine?.hasPointerCapture == true || engine?.hasPendingDragRelease == true {
             engine?.send(.cancelInteraction)
         }
@@ -235,7 +238,8 @@ import CompanionCore
         introduction?.advance(by: elapsed); refresh()
     }
     private func frameRate(for snapshot: CompanionSnapshot) -> Float {
-        let companionRate = conditions.frameRate(presence: snapshot.presence, phase: snapshot.phase)
+        let presence = snapshot.isHomeTransitioning ? Presence.engaged : snapshot.presence
+        let companionRate = conditions.frameRate(presence: presence, phase: snapshot.phase)
         return introduction?.motionPolicy == .full ? max(companionRate, min(30, conditions.maximumFrameRate)) : companionRate
     }
     private func refresh() {

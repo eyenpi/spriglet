@@ -90,7 +90,7 @@ import CompanionCore
         let paint = snapshot.geometry.paintBounds(drawShadow: snapshot.phase == .grounded)
         let requested = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: context.frame,
                                                     scale: snapshot.scene.scale,
-                                                    visibleBounds: snapshot.dragGeometry == nil ? snapshot.hitBounds : paint)
+                                                    visibleBounds: snapshot.dragGeometry == nil ? snapshot.inputBounds : paint)
         let padding = 4 * snapshot.scene.scale
         let protectedPaint = Rect(x: context.frame.minX + paint.minX - padding,
                                   y: context.frame.maxY - paint.maxY - padding,

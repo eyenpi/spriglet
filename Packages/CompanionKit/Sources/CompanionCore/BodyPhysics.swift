@@ -84,7 +84,7 @@ struct BodyPhysics: Sendable {
     mutating func endDesktopDrag() { dragBounds = nil }
     mutating func transferDrag(scene nextScene: SceneGeometry, translation delta: Point, heldBounds: Rect) -> Bool {
         guard phase == .held, delta.isFinite, heldBounds.isValid, heldBounds.width > 0, heldBounds.height > 0,
-              nextScene.scale == scene.scale, jumpTarget == nil, flight == nil,
+              nextScene.scale == scene.scale, nextScene.form == scene.form, jumpTarget == nil, flight == nil,
               velocity.isFinite, (position + delta).isFinite,
               heldFeet.map({ ($0 + delta).isFinite }) ?? true,
               lastDrag.map({ ($0.feet + delta).isFinite && $0.time.isFinite }) ?? true else { return false }

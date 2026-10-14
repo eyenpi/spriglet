@@ -62,7 +62,8 @@ struct DisplayContext {
         }
         let geometry = SceneGeometry(bounds: scene.bounds, home: home, floor: scene.floor,
                                      scale: scene.scale * size.scale,
-                                     hasHardwareNotch: location == .automatic && scene.hasHardwareNotch)
+                                     hasHardwareNotch: location == .automatic && scene.hasHardwareNotch,
+                                     form: size.form)
         return DisplayContext(screen: screen, id: id, frame: frame, scene: geometry,
                               persistentID: persistentID, mirrorMasterID: mirrorMasterID)
     }

@@ -46,7 +46,10 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                     "Companion cannot join Spaces/fullscreen or is in window cycling")
     }
     static func beginDrag(host: CompanionWindowHost, window: NSWindow, clock: ScreenFrameClock) {
-        host.onInput?(.pointerPressed(view(window).snapshot.hitBounds.center))
+        let frame = view(window).snapshot
+        let start = frame.contains(frame.hitBounds.center) ? frame.hitBounds.center
+            : Point(x: frame.geometry.hands[0].palm.midX, y: frame.scene.home.maxY + 1)
+        host.onInput?(.pointerPressed(start))
         host.onInput?(.pointerDragged(Point(x: 500, y: 250)))
         clock.onTick?(0.05)
     }
@@ -155,7 +158,9 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
         try require(!window.isVisible, "Unplug left the old host visible")
         window = try visiblePanel(); try assertHome(window)
-        try require(view(window).context.id == fallback.id && view(window).snapshot.scene == fallbackScene, "Unplug failed to choose fallback home")
+        try require(view(window).context.id == fallback.id
+                    && view(window).snapshot.scene == fallback.placingHome(size: .medium, location: .automatic).scene,
+                    "Unplug failed to choose fallback home")
         available = []
         application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
         try require(!window.isVisible, "No displays left a stale host visible")
@@ -169,7 +174,8 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         available = [resized, fallback]
         application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
         window = try visiblePanel(); try assertHome(window)
-        try require(view(window).snapshot.scene == resizedScene, "Resolution change kept stale geometry")
+        try require(view(window).snapshot.scene == resized.placingHome(size: .medium, location: .automatic).scene,
+                    "Resolution change kept stale geometry")
         workspace.post(name: NSWorkspace.screensDidSleepNotification, object: nil)
         available = [fallback]
         application.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
@@ -701,7 +707,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         try choose(.bringHome)
         window = try visiblePanel(); try assertHome(window)
         try require(runtime.controlState.isPaused && animation.state == .off, "Bring Home cleared Pause")
-        try require(view(window).snapshot.scene.scale == 0.8 && view(window).snapshot.scene.home.minX == 20,
+        try require(view(window).snapshot.scene.scale == CharacterSize.medium.scale && view(window).snapshot.scene.form == .fingertipGrip && view(window).snapshot.scene.home.minX == 20,
                     "Recovery discarded saved size/home")
         let homeTime = view(window).snapshot.time
         pump(0.12)
@@ -1047,6 +1053,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
             } else {
                 guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Native validation requires a logged-in Mac with a display") }
                 try nativePicking(screen: screen)
+                try HomeHoverValidation.run(screen: screen)
                 try nativeLifecycle(screen: screen)
                 try BoredomValidation.run(screen: screen)
                 try nativeIntroduction(screen: screen)

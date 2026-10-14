@@ -19,6 +19,36 @@ public struct CompanionSnapshot: Sendable {
     /// Uses the held target, exactly as release does, even while the body follows.
     public let canCatch: Bool
     public let idleMoment: IdleMomentFrame?
+    /// The intact body and hands retreat together; detachment keeps this
+    /// continuous hand weight while physics takes ownership of body position.
+    public let homeTuck: Double
+    public var fingertipGrip: Double {
+        scene.form == .fingertipGrip ? clamp(homeTuck, 0, 1) * clamp(homeGrip, 0, 1) : 0
+    }
+    public var isHomeTransitioning: Bool { homeTuck > 0 && homeTuck < 1 }
+    /// The resting invitation target is independent of the painted silhouette.
+    /// Only a hardware notch extends above Home; synthetic homes stay below
+    /// menu controls. This is a hover region, never a click-picking shape.
+    public var homeHoverBounds: Rect? {
+        guard scene.form == .fingertipGrip, phase == .hanging, presence == .peek else { return nil }
+        let width = min(scene.hasHardwareNotch ? scene.home.width : 120, scene.bounds.width)
+        let x = clamp(scene.home.midX - width / 2, scene.bounds.minX, scene.bounds.maxX - width)
+        let upperInset = scene.hasHardwareNotch ? min(20, scene.home.height) : 0
+        let top = max(scene.home.maxY - upperInset, scene.bounds.minY)
+        let height = min(scene.home.maxY + 24, scene.bounds.maxY) - top
+        guard height > 0 else { return nil }
+        return Rect(x: x, y: top, width: width, height: height)
+    }
+    public var inputBounds: Rect {
+        guard let hover = homeHoverBounds else { return hitBounds }
+        let paint = hitBounds
+        let left = min(hover.minX, paint.minX), top = min(hover.minY, paint.minY)
+        return Rect(x: left, y: top, width: max(hover.maxX, paint.maxX) - left,
+                    height: max(hover.maxY, paint.maxY) - top)
+    }
+    public func containsHoverTarget(_ point: Point) -> Bool {
+        contains(point) || (point.isFinite && homeHoverBounds?.contains(point) == true)
+    }
     public var geometry: MallowGeometry { MallowGeometry(self) }
     /// A bounding box for accessibility and broad-phase checks, never a pick shape.
     public var hitBounds: Rect {
@@ -51,11 +81,12 @@ public struct CompanionSnapshot: Sendable {
     public init(scene: SceneGeometry, presence: Presence, phase: BodyPhase, pose: CharacterPose,
                 feet: Point, windowAnchor: Point, rotation: Double, openness: Double,
                 homeGrip: Double, homeAttachment: Point? = nil, dragGeometry: DragGeometry? = nil,
-                time: Double, gesture: CharacterGesture?, canCatch: Bool, idleMoment: IdleMomentFrame? = nil) {
+                time: Double, gesture: CharacterGesture?, canCatch: Bool, idleMoment: IdleMomentFrame? = nil, homeTuck: Double = 0) {
         self.scene = scene; self.presence = presence; self.phase = phase; self.pose = pose
         self.feet = feet; self.windowAnchor = windowAnchor; self.rotation = rotation
         self.openness = openness; self.homeGrip = homeGrip
         self.homeAttachment = homeAttachment ?? Point(x: scene.home.midX, y: scene.home.maxY)
+        self.homeTuck = homeTuck
         self.idleMoment = idleMoment
         self.dragGeometry = dragGeometry; self.time = time; self.gesture = gesture; self.canCatch = canCatch
     }
