@@ -42,6 +42,7 @@ from pathlib import Path
 import plistlib
 import shutil
 import sys
+import uuid
 
 output = Path(sys.argv[1])
 fixture = sys.argv[2]
@@ -49,7 +50,12 @@ contents = output / (fixture.title() + "Fixture.app/Contents")
 (contents / "MacOS").mkdir(parents=True, exist_ok=True)
 shutil.copy2(output / "lifecycle-validation", contents / "MacOS/lifecycle-validation")
 with (contents / "Info.plist").open("wb") as file:
-    plistlib.dump({"CFBundleIdentifier": "dev.spriglet.lifecycle-validation." + fixture,
+    # A unique daily-use identity prevents Launch Services from selecting an
+    # older fixture in another checkout when opening this app by path.
+    identifier = "dev.spriglet.lifecycle-validation."
+    if fixture == "daily-use":
+        identifier += str(uuid.uuid4()) + "."
+    plistlib.dump({"CFBundleIdentifier": identifier + fixture,
                   "CFBundleExecutable": "lifecycle-validation", "CFBundleName": "Mallow Lifecycle Fixture",
                   "CFBundlePackageType": "APPL", "NSPrincipalClass": "NSApplication", "LSUIElement": True}, file)
 if fixture == "fullscreen":

@@ -1155,7 +1155,9 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         }
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
-        if ["dev.spriglet.lifecycle-validation.introduction", "dev.spriglet.lifecycle-validation.daily-use"].contains(Bundle.main.bundleIdentifier ?? "") {
+        let fixtureID = Bundle.main.bundleIdentifier ?? ""
+        if fixtureID == "dev.spriglet.lifecycle-validation.introduction"
+            || (fixtureID.hasPrefix("dev.spriglet.lifecycle-validation.") && fixtureID.hasSuffix(".daily-use")) {
             let suite = "dev.spriglet.introduction-preview.\(UUID().uuidString)"
             guard let defaults = UserDefaults(suiteName: suite) else { exit(EXIT_FAILURE) }
             let introduction = IntroductionPreferences(defaults: defaults)

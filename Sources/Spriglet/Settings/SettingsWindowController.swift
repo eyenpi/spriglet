@@ -89,8 +89,16 @@ import AppKit
     required init?(coder: NSCoder) { fatalError("Use init(state:loginState:)") }
 
     func present() {
-        // Only an explicit Settings action activates the accessory app.
-        NSApp.activate(); showWindow(nil); window?.makeKeyAndOrderFront(nil)
+        // Request activation while handling the explicit Settings action, before
+        // menu dismissal returns control to the previously active application.
+        NSApp.activate()
+        // Let the menu dismiss before ordering the ordinary Settings window.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let window = self.window else { return }
+            self.showWindow(nil)
+            window.makeKeyAndOrderFront(nil)
+            window.orderFrontRegardless()
+        }
     }
     func update(_ state: SettingsState) {
         preferences = state.preferences

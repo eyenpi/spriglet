@@ -4,7 +4,7 @@ Spriglet is a native desktop companion for Apple silicon Macs running macOS 26 o
 
 ## Interacting with Mallow
 
-Hover to get a reaction. Click to invite. Drag to play. Click elsewhere to return home.
+Hover to get a reaction. Click to invite. Drag to pick up, then release while moving to throw. Click elsewhere to return home.
 
 Mallow starts with its face visible below the notch. A short hover gives a small acknowledgement; a click brings it out. Touch it again for a wave or swing. Drag the character to pick it up. Release near the notch to let it catch; release away from it for gravity and a soft landing. Click elsewhere to bring it home.
 
