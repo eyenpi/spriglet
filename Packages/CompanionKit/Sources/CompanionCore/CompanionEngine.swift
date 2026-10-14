@@ -15,7 +15,8 @@ public struct CompanionEngine: Sendable {
     private var presentation = PoseDynamics()
     private var reveal = Spring(value: 0.6, frequency: 12, damping: 0.9)
     private var homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
-    private var gripSqueeze = Spring(frequency: 14, damping: 1)
+    private static let fingertipRetraction = 38.0
+    private var homeTuck = Spring(frequency: 28, damping: 1)
     private var homeGrip = Spring(value: 1, frequency: 14, damping: 1)
     private var attachmentX = Spring(frequency: 12, damping: 1)
     private var attachmentY = Spring(frequency: 12, damping: 1)
@@ -33,7 +34,7 @@ public struct CompanionEngine: Sendable {
     /// Hosts may supply a fresh session seed; previews and tests default to a
     /// repeatable sequence. The seed is the only external source of randomness.
     public init(scene: SceneGeometry, idleSeed: UInt64 = 0x4D414C4C4F57, boredomTiming: BoredomTiming = BoredomTiming()) {
-        homeRetraction = Spring(value: 0.4 * scene.homeRetractionDistance, frequency: 12, damping: 0.9)
+        homeTuck = Spring(value: scene.form == .fingertipGrip ? 1 : 0, frequency: 28, damping: 1)
         body = BodyPhysics(scene: scene); idle = IdleAnimation(seed: idleSeed)
         boredom = BoredomState(seed: idleSeed, timing: boredomTiming)
         attachmentX = Spring(value: scene.home.midX, frequency: 12, damping: 1)
@@ -45,8 +46,8 @@ public struct CompanionEngine: Sendable {
         animator = MotionAnimator(); presentation = PoseDynamics()
         idle.reset(); boredom.interrupt(at: time, cadence: idleCadence); idleOffset = Spring(frequency: 18, damping: 1)
         reveal = Spring(value: 0.6, frequency: 12, damping: 0.9); gaze = Spring(frequency: 10, damping: 1)
-        homeRetraction = Spring(value: 0.4 * scene.homeRetractionDistance, frequency: 12, damping: 0.9)
-        gripSqueeze = Spring(frequency: 14, damping: 1)
+        homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
+        homeTuck = Spring(value: scene.form == .fingertipGrip ? 1 : 0, frequency: 28, damping: 1)
         homeGrip = Spring(value: 1, frequency: 14, damping: 1)
         attachmentX = Spring(value: scene.home.midX, frequency: 12, damping: 1)
         attachmentY = Spring(value: scene.home.maxY, frequency: 12, damping: 1)
@@ -142,7 +143,7 @@ public struct CompanionEngine: Sendable {
             }
         case .pointerPressed(let point):
             guard point.isFinite else { return }; pointer = point
-            if snapshot.acceptsPress(point) {
+            if snapshot.contains(point) {
                 boredom.interrupt(at: time, cadence: idleCadence)
                 interaction.press = point; interaction.dragging = false
                 interaction.dragOffset = Point(x: point.x - snapshot.feet.x,
@@ -156,6 +157,7 @@ public struct CompanionEngine: Sendable {
             var velocity = body.renderedVelocity
             velocity.x += idleOffset.speed * body.scene.scale
             velocity.y -= homeRetraction.speed * body.scene.scale
+            if body.phase == .hanging { velocity.y -= homeTuck.speed * Self.fingertipRetraction * body.scene.scale }
             body.grab(visibleFeet: snapshot.feet, visibleVelocity: velocity,
                       target: point - interaction.dragOffset, at: time)
             // The visible offset and its velocity now belong to the held body.
@@ -176,7 +178,7 @@ public struct CompanionEngine: Sendable {
                 }
                 if !body.isPendingRelease { endDesktopDrag() }
             }
-            else if point.isFinite && snapshot.acceptsPress(point) { activate() }
+            else if point.isFinite && snapshot.contains(point) { activate() }
             if !dragged { endDesktopDrag() }
         case .cancelInteraction:
             reconfigure(scene: body.scene)
@@ -272,12 +274,17 @@ public struct CompanionEngine: Sendable {
     private mutating func updateHomePresentation(_ dt: Double) {
         let tucked = body.scene.form == .fingertipGrip
         let resting = body.phase == .hanging && interaction.presence == .peek
-        let hovering = tucked ? interaction.hoverAge >= SceneGeometry.fingertipHoverDelay : interaction.hoverAge > 0.35
+        let hovering = tucked ? interaction.hoverAge > 0 : interaction.hoverAge > 0.35
         let openTarget = resting ? (!tucked && hovering ? 0.66 : 0.6) : 1.0
-        let retractionTarget = body.phase == .hanging ? (1 - openTarget) * body.scene.homeRetractionDistance : 0
-        let squeezeTarget = tucked && resting && hovering ? min(movementAmount, 1) : 0
-        if motionPolicy == .reduced { gripSqueeze = Spring(frequency: 14, damping: 1) }
-        else { gripSqueeze.step(dt, target: squeezeTarget) }
+        let retractionTarget = body.phase == .hanging ? (1 - openTarget) * 75 : 0
+        let tuckTarget = tucked && resting && !hovering ? 1.0 : 0
+        if motionPolicy == .reduced { homeTuck.value = tuckTarget; homeTuck.speed = 0 }
+        else {
+            homeTuck.step(dt, target: tuckTarget)
+            if abs(homeTuck.value - tuckTarget) < 0.0001 && abs(homeTuck.speed) < 0.001 {
+                homeTuck.value = tuckTarget; homeTuck.speed = 0
+            }
+        }
         let gripTarget = body.phase == .hanging || body.phase == .catching ? 1.0 : 0
         if motionPolicy == .reduced {
             reveal.value = openTarget; reveal.speed = 0
@@ -348,13 +355,12 @@ public struct CompanionEngine: Sendable {
             pose.lookY = min(28, (1 - open) * 75) + (body.canCatch ? -5 : 0)
             feet = body.phase == .hanging ? Point(x: scene.homeFeet.x, y: scene.homeFeet.y - homeRetraction.value * scene.scale) : feet
         }
+        if body.phase == .hanging { feet.y -= homeTuck.value * Self.fingertipRetraction * scene.scale }
         return CompanionSnapshot(scene: scene, presence: interaction.presence, phase: body.phase, pose: pose,
                                  feet: feet, windowAnchor: body.renderedFeet + offset, rotation: motionPolicy == .full ? body.rotation : 0,
                                  openness: open, homeGrip: clamp(homeGrip.value, 0, 1),
                                  homeAttachment: Point(x: attachmentX.value + offset.x, y: attachmentY.value), dragGeometry: dragGeometry,
                                  time: time, gesture: interaction.gesture,
-                                 canCatch: body.canCatch, idleMoment: boredom.frame, gripSqueeze: clamp(gripSqueeze.value, 0, 1),
-                                 homeHoverArmed: scene.form == .fingertipGrip && body.phase == .hanging
-                                    && interaction.presence == .peek && interaction.hoverAge >= SceneGeometry.fingertipHoverDelay)
+                                 canCatch: body.canCatch, idleMoment: boredom.frame, homeTuck: clamp(homeTuck.value, 0, 1))
     }
 }

@@ -42,6 +42,8 @@ import CompanionRendering
                 pointer = Point(x: area.maxX - 12, y: area.maxY - 6)
             }
             if index == 30 {
+                pointer = engine.snapshot.hitBounds.center
+                engine.send(.pointerMoved(pointer))
                 engine.send(.pointerPressed(pointer)); engine.send(.pointerReleased(pointer))
                 pointer = Point(x: 625, y: 190)
             }

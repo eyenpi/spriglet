@@ -22,7 +22,7 @@ import CompanionCore
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     override func hitTest(_ point: NSPoint) -> NSView? {
         let p = convert(point, from: superview)
-        return acceptsInput && snapshot.acceptsPress(Point(x: p.x - drawingOrigin.x, y: p.y - drawingOrigin.y)) ? self : nil
+        return acceptsInput && snapshot.contains(Point(x: p.x - drawingOrigin.x, y: p.y - drawingOrigin.y)) ? self : nil
     }
     override func accessibilityFrame() -> NSRect {
         let hit = snapshot.inputBounds

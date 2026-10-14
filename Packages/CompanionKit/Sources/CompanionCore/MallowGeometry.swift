@@ -101,8 +101,8 @@ public struct MallowGeometry: Sendable {
                 palm: Rect(x: hand.x - 5 * s, y: hand.y - 3 * s, width: 10 * s, height: 8 * s))
             guard tuck > 0 else { return standard }
             // Only the lower caps of the normal palms clear Home. Arms stay
-            // behind the edge; a hover squeezes inward without revealing a face.
-            let fingertip = Point(x: frame.homeAttachment.x + side * (18 - 2 * frame.gripSqueeze) * s,
+            // behind the edge until the intact character peeks into view.
+            let fingertip = Point(x: frame.homeAttachment.x + side * 18 * s,
                                   y: frame.homeAttachment.y - 1.5 * s)
             let tuckedArm = CharacterCurve(start: shoulder, control1: shoulder,
                 control2: fingertip - Point(x: 0, y: 8 * s), end: fingertip)

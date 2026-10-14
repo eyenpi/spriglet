@@ -105,7 +105,7 @@ import CompanionCore
         view.drawsSnapshot = layout == nil
         primary.update(frame: layout?.inputFrame ?? WindowGeometry.containedFrame(requested, in: context.frame),
                        surface: context.frame, context: context, snapshot: snapshot)
-        let passThrough = !acceptsInput || (!capturesPointer && !snapshot.acceptsPress(pointer))
+        let passThrough = !acceptsInput || (!capturesPointer && !snapshot.contains(pointer))
         if primary.panel.ignoresMouseEvents != passThrough { primary.panel.ignoresMouseEvents = passThrough }
         view.refresh(snapshot: snapshot, acceptsInput: acceptsInput, isPaused: isPaused)
         updatePassive(layout?.canvases ?? [], context: context, snapshot: snapshot)

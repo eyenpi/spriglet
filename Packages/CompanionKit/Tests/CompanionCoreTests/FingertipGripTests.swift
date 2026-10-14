@@ -25,28 +25,6 @@ import Testing
         #expect(!frame.contains(Point(x: frame.scene.home.midX, y: frame.scene.home.maxY - 1)))
     }
 
-    @Test("A passing pointer does nothing; sustained hover squeezes without exposing the face")
-    func quietSqueeze() {
-        var engine = CompanionEngine(scene: scene())
-        let rest = engine.snapshot
-        engine.send(.pointerMoved(fingertip(rest)))
-        advance(&engine, seconds: 0.2)
-        #expect(engine.snapshot.gripSqueeze == 0)
-        engine.send(.pointerMoved(Point(x: -1000, y: -1000)))
-        advance(&engine)
-        #expect(engine.snapshot.gripSqueeze == 0)
-        engine.send(.pointerMoved(fingertip(engine.snapshot)))
-        advance(&engine)
-        let squeezed = engine.snapshot
-        #expect(squeezed.gripSqueeze > 0.99 && squeezed.presence == .peek)
-        #expect(squeezed.openness == 0.6 && squeezed.hitBounds.height < 4)
-        let restingGap = rest.geometry.hands[1].palm.midX - rest.geometry.hands[0].palm.midX
-        let squeezedGap = squeezed.geometry.hands[1].palm.midX - squeezed.geometry.hands[0].palm.midX
-        #expect(squeezedGap < restingGap && restingGap - squeezedGap < 4)
-        engine.send(.pointerMoved(Point(x: -1000, y: -1000))); advance(&engine)
-        #expect(engine.snapshot.gripSqueeze < 0.001 && engine.snapshot.hitBounds.height < 4)
-    }
-
     @Test("Click emerges as exactly Medium and return restores the tiny grip", arguments: [true, false])
     func inviteAndReturn(notch: Bool) {
         var small = CompanionEngine(scene: scene(notch: notch))
@@ -82,12 +60,12 @@ import Testing
         #expect(engine.snapshot.fingertipGrip == 1 && !engine.hasPointerCapture)
     }
 
-    @Test("Reduce Motion disables squeeze and uses intact invited artwork with safe recovery")
+    @Test("Reduce Motion uses intact peek and invited artwork with safe recovery")
     func reducedMotion() {
         var engine = CompanionEngine(scene: scene(notch: false))
         engine.setMotionPolicy(.reduced)
         engine.send(.pointerMoved(fingertip(engine.snapshot))); advance(&engine)
-        #expect(engine.snapshot.gripSqueeze == 0 && engine.snapshot.hitBounds.height < 4)
+        #expect(engine.snapshot.homeTuck == 0 && engine.snapshot.hitBounds.height > 24)
         engine.send(.activate)
         #expect(engine.snapshot.fingertipGrip == 0)
         var medium = CompanionEngine(scene: scene(notch: false, form: .standard))
@@ -101,14 +79,14 @@ import Testing
         #expect(engine.snapshot.phase == .hanging && engine.snapshot.fingertipGrip == 1 && !engine.hasPointerCapture)
     }
 
-    @Test("Small stays parked through autonomous boredom and resets a squeeze on recovery")
+    @Test("Small stays parked through autonomous boredom and restores fingertips on recovery")
     func quietRecovery() {
         var engine = CompanionEngine(scene: scene(), boredomTiming: BoredomTiming(threshold: 0.1, cooldown: 0.1))
         advance(&engine, seconds: 10)
         #expect(engine.requestedIdleMoment == nil && engine.snapshot.hitBounds.height < 4)
         engine.send(.pointerMoved(fingertip(engine.snapshot))); advance(&engine)
         engine.reconfigure(scene: scene(notch: false))
-        #expect(engine.snapshot.gripSqueeze == 0 && engine.snapshot.fingertipGrip == 1)
+        #expect(engine.snapshot.homeTuck == 1 && engine.snapshot.fingertipGrip == 1)
     }
 
     @Test("Display transfers preserve grip and reject a different resting mode")

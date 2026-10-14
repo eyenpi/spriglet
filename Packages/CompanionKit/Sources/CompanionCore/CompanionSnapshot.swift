@@ -19,16 +19,13 @@ public struct CompanionSnapshot: Sendable {
     /// Uses the held target, exactly as release does, even while the body follows.
     public let canCatch: Bool
     public let idleMoment: IdleMomentFrame?
-    /// Continuous, deliberate hover response. The body stays hidden while the
-    /// fingertips move slightly together; it does not invite the character.
-    public let gripSqueeze: Double
-    /// Hands transition independently while the original body emerges intact.
+    /// The intact body and hands retreat together; detachment keeps this
+    /// continuous hand weight while physics takes ownership of body position.
+    public let homeTuck: Double
     public var fingertipGrip: Double {
-        guard scene.form == .fingertipGrip else { return 0 }
-        let reveal = clamp((openness - 0.6) / 0.4, 0, 1)
-        return (1 - reveal * reveal * (3 - 2 * reveal)) * clamp(homeGrip, 0, 1)
+        scene.form == .fingertipGrip ? clamp(homeTuck, 0, 1) * clamp(homeGrip, 0, 1) : 0
     }
-    public let homeHoverArmed: Bool
+    public var isHomeTransitioning: Bool { homeTuck > 0 && homeTuck < 1 }
     /// The resting invitation target is independent of the painted silhouette.
     /// Keep it below the menu bar/housing so it cannot cover menu controls.
     public var homeHoverBounds: Rect? {
@@ -49,9 +46,6 @@ public struct CompanionSnapshot: Sendable {
     }
     public func containsHoverTarget(_ point: Point) -> Bool {
         contains(point) || (point.isFinite && homeHoverBounds?.contains(point) == true)
-    }
-    public func acceptsPress(_ point: Point) -> Bool {
-        contains(point) || (homeHoverArmed && point.isFinite && homeHoverBounds?.contains(point) == true)
     }
     public var geometry: MallowGeometry { MallowGeometry(self) }
     /// A bounding box for accessibility and broad-phase checks, never a pick shape.
@@ -85,13 +79,12 @@ public struct CompanionSnapshot: Sendable {
     public init(scene: SceneGeometry, presence: Presence, phase: BodyPhase, pose: CharacterPose,
                 feet: Point, windowAnchor: Point, rotation: Double, openness: Double,
                 homeGrip: Double, homeAttachment: Point? = nil, dragGeometry: DragGeometry? = nil,
-                time: Double, gesture: CharacterGesture?, canCatch: Bool, idleMoment: IdleMomentFrame? = nil, gripSqueeze: Double = 0, homeHoverArmed: Bool = false) {
+                time: Double, gesture: CharacterGesture?, canCatch: Bool, idleMoment: IdleMomentFrame? = nil, homeTuck: Double = 0) {
         self.scene = scene; self.presence = presence; self.phase = phase; self.pose = pose
         self.feet = feet; self.windowAnchor = windowAnchor; self.rotation = rotation
         self.openness = openness; self.homeGrip = homeGrip
         self.homeAttachment = homeAttachment ?? Point(x: scene.home.midX, y: scene.home.maxY)
-        self.homeHoverArmed = homeHoverArmed
-        self.gripSqueeze = gripSqueeze
+        self.homeTuck = homeTuck
         self.idleMoment = idleMoment
         self.dragGeometry = dragGeometry; self.time = time; self.gesture = gesture; self.canCatch = canCatch
     }

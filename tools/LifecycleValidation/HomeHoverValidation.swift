@@ -33,18 +33,23 @@ import CompanionCore
                 let local = NSPoint(x: point.x + view.drawingOrigin.x, y: point.y + view.drawingOrigin.y)
                 return view.hitTest(view.convert(local, to: view.superview)) === view
             }
-            clock.onTick?(0.2)
-            try LifecycleValidation.require(panel.ignoresMouseEvents && !picks(target), "Unarmed transparent target intercepted clicks")
-            for _ in 0..<8 { clock.onTick?(0.05) }
-            try LifecycleValidation.require(view.snapshot.homeHoverArmed && !panel.ignoresMouseEvents && picks(target),
-                                            "Broad hover did not arm native picking")
-            try LifecycleValidation.require(panel.frame.contains(NSPoint(x: pointer.x, y: pointer.y)),
-                                            "Native canvas clipped the larger target")
+            clock.onTick?(1 / 120.0)
+            try LifecycleValidation.require(view.snapshot.homeTuck < 1 && panel.ignoresMouseEvents && !picks(target),
+                                            "Nearby hover did not reveal immediately or intercepted empty space")
+            for _ in 0..<14 { clock.onTick?(0.05) }
+            try LifecycleValidation.require(view.snapshot.homeTuck == 0 && view.snapshot.hitBounds.height > 24,
+                                            "Peek did not reveal the normal face")
+            let corner = Point(x: view.snapshot.hitBounds.minX + 1, y: view.snapshot.hitBounds.maxY - 1)
+            pointer = context.globalPoint(scene: corner); clock.onTick?(1 / 120.0)
+            try LifecycleValidation.require(panel.ignoresMouseEvents && !picks(corner), "Empty space around the peek intercepted clicks")
+            let face = view.snapshot.hitBounds.center
+            pointer = context.globalPoint(scene: face); clock.onTick?(1 / 120.0)
+            try LifecycleValidation.require(!panel.ignoresMouseEvents && picks(face), "Visible face was not immediately pickable")
             let above = Point(x: area.midX, y: area.minY - 1)
-            let outside = Point(x: area.maxX + 2, y: area.midY)
+            let outside = Point(x: area.maxX + 80, y: area.midY)
             try LifecycleValidation.require(!picks(above) && !picks(outside), "Armed target covered housing or unrelated empty space")
             func event(_ type: NSEvent.EventType) throws -> NSEvent {
-                let local = NSPoint(x: target.x + view.drawingOrigin.x, y: target.y + view.drawingOrigin.y)
+                let local = NSPoint(x: face.x + view.drawingOrigin.x, y: face.y + view.drawingOrigin.y)
                 guard let event = NSEvent.mouseEvent(with: type, location: view.convert(local, to: nil),
                     modifierFlags: [], timestamp: 0, windowNumber: panel.windowNumber, context: nil,
                     eventNumber: 1, clickCount: 1, pressure: type == .leftMouseDown ? 1 : 0) else {
@@ -54,23 +59,23 @@ import CompanionCore
             }
             view.mouseDown(with: try event(.leftMouseDown))
             view.mouseUp(with: try event(.leftMouseUp))
-            try LifecycleValidation.require(view.snapshot.presence == .engaged && !view.snapshot.homeHoverArmed,
-                                            "Native click in empty target space did not invite Mallow")
+            try LifecycleValidation.require(view.snapshot.presence == .engaged && view.snapshot.homeHoverBounds == nil,
+                                            "Native click on the revealed face did not invite Mallow")
             runtime.bringHome()
             panel = try LifecycleValidation.visiblePanel(); view = LifecycleValidation.view(panel)
-            for _ in 0..<8 { clock.onTick?(0.05) }
-            try LifecycleValidation.require(view.snapshot.homeHoverArmed, "Home did not rearm after a fresh dwell")
-            runtime.setPaused(true); runtime.setPaused(false)
-            try LifecycleValidation.require(!view.snapshot.homeHoverArmed && panel.ignoresMouseEvents,
-                                            "Pause/resume retained an armed invisible target")
-            for _ in 0..<8 { clock.onTick?(0.05) }
-            pointer = context.globalPoint(scene: outside); clock.onTick?(0.05)
-            try LifecycleValidation.require(!view.snapshot.homeHoverArmed && panel.ignoresMouseEvents,
-                                            "Leaving the hover area retained native capture")
+            for _ in 0..<14 { clock.onTick?(0.05) }
+            try LifecycleValidation.require(view.snapshot.homeTuck == 0, "Home did not peek when the pointer remained nearby")
+            runtime.setPaused(true)
+            try LifecycleValidation.require(panel.ignoresMouseEvents && !picks(face), "Pause retained pointer input")
+            runtime.setPaused(false)
+            pointer = context.globalPoint(scene: outside)
+            for _ in 0..<14 { clock.onTick?(0.05) }
+            try LifecycleValidation.require(view.snapshot.homeTuck == 1 && view.snapshot.hitBounds.height < 4 && panel.ignoresMouseEvents,
+                                            "Leaving did not restore the tiny resting grip")
             preferences.characterSize = .medium; runtime.updatePreferences(preferences)
             view = LifecycleValidation.view(try LifecycleValidation.visiblePanel())
             try LifecycleValidation.require(view.snapshot.homeHoverBounds == nil, "Medium inherited the broad target")
         }
-        print("Home hover passed: both display types, delayed native capture, compensated empty-space click, pause/recovery and exit.")
+        print("Home hover passed: both display types, immediate face peek, click-through empty space, compensated face click, pause/recovery and exit.")
     }
 }

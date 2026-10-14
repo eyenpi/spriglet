@@ -238,7 +238,8 @@ import CompanionCore
         introduction?.advance(by: elapsed); refresh()
     }
     private func frameRate(for snapshot: CompanionSnapshot) -> Float {
-        let companionRate = conditions.frameRate(presence: snapshot.presence, phase: snapshot.phase)
+        let presence = snapshot.isHomeTransitioning ? Presence.engaged : snapshot.presence
+        let companionRate = conditions.frameRate(presence: presence, phase: snapshot.phase)
         return introduction?.motionPolicy == .full ? max(companionRate, min(30, conditions.maximumFrameRate)) : companionRate
     }
     private func refresh() {
