@@ -6,15 +6,16 @@ Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), whic
 
 ## 0.3.3 — Small moments of curiosity, quietly polished
 
-2026-10-11 · App 0.3.3 · Build 8
+2026-10-19 · App 0.3.3 · Build 9
 
-Rarer, subtler idle moments and clearer first-run instructions for clicking, dragging, throwing and catching Mallow.
+Rarer, subtler idle moments, clearer first-run instructions, more reliable Settings focus and a compact fingertip mode for Mallow.
 
 Prepared Mac App Store candidate. Upload, Apple review and manual public release are separate steps; public availability has not been established.
 
 ### Added
 
 - Rare, short boredom moments: a small wander, nap, doodle or fidget, gated off on battery or unknown power, Low Power Mode, Reduce Motion and serious or critical thermal pressure.
+- Small fingertip mode keeps Mallow tucked behind Home with two fingertips visible, then reveals the intact Medium-sized character on a nearby hover or direct interaction.
 
 ### Changed
 
@@ -24,6 +25,15 @@ Prepared Mac App Store candidate. Upload, Apple review and manual public release
 - Optional Launch at Login wording states its default-off behavior and explains pending macOS approval.
 - Idle moments wait five quiet minutes initially and at least eight minutes between moments; Gentle doubles both waits. Wander travel is halved.
 - Support, privacy and website copy describe local power-source gating and distinguish Apple approval from public availability.
+- Medium is now the default at the former Small size (80%); Large uses the former Medium size (100%), and the old 120% option is removed.
+- Existing size preferences migrate once to Medium while preserving movement and Home choices; later size selections persist normally.
+- Small stays tucked during autonomous idle moments, ignores fast pointer passes and preserves direct fingertip dragging and Reduce Motion behavior.
+- Prepare the integrated 0.3.3 candidate as build 9 with aligned Xcode and bundled release metadata.
+
+### Fixed
+
+- Settings requests activation during the explicit user action and comes to the front after menu dismissal, including after closing it and switching to another app.
+- Quick fingertip clicks keep their target while the button is held so Small can reveal Mallow reliably on release.
 
 ### Known limitations
 
