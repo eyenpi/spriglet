@@ -6,7 +6,7 @@ The app and website share the sources in `Configuration/Shared` and the app icon
 
 1. **Validate Spriglet** waits for the owner's [CI approval](../CI/README.md) on each PR revision. It builds and checks without Cloudflare or Apple secrets. Successful approved PR builds upload `website-static` and `app-packages`, retained for seven days.
 2. **Deploy website preview** follows only a successful approved PR workflow. Failed or canceled runs are filtered before allocating a runner. The uploader uses trusted code from protected `main`, checks the originating workflow, current PR commit, artifact identity/digest, and permitted files, and never executes PR source or artifact scripts/configuration.
-3. A PR gets `meetspriglet-pr-N` on the account's `workers.dev` subdomain. The preview keeps shared artwork and content with trusted security headers and `noindex`. A new commit needs new CI approval before updating it. Before publishing, the uploader removes previews for closed PRs and recounts against the 20-preview cap. Preview publishing shares one concurrency group, so cleanup, counting and upload cannot race another workflow publisher. Running deployments are never canceled by this group. GitHub retains one pending publisher; a newer job can replace an older pending job, including one for another PR. Rerun that preview workflow if its PR still needs a preview. Open PR previews are retained; if they fill the cap, a new preview fails with an explanation.
+3. A PR gets `meetspriglet-pr-N` on the account's `workers.dev` subdomain. The preview keeps shared artwork and content with trusted security headers and `noindex`. A new commit needs new CI approval before updating it. Before publishing, the uploader removes previews for closed PRs and recounts against the 20-preview cap. Preview publishing shares one concurrency group with `queue: max`, so cleanup, counting and upload cannot race another workflow publisher. Up to 100 pending publishers wait instead of replacing unrelated PR publications; a full queue rejects additional jobs. Running deployments are never canceled by this group. Open PR previews are retained; if they fill the cap, a new preview fails with an explanation.
 4. Production updates and rollback are explicit local operations. Pushes, release tags, PR closure, and schedules do not launch deployment runners. Existing production content stays live until an explicit deployment.
 
 The new `website-preview.yml` handler becomes active when merged into the default branch. The registered legacy build/security/deploy/monitor workflows remain disabled. External-contributor workflow approval is separate from the owner's `ci-review` approval; neither gives PR code deployment secrets.
@@ -41,6 +41,8 @@ python3 tools/AppStore/website/check_http.py https://meetspriglet.com
 
 Tests cover artifact traversal/links/duplicates/size limits, trusted headers, shared content preservation, workflow provenance, fork identity, stale/closed PRs, rollback restrictions, and cleanup of reopened PRs. The uploader also verifies the downloaded archive's SHA-256 against GitHub and checks exact public bytes after upload. A preview is untrusted public content; `noindex` is not authentication.
 
+The pinned actionlint 1.7.12 parser does not recognize GitHub's `queue` setting. The security runner validates the exact preview concurrency block (`website-preview-publish`, cancellation disabled, `queue: max`) when handling that one parser diagnostic. Invalid values, other blocks, other files and all unrelated diagnostics still fail. Remove this compatibility check when the pinned upstream parser supports queueing. Its regression tests run in the existing security suite.
+
 ## Local publishing, cleanup, monitoring, and rollback
 
 After merging and validating the intended production revision, use the authenticated local Cloudflare setup:
@@ -64,7 +66,11 @@ python3 tools/WebsiteDeployment/deploy.py prune --dry-run
 python3 tools/WebsiteDeployment/deploy.py prune
 ```
 
-Pruning targets only canonical `meetspriglet-pr-N` Workers, checks each PR against GitHub, and rechecks closed PRs immediately before deletion. Unknown PR states and API failures stop cleanup. It leaves production and unrelated Workers alone. Each successful cleanup also marks the PR's GitHub deployments inactive. Cleanup is safe to retry if a Worker has already been removed.
+Pruning targets only canonical `meetspriglet-pr-N` Workers, checks each PR against GitHub, and rechecks closed PRs immediately before deletion. Unknown PR states and API failures stop cleanup. It leaves production and unrelated Workers alone.
+
+Each pass examines at most 20 Workers and writes at most 50 deployment statuses, reserving request headroom for publication. One GraphQL query per closed PR reads current statuses for its 100 most recent deployments, matching the previous cleanup window. Already inactive records are left untouched. Reconciliation finishes before Worker deletion, so a status API failure leaves the Worker discoverable for retry; a deletion failure can be retried without repeating completed status updates.
+
+If the status budget runs out, the partially reconciled Worker remains and is listed under `deferred` in the command output. A later prune resumes by skipping completed records. Publication can proceed if enough slots were freed; otherwise it fails explicitly with pending cleanup work. Cleanup is also safe to retry if a Worker has already been removed.
 
 To remove one closed PR preview explicitly:
 

@@ -26,6 +26,9 @@ LEGACY_FILES = frozenset(('index.html', 'support.html', 'privacy.html', '404.htm
 FILES = LEGACY_FILES | frozenset(('home.css', 'home.js', 'instrument-serif.woff2', 'instrument-serif-italic.woff2'))
 MAX_ARCHIVE = 8 * 1024 * 1024
 MAX_CONTENT = 4 * 1024 * 1024
+MAX_CLEANUP_PREVIEWS = 20
+# Leave room for publication below GitHub's 80 content-generating requests/minute limit.
+MAX_CLEANUP_STATUS_UPDATES = 50
 REQUIRED_CHECKS = frozenset(('macos', 'security-checks', 'codeql-actions', 'codeql-python', 'codeql-swift'))
 
 
@@ -253,11 +256,41 @@ def preview_workers():
                   if re.fullmatch(r'meetspriglet-pr-[1-9][0-9]{0,11}', worker['id']))
 
 
-def clean_preview(pr_number):
+def preview_deployment_statuses(pr_number):
+    owner, repository = REPOSITORY.split('/')
+    response = api('graphql', method='POST', data={
+        'query': '''query($owner: String!, $repository: String!, $environment: String!) {
+          repository(owner: $owner, name: $repository) {
+            deployments(first: 100, environments: [$environment],
+                        orderBy: {field: CREATED_AT, direction: DESC}) {
+              nodes { databaseId latestStatus { state } }
+            }
+          }
+        }''',
+        'variables': {'owner': owner, 'repository': repository, 'environment': f'preview/pr-{pr_number}'},
+    })
+    if response.get('errors'):
+        raise ValueError('GitHub deployment status lookup failed')
+    return response['data']['repository']['deployments']['nodes']
+
+
+def clean_preview(pr_number, status_budget=MAX_CLEANUP_STATUS_UPDATES):
     pr_number = positive_number(pr_number)
-    # A reopened PR must not be deleted by a delayed close event.
+    result = {'cleaned': False, 'status_updates': 0}
     if not pr_is_closed(pr_number):
-        return {'cleaned': False, 'reason': 'PR is open again'}
+        return {**result, 'reason': 'PR is open again'}
+    for deployment in preview_deployment_statuses(pr_number):
+        status = deployment['latestStatus']
+        if status and status['state'] == 'INACTIVE':
+            continue
+        if result['status_updates'] == status_budget:
+            return {**result, 'deferred': True, 'reason': 'Cleanup status budget reached; retry prune'}
+        identifier = positive_number(deployment['databaseId'])
+        github(f'deployments/{identifier}/statuses', method='POST', data={'state': 'inactive', 'auto_inactive': False})
+        result['status_updates'] += 1
+    # Keep the Worker discoverable until reconciliation succeeds, then recheck reopening.
+    if not pr_is_closed(pr_number):
+        return {**result, 'reason': 'PR is open again'}
     name = worker_name('pr-' + str(pr_number))
     try:
         api(f'accounts/{account_id()}/workers/scripts/{name}', method='DELETE', cloudflare=True)
@@ -265,24 +298,26 @@ def clean_preview(pr_number):
         details = json.loads(error.read())
         if error.code != 404 or not any(item.get('code') == 10007 for item in details.get('errors', [])):
             raise ValueError('Cloudflare preview deletion failed') from None
-    deployments = github(f'deployments?environment=preview%2Fpr-{pr_number}&per_page=100')
-    for deployment in deployments:
-        github(f"deployments/{deployment['id']}/statuses", method='POST', data={'state': 'inactive', 'auto_inactive': False})
-    return {'cleaned': True, 'target': name}
+    return {**result, 'cleaned': True, 'target': name}
 
 
 def prune_previews(dry_run=False):
-    result = {'dry_run': dry_run, 'cleaned': [], 'would_clean': [], 'retained': []}
-    for name in preview_workers():
+    result = {'dry_run': dry_run, 'cleaned': [], 'would_clean': [], 'retained': [], 'deferred': [], 'status_updates': 0}
+    workers = preview_workers()
+    result['deferred'] = workers[MAX_CLEANUP_PREVIEWS:]
+    for name in workers[:MAX_CLEANUP_PREVIEWS]:
         pr_number = positive_number(name.removeprefix('meetspriglet-pr-'))
-        if not pr_is_closed(pr_number):
-            result['retained'].append(name)
-        elif dry_run:
-            result['would_clean'].append(name)
-        elif clean_preview(pr_number)['cleaned']:
-            result['cleaned'].append(name)
+        if dry_run:
+            result['would_clean' if pr_is_closed(pr_number) else 'retained'].append(name)
         else:
-            result['retained'].append(name)
+            cleanup = clean_preview(pr_number, MAX_CLEANUP_STATUS_UPDATES - result['status_updates'])
+            result['status_updates'] += cleanup['status_updates']
+            if cleanup['cleaned']:
+                result['cleaned'].append(name)
+            elif cleanup.get('deferred'):
+                result['deferred'].append(name)
+            else:
+                result['retained'].append(name)
     return result
 
 
@@ -302,9 +337,12 @@ def deploy(run_id, expected_target, rollback):
         public = work / 'public'; public.mkdir()
         unpack_static(download_artifact(resolved['artifact'], resolved['digest']), public, preview)
         if preview:
-            print(json.dumps({'preview_cleanup': prune_previews()}, sort_keys=True))
+            cleanup = prune_previews()
+            print(json.dumps({'preview_cleanup': cleanup}, sort_keys=True))
             previews = preview_workers()
             if len(previews) >= 20 and name not in previews:
+                if cleanup['deferred']:
+                    raise ValueError('Preview limit reached (20); bounded cleanup has pending work. Retry prune before deploying a new preview')
                 raise ValueError('Preview limit reached (20) after pruning closed PRs. Close an active preview PR before deploying another preview')
         config = {'name': name, 'account_id': account, 'compatibility_date': '2026-09-15',
                   'send_metrics': False, 'workers_dev': preview, 'preview_urls': False,
@@ -348,7 +386,7 @@ def deploy(run_id, expected_target, rollback):
             current = resolve_run(run_id, rollback)
             if not current['deploy']:
                 if preview and github(f"pulls/{resolved['pr']}")['state'] == 'closed':
-                    clean_preview(resolved['pr'])
+                    clean_preview(resolved['pr'], MAX_CLEANUP_STATUS_UPDATES - cleanup['status_updates'])
                 github(status_path, method='POST', data={'state': 'inactive', 'auto_inactive': False})
                 return output({'deploy': False, 'reason': 'A newer change superseded this deployment'})
             github(status_path, method='POST', data={'state': 'success', 'environment_url': origin, 'auto_inactive': True})
