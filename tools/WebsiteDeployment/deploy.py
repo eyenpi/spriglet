@@ -40,12 +40,8 @@ class NoRedirect(HTTPRedirectHandler):
         return None
 
 
-def github_rate_limit_delay(status, headers, message, retry, now):
+def github_rate_limit_delay(headers, retry, now):
     headers = {key.lower(): value for key, value in headers.items()}
-    if status != 429 and not (status == 403 and (
-            'retry-after' in headers or headers.get('x-ratelimit-remaining') == '0'
-            or 'rate limit' in message.lower() or 'abuse detection' in message.lower())):
-        return None
     delay = float(headers['retry-after']) if 'retry-after' in headers else 60 * 2 ** retry
     if headers.get('x-ratelimit-remaining') == '0' and 'x-ratelimit-reset' in headers:
         reset_delay = float(headers['x-ratelimit-reset']) - now + 1
@@ -53,6 +49,21 @@ def github_rate_limit_delay(status, headers, message, retry, now):
     if not math.isfinite(delay):
         raise ValueError('Invalid GitHub rate limit delay')
     return max(1, delay)
+
+
+def graphql_rate_limited(result):
+    errors = result.get('errors')
+    if not errors:
+        return False
+    for error in errors:
+        kind = error.get('type') or error.get('extensions', {}).get('code')
+        if kind:
+            if kind != 'RATE_LIMITED':
+                return False
+        elif not any(phrase in error.get('message', '').lower() for phrase in (
+                'rate limit exceeded', 'secondary rate limit', 'abuse detection')):
+            return False
+    return True
 
 
 def api(path, method='GET', data=None, cloudflare=False):
@@ -65,28 +76,35 @@ def api(path, method='GET', data=None, cloudflare=False):
     }, data=None if data is None else json.dumps(data).encode())
     waited = 0
     for retry in range(MAX_GITHUB_RATE_LIMIT_RETRIES + 1):
+        cause = None
         try:
             # Never forward a credential to a redirect destination.
             with build_opener(NoRedirect()).open(request, timeout=30) as response:
                 body = response.read()
-            break
+                headers = response.headers
         except HTTPError as error:
             if cloudflare or error.code not in (403, 429):
                 raise
-            message = error.read().decode('utf-8', errors='replace')
-            delay = github_rate_limit_delay(error.code, error.headers, message, retry, time.time())
-            if delay is None:
+            message = error.read().decode('utf-8', errors='replace').lower()
+            headers = {key.lower(): value for key, value in error.headers.items()}
+            if error.code != 429 and not (
+                    'retry-after' in headers or headers.get('x-ratelimit-remaining') == '0'
+                    or 'rate limit' in message or 'abuse detection' in message):
                 raise
             error.close()
-            if retry == MAX_GITHUB_RATE_LIMIT_RETRIES or waited + delay > MAX_GITHUB_RATE_LIMIT_WAIT:
-                raise ValueError('GitHub rate limit retry budget exceeded; retry after the rate limit resets') from error
-            print(f'GitHub rate limit; retrying in {delay:g} seconds', flush=True)
-            time.sleep(delay)
-            waited += delay
-    result = json.loads(body) if body else {}
-    if cloudflare and result.get('success') is not True:
-        raise ValueError('Cloudflare API did not confirm success')
-    return result
+            cause = error
+        else:
+            result = json.loads(body) if body else {}
+            if cloudflare and result.get('success') is not True:
+                raise ValueError('Cloudflare API did not confirm success')
+            if cloudflare or path != 'graphql' or not graphql_rate_limited(result):
+                return result
+        delay = github_rate_limit_delay(headers, retry, time.time())
+        if retry == MAX_GITHUB_RATE_LIMIT_RETRIES or waited + delay > MAX_GITHUB_RATE_LIMIT_WAIT:
+            raise ValueError('GitHub rate limit retry budget exceeded; retry after the rate limit resets') from cause
+        print(f'GitHub rate limit; retrying in {delay:g} seconds', flush=True)
+        time.sleep(delay)
+        waited += delay
 
 
 def github(path, **kwargs):

@@ -261,7 +261,9 @@ class PreviewCleanupTests(unittest.TestCase):
                 self.addCleanup(error.close)
                 raise error
             writes.append(now[0])
-            return io.BytesIO(b'{}')
+            response = io.BytesIO(b'{}')
+            response.headers = {}
+            return response
         def sleep(seconds):
             waits.append(seconds)
             now[0] += seconds
