@@ -240,11 +240,24 @@ def account_id():
     return value
 
 
+def pr_is_closed(pr_number):
+    state = github(f'pulls/{pr_number}')['state']
+    if state not in ('open', 'closed'):
+        raise ValueError('Unexpected PR state; refusing preview cleanup')
+    return state == 'closed'
+
+
+def preview_workers():
+    workers = api(f'accounts/{account_id()}/workers/scripts', cloudflare=True)['result']
+    return sorted(worker['id'] for worker in workers
+                  if re.fullmatch(r'meetspriglet-pr-[1-9][0-9]{0,11}', worker['id']))
+
+
 def clean_preview(pr_number):
     pr_number = positive_number(pr_number)
     # A reopened PR must not be deleted by a delayed close event.
-    if github(f'pulls/{pr_number}')['state'] != 'closed':
-        return output({'cleaned': False, 'reason': 'PR is open again'})
+    if not pr_is_closed(pr_number):
+        return {'cleaned': False, 'reason': 'PR is open again'}
     name = worker_name('pr-' + str(pr_number))
     try:
         api(f'accounts/{account_id()}/workers/scripts/{name}', method='DELETE', cloudflare=True)
@@ -255,7 +268,22 @@ def clean_preview(pr_number):
     deployments = github(f'deployments?environment=preview%2Fpr-{pr_number}&per_page=100')
     for deployment in deployments:
         github(f"deployments/{deployment['id']}/statuses", method='POST', data={'state': 'inactive', 'auto_inactive': False})
-    output({'cleaned': True, 'target': name})
+    return {'cleaned': True, 'target': name}
+
+
+def prune_previews(dry_run=False):
+    result = {'dry_run': dry_run, 'cleaned': [], 'would_clean': [], 'retained': []}
+    for name in preview_workers():
+        pr_number = positive_number(name.removeprefix('meetspriglet-pr-'))
+        if not pr_is_closed(pr_number):
+            result['retained'].append(name)
+        elif dry_run:
+            result['would_clean'].append(name)
+        elif clean_preview(pr_number)['cleaned']:
+            result['cleaned'].append(name)
+        else:
+            result['retained'].append(name)
+    return result
 
 
 def deploy(run_id, expected_target, rollback):
@@ -269,15 +297,15 @@ def deploy(run_id, expected_target, rollback):
         wait_production_checks(resolved['sha'])
     name = worker_name(expected_target)
     account = account_id()
-    if preview:
-        workers = api(f'accounts/{account}/workers/scripts', cloudflare=True)['result']
-        previews = [worker for worker in workers if re.fullmatch(r'meetspriglet-pr-[0-9]+', worker['id'])]
-        if len(previews) >= 20 and not any(worker['id'] == name for worker in previews):
-            raise ValueError('Preview limit reached (20). Run the documented cleanup command for closed PRs before deploying another preview')
     with tempfile.TemporaryDirectory(prefix='spriglet-website-') as directory:
         work = Path(directory)
         public = work / 'public'; public.mkdir()
         unpack_static(download_artifact(resolved['artifact'], resolved['digest']), public, preview)
+        if preview:
+            print(json.dumps({'preview_cleanup': prune_previews()}, sort_keys=True))
+            previews = preview_workers()
+            if len(previews) >= 20 and name not in previews:
+                raise ValueError('Preview limit reached (20) after pruning closed PRs. Close an active preview PR before deploying another preview')
         config = {'name': name, 'account_id': account, 'compatibility_date': '2026-09-15',
                   'send_metrics': False, 'workers_dev': preview, 'preview_urls': False,
                   'assets': {'directory': str(public), 'html_handling': 'auto-trailing-slash', 'not_found_handling': '404-page'},
@@ -335,16 +363,21 @@ def deploy(run_id, expected_target, rollback):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('resolve', 'deploy', 'cleanup'))
+    parser.add_argument('action', choices=('resolve', 'deploy', 'cleanup', 'prune'))
     parser.add_argument('--run', type=positive_number)
     parser.add_argument('--target')
     parser.add_argument('--pr', type=positive_number)
     parser.add_argument('--rollback', action='store_true')
+    parser.add_argument('--dry-run', action='store_true', help='List closed previews without deleting them (prune only)')
     args = parser.parse_args()
+    if args.dry_run and args.action != 'prune':
+        parser.error('--dry-run is only supported with prune')
     if args.action == 'resolve':
         resolve()
     elif args.action == 'cleanup':
-        clean_preview(args.pr)
+        output(clean_preview(args.pr))
+    elif args.action == 'prune':
+        output(prune_previews(dry_run=args.dry_run))
     else:
         deploy(args.run, args.target, args.rollback)
 

@@ -6,6 +6,7 @@ import stat
 import tempfile
 import unittest
 from unittest.mock import patch
+from urllib.error import HTTPError
 import zipfile
 
 import deploy
@@ -82,6 +83,170 @@ class ArtifactTests(unittest.TestCase):
                              {'instrument-serif.woff2': b'<script>oops</script>'}):
             with self.subTest(replacements=replacements), self.assertRaises(ValueError):
                 self.unpack(site_archive(replacements))
+
+
+class PreviewCleanupTests(unittest.TestCase):
+    def setUp(self):
+        self.workers = {f'meetspriglet-pr-{number}' for number in range(1, 21)}
+        self.workers.add('meetspriglet-support')
+        self.states = {number: 'closed' for number in range(1, 21)}
+        self.states[99] = 'open'
+        self.deleted = []
+        self.statuses = []
+        self.artifact_data = site_archive()
+        self.resolved = {'deploy': True, 'pr': 99, 'target': 'pr-99', 'sha': 'a' * 40,
+                         'artifact': 30, 'digest': 'sha256:' + 'b' * 64}
+
+    def cloudflare(self, path, method='GET', **kwargs):
+        if method == 'DELETE':
+            name = path.rsplit('/', 1)[1]
+            self.deleted.append(name)
+            self.workers.remove(name)
+            return {'success': True}
+        if path.endswith('/workers/scripts'):
+            return {'result': [{'id': name} for name in sorted(self.workers)]}
+        if path.endswith('/workers/subdomain'):
+            return {'result': {'subdomain': 'preview-test'}}
+        raise AssertionError(path)
+
+    def github(self, path, method='GET', data=None):
+        if path.startswith('pulls/'):
+            return {'state': self.states[int(path.split('/')[1])]}
+        if path.startswith('deployments?'):
+            return []
+        if path == 'deployments':
+            return {'id': 200}
+        if path.endswith('/statuses'):
+            self.statuses.append((path, data))
+            return {}
+        raise AssertionError(path)
+
+    def run_deploy(self):
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.cloudflare), \
+                patch.object(deploy, 'github', side_effect=self.github), \
+                patch.object(deploy, 'resolve_run', return_value=self.resolved), \
+                patch.object(deploy, 'wait_production_checks'), \
+                patch.object(deploy, 'download_artifact', return_value=self.artifact_data), \
+                patch.object(deploy.subprocess, 'run') as run, patch.object(deploy, 'output') as output:
+            self.upload = run
+            run.return_value.returncode = 0
+            deploy.deploy(20, self.resolved['target'], False)
+        return run, output
+
+    def test_full_stale_inventory_no_longer_blocks_a_new_preview(self):
+        run, output = self.run_deploy()
+        self.assertEqual(set(self.deleted), {f'meetspriglet-pr-{n}' for n in range(1, 21)})
+        self.assertEqual(self.workers, {'meetspriglet-support'})
+        self.assertEqual(run.call_count, 2)
+        self.assertEqual(self.statuses[-1][1]['state'], 'success')
+        self.assertEqual(output.call_args.args[0]['target'], 'pr-99')
+
+    def test_active_previews_still_enforce_the_limit(self):
+        self.states = dict.fromkeys(self.states, 'open')
+        with self.assertRaisesRegex(ValueError, 'Preview limit reached'):
+            self.run_deploy()
+        self.assertEqual(self.deleted, [])
+
+    def test_invalid_artifact_does_not_delete_previews(self):
+        self.artifact_data = site_archive(extra=('../untrusted', b'invalid'))
+        with self.assertRaises(ValueError):
+            self.run_deploy()
+        self.assertEqual(self.deleted, [])
+        self.upload.assert_not_called()
+
+    def test_existing_preview_can_update_at_the_limit(self):
+        self.states = dict.fromkeys(self.states, 'open')
+        self.workers.remove('meetspriglet-pr-20')
+        self.workers.add('meetspriglet-pr-99')
+        run, output = self.run_deploy()
+        self.assertEqual(self.deleted, [])
+        self.assertEqual(run.call_count, 2)
+        self.assertEqual(output.call_args.args[0]['target'], 'pr-99')
+
+    def test_pruning_leaves_open_and_unrelated_workers(self):
+        self.workers = {'meetspriglet-pr-1', 'meetspriglet-pr-2', 'meetspriglet-support',
+                        'other-pr-3', 'meetspriglet-pr-0', 'meetspriglet-pr-01',
+                        'meetspriglet-pr-1234567890123'}
+        self.states[2] = 'open'
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.cloudflare), \
+                patch.object(deploy, 'github', side_effect=self.github):
+            result = deploy.prune_previews()
+        self.assertEqual(self.deleted, ['meetspriglet-pr-1'])
+        self.assertEqual(result['cleaned'], ['meetspriglet-pr-1'])
+        self.assertEqual(result['retained'], ['meetspriglet-pr-2'])
+        self.assertEqual(len(self.workers), 6)
+
+    def test_dry_run_lists_candidates_without_mutations(self):
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.cloudflare), \
+                patch.object(deploy, 'github', side_effect=self.github):
+            result = deploy.prune_previews(dry_run=True)
+        self.assertEqual(len(result['would_clean']), 20)
+        self.assertEqual(result['cleaned'], [])
+        self.assertEqual(self.deleted, [])
+        self.assertEqual(self.statuses, [])
+
+    def test_reopened_pr_is_rechecked_at_deletion(self):
+        self.workers = {'meetspriglet-pr-1'}
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.cloudflare), \
+                patch.object(deploy, 'github', side_effect=[{'state': 'closed'}, {'state': 'open'}]):
+            result = deploy.prune_previews()
+        self.assertEqual(self.deleted, [])
+        self.assertEqual(result['retained'], ['meetspriglet-pr-1'])
+
+    def test_unknown_pr_state_stops_cleanup(self):
+        self.workers = {'meetspriglet-pr-1'}
+        self.states[1] = 'unknown'
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.cloudflare), \
+                patch.object(deploy, 'github', side_effect=self.github), self.assertRaises(ValueError):
+            deploy.prune_previews()
+        self.assertEqual(self.deleted, [])
+
+    def test_lookup_failure_stops_before_deleting(self):
+        error = HTTPError('https://api.github.com', 503, '', {}, io.BytesIO())
+        self.addCleanup(error.close)
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.cloudflare), \
+                patch.object(deploy, 'github', side_effect=error), \
+                self.assertRaises(HTTPError):
+            deploy.prune_previews()
+        self.assertEqual(self.deleted, [])
+
+    def test_deletion_failure_stops_deployment_before_upload(self):
+        error = HTTPError('https://api.cloudflare.com', 403, '', {}, io.BytesIO(b'{"errors": []}'))
+        self.addCleanup(error.close)
+        original = self.cloudflare
+        def fail_deletion(path, method='GET', **kwargs):
+            if method == 'DELETE':
+                raise error
+            return original(path, method, **kwargs)
+        with patch.object(self, 'cloudflare', side_effect=fail_deletion), \
+                self.assertRaisesRegex(ValueError, 'deletion failed'):
+            self.run_deploy()
+        self.upload.assert_not_called()
+
+    def test_missing_worker_cleanup_can_be_retried(self):
+        error = HTTPError('https://api.cloudflare.com', 404, '', {},
+                          io.BytesIO(b'{"errors": [{"code": 10007}]}'))
+        self.addCleanup(error.close)
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=error), \
+                patch.object(deploy, 'github', side_effect=self.github):
+            result = deploy.clean_preview(1)
+        self.assertTrue(result['cleaned'])
+
+    def test_production_never_prunes(self):
+        self.resolved.update(pr=0, target='production')
+        with patch.object(deploy, 'prune_previews') as prune:
+            run, output = self.run_deploy()
+        prune.assert_not_called()
+        self.assertEqual(self.deleted, [])
+        self.assertEqual(run.call_count, 2)
+        self.assertEqual(output.call_args.args[0]['target'], 'production')
 
 
 class ProvenanceTests(unittest.TestCase):
