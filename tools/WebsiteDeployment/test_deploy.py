@@ -2,10 +2,12 @@ import copy
 import io
 import json
 from pathlib import Path
+import re
 import stat
 import tempfile
 import unittest
 from unittest.mock import patch
+from urllib.error import HTTPError
 import zipfile
 
 import deploy
@@ -82,6 +84,376 @@ class ArtifactTests(unittest.TestCase):
                              {'instrument-serif.woff2': b'<script>oops</script>'}):
             with self.subTest(replacements=replacements), self.assertRaises(ValueError):
                 self.unpack(site_archive(replacements))
+
+
+class PreviewCleanupTests(unittest.TestCase):
+    def setUp(self):
+        self.workers = {f'meetspriglet-pr-{number}' for number in range(1, 21)}
+        self.workers.add('meetspriglet-support')
+        self.states = {number: 'closed' for number in range(1, 21)}
+        self.states[99] = 'open'
+        self.deleted = []
+        self.statuses = []
+        self.histories = {}
+        self.github_requests = 0
+        self.github_queries = 0
+        self.resolve_sequence = None
+        self.on_upload = None
+        self.artifact_data = site_archive()
+        self.resolved = {'deploy': True, 'pr': 99, 'target': 'pr-99', 'sha': 'a' * 40,
+                         'artifact': 30, 'digest': 'sha256:' + 'b' * 64}
+
+    def api(self, path, method='GET', data=None, **kwargs):
+        if path == 'graphql':
+            self.github_queries += 1
+            if 'environment' not in data['variables']:
+                numbers = re.findall(r'pr_([0-9]+): pullRequest\(number: [0-9]+\)', data['query'])
+                return {'data': {'repository': {
+                    f'pr_{number}': {'state': self.states[int(number)].upper()} for number in numbers
+                }}}
+            number = int(data['variables']['environment'].split('-')[-1])
+            return {'data': {'repository': {'deployments': {'nodes': [
+                {'databaseId': entry['id'], 'latestStatus': {'state': entry['state'].upper()}}
+                for entry in self.histories.get(number, [])[:100]
+            ]}}}}
+        if method == 'DELETE':
+            name = path.rsplit('/', 1)[1]
+            self.deleted.append(name)
+            self.workers.remove(name)
+            return {'success': True}
+        if path.endswith('/workers/scripts'):
+            return {'result': [{'id': name} for name in sorted(self.workers)]}
+        if path.endswith('/workers/subdomain'):
+            return {'result': {'subdomain': 'preview-test'}}
+        raise AssertionError(path)
+
+    def github(self, path, method='GET', data=None):
+        self.github_requests += 1
+        if self.github_requests > 1000:
+            raise RuntimeError('Simulated GITHUB_TOKEN hourly quota exhausted')
+        if path.startswith('pulls/'):
+            return {'state': self.states[int(path.split('/')[1])]}
+        if path.startswith('deployments?'):
+            number = int(path.split('pr-')[1].split('&')[0])
+            return [{'id': entry['id']} for entry in self.histories.get(number, [])[:100]]
+        if path == 'deployments':
+            return {'id': 900000}
+        if path.endswith('/statuses'):
+            self.statuses.append((path, data))
+            identifier = int(path.split('/')[1])
+            for history in self.histories.values():
+                for entry in history:
+                    if entry['id'] == identifier:
+                        entry['state'] = data['state']
+            return {}
+        raise AssertionError(path)
+
+    def run_deploy(self):
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=self.github), \
+                patch.object(deploy, 'resolve_run', return_value=self.resolved, side_effect=self.resolve_sequence), \
+                patch.object(deploy, 'wait_production_checks'), \
+                patch.object(deploy, 'download_artifact', return_value=self.artifact_data), \
+                patch.object(deploy.subprocess, 'run') as run, patch.object(deploy, 'output') as output:
+            self.upload = run
+            run.return_value.returncode = 0
+            run.side_effect = self.on_upload
+            deploy.deploy(20, self.resolved['target'], False)
+        return run, output
+
+    def test_full_stale_inventory_no_longer_blocks_a_new_preview(self):
+        run, output = self.run_deploy()
+        self.assertEqual(set(self.deleted), {f'meetspriglet-pr-{n}' for n in range(1, 21)})
+        self.assertEqual(self.workers, {'meetspriglet-support'})
+        self.assertEqual(run.call_count, 2)
+        self.assertEqual(self.statuses[-1][1]['state'], 'success')
+        self.assertEqual(output.call_args.args[0]['target'], 'pr-99')
+
+    def test_inactive_history_does_not_exhaust_publication_quota(self):
+        self.histories = {number: [
+            {'id': number * 100 + revision, 'state': 'success' if revision == 0 else 'inactive'}
+            for revision in range(50)
+        ] for number in range(1, 21)}
+        run, output = self.run_deploy()
+        self.assertEqual(output.call_args.args[0]['target'], 'pr-99')
+        cleanup_writes = [path for path, data in self.statuses if data['state'] == 'inactive']
+        self.assertEqual(len(cleanup_writes), 20)
+        self.assertLessEqual(self.github_requests, 100)
+        self.assertEqual(self.github_queries, 21)
+        self.assertEqual(run.call_count, 2)
+
+    def test_global_status_budget_still_frees_a_slot_for_publication(self):
+        self.histories = {number: [{'id': number * 100 + revision, 'state': 'success'}
+                                  for revision in range(50)] for number in range(1, 21)}
+        run, output = self.run_deploy()
+        cleanup_writes = [path for path, data in self.statuses if data['state'] == 'inactive']
+        self.assertEqual(len(cleanup_writes), 50)
+        self.assertEqual(len(self.deleted), 1)
+        self.assertLessEqual(self.github_requests, 100)
+        self.assertEqual(output.call_args.args[0]['target'], 'pr-99')
+        self.assertEqual(run.call_count, 2)
+
+    def test_closure_during_upload_shares_the_remaining_status_budget(self):
+        self.histories = {number: [{'id': number * 100 + revision, 'state': 'success'}
+                                  for revision in range(50)] for number in range(1, 21)}
+        self.histories[99] = [{'id': 900000, 'state': 'in_progress'}]
+        self.resolve_sequence = [self.resolved, self.resolved, {'deploy': False}]
+        def upload(command, **kwargs):
+            if command[0].endswith('wrangler'):
+                self.workers.add('meetspriglet-pr-99')
+                self.states[99] = 'closed'
+            return deploy.subprocess.CompletedProcess(command, 0)
+        self.on_upload = upload
+        run, output = self.run_deploy()
+        self.assertIn('meetspriglet-pr-99', self.workers)
+        self.assertEqual(self.histories[99][0]['state'], 'inactive')
+        self.assertFalse(output.call_args.args[0]['deploy'])
+        self.assertEqual(run.call_count, 2)
+
+    def test_failed_status_update_keeps_cleanup_discoverable(self):
+        self.workers = {'meetspriglet-pr-1'}
+        self.histories[1] = [{'id': 100, 'state': 'success'}]
+        original = self.github
+        def fail_status(path, method='GET', data=None):
+            if method == 'POST':
+                raise RuntimeError('Status service unavailable')
+            return original(path, method, data)
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=fail_status), self.assertRaises(RuntimeError):
+            deploy.prune_previews()
+        self.assertEqual(self.workers, {'meetspriglet-pr-1'})
+        self.assertEqual(self.histories[1][0]['state'], 'success')
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=self.github):
+            result = deploy.prune_previews()
+        self.assertEqual(result['cleaned'], ['meetspriglet-pr-1'])
+        self.assertEqual(self.histories[1][0]['state'], 'inactive')
+
+    def test_status_work_is_bounded_and_resumes_on_retry(self):
+        self.workers = {'meetspriglet-pr-1'}
+        self.histories[1] = [{'id': 1000 + revision, 'state': 'success'} for revision in range(100)]
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=self.github):
+            first = deploy.prune_previews()
+            self.assertEqual(len(self.statuses), 50)
+            self.assertEqual(first['deferred'], ['meetspriglet-pr-1'])
+            self.assertEqual(self.workers, {'meetspriglet-pr-1'})
+            second = deploy.prune_previews()
+        self.assertEqual(second['cleaned'], ['meetspriglet-pr-1'])
+        self.assertEqual(len(self.statuses), 100)
+        self.assertEqual(self.workers, set())
+
+    def test_immediate_prune_passes_recover_from_a_shared_minute_limit(self):
+        self.workers = {'meetspriglet-pr-1'}
+        self.histories[1] = [{'id': 1000 + revision, 'state': 'success'} for revision in range(100)]
+        now = [1000.0]
+        writes = []
+        waits = []
+        actual_api = deploy.api
+        def open_request(request, **kwargs):
+            if sum(now[0] - timestamp < 60 for timestamp in writes) >= 80:
+                error = HTTPError(request.full_url, 403, '', {'Retry-After': '60'},
+                                  io.BytesIO(b'{"message": "You have exceeded a secondary rate limit"}'))
+                self.addCleanup(error.close)
+                raise error
+            writes.append(now[0])
+            response = io.BytesIO(b'{}')
+            response.headers = {}
+            return response
+        def sleep(seconds):
+            waits.append(seconds)
+            now[0] += seconds
+        def github(path, method='GET', data=None):
+            if method == 'POST':
+                actual_api('repos/' + deploy.REPOSITORY + '/' + path, method=method, data=data)
+            return self.github(path, method, data)
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=github), \
+                patch.dict(deploy.os.environ, {'GH_TOKEN': 'test-token'}), \
+                patch.object(deploy, 'build_opener') as opener, \
+                patch.object(deploy.time, 'time', side_effect=lambda: now[0]), \
+                patch.object(deploy.time, 'sleep', side_effect=sleep):
+            opener.return_value.open.side_effect = open_request
+            deploy.prune_previews()
+            result = deploy.prune_previews()
+        self.assertEqual(result['cleaned'], ['meetspriglet-pr-1'])
+        self.assertEqual(len(writes), 100)
+        self.assertEqual(waits, [60])
+
+    def test_closed_preview_after_twenty_open_previews_is_reclaimed(self):
+        names = sorted(f'meetspriglet-pr-{number}' for number in range(1, 22))
+        self.workers = set(names)
+        self.states = {number: 'open' for number in range(1, 22)}
+        number = int(names[-1].rsplit('-', 1)[1])
+        self.states[number] = 'closed'
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=self.github):
+            for _ in range(3):
+                deploy.prune_previews()
+        self.assertEqual(self.deleted, [names[-1]])
+        self.assertEqual(self.workers, set(names[:-1]))
+
+    def test_large_open_prefix_uses_batched_state_reads(self):
+        names = sorted(f'meetspriglet-pr-{number}' for number in range(1, 251))
+        self.workers = set(names)
+        self.states = {number: 'open' for number in range(1, 251)}
+        self.states[int(names[-1].rsplit('-', 1)[1])] = 'closed'
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=self.github):
+            result = deploy.prune_previews()
+        self.assertEqual(result['cleaned'], [names[-1]])
+        self.assertEqual(len(result['retained']), 249)
+        self.assertEqual(self.github_queries, 4)
+        self.assertEqual(self.github_requests, 2)
+
+    def test_worker_delete_failure_does_not_repeat_finished_status_updates(self):
+        self.workers = {'meetspriglet-pr-1'}
+        self.histories[1] = [{'id': 100, 'state': 'success'}]
+        error = HTTPError('https://api.cloudflare.com', 503, '', {}, io.BytesIO(b'{"errors": []}'))
+        self.addCleanup(error.close)
+        def fail_deletion(path, method='GET', **kwargs):
+            if method == 'DELETE':
+                raise error
+            return self.api(path, method, **kwargs)
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=fail_deletion), \
+                patch.object(deploy, 'github', side_effect=self.github), self.assertRaises(ValueError):
+            deploy.prune_previews()
+        self.assertEqual(self.histories[1][0]['state'], 'inactive')
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=self.github):
+            result = deploy.prune_previews()
+        self.assertEqual(result['cleaned'], ['meetspriglet-pr-1'])
+        self.assertEqual(len(self.statuses), 1)
+
+    def test_graphql_errors_stop_before_deletion(self):
+        def query_failure(path, **kwargs):
+            if path == 'graphql':
+                return {'errors': [{'message': 'Deployment access denied'}], 'data': None}
+            return self.api(path, **kwargs)
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=query_failure), \
+                patch.object(deploy, 'github', side_effect=self.github), self.assertRaises(ValueError):
+            deploy.prune_previews()
+        self.assertEqual(self.deleted, [])
+
+    def test_active_previews_still_enforce_the_limit(self):
+        self.states = dict.fromkeys(self.states, 'open')
+        with self.assertRaisesRegex(ValueError, 'Preview limit reached'):
+            self.run_deploy()
+        self.assertEqual(self.deleted, [])
+
+    def test_invalid_artifact_does_not_delete_previews(self):
+        self.artifact_data = site_archive(extra=('../untrusted', b'invalid'))
+        with self.assertRaises(ValueError):
+            self.run_deploy()
+        self.assertEqual(self.deleted, [])
+        self.upload.assert_not_called()
+
+    def test_existing_preview_can_update_at_the_limit(self):
+        self.states = dict.fromkeys(self.states, 'open')
+        self.workers.remove('meetspriglet-pr-20')
+        self.workers.add('meetspriglet-pr-99')
+        run, output = self.run_deploy()
+        self.assertEqual(self.deleted, [])
+        self.assertEqual(run.call_count, 2)
+        self.assertEqual(output.call_args.args[0]['target'], 'pr-99')
+
+    def test_pruning_leaves_open_and_unrelated_workers(self):
+        self.workers = {'meetspriglet-pr-1', 'meetspriglet-pr-2', 'meetspriglet-support',
+                        'other-pr-3', 'meetspriglet-pr-0', 'meetspriglet-pr-01',
+                        'meetspriglet-pr-1234567890123'}
+        self.states[2] = 'open'
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=self.github):
+            result = deploy.prune_previews()
+        self.assertEqual(self.deleted, ['meetspriglet-pr-1'])
+        self.assertEqual(result['cleaned'], ['meetspriglet-pr-1'])
+        self.assertEqual(result['retained'], ['meetspriglet-pr-2'])
+        self.assertEqual(len(self.workers), 6)
+
+    def test_dry_run_lists_candidates_without_mutations(self):
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=self.github):
+            result = deploy.prune_previews(dry_run=True)
+        self.assertEqual(len(result['would_clean']), 20)
+        self.assertEqual(result['cleaned'], [])
+        self.assertEqual(self.deleted, [])
+        self.assertEqual(self.statuses, [])
+
+    def test_reopened_pr_is_rechecked_at_deletion(self):
+        self.workers = {'meetspriglet-pr-1'}
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=[{'state': 'closed'}, {'state': 'open'}]):
+            result = deploy.prune_previews()
+        self.assertEqual(self.deleted, [])
+        self.assertEqual(result['retained'], ['meetspriglet-pr-1'])
+
+    def test_unknown_pr_state_stops_cleanup(self):
+        self.workers = {'meetspriglet-pr-1'}
+        self.states[1] = 'unknown'
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=self.github), self.assertRaises(ValueError):
+            deploy.prune_previews()
+        self.assertEqual(self.deleted, [])
+
+    def test_lookup_failure_stops_before_deleting(self):
+        error = HTTPError('https://api.github.com', 503, '', {}, io.BytesIO())
+        self.addCleanup(error.close)
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=self.api), \
+                patch.object(deploy, 'github', side_effect=error), \
+                self.assertRaises(HTTPError):
+            deploy.prune_previews()
+        self.assertEqual(self.deleted, [])
+
+    def test_deletion_failure_stops_deployment_before_upload(self):
+        error = HTTPError('https://api.cloudflare.com', 403, '', {}, io.BytesIO(b'{"errors": []}'))
+        self.addCleanup(error.close)
+        original = self.api
+        def fail_deletion(path, method='GET', **kwargs):
+            if method == 'DELETE':
+                raise error
+            return original(path, method, **kwargs)
+        with patch.object(self, 'api', side_effect=fail_deletion), \
+                self.assertRaisesRegex(ValueError, 'deletion failed'):
+            self.run_deploy()
+        self.upload.assert_not_called()
+
+    def test_missing_worker_cleanup_can_be_retried(self):
+        error = HTTPError('https://api.cloudflare.com', 404, '', {},
+                          io.BytesIO(b'{"errors": [{"code": 10007}]}'))
+        self.addCleanup(error.close)
+        def missing_worker(path, method='GET', **kwargs):
+            if method == 'DELETE':
+                raise error
+            return self.api(path, method, **kwargs)
+        with patch.object(deploy, 'account_id', return_value='a' * 32), \
+                patch.object(deploy, 'api', side_effect=missing_worker), \
+                patch.object(deploy, 'github', side_effect=self.github):
+            result = deploy.clean_preview(1)
+        self.assertTrue(result['cleaned'])
+
+    def test_production_never_prunes(self):
+        self.resolved.update(pr=0, target='production')
+        with patch.object(deploy, 'prune_previews') as prune:
+            run, output = self.run_deploy()
+        prune.assert_not_called()
+        self.assertEqual(self.deleted, [])
+        self.assertEqual(run.call_count, 2)
+        self.assertEqual(output.call_args.args[0]['target'], 'production')
 
 
 class ProvenanceTests(unittest.TestCase):

@@ -6,7 +6,7 @@ The app and website share the sources in `Configuration/Shared` and the app icon
 
 1. **Validate Spriglet** waits for the owner's [CI approval](../CI/README.md) on each PR revision. It builds and checks without Cloudflare or Apple secrets. Successful approved PR builds upload `website-static` and `app-packages`, retained for seven days.
 2. **Deploy website preview** follows only a successful approved PR workflow. Failed or canceled runs are filtered before allocating a runner. The uploader uses trusted code from protected `main`, checks the originating workflow, current PR commit, artifact identity/digest, and permitted files, and never executes PR source or artifact scripts/configuration.
-3. A PR gets `meetspriglet-pr-N` on the account's `workers.dev` subdomain. The preview keeps shared artwork and content with trusted security headers and `noindex`. A new commit needs new CI approval before updating it. At most 20 previews may exist; remove closed previews using the cleanup command below.
+3. A PR gets `meetspriglet-pr-N` on the account's `workers.dev` subdomain. The preview keeps shared artwork and content with trusted security headers and `noindex`. A new commit needs new CI approval before updating it. Before publishing, the uploader removes previews for closed PRs and recounts against the 20-preview cap. Preview publishing shares one concurrency group with `queue: max`, so cleanup, counting and upload cannot race another workflow publisher. Up to 100 pending publishers wait instead of replacing unrelated PR publications; a full queue rejects additional jobs. Running deployments are never canceled by this group. Open PR previews are retained; if they fill the cap, a new preview fails with an explanation.
 4. Production updates and rollback are explicit local operations. Pushes, release tags, PR closure, and schedules do not launch deployment runners. Existing production content stays live until an explicit deployment.
 
 The new `website-preview.yml` handler becomes active when merged into the default branch. The registered legacy build/security/deploy/monitor workflows remain disabled. External-contributor workflow approval is separate from the owner's `ci-review` approval; neither gives PR code deployment secrets.
@@ -41,6 +41,8 @@ python3 tools/AppStore/website/check_http.py https://meetspriglet.com
 
 Tests cover artifact traversal/links/duplicates/size limits, trusted headers, shared content preservation, workflow provenance, fork identity, stale/closed PRs, rollback restrictions, and cleanup of reopened PRs. The uploader also verifies the downloaded archive's SHA-256 against GitHub and checks exact public bytes after upload. A preview is untrusted public content; `noindex` is not authentication.
 
+The pinned actionlint 1.7.12 parser does not recognize GitHub's `queue` setting. The security runner validates the exact preview concurrency block (`website-preview-publish`, cancellation disabled, `queue: max`) when handling that one parser diagnostic. Invalid values, other blocks, other files and all unrelated diagnostics still fail. Remove this compatibility check when the pinned upstream parser supports queueing. Its regression tests run in the existing security suite.
+
 ## Local publishing, cleanup, monitoring, and rollback
 
 After merging and validating the intended production revision, use the authenticated local Cloudflare setup:
@@ -55,13 +57,30 @@ These commands do not start GitHub Actions. There is no periodic GitHub availabi
 
 `check_http.py` verifies the new homepage and its assets against the prepared bytes. `monitor.py` accepts either a published homepage or the legacy root-to-support redirect while the production site awaits deployment; it continues to enforce help routes, security headers, 404 behavior and HTTPS.
 
-Cleanup is also explicit. With the existing GitHub and scoped preview Cloudflare credentials supplied securely in the local environment (`GH_TOKEN`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`), run:
+Closed previews are pruned automatically in the existing approved preview deployment job. PR closure alone does not start a runner; its preview remains available until the next preview deployment or local cleanup. Cleanup errors stop publication before upload.
+
+For a backlog or a local cleanup, supply the existing GitHub and scoped preview Cloudflare credentials securely in the local environment (`GH_TOKEN`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`). Wait until no preview publishing job is running before local cleanup or local preview publishing; the Actions concurrency group only serializes workflow jobs. Inspect candidates, then prune:
+
+```sh
+python3 tools/WebsiteDeployment/deploy.py prune --dry-run
+python3 tools/WebsiteDeployment/deploy.py prune
+```
+
+Pruning targets only canonical `meetspriglet-pr-N` Workers, checks each PR against GitHub, and rechecks closed PRs immediately before deletion. Unknown PR states and API failures stop cleanup. It leaves production and unrelated Workers alone.
+
+Each pass reads PR states in GraphQL batches of at most 100 Workers, then selects up to 20 closed previews for reconciliation. Open previews are retained without occupying that selection, so they cannot indefinitely hide closed previews later in the inventory. A pass writes at most 50 deployment statuses. One GraphQL query per selected closed PR reads current statuses for its 100 most recent deployments, matching the previous cleanup window. Already inactive records are left untouched. Reconciliation finishes before Worker deletion, so a status API failure leaves the Worker discoverable for retry; a deletion failure can be retried without repeating completed status updates.
+
+The write budget limits work rather than guaranteeing a time window across invocations. GitHub rate-limit responses (`429`, identified primary/secondary-limit `403` responses, and recognized GraphQL throttling errors inside HTTP `200`) share one retry policy. Response headers are preserved so retries honor `Retry-After` and exhausted-quota reset times. Without those headers, retries wait 60 seconds, then 120 seconds. Each request allows two retries and at most 180 seconds of total waiting, shared across HTTP and GraphQL throttles; longer resets or persistent limits fail explicitly, keeping unfinished cleanup discoverable. GraphQL errors must all identify throttling; permission, validation and mixed non-throttling errors still fail immediately. Cloudflare errors are not retried by this GitHub policy. See [GitHub's GraphQL rate-limit recovery guidance](https://docs.github.com/en/graphql/overview/rate-limits-and-query-limits-for-the-graphql-api#exceeding-the-rate-limit).
+
+If the status budget runs out, the partially reconciled Worker remains and is listed under `deferred` in the command output. A later prune resumes by skipping completed records. Publication can proceed if enough slots were freed; otherwise it fails explicitly with pending cleanup work. Cleanup is also safe to retry if a Worker has already been removed.
+
+To remove one closed PR preview explicitly:
 
 ```sh
 python3 tools/WebsiteDeployment/deploy.py cleanup --pr PR_NUMBER
 ```
 
-The tool checks that the PR is closed and targets only its `meetspriglet-pr-N` Worker. It refuses to remove a reopened PR. A preview is retained until this cleanup; closing a PR alone no longer starts CI.
+The tool checks that the PR is closed and targets only its `meetspriglet-pr-N` Worker. It refuses to remove a reopened PR.
 
 For recovery of deployments from before the CI migration, the local `deploy.py deploy --run RUN_ID --target production --rollback` command still accepts an unexpired successful legacy `validate.yml` main-push artifact after verifying its security checks. New PR artifacts cannot be used as production rollback. No workflow-dispatch handler remains.
 

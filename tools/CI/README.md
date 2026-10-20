@@ -30,7 +30,7 @@ Main branch rules continue to require `security-checks`, `macos`, `codeql-action
 
 The new `website-preview.yml` handler becomes active when the replacement is merged into `main`. It runs only after successful PR validation, and checks the originating workflow file and current PR revision before uploading static files. Failed, canceled, or rejected validation allocates no deployment runner. See [website operations](../WebsiteDeployment/README.md).
 
-Release tags do not trigger CI or publication. Build/publish a release explicitly using the [local packaging](../ReleaseValidation/README.md) and [release publisher](../ReleaseNotes/README.md). Production website publishing, preview cleanup, and availability checks are explicit local operations. Existing public releases and the live website remain available.
+Release tags do not trigger CI or publication. Build/publish a release explicitly using the [local packaging](../ReleaseValidation/README.md) and [release publisher](../ReleaseNotes/README.md). Production website publishing and availability checks are explicit local operations. Closed PR previews are pruned before the next approved preview deployment, using the existing runner; local cleanup is also available. PR closure alone starts no runner. Existing public releases and the live website remain available.
 
 ## Local checks for workflow changes
 

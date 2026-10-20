@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import io
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -26,12 +27,43 @@ LEGACY_FILES = frozenset(('index.html', 'support.html', 'privacy.html', '404.htm
 FILES = LEGACY_FILES | frozenset(('home.css', 'home.js', 'instrument-serif.woff2', 'instrument-serif-italic.woff2'))
 MAX_ARCHIVE = 8 * 1024 * 1024
 MAX_CONTENT = 4 * 1024 * 1024
+MAX_CLEANUP_PREVIEWS = 20
+# Bound work per pass; api() handles shared rate-limit windows across invocations.
+MAX_CLEANUP_STATUS_UPDATES = 50
+MAX_GITHUB_RATE_LIMIT_RETRIES = 2
+MAX_GITHUB_RATE_LIMIT_WAIT = 180
 REQUIRED_CHECKS = frozenset(('macos', 'security-checks', 'codeql-actions', 'codeql-python', 'codeql-swift'))
 
 
 class NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
+
+
+def github_rate_limit_delay(headers, retry, now):
+    headers = {key.lower(): value for key, value in headers.items()}
+    delay = float(headers['retry-after']) if 'retry-after' in headers else 60 * 2 ** retry
+    if headers.get('x-ratelimit-remaining') == '0' and 'x-ratelimit-reset' in headers:
+        reset_delay = float(headers['x-ratelimit-reset']) - now + 1
+        delay = max(delay, reset_delay) if 'retry-after' in headers else reset_delay
+    if not math.isfinite(delay):
+        raise ValueError('Invalid GitHub rate limit delay')
+    return max(1, delay)
+
+
+def graphql_rate_limited(result):
+    errors = result.get('errors')
+    if not errors:
+        return False
+    for error in errors:
+        kind = error.get('type') or error.get('extensions', {}).get('code')
+        if kind:
+            if kind != 'RATE_LIMITED':
+                return False
+        elif not any(phrase in error.get('message', '').lower() for phrase in (
+                'rate limit exceeded', 'secondary rate limit', 'abuse detection')):
+            return False
+    return True
 
 
 def api(path, method='GET', data=None, cloudflare=False):
@@ -42,13 +74,37 @@ def api(path, method='GET', data=None, cloudflare=False):
         'Accept': 'application/json', 'Content-Type': 'application/json',
         'User-Agent': 'SprigletWebsiteDeployment/1.0',
     }, data=None if data is None else json.dumps(data).encode())
-    # Never forward a credential to a redirect destination.
-    with build_opener(NoRedirect()).open(request, timeout=30) as response:
-        body = response.read()
-    result = json.loads(body) if body else {}
-    if cloudflare and result.get('success') is not True:
-        raise ValueError('Cloudflare API did not confirm success')
-    return result
+    waited = 0
+    for retry in range(MAX_GITHUB_RATE_LIMIT_RETRIES + 1):
+        cause = None
+        try:
+            # Never forward a credential to a redirect destination.
+            with build_opener(NoRedirect()).open(request, timeout=30) as response:
+                body = response.read()
+                headers = response.headers
+        except HTTPError as error:
+            if cloudflare or error.code not in (403, 429):
+                raise
+            message = error.read().decode('utf-8', errors='replace').lower()
+            headers = {key.lower(): value for key, value in error.headers.items()}
+            if error.code != 429 and not (
+                    'retry-after' in headers or headers.get('x-ratelimit-remaining') == '0'
+                    or 'rate limit' in message or 'abuse detection' in message):
+                raise
+            error.close()
+            cause = error
+        else:
+            result = json.loads(body) if body else {}
+            if cloudflare and result.get('success') is not True:
+                raise ValueError('Cloudflare API did not confirm success')
+            if cloudflare or path != 'graphql' or not graphql_rate_limited(result):
+                return result
+        delay = github_rate_limit_delay(headers, retry, time.time())
+        if retry == MAX_GITHUB_RATE_LIMIT_RETRIES or waited + delay > MAX_GITHUB_RATE_LIMIT_WAIT:
+            raise ValueError('GitHub rate limit retry budget exceeded; retry after the rate limit resets') from cause
+        print(f'GitHub rate limit; retrying in {delay:g} seconds', flush=True)
+        time.sleep(delay)
+        waited += delay
 
 
 def github(path, **kwargs):
@@ -240,11 +296,75 @@ def account_id():
     return value
 
 
-def clean_preview(pr_number):
+def pr_is_closed(pr_number):
+    state = github(f'pulls/{pr_number}')['state']
+    if state not in ('open', 'closed'):
+        raise ValueError('Unexpected PR state; refusing preview cleanup')
+    return state == 'closed'
+
+
+def preview_workers():
+    workers = api(f'accounts/{account_id()}/workers/scripts', cloudflare=True)['result']
+    return sorted(worker['id'] for worker in workers
+                  if re.fullmatch(r'meetspriglet-pr-[1-9][0-9]{0,11}', worker['id']))
+
+
+def github_graphql(query, variables):
+    owner, repository = REPOSITORY.split('/')
+    response = api('graphql', method='POST', data={
+        'query': query,
+        'variables': {'owner': owner, 'repository': repository, **variables},
+    })
+    if response.get('errors'):
+        raise ValueError('GitHub deployment query failed')
+    return response['data']['repository']
+
+
+def preview_pr_states(workers):
+    states = {}
+    for start in range(0, len(workers), 100):
+        batch = workers[start:start + 100]
+        numbers = [positive_number(name.removeprefix('meetspriglet-pr-')) for name in batch]
+        fields = ' '.join(f'pr_{number}: pullRequest(number: {number}) {{ state }}' for number in numbers)
+        repository = github_graphql('query($owner: String!, $repository: String!) { '
+                                    'repository(owner: $owner, name: $repository) { ' + fields + ' } }', {})
+        for name, number in zip(batch, numbers):
+            pr = repository[f'pr_{number}']
+            if pr is None or pr['state'] not in ('OPEN', 'CLOSED', 'MERGED'):
+                raise ValueError('Unexpected PR state; refusing preview cleanup')
+            states[name] = pr['state']
+    return states
+
+
+def preview_deployment_statuses(pr_number):
+    repository = github_graphql('''query($owner: String!, $repository: String!, $environment: String!) {
+          repository(owner: $owner, name: $repository) {
+            deployments(first: 100, environments: [$environment],
+                        orderBy: {field: CREATED_AT, direction: DESC}) {
+              nodes { databaseId latestStatus { state } }
+            }
+          }
+        }''', {'environment': f'preview/pr-{pr_number}'})
+    return repository['deployments']['nodes']
+
+
+def clean_preview(pr_number, status_budget=MAX_CLEANUP_STATUS_UPDATES):
     pr_number = positive_number(pr_number)
-    # A reopened PR must not be deleted by a delayed close event.
-    if github(f'pulls/{pr_number}')['state'] != 'closed':
-        return output({'cleaned': False, 'reason': 'PR is open again'})
+    result = {'cleaned': False, 'status_updates': 0}
+    if not pr_is_closed(pr_number):
+        return {**result, 'reason': 'PR is open again'}
+    for deployment in preview_deployment_statuses(pr_number):
+        status = deployment['latestStatus']
+        if status and status['state'] == 'INACTIVE':
+            continue
+        if result['status_updates'] == status_budget:
+            return {**result, 'deferred': True, 'reason': 'Cleanup status budget reached; retry prune'}
+        identifier = positive_number(deployment['databaseId'])
+        github(f'deployments/{identifier}/statuses', method='POST', data={'state': 'inactive', 'auto_inactive': False})
+        result['status_updates'] += 1
+    # Keep the Worker discoverable until reconciliation succeeds, then recheck reopening.
+    if not pr_is_closed(pr_number):
+        return {**result, 'reason': 'PR is open again'}
     name = worker_name('pr-' + str(pr_number))
     try:
         api(f'accounts/{account_id()}/workers/scripts/{name}', method='DELETE', cloudflare=True)
@@ -252,10 +372,30 @@ def clean_preview(pr_number):
         details = json.loads(error.read())
         if error.code != 404 or not any(item.get('code') == 10007 for item in details.get('errors', [])):
             raise ValueError('Cloudflare preview deletion failed') from None
-    deployments = github(f'deployments?environment=preview%2Fpr-{pr_number}&per_page=100')
-    for deployment in deployments:
-        github(f"deployments/{deployment['id']}/statuses", method='POST', data={'state': 'inactive', 'auto_inactive': False})
-    output({'cleaned': True, 'target': name})
+    return {**result, 'cleaned': True, 'target': name}
+
+
+def prune_previews(dry_run=False):
+    result = {'dry_run': dry_run, 'cleaned': [], 'would_clean': [], 'retained': [], 'deferred': [], 'status_updates': 0}
+    workers = preview_workers()
+    states = preview_pr_states(workers)
+    result['retained'] = [name for name in workers if states[name] == 'OPEN']
+    closed = [name for name in workers if states[name] != 'OPEN']
+    result['deferred'] = closed[MAX_CLEANUP_PREVIEWS:]
+    for name in closed[:MAX_CLEANUP_PREVIEWS]:
+        pr_number = positive_number(name.removeprefix('meetspriglet-pr-'))
+        if dry_run:
+            result['would_clean'].append(name)
+        else:
+            cleanup = clean_preview(pr_number, MAX_CLEANUP_STATUS_UPDATES - result['status_updates'])
+            result['status_updates'] += cleanup['status_updates']
+            if cleanup['cleaned']:
+                result['cleaned'].append(name)
+            elif cleanup.get('deferred'):
+                result['deferred'].append(name)
+            else:
+                result['retained'].append(name)
+    return result
 
 
 def deploy(run_id, expected_target, rollback):
@@ -269,15 +409,18 @@ def deploy(run_id, expected_target, rollback):
         wait_production_checks(resolved['sha'])
     name = worker_name(expected_target)
     account = account_id()
-    if preview:
-        workers = api(f'accounts/{account}/workers/scripts', cloudflare=True)['result']
-        previews = [worker for worker in workers if re.fullmatch(r'meetspriglet-pr-[0-9]+', worker['id'])]
-        if len(previews) >= 20 and not any(worker['id'] == name for worker in previews):
-            raise ValueError('Preview limit reached (20). Run the documented cleanup command for closed PRs before deploying another preview')
     with tempfile.TemporaryDirectory(prefix='spriglet-website-') as directory:
         work = Path(directory)
         public = work / 'public'; public.mkdir()
         unpack_static(download_artifact(resolved['artifact'], resolved['digest']), public, preview)
+        if preview:
+            cleanup = prune_previews()
+            print(json.dumps({'preview_cleanup': cleanup}, sort_keys=True))
+            previews = preview_workers()
+            if len(previews) >= 20 and name not in previews:
+                if cleanup['deferred']:
+                    raise ValueError('Preview limit reached (20); bounded cleanup has pending work. Retry prune before deploying a new preview')
+                raise ValueError('Preview limit reached (20) after pruning closed PRs. Close an active preview PR before deploying another preview')
         config = {'name': name, 'account_id': account, 'compatibility_date': '2026-09-15',
                   'send_metrics': False, 'workers_dev': preview, 'preview_urls': False,
                   'assets': {'directory': str(public), 'html_handling': 'auto-trailing-slash', 'not_found_handling': '404-page'},
@@ -320,7 +463,7 @@ def deploy(run_id, expected_target, rollback):
             current = resolve_run(run_id, rollback)
             if not current['deploy']:
                 if preview and github(f"pulls/{resolved['pr']}")['state'] == 'closed':
-                    clean_preview(resolved['pr'])
+                    clean_preview(resolved['pr'], MAX_CLEANUP_STATUS_UPDATES - cleanup['status_updates'])
                 github(status_path, method='POST', data={'state': 'inactive', 'auto_inactive': False})
                 return output({'deploy': False, 'reason': 'A newer change superseded this deployment'})
             github(status_path, method='POST', data={'state': 'success', 'environment_url': origin, 'auto_inactive': True})
@@ -335,16 +478,21 @@ def deploy(run_id, expected_target, rollback):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('resolve', 'deploy', 'cleanup'))
+    parser.add_argument('action', choices=('resolve', 'deploy', 'cleanup', 'prune'))
     parser.add_argument('--run', type=positive_number)
     parser.add_argument('--target')
     parser.add_argument('--pr', type=positive_number)
     parser.add_argument('--rollback', action='store_true')
+    parser.add_argument('--dry-run', action='store_true', help='List closed previews without deleting them (prune only)')
     args = parser.parse_args()
+    if args.dry_run and args.action != 'prune':
+        parser.error('--dry-run is only supported with prune')
     if args.action == 'resolve':
         resolve()
     elif args.action == 'cleanup':
-        clean_preview(args.pr)
+        output(clean_preview(args.pr))
+    elif args.action == 'prune':
+        output(prune_previews(dry_run=args.dry_run))
     else:
         deploy(args.run, args.target, args.rollback)
 

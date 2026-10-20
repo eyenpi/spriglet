@@ -39,8 +39,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:
-      group: website-${{ needs.resolve.outputs.target }}
+      group: website-preview-publish
       cancel-in-progress: false
+      queue: max
     environment:
       name: ${{ needs.resolve.outputs.environment }}
       url: ${{ steps.publish.outputs.url }}
