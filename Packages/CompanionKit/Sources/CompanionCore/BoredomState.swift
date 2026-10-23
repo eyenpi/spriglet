@@ -69,17 +69,22 @@ public struct IdleMomentFrame: Equatable, Sendable {
     public let moment: IdleMoment
     public let progress: Double
     public let movementAmount: Double
+    public let form: MallowForm
+    public var duration: Double { form == .fingertipGrip ? 7 : moment.duration }
     public var weight: Double {
-        let age = progress * moment.duration
-        let t = clamp(min(age, moment.duration - age), 0, 1)
+        let age = progress * duration
+        let t = clamp(min(age, duration - age), 0, 1)
         return t * t * (3 - 2 * t)
     }
-    public init(moment: IdleMoment, progress: Double, movementAmount: Double = 1) {
+    public init(moment: IdleMoment, progress: Double, movementAmount: Double = 1, form: MallowForm = .standard) {
+        precondition(form != .fingertipGrip || moment == .boat(.fiddle))
         self.moment = moment; self.progress = clamp(progress, 0, 1)
         self.movementAmount = clamp(movementAmount, 0, 1.5)
+        self.form = form
     }
     /// Authored pose targets still pass through the engine's normal pose springs.
     func applying(to base: CharacterPose) -> CharacterPose {
+        guard form == .standard else { return base }
         var pose = base
         let phase = progress * 2 * .pi, w = weight
         switch moment {
@@ -96,7 +101,7 @@ public struct IdleMomentFrame: Equatable, Sendable {
         return pose
     }
     public var boatPresentation: BoatPresentation? {
-        guard let habit = moment.boatHabit else { return nil }
+        guard form == .standard, let habit = moment.boatHabit else { return nil }
         let phase = progress * 2 * .pi
         let angle: Double = switch habit {
         case .admire: sin(phase) * 0.12
@@ -121,6 +126,7 @@ public struct BoredomState: Sendable {
     private var startedAt: Double?
     private var eligible = false
     private var lastTime = 0.0
+    private var form = MallowForm.standard
     public init(seed: UInt64, timing: BoredomTiming = BoredomTiming()) {
         picker = IdleMomentPicker(seed: seed); self.timing = timing
     }
@@ -129,34 +135,45 @@ public struct BoredomState: Sendable {
         if frame != nil || requestedMoment != nil { nextAllowed = time + timing.cooldown * cadence }
         frame = nil; requestedMoment = nil; startedAt = nil; quietSince = nil; eligible = false
     }
-    public mutating func update(at time: Double, quiet: Bool, enabled: Bool, cadence: Double = 1) {
+    public mutating func update(at time: Double, quiet: Bool, enabled: Bool, cadence: Double = 1,
+                                form: MallowForm = .standard) {
         guard time.isFinite && time >= lastTime && cadence.isFinite && cadence >= 1 else { return }
         lastTime = time
+        if self.form != form { interrupt(at: time, cadence: cadence) }
+        self.form = form
         guard quiet && enabled else { interrupt(at: time, cadence: cadence); return }
         eligible = true
         if let startedAt, let frame {
-            let progress = (time - startedAt) / frame.moment.duration
+            let progress = (time - startedAt) / frame.duration
             if progress >= 1 {
                 self.frame = nil; self.startedAt = nil
                 nextAllowed = time + timing.cooldown * cadence; quietSince = time
-            } else { self.frame = IdleMomentFrame(moment: frame.moment, progress: progress) }
+            } else { self.frame = IdleMomentFrame(moment: frame.moment, progress: progress, form: frame.form) }
             return
         }
         if quietSince == nil { quietSince = time }
         if requestedMoment == nil, time - (quietSince ?? time) >= timing.threshold * cadence, time >= nextAllowed {
-            requestedMoment = picker.next()
+            let selection = picker.next()
+            if form == .fingertipGrip && selection.boatHabit == nil {
+                // Small spends the ordinary slot quietly, including its duration.
+                nextAllowed = time + selection.duration + timing.cooldown * cadence
+                quietSince = time
+            } else {
+                requestedMoment = form == .fingertipGrip ? .boat(.fiddle) : selection
+            }
         }
     }
     @discardableResult public mutating func begin(_ moment: IdleMoment, at time: Double) -> Bool {
         guard eligible, requestedMoment == moment, frame == nil, time.isFinite, time == lastTime else { return false }
         requestedMoment = nil; startedAt = time
-        frame = IdleMomentFrame(moment: moment, progress: 0)
+        frame = IdleMomentFrame(moment: moment, progress: 0, form: form)
         return true
     }
 #if DEBUG
-    mutating func requestDebugMoment(_ moment: IdleMoment, at time: Double) {
+    mutating func requestDebugMoment(_ moment: IdleMoment, at time: Double, form: MallowForm = .standard) {
         guard frame == nil, requestedMoment == nil, time.isFinite, time >= lastTime else { return }
         lastTime = time; quietSince = time; eligible = true; requestedMoment = moment
+        self.form = form
     }
 #endif
 }
@@ -171,11 +188,11 @@ extension CompanionSnapshot {
     /// A still using the same authored habit and geometry as a live encounter.
     public static func boatIllustration(in scene: SceneGeometry, habit: BoatHabit = .admire) -> Self {
         let base = CompanionEngine(scene: scene).snapshot
-        guard scene.form == .standard else { return base }
-        let moment = IdleMomentFrame(moment: .boat(habit), progress: 0.4)
+        let moment = IdleMomentFrame(moment: .boat(scene.form == .fingertipGrip ? .fiddle : habit),
+                                     progress: 0.4, form: scene.form)
         return Self(scene: scene, presence: base.presence, phase: base.phase, pose: moment.applying(to: base.pose),
                     feet: base.feet, windowAnchor: base.windowAnchor, rotation: base.rotation,
                     openness: base.openness, homeGrip: base.homeGrip, time: 0,
-                    gesture: nil, canCatch: false, idleMoment: moment)
+                    gesture: nil, canCatch: false, idleMoment: moment, homeTuck: base.homeTuck)
     }
 }

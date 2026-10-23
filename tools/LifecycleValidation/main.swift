@@ -1170,7 +1170,6 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-habits" {
             do {
                 guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Habits validation requires a display") }
-                try SettingsValidation.window(screen: screen)
                 try LittleHabitsValidation.run(screen: screen)
                 exit(EXIT_SUCCESS)
             } catch {

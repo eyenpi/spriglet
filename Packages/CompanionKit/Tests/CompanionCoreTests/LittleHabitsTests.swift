@@ -2,16 +2,16 @@ import Testing
 @testable import CompanionCore
 
 @Suite("Familiar boat habits") struct LittleHabitsTests {
-    @Test("Habit previews preserve Small's hands-only rest", arguments: BoatHabit.allCases)
+    @Test("Habit previews use Small's one hands-only gesture", arguments: BoatHabit.allCases)
     func smallStaysTucked(habit: BoatHabit) {
         for notch in [true, false] {
             let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 720, height: 420),
                                       home: Rect(x: 260, y: notch ? 0 : 13, width: 200, height: notch ? 32 : 20),
                                       floor: 365, scale: 0.8, hasHardwareNotch: notch, form: .fingertipGrip)
             let frame = CompanionSnapshot.boatIllustration(in: scene, habit: habit)
-            #expect(frame.idleMoment == nil)
+            #expect(frame.idleMoment?.moment == .boat(.fiddle))
             #expect(frame.homeTuck == 1)
-            #expect(frame.hitBounds.height > 1 && frame.hitBounds.height < 4)
+            #expect(frame.hitBounds.height > 4 && frame.hitBounds.height < 20)
         }
     }
     @Test("Three boat habits share one of five idle selections without adjacent boat visits")

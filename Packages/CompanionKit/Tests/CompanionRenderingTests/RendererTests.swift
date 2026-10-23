@@ -167,6 +167,61 @@ import Testing
             #expect(base.hitBounds == boat.hitBounds)
         }
     }
+    @Test("Small paints only hands and boat throughout the gesture, with no face pixels", arguments: [true, false])
+    func smallBoatPixels(notch: Bool) throws {
+        let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 720, height: 420),
+                                  home: Rect(x: notch ? 260 : 490, y: notch ? 0 : 13,
+                                             width: notch ? 200 : 180, height: notch ? 32 : 20),
+                                  floor: 365, scale: 0.8, hasHardwareNotch: notch, form: .fingertipGrip)
+        let seed = try #require((UInt64(0)...200).first { seed in
+            var picker = IdleMomentPicker(seed: seed); return picker.next() == .boat(.fiddle)
+        })
+        var engine = CompanionEngine(scene: scene, idleSeed: seed,
+                                     boredomTiming: BoredomTiming(threshold: 0.1, cooldown: 30))
+        var largestBoat = 0, frames = 0
+        for _ in 0..<240 {
+            engine.advance(by: 1 / 30.0)
+            if let request = engine.requestedIdleMoment { engine.send(.command(request.command)) }
+            let frame = engine.snapshot
+            guard frame.idleMoment != nil else { continue }
+            frames += 1
+            let image = try characterImage(frame)
+            var alteredPose = frame.pose
+            alteredPose.look = 50; alteredPose.lookY = 100; alteredPose.eyes = 0
+            let altered = CompanionSnapshot(scene: scene, presence: frame.presence, phase: frame.phase,
+                pose: alteredPose, feet: frame.feet, windowAnchor: frame.windowAnchor, rotation: frame.rotation,
+                openness: frame.openness, homeGrip: frame.homeGrip, homeAttachment: frame.homeAttachment,
+                time: frame.time, gesture: frame.gesture, canCatch: false, idleMoment: frame.idleMoment, homeTuck: frame.homeTuck)
+            let other = try characterImage(altered)
+            let pixels = try #require(image.bitmapData), otherPixels = try #require(other.bitmapData)
+            #expect(Data(bytes: pixels, count: image.bytesPerRow * image.pixelsHigh)
+                    == Data(bytes: otherPixels, count: other.bytesPerRow * other.pixelsHigh),
+                    "Changing the hidden face changed visible pixels")
+            var boatPixels = 0
+            for y in Int(scene.home.maxY)..<Int(scene.home.maxY + 45) {
+                for x in Int(scene.home.midX - 60)..<Int(scene.home.midX + 60) {
+                    let color = try #require(image.colorAt(x: x, y: y))
+                    guard color.alphaComponent > 0.05 else { continue }
+                    #expect(abs(Double(x) + 0.5 - scene.home.midX) < 22 && Double(y) < scene.home.maxY + 18,
+                            "Artwork escaped the compact hands-and-boat strip")
+                    let paint = frame.geometry.paintBounds(drawShadow: false)
+                    let px = Double(x) + 0.5, py = Double(y) + 0.5
+                    let overhang = max(paint.minX - px, px - paint.maxX, paint.minY - py, py - paint.maxY)
+                    // A partially covered edge pixel may straddle the vector envelope.
+                    #expect(overhang <= 0.5, "Raster coverage exceeds the paint envelope by \(overhang) points")
+                    if color.redComponent - color.blueComponent > 0.15 {
+                        boatPixels += 1
+                        #expect(!frame.contains(Point(x: Double(x) + 0.5, y: Double(y) + 0.5)),
+                                "Decorative boat pixels intercepted a click")
+                    }
+                }
+            }
+            largestBoat = max(largestBoat, boatPixels)
+        }
+        #expect(frames >= 200)
+        #expect(largestBoat > 40, "The boat must actually be visible")
+        #expect(engine.snapshot.idleMoment == nil && engine.snapshot.hitBounds.height < 4)
+    }
     private func characterImage(_ frame: CompanionSnapshot) throws -> NSBitmapImageRep {
         let bitmap = try #require(NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 720, pixelsHigh: 420,
                                                   bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,

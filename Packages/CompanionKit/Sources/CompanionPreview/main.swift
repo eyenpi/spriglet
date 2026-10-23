@@ -194,17 +194,34 @@ import CompanionRendering
     print("Rendered four boredom moments and hover interruptions with accelerated timing.")
 }
 
+@MainActor func habitScenes() -> [(name: String, scene: SceneGeometry, habit: BoatHabit)] {
+    let sizes: [(String, Double, MallowForm, [BoatHabit])] = [
+        ("small", 0.8, .fingertipGrip, [.fiddle]),
+        ("medium", 0.8, .standard, BoatHabit.allCases),
+        ("large", 1.0, .standard, BoatHabit.allCases)
+    ]
+    return sizes.flatMap { size, scale, form, habits in
+        habits.flatMap { habit in
+            [true, false].map { notch in
+                let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 360, height: 160),
+                                          home: Rect(x: notch ? 80 : 160, y: notch ? 0 : 13, width: 180, height: notch ? 32 : 20),
+                                          floor: 150, scale: scale, hasHardwareNotch: notch, form: form)
+                return ("\(size)-\(habit.rawValue)-\(notch ? "notch" : "corner")", scene, habit)
+            }
+        }
+    }
+}
+
 @MainActor func exportHabits(to folder: URL) throws {
     let painter = ScenePreviewRenderer()
-    for habit in BoatHabit.allCases {
+    for example in habitScenes() {
         guard let seed = (UInt64(0)...200).first(where: { seed in
             var picker = IdleMomentPicker(seed: seed)
-            return picker.next() == .boat(habit)
+            return picker.next() == .boat(example.habit)
         }) else { throw CocoaError(.validationMissingMandatoryProperty) }
-        let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 360, height: 160),
-                                  home: Rect(x: 80, y: 0, width: 180, height: 32), floor: 150)
-        var engine = CompanionEngine(scene: scene, idleSeed: seed, boredomTiming: BoredomTiming(threshold: 1, cooldown: 2))
-        let output = folder.appendingPathComponent(habit.rawValue)
+        var engine = CompanionEngine(scene: example.scene, idleSeed: seed,
+                                     boredomTiming: BoredomTiming(threshold: 1, cooldown: 30))
+        let output = folder.appendingPathComponent(example.name)
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
         for index in 0..<330 {
             engine.advance(by: 1 / 30.0)
@@ -212,24 +229,17 @@ import CompanionRendering
             try writeFrame(engine.snapshot, painter: painter, to: output, index: index)
         }
     }
-    print("Rendered three complete boat encounters through the production scheduler and renderer, with accelerated waits.")
+    print("Rendered 14 complete boat encounters across all three sizes and both homes, with accelerated waits.")
 }
 
 @MainActor func exportHabitStills(to folder: URL) throws {
     let painter = ScenePreviewRenderer()
-    for habit in BoatHabit.allCases {
-        for (size, scale) in [("medium", 0.8), ("large", 1.0)] {
-            for notch in [true, false] {
-                let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 360, height: 160),
-                                          home: Rect(x: notch ? 80 : 160, y: notch ? 0 : 13, width: 180, height: notch ? 32 : 20),
-                                          floor: 150, scale: scale, hasHardwareNotch: notch)
-                let output = folder.appendingPathComponent("\(habit.rawValue)-\(size)-\(notch ? "notch" : "corner")")
-                try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
-                try writeFrame(.boatIllustration(in: scene, habit: habit), painter: painter, to: output, index: 0)
-            }
-        }
+    for example in habitScenes() {
+        let output = folder.appendingPathComponent(example.name)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        try writeFrame(.boatIllustration(in: example.scene, habit: example.habit), painter: painter, to: output, index: 0)
     }
-    print("Rendered 12 boat stills across Medium, Large and both homes. Small keeps its hands-only rest; preview it with --sizes.")
+    print("Rendered 14 boat stills: hands-only Small and all three habits at Medium/Large, in both homes.")
 }
 
 _ = NSApplication.shared

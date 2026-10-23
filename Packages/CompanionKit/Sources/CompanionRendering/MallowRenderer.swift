@@ -114,7 +114,7 @@ import CompanionCore
     private let artwork = MallowArtwork()
     public init() {}
     public func draw(_ frame: CompanionSnapshot) {
-        let scene = frame.scene, scale = scene.scale, geometry = frame.geometry
+        let scene = frame.scene, scale = scene.scale, geometry = frame.geometry, tuckedBoat = frame.tuckedBoat
         NSGraphicsContext.saveGraphicsState()
         let visible = NSBezierPath(); visible.windingRule = .nonZero
         if let dragGeometry = frame.dragGeometry {
@@ -124,10 +124,19 @@ import CompanionCore
             appendWoundRect(scene.homeOcclusion, to: visible, reversed: true)
         }
         visible.addClip()
-        drawMallow(frame.pose, artwork: artwork,
-                   center: NSPoint(x: frame.feet.x, y: frame.feet.y - 7 * scale), scale: scale,
-                   drawShadow: frame.phase == .grounded, rotation: frame.rotation,
-                   drawArms: false, clipFace: true, geometry: geometry)
+        if tuckedBoat == nil {
+            drawMallow(frame.pose, artwork: artwork,
+                       center: NSPoint(x: frame.feet.x, y: frame.feet.y - 7 * scale), scale: scale,
+                       drawShadow: frame.phase == .grounded, rotation: frame.rotation,
+                       drawArms: false, clipFace: true, geometry: geometry)
+        }
+        if let tuckedBoat {
+            NSGraphicsContext.saveGraphicsState()
+            concatenate(CharacterTransform(origin: frame.homeAttachment, rotation: 0, scaleX: scale, scaleY: scale))
+            concatenate(tuckedBoat.transform)
+            drawBoatArtwork()
+            NSGraphicsContext.restoreGraphicsState()
+        }
         drawHands(geometry, scale: scale)
         drawIdleDoodle(frame, geometry: geometry)
         drawIdleBoat(frame, geometry: geometry)
@@ -158,6 +167,12 @@ import CompanionCore
         artwork.body.addClip()
         concatenate(CharacterTransform(origin: boat.center, rotation: boat.rotation, scaleX: 1, scaleY: 1))
         NSGraphicsContext.current?.cgContext.setAlpha(boat.opacity)
+        drawBoatArtwork()
+        for x in [-14.0, 11.0] {
+            oval(NSRect(x: x, y: 3, width: 6, height: 4), fill: MallowPalette.feet, outline: true, outlineWidth: 1)
+        }
+    }
+    private func drawBoatArtwork() {
         let fold = NSBezierPath()
         fold.move(to: NSPoint(x: -11, y: 0)); fold.line(to: NSPoint(x: -2, y: -10))
         fold.line(to: NSPoint(x: 10, y: 0)); fold.close()
@@ -170,9 +185,6 @@ import CompanionCore
         let crease = NSBezierPath()
         crease.move(to: NSPoint(x: 1, y: 1)); crease.line(to: NSPoint(x: 3, y: 5))
         stroke(crease, 0.8, color(0x9A7959))
-        for x in [-14.0, 11.0] {
-            oval(NSRect(x: x, y: 3, width: 6, height: 4), fill: MallowPalette.feet, outline: true, outlineWidth: 1)
-        }
     }
     private func appendWoundRect(_ rect: Rect, to path: NSBezierPath, reversed: Bool) {
         let points = reversed

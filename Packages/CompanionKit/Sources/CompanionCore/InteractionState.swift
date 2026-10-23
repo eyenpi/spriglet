@@ -6,6 +6,7 @@ struct InteractionState: Sendable {
     var hoverAge = 0.0
     private var leaveAge = 0.0
     var press: Point?
+    var pressedBoatHand = false
     var dragOffset = Point.zero
     var dragging = false
     mutating func engage(at time: Double) {
@@ -20,7 +21,7 @@ struct InteractionState: Sendable {
         presence = .peek; gesture = nil; hoverAge = 0; leaveAge = 0
     }
     mutating func clearHover() { hoverAge = 0 }
-    mutating func clearPress() { press = nil; dragging = false }
+    mutating func clearPress() { press = nil; pressedBoatHand = false; dragging = false }
     mutating func step(_ dt: Double, at time: Double, pointerOver: Bool) -> Bool {
         hoverAge = pointerOver ? hoverAge + dt : 0
         leaveAge = pointerOver ? 0 : leaveAge + dt

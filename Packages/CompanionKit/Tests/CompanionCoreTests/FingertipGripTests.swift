@@ -115,7 +115,8 @@ import Testing
     func quietRecovery() {
         var engine = CompanionEngine(scene: scene(), boredomTiming: BoredomTiming(threshold: 0.1, cooldown: 0.1))
         advance(&engine, seconds: 10)
-        #expect(engine.requestedIdleMoment == nil && engine.snapshot.hitBounds.height < 4)
+        #expect(engine.requestedIdleMoment == nil || engine.requestedIdleMoment == .boat(.fiddle))
+        #expect(engine.snapshot.hitBounds.height < 4)
         engine.send(.pointerMoved(fingertip(engine.snapshot))); advance(&engine)
         engine.reconfigure(scene: scene(notch: false))
         #expect(engine.snapshot.homeTuck == 1 && engine.snapshot.fingertipGrip == 1)

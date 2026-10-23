@@ -100,7 +100,8 @@ public struct CompanionEngine: Sendable {
         guard idleMomentsEnabled, motionPolicy == .full, movementAmount > 0,
               body.phase == .hanging, interaction.presence == .peek, !hasPointerCapture,
               pointer.distance(to: snapshot.feet) >= 260 * body.scene.scale else { return }
-        boredom.requestDebugMoment(moment, at: time)
+        guard body.scene.form != .fingertipGrip || (moment == .boat(.fiddle) && homeTuck.value == 1) else { return }
+        boredom.requestDebugMoment(moment, at: time, form: body.scene.form)
     }
 #endif
     public mutating func setMotionPolicy(_ policy: MotionPolicy) {
@@ -149,6 +150,7 @@ public struct CompanionEngine: Sendable {
         case .pointerPressed(let point):
             guard point.isFinite else { return }; pointer = point
             if snapshot.contains(point) {
+                interaction.pressedBoatHand = snapshot.tuckedBoat != nil
                 boredom.interrupt(at: time, cadence: idleCadence)
                 interaction.press = point; interaction.dragging = false
                 interaction.dragOffset = Point(x: point.x - snapshot.feet.x,
@@ -171,7 +173,9 @@ public struct CompanionEngine: Sendable {
             attachmentX.speed += idleOffset.speed * body.scene.scale
             idleOffset = Spring(frequency: 18, damping: 1)
         case .pointerReleased(let point):
-            guard interaction.press != nil else { return }
+            guard let press = interaction.press else { return }
+            // Cancelling the prop returns its hands to Home during mouse-down.
+            let releasedBoatHand = interaction.pressedBoatHand && point.distance(to: press) <= 4
             let dragged = interaction.dragging; interaction.clearPress()
             if dragged {
                 if motionPolicy == .reduced { returnHome() }
@@ -183,7 +187,7 @@ public struct CompanionEngine: Sendable {
                 }
                 if !body.isPendingRelease { endDesktopDrag() }
             }
-            else if point.isFinite && snapshot.contains(point) { activate() }
+            else if point.isFinite && (snapshot.contains(point) || releasedBoatHand) { activate() }
             if !dragged { endDesktopDrag() }
         case .cancelInteraction:
             reconfigure(scene: body.scene)
@@ -221,6 +225,7 @@ public struct CompanionEngine: Sendable {
         default: nil
         }
         if let moment {
+            guard body.scene.form != .fingertipGrip || (moment == .boat(.fiddle) && homeTuck.value == 1) else { return }
             guard idleMomentsEnabled, motionPolicy == .full, movementAmount > 0,
                   body.phase == .hanging, interaction.presence == .peek, !hasPointerCapture,
                   pointer.distance(to: snapshot.feet) >= 260 * body.scene.scale else { return }
@@ -262,8 +267,9 @@ public struct CompanionEngine: Sendable {
         updateHomePresentation(dt)
         let nearby = pointer.distance(to: snapshot.feet) < 260 * body.scene.scale
         let quiet = body.phase == .hanging && interaction.presence == .peek && !hasPointerCapture && !nearby
-        boredom.update(at: time, quiet: quiet, enabled: idleMomentsEnabled && body.scene.form != .fingertipGrip && motionPolicy == .full && movementAmount > 0,
-                       cadence: idleCadence)
+            && (body.scene.form != .fingertipGrip || homeTuck.value == 1)
+        boredom.update(at: time, quiet: quiet, enabled: idleMomentsEnabled && motionPolicy == .full && movementAmount > 0,
+                       cadence: idleCadence, form: body.scene.form)
         idleOffset.step(dt, target: (boredom.frame?.offset ?? 0) * movementAmount)
         idle.step(dt, quiet: quiet && boredom.frame == nil, policy: motionPolicy)
         let look = nearby && motionPolicy == .full ? clamp((pointer.x - snapshot.feet.x) / 35, -5, 5) * movementAmount : 0
@@ -375,7 +381,8 @@ public struct CompanionEngine: Sendable {
                                  homeAttachment: Point(x: attachmentX.value + offset.x, y: attachmentY.value), dragGeometry: dragGeometry,
                                  time: time, gesture: interaction.gesture,
                                  canCatch: body.canCatch, idleMoment: boredom.frame.map {
-                                     IdleMomentFrame(moment: $0.moment, progress: $0.progress, movementAmount: movementAmount)
+                                     IdleMomentFrame(moment: $0.moment, progress: $0.progress,
+                                                     movementAmount: movementAmount, form: $0.form)
                                  }, homeTuck: clamp(homeTuck.value, 0, 1))
     }
 }
