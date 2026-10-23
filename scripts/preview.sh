@@ -9,8 +9,8 @@ case "${2:-}" in
     --interaction) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --interaction "$task_output" ;;
     --introduction) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --introduction "$task_output" ;;
     --boredom) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --boredom "$task_output" ;;
-    --habits|--habit-stills) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview "$2" "$task_output" ;;
+    --habits|--habit-stills|--habit-interruptions) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview "$2" "$task_output" ;;
     --idle) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --idle "$task_output" ;;
     --sizes) swift run --package-path "$task_root/Packages/CompanionKit" companion-preview --sizes "$task_output" ;;
-    *) print -u2 "Usage: ./scripts/preview.sh [OUTPUT_DIRECTORY] [--sizes|--transitions|--interaction|--introduction|--idle|--boredom|--habits|--habit-stills]"; exit 2 ;;
+    *) print -u2 "Usage: ./scripts/preview.sh [OUTPUT_DIRECTORY] [--sizes|--transitions|--interaction|--introduction|--idle|--boredom|--habits|--habit-stills|--habit-interruptions]"; exit 2 ;;
 esac

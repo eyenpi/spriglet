@@ -17,6 +17,7 @@ public struct CompanionEngine: Sendable {
     private var homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
     private static let fingertipRetraction = 38.0
     private var homeTuck = Spring(frequency: 28, damping: 1)
+    private var tuckedHands = TuckedHandDynamics()
     private var homePeek = HomePeekState()
     private var homeGrip = Spring(value: 1, frequency: 14, damping: 1)
     private var attachmentX = Spring(frequency: 12, damping: 1)
@@ -49,6 +50,7 @@ public struct CompanionEngine: Sendable {
         reveal = Spring(value: 0.6, frequency: 12, damping: 0.9); gaze = Spring(frequency: 10, damping: 1)
         homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
         homeTuck = Spring(value: scene.form == .fingertipGrip ? 1 : 0, frequency: 28, damping: 1)
+        tuckedHands = TuckedHandDynamics()
         homeGrip = Spring(value: 1, frequency: 14, damping: 1)
         homePeek = HomePeekState()
         attachmentX = Spring(value: scene.home.midX, frequency: 12, damping: 1)
@@ -109,6 +111,7 @@ public struct CompanionEngine: Sendable {
         motionPolicy = policy
         if policy == .reduced { boredom.interrupt(at: time, cadence: idleCadence); idleOffset = Spring(frequency: 18, damping: 1) }
         if policy == .reduced {
+            tuckedHands = TuckedHandDynamics()
             body.swing.value = 0; body.swing.speed = 0
             // Keep a deliberate grab, but stop autonomous walking, hopping,
             // falling, catch settling and residual pendulum motion immediately.
@@ -174,7 +177,7 @@ public struct CompanionEngine: Sendable {
             idleOffset = Spring(frequency: 18, damping: 1)
         case .pointerReleased(let point):
             guard let press = interaction.press else { return }
-            // Cancelling the prop returns its hands to Home during mouse-down.
+            // The hands can settle toward Home during mouse-down.
             let releasedBoatHand = interaction.pressedBoatHand && point.distance(to: press) <= 4
             let dragged = interaction.dragging; interaction.clearPress()
             if dragged {
@@ -270,6 +273,7 @@ public struct CompanionEngine: Sendable {
             && (body.scene.form != .fingertipGrip || homeTuck.value == 1)
         boredom.update(at: time, quiet: quiet, enabled: idleMomentsEnabled && motionPolicy == .full && movementAmount > 0,
                        cadence: idleCadence, form: body.scene.form)
+        tuckedHands.step(dt, target: snapshot.tuckedBoat?.handOffsets)
         idleOffset.step(dt, target: (boredom.frame?.offset ?? 0) * movementAmount)
         idle.step(dt, quiet: quiet && boredom.frame == nil, policy: motionPolicy)
         let look = nearby && motionPolicy == .full ? clamp((pointer.x - snapshot.feet.x) / 35, -5, 5) * movementAmount : 0
@@ -383,6 +387,6 @@ public struct CompanionEngine: Sendable {
                                  canCatch: body.canCatch, idleMoment: boredom.frame.map {
                                      IdleMomentFrame(moment: $0.moment, progress: $0.progress,
                                                      movementAmount: movementAmount, form: $0.form)
-                                 }, homeTuck: clamp(homeTuck.value, 0, 1))
+                                 }, homeTuck: clamp(homeTuck.value, 0, 1), returningHandOffsets: tuckedHands.offsets)
     }
 }

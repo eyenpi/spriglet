@@ -84,6 +84,7 @@ public struct MallowGeometry: Sendable {
         self.root = root; self.body = body
         feet = Self.feet(for: pose)
         let tuckedBoat = frame.tuckedBoat
+        let handOffsets = frame.tuckedHandOffsets
         func homePoint(_ point: Point) -> Point { frame.homeAttachment + point * s }
         decorativeBoatBounds = tuckedBoat.map { presentation in
             boundingRect(corners(Rect(x: -18, y: -11, width: 36, height: 18))
@@ -109,11 +110,7 @@ public struct MallowGeometry: Sendable {
             guard tuck > 0 else { return standard }
             // Rest exposes only the palm caps. The boat can extend the hands
             // independently while the intact body remains behind Home.
-            var fingertip = homePoint(Point(x: side * 18, y: -1.5))
-            if let tuckedBoat {
-                let holding = homePoint(tuckedBoat.transform.apply(Point(x: side * 15, y: 1)))
-                fingertip = fingertip + (holding - fingertip) * tuckedBoat.extensionAmount
-            }
+            let fingertip = homePoint(Point(x: side * 18, y: -1.5) + (side < 0 ? handOffsets.left : handOffsets.right))
             let tuckedArm = CharacterCurve(start: shoulder, control1: shoulder,
                 control2: fingertip - Point(x: 0, y: 8 * s), end: fingertip)
             let center = standard.arm.end + (fingertip - standard.arm.end) * tuck

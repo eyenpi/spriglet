@@ -22,6 +22,8 @@ public struct CompanionSnapshot: Sendable {
     /// The intact body and hands retreat together; detachment keeps this
     /// continuous hand weight while physics takes ownership of body position.
     public let homeTuck: Double
+    /// Residual hand motion survives cancellation of the decorative boat.
+    public let returningHandOffsets: TuckedHandOffsets
     public var fingertipGrip: Double {
         scene.form == .fingertipGrip ? clamp(homeTuck, 0, 1) * clamp(homeGrip, 0, 1) : 0
     }
@@ -81,12 +83,14 @@ public struct CompanionSnapshot: Sendable {
     public init(scene: SceneGeometry, presence: Presence, phase: BodyPhase, pose: CharacterPose,
                 feet: Point, windowAnchor: Point, rotation: Double, openness: Double,
                 homeGrip: Double, homeAttachment: Point? = nil, dragGeometry: DragGeometry? = nil,
-                time: Double, gesture: CharacterGesture?, canCatch: Bool, idleMoment: IdleMomentFrame? = nil, homeTuck: Double = 0) {
+                time: Double, gesture: CharacterGesture?, canCatch: Bool, idleMoment: IdleMomentFrame? = nil, homeTuck: Double = 0,
+                returningHandOffsets: TuckedHandOffsets = .zero) {
         self.scene = scene; self.presence = presence; self.phase = phase; self.pose = pose
         self.feet = feet; self.windowAnchor = windowAnchor; self.rotation = rotation
         self.openness = openness; self.homeGrip = homeGrip
         self.homeAttachment = homeAttachment ?? Point(x: scene.home.midX, y: scene.home.maxY)
         self.homeTuck = homeTuck
+        self.returningHandOffsets = returningHandOffsets
         self.idleMoment = idleMoment
         self.dragGeometry = dragGeometry; self.time = time; self.gesture = gesture; self.canCatch = canCatch
     }

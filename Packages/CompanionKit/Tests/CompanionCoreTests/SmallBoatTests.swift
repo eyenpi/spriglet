@@ -102,4 +102,36 @@ import Testing
         }
         #expect(!engine.hasPointerCapture)
     }
+    @Test("Interrupting Small preserves both hands before simulation advances", arguments: [true, false], [0.5, 3.0, 6.5])
+    func continuousInterruption(notch: Bool, age: Double) throws {
+        for press in [false, true] {
+            var engine = CompanionEngine(scene: scene(form: .fingertipGrip, scale: 0.8, notch: notch), idleSeed: boatSeed,
+                                         boredomTiming: BoredomTiming(threshold: 0.1, cooldown: 30))
+            advance(&engine, seconds: age)
+            #expect(engine.snapshot.tuckedBoat != nil)
+            let before = engine.snapshot.geometry.hands
+            let hover = try #require(engine.snapshot.homeHoverBounds)
+            let pointer = press ? before[0].palm.center : Point(x: hover.midX, y: hover.maxY - 2)
+            engine.send(press ? .pointerPressed(pointer) : .pointerMoved(pointer))
+            #expect(engine.snapshot.idleMoment == nil && engine.snapshot.homeTuck == 1)
+            let after = engine.snapshot.geometry.hands
+            for (a, b) in zip(before, after) {
+                #expect(a.palm.center.distance(to: b.palm.center) < 1e-9)
+                #expect(a.arm.control2.distance(to: b.arm.control2) < 1e-9)
+            }
+            advance(&engine, seconds: 1 / 120.0)
+            for (a, b) in zip(after, engine.snapshot.geometry.hands) {
+                #expect(a.palm.center.distance(to: b.palm.center) < 1)
+            }
+            if press { engine.send(.pointerReleased(pointer)) }
+            engine.send(.pointerMoved(Point(x: -1000, y: -1000)))
+            engine.send(.command(.returnHome))
+            advance(&engine, seconds: 3)
+            #expect(engine.snapshot.homeTuck == 1 && engine.snapshot.idleMoment == nil)
+            let resting = CompanionEngine(scene: engine.snapshot.scene).snapshot.geometry.hands
+            for (a, b) in zip(resting, engine.snapshot.geometry.hands) {
+                #expect(a.palm.center.distance(to: b.palm.center) < 0.01)
+            }
+        }
+    }
 }

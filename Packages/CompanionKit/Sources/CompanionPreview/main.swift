@@ -242,6 +242,40 @@ import CompanionRendering
     print("Rendered 14 boat stills: hands-only Small and all three habits at Medium/Large, in both homes.")
 }
 
+@MainActor func exportHabitInterruptions(to folder: URL) throws {
+    let painter = ScenePreviewRenderer()
+    let seed = (UInt64(0)...200).first { seed in
+        var picker = IdleMomentPicker(seed: seed); return picker.next() == .boat(.fiddle)
+    }!
+    for example in habitScenes() where example.scene.form == .fingertipGrip {
+        for press in [false, true] {
+            var engine = CompanionEngine(scene: example.scene, idleSeed: seed,
+                                         boredomTiming: BoredomTiming(threshold: 1, cooldown: 30))
+            let output = folder.appendingPathComponent("\(example.name)-\(press ? "press" : "approach")")
+            try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+            var pointer = Point(x: -1000, y: -1000)
+            for index in 0..<360 {
+                if index == 180 {
+                    // Adjacent review stills expose any zero-time pose discontinuity.
+                    let boundary = output.appendingPathComponent("boundary")
+                    try FileManager.default.createDirectory(at: boundary, withIntermediateDirectories: true)
+                    try writeFrame(engine.snapshot, painter: painter, to: boundary, index: 0)
+                    pointer = press ? engine.snapshot.geometry.hands[0].palm.center
+                        : Point(x: example.scene.home.midX, y: example.scene.home.maxY + 12)
+                    engine.send(press ? .pointerPressed(pointer) : .pointerMoved(pointer))
+                    try writeFrame(engine.snapshot, painter: painter, to: boundary, index: 1)
+                }
+                if index == 192 && press { engine.send(.pointerReleased(pointer)) }
+                if index == 270 { engine.send(.pointerMoved(Point(x: -1000, y: -1000))); engine.send(.outsidePressed) }
+                engine.advance(by: 1 / 60.0)
+                if let request = engine.requestedIdleMoment { engine.send(.command(request.command)) }
+                try writeFrame(engine.snapshot, painter: painter, to: output, index: index)
+            }
+        }
+    }
+    print("Rendered Small boat approach and press interruptions in both homes at 60 fps, including zero-time boundary stills.")
+}
+
 _ = NSApplication.shared
 let args = CommandLine.arguments
 do {
@@ -251,6 +285,8 @@ if args.count == 3 && args[1] == "--sizes" {
     try exportHabits(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--habit-stills" {
     try exportHabitStills(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--habit-interruptions" {
+    try exportHabitInterruptions(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--boredom" {
     try exportBoredom(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--icons" {
@@ -266,7 +302,7 @@ if args.count == 3 && args[1] == "--sizes" {
 } else if args.count == 2 {
     try export(to: URL(fileURLWithPath: args[1]))
 } else {
-    print("Usage: companion-preview OUTPUT_DIRECTORY | --sizes OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --introduction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --boredom OUTPUT_DIRECTORY | --habits OUTPUT_DIRECTORY | --habit-stills OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
+    print("Usage: companion-preview OUTPUT_DIRECTORY | --sizes OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --introduction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --boredom OUTPUT_DIRECTORY | --habits OUTPUT_DIRECTORY | --habit-stills OUTPUT_DIRECTORY | --habit-interruptions OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
 }
 
 } catch {
