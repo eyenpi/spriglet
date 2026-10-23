@@ -87,11 +87,11 @@ import CompanionCore
             presenceDescription = description; setAccessibilityValue(description)
             if window != nil { NSAccessibility.post(element: self, notification: .valueChanged) }
         }
-        needsDisplay = true
+        if drawsSnapshot { needsDisplay = true }
     }
     func retarget(context: DisplayContext) {
         self.context = context
-        needsDisplay = true
+        if drawsSnapshot { needsDisplay = true }
         NSAccessibility.post(element: self, notification: .layoutChanged)
     }
     private func globalPoint(_ event: NSEvent) -> Point {

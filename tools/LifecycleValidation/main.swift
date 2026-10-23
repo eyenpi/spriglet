@@ -1052,6 +1052,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                 print("App validation passed without showing windows, activating apps or changing macOS login registration.")
             } else {
                 guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Native validation requires a logged-in Mac with a display") }
+                try DrawingWindowValidation.run()
                 try nativePicking(screen: screen)
                 try HomeHoverValidation.run(screen: screen)
                 try nativeLifecycle(screen: screen)
@@ -1085,6 +1086,16 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         }
     }
     static func main() {
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-drawing-windows" {
+            _ = NSApplication.shared
+            NSApp.setActivationPolicy(.accessory)
+            NSApp.finishLaunching()
+            do { try DrawingWindowValidation.run(); exit(EXIT_SUCCESS) }
+            catch {
+                FileHandle.standardError.write(Data("Drawing window validation failed: \(error)\n".utf8))
+                exit(EXIT_FAILURE)
+            }
+        }
 #if DEBUG
         if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-debug-idle-argument" {
             do { try DebugIdleMomentValidation.run(); exit(EXIT_SUCCESS) }

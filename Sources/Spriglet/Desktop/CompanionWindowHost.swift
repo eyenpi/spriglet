@@ -16,6 +16,7 @@ import CompanionCore
     let panel: NSPanel
     let canvas: CompanionCanvasView
     private var requestedFrame: Rect?
+    private var retainedFrame: Rect?
 
     init(canvas: CompanionCanvasView, acceptsPointer: Bool) {
         self.canvas = canvas
@@ -37,11 +38,17 @@ import CompanionCore
             requestedFrame = frame
         }
         let actual = panel.frame
-        canvas.drawingOrigin = WindowGeometry.drawingOrigin(
+        let origin = WindowGeometry.drawingOrigin(
             window: Rect(x: actual.minX, y: actual.minY, width: actual.width, height: actual.height), display: context.frame)
-        canvas.surfaceBounds = Rect(x: surface.minX - context.frame.minX, y: context.frame.maxY - surface.maxY,
-                                    width: surface.width, height: surface.height)
-        canvas.snapshot = snapshot; canvas.needsDisplay = true
+        let bounds = Rect(x: surface.minX - context.frame.minX, y: context.frame.maxY - surface.maxY,
+                          width: surface.width, height: surface.height)
+        canvas.present(snapshot: snapshot, origin: origin, surface: bounds)
+    }
+    func paint(frame: DisplayWindowFrame, context: DisplayContext, snapshot: CompanionSnapshot) {
+        let retained = WindowGeometry.retainedCanvasFrame(covering: frame.frame, in: frame.display,
+                                                         scale: snapshot.scene.scale, previous: retainedFrame)
+        update(frame: retained, surface: frame.display, context: context, snapshot: snapshot)
+        retainedFrame = retained
     }
     func setVisible(_ visible: Bool, restoringOrder: Bool = false) {
         guard restoringOrder || panel.isVisible != visible else { return }
@@ -53,20 +60,20 @@ import CompanionCore
     }
 }
 
-/// One persistent input panel and temporary, click-through canvases on touched
-/// displays. Drag presentation stays on physical displays as pointer ownership
-/// changes; every canvas draws the same immutable snapshot in global space.
+/// Input capture never changes which window paints a physical display.
+/// Click-through canvases survive pointer transactions and draw in global space.
 @MainActor final class CompanionWindowHost {
-    private struct PassiveSurface {
+    private struct DisplaySurface {
         let display: Rect
         let window: CompanionWindowSurface
+        var isPainting: Bool
     }
     var onInput: ((CompanionInput) -> Void)?
     var onPointerInput: ((DesktopPointerInput) -> Void)?
     var onControlAction: ((AppControlAction) -> Void)?
     var onDraw: ((Double) -> Void)?
-    private var primary: CompanionWindowSurface?
-    private var passive: [PassiveSurface] = []
+    private var input: CompanionWindowSurface?
+    private var surfaces: [DisplaySurface] = []
     private var visible = false
 
     func attach(context: DisplayContext, snapshot: CompanionSnapshot) {
@@ -75,17 +82,17 @@ import CompanionCore
         view.onInput = { [weak self] input in self?.onInput?(input) }
         view.onPointerInput = { [weak self] input in self?.onPointerInput?(input) }
         view.onControlAction = { [weak self] in self?.onControlAction?($0) }
-        view.onDraw = onDraw
-        primary = CompanionWindowSurface(canvas: view, acceptsPointer: true)
+        view.drawsSnapshot = false
+        input = CompanionWindowSurface(canvas: view, acceptsPointer: true)
         update(snapshot: snapshot, capturesPointer: false, pointer: context.point(NSEvent.mouseLocation))
     }
     /// Retargeting never replaces the input view or ends native pointer capture.
     func retarget(context: DisplayContext) {
-        (primary?.canvas as? CompanionView)?.retarget(context: context)
+        (input?.canvas as? CompanionView)?.retarget(context: context)
     }
     func update(snapshot: CompanionSnapshot, capturesPointer: Bool, pointer: Point,
                 acceptsInput: Bool = true, isPaused: Bool = false) {
-        guard let primary, let view = primary.canvas as? CompanionView else { return }
+        guard let input, let view = input.canvas as? CompanionView else { return }
         let context = view.context
         let paint = snapshot.geometry.paintBounds(drawShadow: snapshot.phase == .grounded)
         let requested = WindowGeometry.desiredFrame(feet: snapshot.windowAnchor, display: context.frame,
@@ -99,48 +106,52 @@ import CompanionCore
             Rect(x: context.frame.minX + surface.bounds.minX, y: context.frame.maxY - surface.bounds.maxY,
                  width: surface.bounds.width, height: surface.bounds.height)
         } ?? []
-        let layout = snapshot.dragGeometry == nil ? nil
-            : WindowGeometry.desktopLayout(requested: requested, paint: protectedPaint,
-                                            activeDisplay: context.frame, displays: displays)
-        view.drawsSnapshot = layout == nil
-        primary.update(frame: layout?.inputFrame ?? WindowGeometry.containedFrame(requested, in: context.frame),
+        guard let layout = WindowGeometry.desktopLayout(requested: requested, paint: protectedPaint,
+                                                        activeDisplay: context.frame, displays: displays) else {
+            preconditionFailure("A companion snapshot must have finite display and paint bounds")
+        }
+        input.update(frame: layout.inputFrame,
                        surface: context.frame, context: context, snapshot: snapshot)
         let passThrough = !acceptsInput || (!capturesPointer && !snapshot.contains(pointer))
-        if primary.panel.ignoresMouseEvents != passThrough { primary.panel.ignoresMouseEvents = passThrough }
+        if input.panel.ignoresMouseEvents != passThrough { input.panel.ignoresMouseEvents = passThrough }
         view.refresh(snapshot: snapshot, acceptsInput: acceptsInput, isPaused: isPaused)
-        updatePassive(layout?.canvases ?? [], context: context, snapshot: snapshot)
+        updateCanvases(layout.canvases, context: context, snapshot: snapshot)
     }
-    private func updatePassive(_ frames: [DisplayWindowFrame], context: DisplayContext, snapshot: CompanionSnapshot) {
-        // Keep canvases on their physical display when the logical scene changes.
-        // A drag can reverse across a seam without churning those native windows.
-        var next: [PassiveSurface] = []
+    private func updateCanvases(_ frames: [DisplayWindowFrame], context: DisplayContext, snapshot: CompanionSnapshot) {
+        for index in surfaces.indices { surfaces[index].isPainting = false }
         for frame in frames {
             let window: CompanionWindowSurface
-            if let index = passive.firstIndex(where: { $0.display == frame.display }) {
-                window = passive.remove(at: index).window
+            if let index = surfaces.firstIndex(where: { $0.display == frame.display }) {
+                window = surfaces[index].window
+                surfaces[index].isPainting = true
             } else {
                 let canvas = CompanionCanvasView(frame: NSRect(x: 0, y: 0, width: frame.frame.width,
                                                                height: frame.frame.height), snapshot: snapshot)
                 canvas.onDraw = onDraw
                 window = CompanionWindowSurface(canvas: canvas, acceptsPointer: false)
+                surfaces.append(DisplaySurface(display: frame.display, window: window, isPainting: true))
             }
-            window.update(frame: frame.frame, surface: frame.display, context: context, snapshot: snapshot)
-            window.setVisible(visible)
-            next.append(PassiveSurface(display: frame.display, window: window))
+            window.paint(frame: frame, context: context, snapshot: snapshot)
         }
-        for surface in passive { surface.window.close() }
-        passive = next
+        for surface in surfaces { surface.window.setVisible(visible && surface.isPainting) }
+    }
+    func updateDisplays(_ displays: [Rect]) {
+        surfaces.removeAll { surface in
+            guard !displays.contains(surface.display) else { return false }
+            surface.window.close()
+            return true
+        }
     }
     func setVisible(_ visible: Bool, restoringOrder: Bool = false) {
         self.visible = visible
-        primary?.setVisible(visible, restoringOrder: restoringOrder)
-        for surface in passive { surface.window.setVisible(visible, restoringOrder: restoringOrder) }
+        input?.setVisible(visible, restoringOrder: restoringOrder)
+        for surface in surfaces { surface.window.setVisible(visible && surface.isPainting, restoringOrder: restoringOrder) }
     }
     func close() {
-        if let view = primary?.canvas as? CompanionView {
+        if let view = input?.canvas as? CompanionView {
             view.onInput = nil; view.onPointerInput = nil; view.onControlAction = nil
         }
-        for surface in passive { surface.window.close() }
-        passive = []; primary?.close(); primary = nil; visible = false
+        for surface in surfaces { surface.window.close() }
+        surfaces = []; input?.close(); input = nil; visible = false
     }
 }

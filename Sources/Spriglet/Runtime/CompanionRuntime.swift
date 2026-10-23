@@ -161,6 +161,7 @@ import CompanionCore
     }
     private func apply(_ layout: DisplayLayout) {
         availableContexts = layout.available; layoutHome = layout.home
+        host.updateDisplays(layout.available.map(\.frame))
         if var transaction = dragTransaction, !transaction.committing {
             let origin = availableContexts.first { $0.logicalID == transaction.origin.logicalID }
             let active = availableContexts.first { $0.logicalID == transaction.active.logicalID }
