@@ -130,6 +130,7 @@ import CompanionCore
                    drawArms: false, clipFace: true, geometry: geometry)
         drawHands(geometry, scale: scale)
         drawIdleDoodle(frame, geometry: geometry)
+        drawIdleBoat(frame, geometry: geometry)
         NSGraphicsContext.restoreGraphicsState()
     }
     /// A tiny ephemeral scribble on the visible cheek, inside existing paint
@@ -148,6 +149,30 @@ import CompanionCore
         }
         stroke(path, 1.2, MallowPalette.ink.withAlphaComponent(0.4 * moment.weight))
         NSGraphicsContext.restoreGraphicsState()
+    }
+    private func drawIdleBoat(_ frame: CompanionSnapshot, geometry: MallowGeometry) {
+        guard let boat = frame.idleMoment?.boatPresentation, boat.opacity > 0 else { return }
+        NSGraphicsContext.saveGraphicsState()
+        defer { NSGraphicsContext.restoreGraphicsState() }
+        concatenate(geometry.root); concatenate(geometry.body)
+        artwork.body.addClip()
+        concatenate(CharacterTransform(origin: boat.center, rotation: boat.rotation, scaleX: 1, scaleY: 1))
+        NSGraphicsContext.current?.cgContext.setAlpha(boat.opacity)
+        let fold = NSBezierPath()
+        fold.move(to: NSPoint(x: -11, y: 0)); fold.line(to: NSPoint(x: -2, y: -10))
+        fold.line(to: NSPoint(x: 10, y: 0)); fold.close()
+        color(0xFFF6D9).setFill(); fold.fill(); stroke(fold, 1.3)
+        let hull = NSBezierPath()
+        hull.move(to: NSPoint(x: -17, y: -2)); hull.line(to: NSPoint(x: -10, y: 6))
+        hull.line(to: NSPoint(x: 10, y: 6)); hull.line(to: NSPoint(x: 17, y: -3))
+        hull.line(to: NSPoint(x: 1, y: 1)); hull.close()
+        color(0xF1D69B).setFill(); hull.fill(); stroke(hull, 1.3)
+        let crease = NSBezierPath()
+        crease.move(to: NSPoint(x: 1, y: 1)); crease.line(to: NSPoint(x: 3, y: 5))
+        stroke(crease, 0.8, color(0x9A7959))
+        for x in [-14.0, 11.0] {
+            oval(NSRect(x: x, y: 3, width: 6, height: 4), fill: MallowPalette.feet, outline: true, outlineWidth: 1)
+        }
     }
     private func appendWoundRect(_ rect: Rect, to path: NSBezierPath, reversed: Bool) {
         let points = reversed

@@ -126,6 +126,14 @@ Core schedules a request using injected simulation time and a seeded shuffled-ba
 
 For visual review, run `./scripts/preview.sh .build/preview/boredom --boredom`. A Debug app launched with `SPRIGLET_BORED_DEMO=1` uses a three-second wait and four-second cooldown for recording; Release builds ignore that variable. Previews and tests inject their own timings. Default shipping timing is five minutes before the first moment and eight minutes between moments, with a wander of at most six points at Medium size.
 
+### Little habits
+
+Mallow occasionally admires, fiddles with, or dozes beside the same paper boat as part of its ordinary idle behavior. Every encounter stands alone; the boat has no progression, damage, reward, or care requirement. Habits add no Settings controls or saved state. VoiceOver can read the current habit when explicitly inspecting Mallow.
+
+The three habits share one slot alongside the four other idle families. They use the existing quiet threshold and cooldown, last at most eight seconds, and never add a second clock or interrupt schedule. Consecutive boat selections are excluded across shuffled cycles. Input interrupts normally; interrupted habits are consumed, and Resume begins a fresh quiet interval. The existing Animate/Pause and Hide controls, power restrictions, and motion preferences apply to habits.
+
+For visual review, use `./scripts/preview.sh .build/preview/habits --habits` for three complete encounters through the production scheduler, or `--habit-stills` for all three habits at Small, Medium, and Large in notch and corner homes. The animated exporter accelerates only the waits. These previews do not establish that people notice or enjoy repeated encounters during work; recognition testing and a longer pilot remain separate.
+
 ### Changing the character
 
 Edit `MallowGeometry.swift` for the silhouette and limb geometry, `MallowRenderer.swift` for facial artwork and styling, and the pose contract for expressions. The app, preview, picking and icon share the same vector source. Regenerate icons with `art/app-icon/export_icon_catalog.sh` and run the rendering tests. No spritesheet, frame decoder or separate character manifest is required.

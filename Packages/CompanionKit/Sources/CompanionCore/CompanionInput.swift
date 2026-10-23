@@ -3,6 +3,7 @@
 public enum CompanionCommand: CaseIterable, Sendable {
     case greet, swing, stretch, returnHome, walk, hop
     case idleWander, idleNap, idleDoodle, idleFidget
+    case idleAdmireBoat, idleFiddleBoat, idleDozeWithBoat
 }
 
 public enum CompanionInput: Sendable {

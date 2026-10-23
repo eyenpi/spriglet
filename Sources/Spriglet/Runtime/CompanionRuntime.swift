@@ -117,6 +117,7 @@ import CompanionCore
     func setPaused(_ paused: Bool) {
         guard running, self.paused != paused else { return }
         if paused { cancelDesktopDrag() }
+        if !paused { engine?.interruptIdleMoment() }
         self.paused = paused
         if engine?.snapshot.homeHoverBounds != nil {
             engine?.send(.pointerMoved(Point(x: -1_000_000, y: -1_000_000)))

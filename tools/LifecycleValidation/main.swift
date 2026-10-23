@@ -1057,6 +1057,7 @@ enum SubprocessFailure: Error, CustomStringConvertible {
                 try HomeHoverValidation.run(screen: screen)
                 try nativeLifecycle(screen: screen)
                 try BoredomValidation.run(screen: screen)
+                try LittleHabitsValidation.run(screen: screen)
                 try nativeIntroduction(screen: screen)
                 try menuBarControls(screen: screen)
                 try AccessibilityValidation.run(screen: screen)
@@ -1166,6 +1167,16 @@ enum SubprocessFailure: Error, CustomStringConvertible {
         }
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
+        if CommandLine.arguments.count == 2 && CommandLine.arguments[1] == "--test-habits" {
+            do {
+                guard let screen = NSScreen.screens.first else { throw ValidationFailure(description: "Habits validation requires a display") }
+                try SettingsValidation.window(screen: screen)
+                try LittleHabitsValidation.run(screen: screen)
+                exit(EXIT_SUCCESS)
+            } catch {
+                FileHandle.standardError.write(Data("Habits validation failed: \(error)\n".utf8)); exit(EXIT_FAILURE)
+            }
+        }
         let fixtureID = Bundle.main.bundleIdentifier ?? ""
         if fixtureID == "dev.spriglet.lifecycle-validation.introduction"
             || (fixtureID.hasPrefix("dev.spriglet.lifecycle-validation.") && fixtureID.hasSuffix(".daily-use")) {

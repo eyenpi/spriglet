@@ -177,7 +177,7 @@ import CompanionRendering
 /// production scheduler, commands, springs and renderer.
 @MainActor func exportBoredom(to folder: URL) throws {
     let painter = ScenePreviewRenderer()
-    for moment in IdleMoment.allCases {
+    for moment in IdleMoment.ordinary {
         let seed = (UInt64(0)...100).first { seed in
             var picker = IdleMomentPicker(seed: seed); return picker.next() == moment
         }!
@@ -194,11 +194,53 @@ import CompanionRendering
     print("Rendered four boredom moments and hover interruptions with accelerated timing.")
 }
 
+@MainActor func exportHabits(to folder: URL) throws {
+    let painter = ScenePreviewRenderer()
+    for habit in BoatHabit.allCases {
+        guard let seed = (UInt64(0)...200).first(where: { seed in
+            var picker = IdleMomentPicker(seed: seed)
+            return picker.next() == .boat(habit)
+        }) else { throw CocoaError(.validationMissingMandatoryProperty) }
+        let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 360, height: 160),
+                                  home: Rect(x: 80, y: 0, width: 180, height: 32), floor: 150)
+        var engine = CompanionEngine(scene: scene, idleSeed: seed, boredomTiming: BoredomTiming(threshold: 1, cooldown: 2))
+        let output = folder.appendingPathComponent(habit.rawValue)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        for index in 0..<330 {
+            engine.advance(by: 1 / 30.0)
+            if let request = engine.requestedIdleMoment { engine.send(.command(request.command)) }
+            try writeFrame(engine.snapshot, painter: painter, to: output, index: index)
+        }
+    }
+    print("Rendered three complete boat encounters through the production scheduler and renderer, with accelerated waits.")
+}
+
+@MainActor func exportHabitStills(to folder: URL) throws {
+    let painter = ScenePreviewRenderer()
+    for habit in BoatHabit.allCases {
+        for scale in [0.8, 1.0, 1.2] {
+            for notch in [true, false] {
+                let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 360, height: 160),
+                                          home: Rect(x: notch ? 80 : 160, y: notch ? 0 : 13, width: 180, height: notch ? 32 : 20),
+                                          floor: 150, scale: scale, hasHardwareNotch: notch)
+                let output = folder.appendingPathComponent("\(habit.rawValue)-\(scale)-\(notch ? "notch" : "corner")")
+                try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+                try writeFrame(.boatIllustration(in: scene, habit: habit), painter: painter, to: output, index: 0)
+            }
+        }
+    }
+    print("Rendered 18 actual-size boat stills across all habits, sizes and homes.")
+}
+
 _ = NSApplication.shared
 let args = CommandLine.arguments
 do {
 if args.count == 3 && args[1] == "--sizes" {
     try SizePreview.export(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--habits" {
+    try exportHabits(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--habit-stills" {
+    try exportHabitStills(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--boredom" {
     try exportBoredom(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--icons" {
@@ -214,7 +256,7 @@ if args.count == 3 && args[1] == "--sizes" {
 } else if args.count == 2 {
     try export(to: URL(fileURLWithPath: args[1]))
 } else {
-    print("Usage: companion-preview OUTPUT_DIRECTORY | --sizes OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --introduction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --boredom OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
+    print("Usage: companion-preview OUTPUT_DIRECTORY | --sizes OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --introduction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --boredom OUTPUT_DIRECTORY | --habits OUTPUT_DIRECTORY | --habit-stills OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
 }
 
 } catch {

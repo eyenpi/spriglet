@@ -86,6 +86,9 @@ public struct CompanionEngine: Sendable {
         dragGeometry = geometry
         return true
     }
+    public mutating func interruptIdleMoment() {
+        boredom.interrupt(at: time, cadence: idleCadence)
+    }
     public mutating func setIdleMomentsEnabled(_ enabled: Bool) {
         idleMomentsEnabled = enabled
         if !enabled { boredom.interrupt(at: time, cadence: idleCadence) }
@@ -214,6 +217,7 @@ public struct CompanionEngine: Sendable {
     private mutating func perform(_ command: CompanionCommand) {
         let moment: IdleMoment? = switch command {
         case .idleWander: .wander; case .idleNap: .nap; case .idleDoodle: .doodle; case .idleFidget: .fidget
+        case .idleAdmireBoat: .boat(.admire); case .idleFiddleBoat: .boat(.fiddle); case .idleDozeWithBoat: .boat(.doze)
         default: nil
         }
         if let moment {
@@ -235,7 +239,7 @@ public struct CompanionEngine: Sendable {
             if command == .swing && body.phase == .hanging && motionPolicy == .full { body.swing.impulse(1.8 * movementAmount) }
         case .walk: if motionPolicy == .full { body.walk() }
         case .hop: if motionPolicy == .full { body.hop() }
-        case .idleWander, .idleNap, .idleDoodle, .idleFidget: break
+        case .idleWander, .idleNap, .idleDoodle, .idleFidget, .idleAdmireBoat, .idleFiddleBoat, .idleDozeWithBoat: break
         }
     }
     public mutating func advance(by elapsed: Double) {
@@ -370,6 +374,8 @@ public struct CompanionEngine: Sendable {
                                  openness: open, homeGrip: clamp(homeGrip.value, 0, 1),
                                  homeAttachment: Point(x: attachmentX.value + offset.x, y: attachmentY.value), dragGeometry: dragGeometry,
                                  time: time, gesture: interaction.gesture,
-                                 canCatch: body.canCatch, idleMoment: boredom.frame, homeTuck: clamp(homeTuck.value, 0, 1))
+                                 canCatch: body.canCatch, idleMoment: boredom.frame.map {
+                                     IdleMomentFrame(moment: $0.moment, progress: $0.progress, movementAmount: movementAmount)
+                                 }, homeTuck: clamp(homeTuck.value, 0, 1))
     }
 }

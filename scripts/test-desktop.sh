@@ -1,8 +1,8 @@
 #!/bin/zsh
 # Compiles the production macOS adapters into a finite native regression runner.
 set -euo pipefail
-if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" && "${1:-}" != "--prepare-introduction" && "${1:-}" != "--prepare-daily-use" && "${1:-}" != "--test-quit-timeout" && "${1:-}" != "--test-preferences" && "${1:-}" != "--test-introduction" && "${1:-}" != "--test-multi-monitor" && "${1:-}" != "--test-placement-frame" && "${1:-}" != "--test-corner-drag" && "${1:-}" != "--test-debug-idle-argument" && "${1:-}" != "--test-drawing-windows" && "${1:-}" != "--app-only" ]]; then
-  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen|--prepare-introduction|--prepare-daily-use|--test-quit-timeout|--test-preferences|--test-introduction|--test-multi-monitor|--test-placement-frame|--test-corner-drag|--test-debug-idle-argument|--test-drawing-windows|--app-only]"
+if (( $# > 1 )) || [[ -n "${1:-}" && "${1:-}" != "--prepare-fullscreen" && "${1:-}" != "--prepare-introduction" && "${1:-}" != "--prepare-daily-use" && "${1:-}" != "--test-quit-timeout" && "${1:-}" != "--test-preferences" && "${1:-}" != "--test-introduction" && "${1:-}" != "--test-multi-monitor" && "${1:-}" != "--test-placement-frame" && "${1:-}" != "--test-corner-drag" && "${1:-}" != "--test-debug-idle-argument" && "${1:-}" != "--test-drawing-windows" && "${1:-}" != "--test-habits" && "${1:-}" != "--app-only" ]]; then
+  print -u2 "Usage: test-desktop.sh [--prepare-fullscreen|--prepare-introduction|--prepare-daily-use|--test-quit-timeout|--test-preferences|--test-introduction|--test-multi-monitor|--test-placement-frame|--test-corner-drag|--test-debug-idle-argument|--test-drawing-windows|--test-habits|--app-only]"
   exit 2
 fi
 task_root="${0:A:h:h}"

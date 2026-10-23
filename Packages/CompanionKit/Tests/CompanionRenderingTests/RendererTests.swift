@@ -142,6 +142,31 @@ import Testing
         #expect(missedInterior == 0)
         #expect(emptyHits == 0)
     }
+    @Test("Every boat habit paints a visible possession without extending picking", arguments: BoatHabit.allCases)
+    func boatEnvelope(habit: BoatHabit) throws {
+        for scale in [0.8, 1.0, 1.2] {
+            let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 720, height: 420),
+                                      home: Rect(x: 260, y: 0, width: 200, height: 54), floor: 365, scale: scale)
+            let base = CompanionEngine(scene: scene).snapshot
+            let boat = CompanionSnapshot(scene: scene, presence: base.presence, phase: base.phase, pose: base.pose,
+                                         feet: base.feet, windowAnchor: base.windowAnchor, rotation: base.rotation,
+                                         openness: base.openness, homeGrip: base.homeGrip, time: base.time,
+                                         gesture: nil, canCatch: false, idleMoment: IdleMomentFrame(moment: .boat(habit), progress: 0.4))
+            let plain = try characterImage(base), marked = try characterImage(boat)
+            var changed = 0, extended = 0
+            for y in 40..<140 {
+                for x in 260..<460 {
+                    let a = try #require(plain.colorAt(x: x, y: y)), b = try #require(marked.colorAt(x: x, y: y))
+                    if abs(a.redComponent - b.redComponent) > 0.02 { changed += 1 }
+                    if abs(a.alphaComponent - b.alphaComponent) > 0.001 { extended += 1 }
+                    #expect(base.contains(Point(x: Double(x), y: Double(y))) == boat.contains(Point(x: Double(x), y: Double(y))))
+                }
+            }
+            #expect(changed > 40, "The possession must visibly render even at Small")
+            #expect(extended == 0, "The prop must stay inside the existing painted silhouette")
+            #expect(base.hitBounds == boat.hitBounds)
+        }
+    }
     private func characterImage(_ frame: CompanionSnapshot) throws -> NSBitmapImageRep {
         let bitmap = try #require(NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 720, pixelsHigh: 420,
                                                   bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
