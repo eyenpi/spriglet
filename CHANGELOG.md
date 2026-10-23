@@ -4,6 +4,31 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
+## 0.3.5 — A paper boat for Mallow
+
+2026-10-24 · App 0.3.5 · Build 11
+
+Mallow occasionally brings out the same paper boat during quiet idle time. Small holds it with two hands while its face stays hidden.
+
+Prepared TestFlight candidate. Apple processing, beta review and public Mac App Store release are separate steps.
+
+### Added
+
+- Familiar paper boat habits at all three sizes. Medium and Large can admire, adjust or doze beside the boat.
+- A seven-second hands-only boat gesture for Small, with its face and body hidden throughout the habit.
+
+### Changed
+
+- Boat habits share the existing idle schedule, power restrictions and motion preferences. Pointer approach, clicks and dragging interrupt them; Resume starts a fresh quiet wait.
+- Small's hands settle smoothly when the boat is interrupted. The boat lets clicks through and the hands remain interactive.
+- Regenerated app icon provenance for the shared renderer. The exported icon artwork is unchanged.
+
+### Known limitations
+
+- Plugins, assistant services, sound, other-app window awareness and exact Dock shelf inspection are not included.
+- Spoken VoiceOver, actual login delivery, Stage Manager/fullscreen focus, physical sleep/lock/display transitions and sustained battery use require human device acceptance.
+- A public App Store download link remains disabled until a live listing is verified.
+
 ## 0.3.4 — Steady Mallow, even while you play
 
 2026-10-23 · App 0.3.4 · Build 10

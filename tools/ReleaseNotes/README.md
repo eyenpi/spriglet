@@ -26,7 +26,7 @@ The check rejects malformed data, duplicate versions/builds, incorrect ordering,
 
 ## Current Store candidate
 
-The current TestFlight candidate is **0.3.4 (build 10)**, adding PR #60’s stable drawing windows to 0.3.3/build 9, which combined PR #46’s launch preparation, PR #47’s polish, the Settings focus fixes in PRs #48–#49 and PR #50’s remapped sizes and compact Small fingertip mode. The polish branch’s 0.3.2/build 7 candidate numbering is superseded. Preserve the historical 0.3.3/build 9 entry and record the drawing fixes in 0.3.4; preserve the original 0.3.2 entry, published GitHub `v0.3.2` tag and release assets unchanged. Drop to Mallow (#45) is excluded. Rebuild this exact integrated revision for Apple; previous branch archives do not establish validation of the combined candidate.
+The current TestFlight candidate is 0.3.5, build 11, adding the paper boat habits from PR #62 to 0.3.4. Small keeps its face and body hidden during the habit and preserves its hand motion when interrupted. Medium and Large each have three boat habits. The candidate retains the stable drawing changes from PR #60 and earlier size and Settings fixes. Preserve all historical release entries and the published v0.3.2 tag and assets. Drop to Mallow from PR #45 remains excluded. Rebuild the exact integrated revision for Apple.
 
 ## Publish a tag
 
