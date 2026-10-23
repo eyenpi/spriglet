@@ -96,6 +96,7 @@ import CompanionCore
                                         "Stop leaked a drawing or input window")
         try partialDrawing(screen: screen)
         try adjacentCanvases(screen: screen)
+        try disconnectedRelease(screen: screen)
         print("Stable drawing windows passed: 30 native click pairs, held/released drag, paint coverage, pause, hide/show and stop; no OS mouse events or saved app preferences were used.")
     }
 
@@ -157,6 +158,63 @@ import CompanionCore
         try LifecycleValidation.require(painters().isEmpty && !leftPainter.isVisible,
                                         "Disconnect left a display's painter visible")
         print("Adjacent logical surfaces passed: complete seam paint, unchanged painters/input during transfer, cancellation, reuse, visibility and disconnect. One physical display/backing scale was used.")
+    }
+
+    private static func disconnectedRelease(screen: NSScreen) throws {
+        let bounds = screen.frame, width = (bounds.width / 2).rounded(.down)
+        func context(x: Double, id: CGDirectDisplayID) -> DisplayContext {
+            let frame = Rect(x: x, y: bounds.minY, width: width, height: bounds.height)
+            let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: width, height: bounds.height),
+                                      home: Rect(x: width - 210, y: 0, width: 180, height: 20),
+                                      floor: bounds.height - 40, hasHardwareNotch: false)
+            return DisplayContext(screen: screen, id: id, frame: frame, scene: scene,
+                                  persistentID: UUID().uuidString)
+        }
+        let left = context(x: bounds.minX, id: DisplayContext(screen: screen).id)
+        let right = context(x: bounds.minX + width, id: left.id &+ 1)
+        var available = [left, right]
+        let events = NotificationCenter(), suite = "dev.spriglet.disconnected-release.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = PreferenceStore(defaults: defaults)
+        var preferences = store.load()
+        preferences.characterSize = .medium; preferences.homeDisplayID = left.persistentID
+        store.save(preferences)
+        let introduction = IntroductionPreferences(defaults: defaults); introduction.recordDismissal()
+        let host = CompanionWindowHost(), clock = ScreenFrameClock()
+        var pointer = Point.zero
+        let environment = DesktopEnvironment(applicationCenter: events, displays: { available })
+        let runtime = CompanionRuntime(environment: environment, clock: clock, host: host,
+                                       introductionPreferences: introduction, preferenceStore: store,
+                                       leftButtonIsDown: { true }, pointerLocation: { pointer })
+        defer { runtime.stop() }
+        runtime.start(); clock.stop()
+        let input = try LifecycleValidation.visiblePanel(), view = LifecycleValidation.view(input)
+        pointer = view.context.globalPoint(scene: view.snapshot.hitBounds.center)
+        try LifecycleValidation.require(view.snapshot.contains(view.snapshot.hitBounds.center), "Release fixture has no pickable face")
+        host.onPointerInput?(.pressed(pointer))
+        pointer = Point(x: left.frame.maxX - 2, y: left.frame.maxY - 200)
+        host.onPointerInput?(.dragged(pointer))
+        for _ in 0..<120 { clock.onTick?(1 / 60.0) }
+        host.onPointerInput?(.released(pointer))
+        try LifecycleValidation.require(painters().count == 2 && view.snapshot.dragGeometry != nil,
+                                        "Release fixture did not retain both display surfaces")
+        let retained = painters().first { $0.frame.midX < left.frame.maxX }!
+        // NSApp.windows can retain closed windows from earlier fixtures. Track
+        // new allocations separately from the still-visible connected painter.
+        let existingWindows = Set(NSApp.windows.map(ObjectIdentifier.init))
+        available = [left]
+        events.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        for _ in 0..<600 {
+            clock.onTick?(1 / 60.0)
+            let createdCanvases = NSApp.windows.filter {
+                !existingWindows.contains(ObjectIdentifier($0)) && ($0.contentView as? CompanionCanvasView)?.drawsSnapshot == true
+            }
+            try LifecycleValidation.require(createdCanvases.isEmpty && painters().count == 1 && painters().first === retained,
+                                            "A disconnected display canvas returned during release")
+        }
+        try LifecycleValidation.require(view.snapshot.dragGeometry == nil, "Release geometry did not settle")
+        print("Disconnected release passed: removed canvas stays retired through release and settling; connected painter is retained. Display removal is simulated.")
     }
 
     private static func partialDrawing(screen: NSScreen) throws {

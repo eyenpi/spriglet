@@ -74,6 +74,9 @@ import CompanionCore
     var onDraw: ((Double) -> Void)?
     private var input: CompanionWindowSurface?
     private var surfaces: [DisplaySurface] = []
+    // Release snapshots can outlive a display. The runtime's inventory stays
+    // authoritative across window teardown and reattachment.
+    private var connectedDisplays: [Rect]?
     private var visible = false
 
     func attach(context: DisplayContext, snapshot: CompanionSnapshot) {
@@ -119,7 +122,7 @@ import CompanionCore
     }
     private func updateCanvases(_ frames: [DisplayWindowFrame], context: DisplayContext, snapshot: CompanionSnapshot) {
         for index in surfaces.indices { surfaces[index].isPainting = false }
-        for frame in frames {
+        for frame in frames where connectedDisplays?.contains(frame.display) ?? true {
             let window: CompanionWindowSurface
             if let index = surfaces.firstIndex(where: { $0.display == frame.display }) {
                 window = surfaces[index].window
@@ -136,6 +139,7 @@ import CompanionCore
         for surface in surfaces { surface.window.setVisible(visible && surface.isPainting) }
     }
     func updateDisplays(_ displays: [Rect]) {
+        connectedDisplays = displays
         surfaces.removeAll { surface in
             guard !displays.contains(surface.display) else { return false }
             surface.window.close()

@@ -34,6 +34,21 @@ import Testing
         }
     }
 
+    @Test("Retained travel covers fractional maximum edges without leaving the display")
+    func retainedFractionalTravel() {
+        let display = Rect(x: 0.25, y: -0.5, width: 1000, height: 800)
+        let initial = Rect(x: 100, y: 100, width: 176, height: 144)
+        for paint in [Rect(x: 950, y: 300, width: 50.25, height: 90),
+                      Rect(x: 300, y: 750, width: 90, height: 49.5),
+                      Rect(x: 950, y: 750, width: 50.25, height: 49.5)] {
+            let moved = WindowGeometry.retainedCanvasFrame(covering: paint, in: display, scale: 0.8, previous: initial)
+            #expect(covers(display, moved))
+            #expect(covers(moved, paint))
+            #expect(moved.width == initial.width && moved.height == initial.height)
+            #expect(WindowGeometry.retainedCanvasFrame(covering: paint, in: display, scale: 0.8, previous: moved) == moved)
+        }
+    }
+
     @Test("Triangle seams split paint into contained canvases, independently of input ownership")
     func triangleCanvases() throws {
         let left = Rect(x: -1772, y: 982, width: 2560, height: 1440)

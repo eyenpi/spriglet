@@ -103,8 +103,8 @@ public enum WindowGeometry {
         let bottom = max(display.minY, paint.minY.rounded(.down)), top = min(display.maxY, paint.maxY.rounded(.up))
         let width = min(display.width, max((Self.width * scale).rounded(.up), right - left, previous?.width ?? 0))
         let height = min(display.height, max((Self.height * scale).rounded(.up), top - bottom, previous?.height ?? 0))
-        let x = min(max(previous?.x ?? (left + right - width) / 2, right - width), left).rounded(.down)
-        let y = min(max(previous?.y ?? (bottom + top - height) / 2, top - height), bottom).rounded(.down)
+        let x = max(right - width, min(max(previous?.x ?? (left + right - width) / 2, right - width), left).rounded(.down))
+        let y = max(top - height, min(max(previous?.y ?? (bottom + top - height) / 2, top - height), bottom).rounded(.down))
         return containedFrame(Rect(x: x, y: y, width: width, height: height), in: display)
     }
     public static func scenePoint(global: Point, display: Rect) -> Point {
