@@ -43,6 +43,14 @@ import CompanionCore
         try LifecycleValidation.require(repaired.characterSize == .medium && repaired.movementIntensity == .gentle
                                        && repaired.homeLocation == .automatic && repaired.homeDisplayID == nil,
                                        "Bad preference field discarded another valid choice")
+        for retired: Any in [true, false, "true", 1, 2, [true]] {
+            defaults.set(["littleHabitsEnabled": retired, "movementIntensity": "gentle"], forKey: PreferenceStore.storageKey)
+            try LifecycleValidation.require(store.load().movementIntensity == .gentle,
+                                            "Retired habit preference discarded an unrelated choice")
+            store.save(store.load())
+            try LifecycleValidation.require(defaults.dictionary(forKey: PreferenceStore.storageKey)?["littleHabitsEnabled"] == nil,
+                                            "Saving preferences retained the removed habit setting")
+        }
         defaults.set("legacy-value", forKey: "characterSize")
         store.save(savedPreferences)
         try LifecycleValidation.require(PreferenceStore(defaults: defaults).load() == savedPreferences, "Saved choices failed to reload")
@@ -180,6 +188,18 @@ import CompanionCore
             }
         }
         try presentInFront(); content.layoutSubtreeIfNeeded()
+        let descendants = LifecycleValidation.descendants(of: content)
+        let buttons = descendants.compactMap { $0 as? NSButton }.filter { !($0 is NSPopUpButton) }
+        try LifecycleValidation.require(Set(buttons.map(\.title)) == Set([
+            AppText.showMallow, AppText.animateMallow, AppText.bringHome,
+            AppText.launchAtLogin, AppText.openLoginItemsSettings
+        ]), "Settings contains an unnecessary habit control")
+        try LifecycleValidation.require(!descendants.contains { $0.accessibilityRole() == .image },
+                                       "Settings contains an unnecessary character illustration")
+        for view in descendants where !view.isHidden && view is NSControl {
+            try LifecycleValidation.require(content.bounds.contains(view.convert(view.bounds, to: content)),
+                                           "Settings content clips a control")
+        }
         let popups = controls(in: content)
         try LifecycleValidation.require(popups.count == 4, "Settings lacks required controls")
         for control in popups {

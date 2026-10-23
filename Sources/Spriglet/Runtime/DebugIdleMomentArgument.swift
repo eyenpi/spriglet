@@ -13,6 +13,9 @@ enum DebugIdleMomentArgument {
         case "nap": .nap
         case "doodle": .doodle
         case "fidget": .fidget
+        case "boat-admire": .boat(.admire)
+        case "boat-fiddle": .boat(.fiddle)
+        case "boat-doze": .boat(.doze)
         default: nil
         }
     }

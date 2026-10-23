@@ -65,6 +65,16 @@ import CompanionCore
         }
         return actions
     }
+    // Decorative habit changes are read on demand, without valueChanged notifications.
+    override func accessibilityValue() -> Any? {
+        guard !isPaused, let habit = snapshot.idleMoment?.moment.boatHabit else { return presenceDescription }
+        let habitDescription = switch habit {
+        case .admire: AppText.boatAdmirePresence
+        case .fiddle: AppText.boatFiddlePresence
+        case .doze: AppText.boatDozePresence
+        }
+        return presenceDescription + ", " + habitDescription
+    }
     func refresh(snapshot: CompanionSnapshot, acceptsInput: Bool = true, isPaused: Bool = false) {
         self.snapshot = snapshot; self.acceptsInput = acceptsInput; self.isPaused = isPaused
         let description: String

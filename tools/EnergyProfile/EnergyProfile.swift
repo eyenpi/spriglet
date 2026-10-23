@@ -19,18 +19,20 @@ private struct Options {
     let lowPower: Bool
     let rate: Float?
     let controls: Bool
+    let habits: Bool
     init(_ arguments: [String]) throws {
         guard arguments.count >= 2, ["--native", "--workload"].contains(arguments[0]),
               let duration = Double(arguments[1]), duration.isFinite, duration >= 1, duration <= 86_400 else {
             throw ProfileError.usage
         }
         native = arguments[0] == "--native"; self.duration = duration
-        var lowPower = false, controls = false, rate: Float?
+        var lowPower = false, controls = false, habits = false, rate: Float?
         var index = 2
         while index < arguments.count {
             switch arguments[index] {
             case "--low-power": lowPower = true
             case "--controls": controls = true
+            case "--habits": habits = true
             case "--rate":
                 index += 1
                 guard index < arguments.count, let value = Float(arguments[index]),
@@ -40,8 +42,14 @@ private struct Options {
             }
             index += 1
         }
-        guard !controls || (native && !lowPower && rate == nil) else { throw ProfileError.usage }
-        self.lowPower = lowPower; self.rate = rate; self.controls = controls
+        guard !controls || (native && !lowPower && rate == nil && !habits) else { throw ProfileError.usage }
+        self.lowPower = lowPower; self.rate = rate; self.controls = controls; self.habits = habits
+    }
+    func engine(in scene: SceneGeometry) -> CompanionEngine {
+        var engine = CompanionEngine(scene: scene, idleSeed: habits ? 42 : 0x4D414C4C4F57,
+                                     boredomTiming: habits ? BoredomTiming(threshold: 1, cooldown: 2) : BoredomTiming())
+        engine.setIdleMomentsEnabled(!lowPower)
+        return engine
     }
     func cadence(for snapshot: CompanionSnapshot) -> Float {
         var conditions = RuntimeConditions()
@@ -59,12 +67,20 @@ private struct Options {
     private var previousDraws = 0
     private var previousDrawTime = 0.0
     var frames = 0
+    private var habitFrames = 0
+    private var habitVisits = 0
+    private var wasBoat = false
     private var draws = 0
     private var drawTime = 0.0
     init() throws {
         previousCPU = try cpuTime()
-        print("wall_seconds,simulation_seconds,frames,draws,draws_per_second,cpu_percent,mean_draw_ms,resident_bytes,footprint_bytes,live_malloc_bytes,live_malloc_blocks")
+        print("wall_seconds,simulation_seconds,frames,draws,draws_per_second,cpu_percent,mean_draw_ms,resident_bytes,footprint_bytes,live_malloc_bytes,live_malloc_blocks,habit_frames_total,habit_visits_total")
         fflush(stdout)
+    }
+    func observed(_ snapshot: CompanionSnapshot) {
+        let boat = snapshot.idleMoment?.moment.boatHabit != nil
+        if boat { habitFrames += 1; if !wasBoat { habitVisits += 1 } }
+        wasBoat = boat
     }
     func drew(in seconds: Double) { draws += 1; drawTime += seconds }
     func sample(simulationTime: Double) throws {
@@ -81,10 +97,10 @@ private struct Options {
         malloc_zone_statistics(nil, &malloc)
         let intervalDraws = draws - previousDraws
         let meanDraw = intervalDraws > 0 ? (drawTime - previousDrawTime) / Double(intervalDraws) * 1000 : 0
-        print(String(format: "%.3f,%.3f,%d,%d,%.3f,%.3f,%.4f,%llu,%llu,%llu,%u",
+        print(String(format: "%.3f,%.3f,%d,%d,%.3f,%.3f,%.4f,%llu,%llu,%llu,%u,%d,%d",
                      now, simulationTime, frames - previousFrames, intervalDraws,
                      Double(intervalDraws) / elapsed, (cpu - previousCPU) / elapsed * 100, meanDraw,
-                     info.resident_size, info.phys_footprint, UInt64(malloc.size_in_use), malloc.blocks_in_use))
+                     info.resident_size, info.phys_footprint, UInt64(malloc.size_in_use), malloc.blocks_in_use, habitFrames, habitVisits))
         fflush(stdout)
         previousWall = now; previousCPU = cpu; previousFrames = frames
         previousDraws = draws; previousDrawTime = drawTime
@@ -98,7 +114,7 @@ private struct Options {
 }
 
 @MainActor private func workload(_ options: Options) throws {
-    var engine = CompanionEngine(scene: .preview)
+    var engine = options.engine(in: .preview)
     let renderer = MallowRenderer(), metrics = try Measurements()
     // Reuse the small 2x panel-sized surface. Each frame has its own autorelease
     // pool, as AppKit's event loop does; PNG encoding is outside this measurement.
@@ -115,6 +131,8 @@ private struct Options {
     for index in 0..<count {
         autoreleasepool {
             engine.advance(by: 1 / rate)
+            if options.habits, let request = engine.requestedIdleMoment { engine.send(.command(request.command)) }
+            metrics.observed(engine.snapshot)
             NSGraphicsContext.saveGraphicsState(); NSGraphicsContext.current = graphics
             surface.clear(CGRect(x: -drawingOrigin.x, y: -drawingOrigin.y, width: WindowGeometry.width, height: WindowGeometry.height))
             let started = CACurrentMediaTime(); renderer.draw(engine.snapshot)
@@ -145,7 +163,7 @@ private struct Options {
             // Place the measured companion beside the real one, without touching
             // the user's running app. Geometry and backing scale otherwise match.
             let home = Rect(x: max(0, scene.home.minX - 240), y: scene.home.minY, width: scene.home.width, height: scene.home.height)
-            let engine = CompanionEngine(scene: SceneGeometry(bounds: scene.bounds, home: home, floor: scene.floor,
+            let engine = options.engine(in: SceneGeometry(bounds: scene.bounds, home: home, floor: scene.floor,
                                                              scale: scene.scale, hasHardwareNotch: scene.hasHardwareNotch))
             self.engine = engine
             let metrics = try Measurements(); self.metrics = metrics
@@ -155,8 +173,10 @@ private struct Options {
             clock.onTick = { [weak self] elapsed in
                 guard let self else { return }
                 self.engine?.advance(by: elapsed)
+                if self.options.habits, let request = self.engine?.requestedIdleMoment { self.engine?.send(.command(request.command)) }
                 self.metrics?.frames += 1
                 if let snapshot = self.engine?.snapshot {
+                    self.metrics?.observed(snapshot)
                     self.host.update(snapshot: snapshot, capturesPointer: false, pointer: Point(x: -1000, y: -1000))
                 }
             }
@@ -271,7 +291,7 @@ private struct Options {
                 withExtendedLifetime(session) { app.run() }
             } else { try workload(options) }
         } catch {
-            FileHandle.standardError.write(Data("Usage: companion-energy --native WALL_SECONDS [--controls] | --workload SIMULATED_SECONDS [--low-power] [--rate FPS]\nError: \(error)\n".utf8))
+            FileHandle.standardError.write(Data("Usage: companion-energy --native WALL_SECONDS [--controls] | --workload SIMULATED_SECONDS [--low-power] [--rate FPS] [--habits]\nError: \(error)\n".utf8))
             exit(2)
         }
     }

@@ -177,7 +177,7 @@ import CompanionRendering
 /// production scheduler, commands, springs and renderer.
 @MainActor func exportBoredom(to folder: URL) throws {
     let painter = ScenePreviewRenderer()
-    for moment in IdleMoment.allCases {
+    for moment in IdleMoment.ordinary {
         let seed = (UInt64(0)...100).first { seed in
             var picker = IdleMomentPicker(seed: seed); return picker.next() == moment
         }!
@@ -194,11 +194,99 @@ import CompanionRendering
     print("Rendered four boredom moments and hover interruptions with accelerated timing.")
 }
 
+@MainActor func habitScenes() -> [(name: String, scene: SceneGeometry, habit: BoatHabit)] {
+    let sizes: [(String, Double, MallowForm, [BoatHabit])] = [
+        ("small", 0.8, .fingertipGrip, [.fiddle]),
+        ("medium", 0.8, .standard, BoatHabit.allCases),
+        ("large", 1.0, .standard, BoatHabit.allCases)
+    ]
+    return sizes.flatMap { size, scale, form, habits in
+        habits.flatMap { habit in
+            [true, false].map { notch in
+                let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 360, height: 160),
+                                          home: Rect(x: notch ? 80 : 160, y: notch ? 0 : 13, width: 180, height: notch ? 32 : 20),
+                                          floor: 150, scale: scale, hasHardwareNotch: notch, form: form)
+                return ("\(size)-\(habit.rawValue)-\(notch ? "notch" : "corner")", scene, habit)
+            }
+        }
+    }
+}
+
+@MainActor func exportHabits(to folder: URL) throws {
+    let painter = ScenePreviewRenderer()
+    for example in habitScenes() {
+        guard let seed = (UInt64(0)...200).first(where: { seed in
+            var picker = IdleMomentPicker(seed: seed)
+            return picker.next() == .boat(example.habit)
+        }) else { throw CocoaError(.validationMissingMandatoryProperty) }
+        var engine = CompanionEngine(scene: example.scene, idleSeed: seed,
+                                     boredomTiming: BoredomTiming(threshold: 1, cooldown: 30))
+        let output = folder.appendingPathComponent(example.name)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        for index in 0..<330 {
+            engine.advance(by: 1 / 30.0)
+            if let request = engine.requestedIdleMoment { engine.send(.command(request.command)) }
+            try writeFrame(engine.snapshot, painter: painter, to: output, index: index)
+        }
+    }
+    print("Rendered 14 complete boat encounters across all three sizes and both homes, with accelerated waits.")
+}
+
+@MainActor func exportHabitStills(to folder: URL) throws {
+    let painter = ScenePreviewRenderer()
+    for example in habitScenes() {
+        let output = folder.appendingPathComponent(example.name)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        try writeFrame(.boatIllustration(in: example.scene, habit: example.habit), painter: painter, to: output, index: 0)
+    }
+    print("Rendered 14 boat stills: hands-only Small and all three habits at Medium/Large, in both homes.")
+}
+
+@MainActor func exportHabitInterruptions(to folder: URL) throws {
+    let painter = ScenePreviewRenderer()
+    let seed = (UInt64(0)...200).first { seed in
+        var picker = IdleMomentPicker(seed: seed); return picker.next() == .boat(.fiddle)
+    }!
+    for example in habitScenes() where example.scene.form == .fingertipGrip {
+        for press in [false, true] {
+            var engine = CompanionEngine(scene: example.scene, idleSeed: seed,
+                                         boredomTiming: BoredomTiming(threshold: 1, cooldown: 30))
+            let output = folder.appendingPathComponent("\(example.name)-\(press ? "press" : "approach")")
+            try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+            var pointer = Point(x: -1000, y: -1000)
+            for index in 0..<360 {
+                if index == 180 {
+                    // Adjacent review stills expose any zero-time pose discontinuity.
+                    let boundary = output.appendingPathComponent("boundary")
+                    try FileManager.default.createDirectory(at: boundary, withIntermediateDirectories: true)
+                    try writeFrame(engine.snapshot, painter: painter, to: boundary, index: 0)
+                    pointer = press ? engine.snapshot.geometry.hands[0].palm.center
+                        : Point(x: example.scene.home.midX, y: example.scene.home.maxY + 12)
+                    engine.send(press ? .pointerPressed(pointer) : .pointerMoved(pointer))
+                    try writeFrame(engine.snapshot, painter: painter, to: boundary, index: 1)
+                }
+                if index == 192 && press { engine.send(.pointerReleased(pointer)) }
+                if index == 270 { engine.send(.pointerMoved(Point(x: -1000, y: -1000))); engine.send(.outsidePressed) }
+                engine.advance(by: 1 / 60.0)
+                if let request = engine.requestedIdleMoment { engine.send(.command(request.command)) }
+                try writeFrame(engine.snapshot, painter: painter, to: output, index: index)
+            }
+        }
+    }
+    print("Rendered Small boat approach and press interruptions in both homes at 60 fps, including zero-time boundary stills.")
+}
+
 _ = NSApplication.shared
 let args = CommandLine.arguments
 do {
 if args.count == 3 && args[1] == "--sizes" {
     try SizePreview.export(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--habits" {
+    try exportHabits(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--habit-stills" {
+    try exportHabitStills(to: URL(fileURLWithPath: args[2]))
+} else if args.count == 3 && args[1] == "--habit-interruptions" {
+    try exportHabitInterruptions(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--boredom" {
     try exportBoredom(to: URL(fileURLWithPath: args[2]))
 } else if args.count == 3 && args[1] == "--icons" {
@@ -214,7 +302,7 @@ if args.count == 3 && args[1] == "--sizes" {
 } else if args.count == 2 {
     try export(to: URL(fileURLWithPath: args[1]))
 } else {
-    print("Usage: companion-preview OUTPUT_DIRECTORY | --sizes OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --introduction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --boredom OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
+    print("Usage: companion-preview OUTPUT_DIRECTORY | --sizes OUTPUT_DIRECTORY | --transitions OUTPUT_DIRECTORY | --interaction OUTPUT_DIRECTORY | --introduction OUTPUT_DIRECTORY | --idle OUTPUT_DIRECTORY | --boredom OUTPUT_DIRECTORY | --habits OUTPUT_DIRECTORY | --habit-stills OUTPUT_DIRECTORY | --habit-interruptions OUTPUT_DIRECTORY | --icons APPICONSET_DIRECTORY"); exit(2)
 }
 
 } catch {

@@ -60,6 +60,7 @@ public struct MallowGeometry: Sendable {
     private let strokeOutline: [Point]
     private let localBodyBounds: Rect
     private let scale: Double
+    private let decorativeBoatBounds: Rect?
 
     public static func bodyTransform(for pose: CharacterPose) -> CharacterTransform {
         CharacterTransform(origin: Point(x: pose.lean * 26, y: 0), rotation: pose.lean,
@@ -82,6 +83,13 @@ public struct MallowGeometry: Sendable {
         let body = Self.bodyTransform(for: pose)
         self.root = root; self.body = body
         feet = Self.feet(for: pose)
+        let tuckedBoat = frame.tuckedBoat
+        let handOffsets = frame.tuckedHandOffsets
+        func homePoint(_ point: Point) -> Point { frame.homeAttachment + point * s }
+        decorativeBoatBounds = tuckedBoat.map { presentation in
+            boundingRect(corners(Rect(x: -18, y: -11, width: 36, height: 18))
+                .map { homePoint(presentation.transform.apply($0)) })
+        }
         let reveal = clamp((frame.openness - 0.6) / 0.4, 0, 1)
         let emergence = reveal * reveal * (3 - 2 * reveal)
         func bodyPoint(_ x: Double, _ y: Double) -> Point { root.apply(body.apply(Point(x: x, y: y))) }
@@ -100,10 +108,9 @@ public struct MallowGeometry: Sendable {
                 control2: blend(bodyPoint(side * 46, -9 - raise * 0.5), homeHand + Point(x: side * 6 * s, y: 12 * s)), end: hand),
                 palm: Rect(x: hand.x - 5 * s, y: hand.y - 3 * s, width: 10 * s, height: 8 * s))
             guard tuck > 0 else { return standard }
-            // Only the lower caps of the normal palms clear Home. Arms stay
-            // behind the edge until the intact character peeks into view.
-            let fingertip = Point(x: frame.homeAttachment.x + side * 18 * s,
-                                  y: frame.homeAttachment.y - 1.5 * s)
+            // Rest exposes only the palm caps. The boat can extend the hands
+            // independently while the intact body remains behind Home.
+            let fingertip = homePoint(Point(x: side * 18, y: -1.5) + (side < 0 ? handOffsets.left : handOffsets.right))
             let tuckedArm = CharacterCurve(start: shoulder, control1: shoulder,
                 control2: fingertip - Point(x: 0, y: 8 * s), end: fingertip)
             let center = standard.arm.end + (fingertip - standard.arm.end) * tuck
@@ -135,9 +142,12 @@ public struct MallowGeometry: Sendable {
     /// Full artwork envelope before any display/housing clipping. Picking keeps
     /// using `bounds`; native canvas placement also needs the decorative shadow.
     public func paintBounds(drawShadow: Bool) -> Rect {
-        guard drawShadow else { return bounds }
-        let shadow = corners(Self.groundShadowBounds).map(root.apply)
-        return boundingRect(corners(bounds) + shadow)
+        let artworkBounds = bounds
+        guard drawShadow || decorativeBoatBounds != nil else { return artworkBounds }
+        var points = corners(artworkBounds)
+        if let decorativeBoatBounds { points += corners(decorativeBoatBounds) }
+        if drawShadow { points += corners(Self.groundShadowBounds).map(root.apply) }
+        return boundingRect(points)
     }
 }
 

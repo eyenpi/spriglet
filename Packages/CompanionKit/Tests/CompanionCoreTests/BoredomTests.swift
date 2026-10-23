@@ -99,15 +99,15 @@ import Testing
         gentle.update(at: 600, quiet: true, enabled: true, cadence: 2)
         #expect(gentle.requestedMoment != nil)
     }
-    @Test("Fallback visits all four moments, avoids repeats, and reproduces its seed")
+    @Test("Idle selection visits five families, avoids repeats, and reproduces its seed")
     func picker() {
         for seed in [UInt64(0), 42, .max] {
             var a = IdleMomentPicker(seed: seed), b = IdleMomentPicker(seed: seed)
             let sequence = (0..<100).map { _ in a.next() }
             #expect(sequence == (0..<100).map { _ in b.next() })
             #expect(zip(sequence, sequence.dropFirst()).allSatisfy { $0 != $1 })
-            for start in stride(from: 0, to: 100, by: 4) {
-                #expect(Set(sequence[start..<start + 4]).count == 4)
+            for start in stride(from: 0, to: 100, by: 5) {
+                #expect(Set(sequence[start..<start + 5]).count == 5)
             }
         }
     }

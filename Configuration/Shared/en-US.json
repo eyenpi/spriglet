@@ -85,5 +85,8 @@
   "groundedPresence": "On the ground",
   "keyboardHelp": "Use Control-F8 (or Fn-Control-F8) to reach the leaf in the menu bar, then arrow keys and Return to choose Settings or Quit. In Settings, use Tab and Shift-Tab, arrows for choices and Space for buttons, including Show, Animate and Bring Home. When Spriglet is active, Command-comma opens Settings, Command-Shift-H brings Mallow home, Command-Shift-P pauses or resumes, Command-Shift-M shows or hides, and Command-W closes the focused window.",
   "swingMallow": "Swing",
-  "stretchMallow": "Stretch"
+  "stretchMallow": "Stretch",
+  "boatAdmirePresence": "Admiring its paper boat",
+  "boatFiddlePresence": "Fiddling with its paper boat",
+  "boatDozePresence": "Dozing with its paper boat"
 }

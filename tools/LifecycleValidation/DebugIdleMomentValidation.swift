@@ -24,6 +24,7 @@ import CompanionCore
         case .nap: "nap"
         case .doodle: "doodle"
         case .fidget: "fidget"
+        case .boat(let habit): "boat-" + habit.rawValue
         }
     }
 }
