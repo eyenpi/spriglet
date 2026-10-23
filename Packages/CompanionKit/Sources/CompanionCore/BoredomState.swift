@@ -171,6 +171,7 @@ extension CompanionSnapshot {
     /// A still using the same authored habit and geometry as a live encounter.
     public static func boatIllustration(in scene: SceneGeometry, habit: BoatHabit = .admire) -> Self {
         let base = CompanionEngine(scene: scene).snapshot
+        guard scene.form == .standard else { return base }
         let moment = IdleMomentFrame(moment: .boat(habit), progress: 0.4)
         return Self(scene: scene, presence: base.presence, phase: base.phase, pose: moment.applying(to: base.pose),
                     feet: base.feet, windowAnchor: base.windowAnchor, rotation: base.rotation,

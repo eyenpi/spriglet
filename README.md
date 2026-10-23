@@ -128,11 +128,11 @@ For visual review, run `./scripts/preview.sh .build/preview/boredom --boredom`. 
 
 ### Little habits
 
-Mallow occasionally admires, fiddles with, or dozes beside the same paper boat as part of its ordinary idle behavior. Every encounter stands alone; the boat has no progression, damage, reward, or care requirement. Habits add no Settings controls or saved state. VoiceOver can read the current habit when explicitly inspecting Mallow.
+At Medium and Large, Mallow occasionally admires, fiddles with, or dozes beside the same paper boat as part of its ordinary idle behavior. Small keeps its hands-only rest and suppresses autonomous habits. Every encounter stands alone; the boat has no progression, damage, reward, or care requirement. Habits add no Settings controls or saved state. VoiceOver can read the current habit when explicitly inspecting Mallow.
 
 The three habits share one slot alongside the four other idle families. They use the existing quiet threshold and cooldown, last at most eight seconds, and never add a second clock or interrupt schedule. Consecutive boat selections are excluded across shuffled cycles. Input interrupts normally; interrupted habits are consumed, and Resume begins a fresh quiet interval. The existing Animate/Pause and Hide controls, power restrictions, and motion preferences apply to habits.
 
-For visual review, use `./scripts/preview.sh .build/preview/habits --habits` for three complete encounters through the production scheduler, or `--habit-stills` for all three habits at Small, Medium, and Large in notch and corner homes. The animated exporter accelerates only the waits. These previews do not establish that people notice or enjoy repeated encounters during work; recognition testing and a longer pilot remain separate.
+For visual review, use `./scripts/preview.sh .build/preview/habits --habits` for three complete encounters through the production scheduler, or `--habit-stills` for all three habits at Medium and Large in notch and corner homes; use `--sizes` to review Small’s hands-only rest and reveal transitions. The animated exporter accelerates only the waits. These previews do not establish that people notice or enjoy repeated encounters during work; recognition testing and a longer pilot remain separate.
 
 ### Changing the character
 

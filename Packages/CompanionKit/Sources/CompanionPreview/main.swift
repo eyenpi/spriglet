@@ -218,18 +218,18 @@ import CompanionRendering
 @MainActor func exportHabitStills(to folder: URL) throws {
     let painter = ScenePreviewRenderer()
     for habit in BoatHabit.allCases {
-        for scale in [0.8, 1.0, 1.2] {
+        for (size, scale) in [("medium", 0.8), ("large", 1.0)] {
             for notch in [true, false] {
                 let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 360, height: 160),
                                           home: Rect(x: notch ? 80 : 160, y: notch ? 0 : 13, width: 180, height: notch ? 32 : 20),
                                           floor: 150, scale: scale, hasHardwareNotch: notch)
-                let output = folder.appendingPathComponent("\(habit.rawValue)-\(scale)-\(notch ? "notch" : "corner")")
+                let output = folder.appendingPathComponent("\(habit.rawValue)-\(size)-\(notch ? "notch" : "corner")")
                 try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
                 try writeFrame(.boatIllustration(in: scene, habit: habit), painter: painter, to: output, index: 0)
             }
         }
     }
-    print("Rendered 18 actual-size boat stills across all habits, sizes and homes.")
+    print("Rendered 12 boat stills across Medium, Large and both homes. Small keeps its hands-only rest; preview it with --sizes.")
 }
 
 _ = NSApplication.shared

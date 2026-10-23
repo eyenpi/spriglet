@@ -19,7 +19,7 @@ import CompanionCore
         runtime.start()
         defer { runtime.stop() }
         environment.onConditionsChanged?(RuntimeConditions())
-        let panel = try LifecycleValidation.visiblePanel(), view = LifecycleValidation.view(panel)
+        var view = LifecycleValidation.view(try LifecycleValidation.visiblePanel())
         func advance(_ seconds: Double) {
             for _ in 0..<Int(seconds * 20) { clock.onTick?(0.05) }
         }
@@ -31,6 +31,28 @@ import CompanionCore
             }
             throw ValidationFailure(description: "Ordinary idle scheduling never showed the boat at \(stage); time=\(view.snapshot.time)")
         }
+        for home in [HomeLocation.automatic, .right] {
+            for size in CharacterSize.allCases {
+                var preferences = runtime.preferences
+                preferences.characterSize = size; preferences.homeLocation = home
+                runtime.updatePreferences(preferences)
+                view = LifecycleValidation.view(try LifecycleValidation.visiblePanel())
+                if size == .small {
+                    for _ in 0..<2000 {
+                        clock.onTick?(0.05)
+                        try LifecycleValidation.require(view.snapshot.idleMoment == nil
+                                                        && view.snapshot.homeTuck == 1
+                                                        && view.snapshot.hitBounds.height > 1
+                                                        && view.snapshot.hitBounds.height < 4,
+                                                        "Small lost its hands-only rest during idle scheduling")
+                    }
+                } else {
+                    try awaitBoat("\(size) at \(home)")
+                }
+            }
+        }
+        runtime.updatePreferences(CompanionPreferences())
+        view = LifecycleValidation.view(try LifecycleValidation.visiblePanel())
         try awaitBoat("initial launch")
         let description = view.accessibilityValue() as? String ?? ""
         try LifecycleValidation.require(description.contains("paper boat"), "VoiceOver cannot inspect the current habit")
@@ -66,6 +88,6 @@ import CompanionCore
             advance(30)
             try LifecycleValidation.require(view.snapshot.idleMoment == nil, "A restricted condition retained or launched a habit")
         }
-        print("Native habits passed: default behavior, on-demand accessible state, fresh resume, Hide/lock recovery, and injected power/motion restrictions.")
+        print("Native habits passed: hands-only Small, boats at Medium/Large in both homes, on-demand accessible state, fresh resume, Hide/lock recovery, and injected power/motion restrictions.")
     }
 }

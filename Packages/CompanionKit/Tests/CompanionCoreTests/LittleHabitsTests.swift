@@ -2,6 +2,18 @@ import Testing
 @testable import CompanionCore
 
 @Suite("Familiar boat habits") struct LittleHabitsTests {
+    @Test("Habit previews preserve Small's hands-only rest", arguments: BoatHabit.allCases)
+    func smallStaysTucked(habit: BoatHabit) {
+        for notch in [true, false] {
+            let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 720, height: 420),
+                                      home: Rect(x: 260, y: notch ? 0 : 13, width: 200, height: notch ? 32 : 20),
+                                      floor: 365, scale: 0.8, hasHardwareNotch: notch, form: .fingertipGrip)
+            let frame = CompanionSnapshot.boatIllustration(in: scene, habit: habit)
+            #expect(frame.idleMoment == nil)
+            #expect(frame.homeTuck == 1)
+            #expect(frame.hitBounds.height > 1 && frame.hitBounds.height < 4)
+        }
+    }
     @Test("Three boat habits share one of five idle selections without adjacent boat visits")
     func sharedAllocation() {
         for seed in [UInt64(0), 42, .max] {
@@ -20,21 +32,21 @@ import Testing
     func eligibilityAndAbsence() throws {
         var state = BoredomState(seed: 42)
         state.update(at: 0, quiet: true, enabled: true)
-        state.update(at: 170, quiet: true, enabled: true)
-        state.interrupt(at: 170)
-        state.update(at: 170, quiet: true, enabled: true)
-        state.update(at: 349, quiet: true, enabled: true)
+        state.update(at: 290, quiet: true, enabled: true)
+        state.interrupt(at: 290)
+        state.update(at: 290, quiet: true, enabled: true)
+        state.update(at: 589, quiet: true, enabled: true)
         #expect(state.requestedMoment == nil)
-        state.update(at: 350, quiet: true, enabled: true)
+        state.update(at: 590, quiet: true, enabled: true)
         let moment = try #require(state.requestedMoment)
-        let began = state.begin(moment, at: 350)
+        let began = state.begin(moment, at: 590)
         #expect(began)
-        state.interrupt(at: 351)
+        state.interrupt(at: 591)
         state.update(at: 1_000_000, quiet: true, enabled: true)
         #expect(state.frame == nil && state.requestedMoment == nil)
-        state.update(at: 1_000_179, quiet: true, enabled: true)
+        state.update(at: 1_000_299, quiet: true, enabled: true)
         #expect(state.requestedMoment == nil)
-        state.update(at: 1_000_180, quiet: true, enabled: true)
+        state.update(at: 1_000_300, quiet: true, enabled: true)
         #expect(state.requestedMoment != nil)
     }
     @Test("Every habit can be first, finishes within eight seconds, and leaves no prop", arguments: BoatHabit.allCases)
