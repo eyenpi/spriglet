@@ -26,7 +26,7 @@ import CompanionCore
         defer { defaults.removePersistentDomain(forName: suite) }
         let store = PreferenceStore(defaults: defaults)
         var preferences = store.load()
-        preferences.characterSize = .small
+        preferences.characterSize = .medium
         store.save(preferences)
         let introduction = IntroductionPreferences(defaults: defaults)
         introduction.recordDismissal()
