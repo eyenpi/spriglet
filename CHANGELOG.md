@@ -4,6 +4,26 @@ User-visible changes and release engineering changes for every published version
 
 Generated from [Changelog.json](Sources/Spriglet/Resources/Changelog.json), which is also bundled with the app. Edit that file and run `python3 tools/ReleaseNotes/release_notes.py render`; see the [release workflow](tools/ReleaseNotes/README.md).
 
+## 0.3.4 — Steady Mallow, even while you play
+
+2026-10-23 · App 0.3.4 · Build 10
+
+Mallow stays sharp and visible through repeated clicks and dragging.
+
+Prepared TestFlight candidate. Apple processing, beta review and public Mac App Store release are separate steps.
+
+### Fixed
+
+- Keep Mallow from flickering or briefly disappearing during repeated clicks and drags.
+- Prevent a disconnected display’s drawing window from returning while a release settles.
+- Preserve complete artwork at fractional display edges.
+
+### Known limitations
+
+- Plugins, assistant services, sound, other-app window awareness and exact Dock shelf inspection are not included.
+- Spoken VoiceOver, actual login delivery, Stage Manager/fullscreen focus, physical sleep/lock/display transitions and sustained battery use require human device acceptance.
+- A public App Store download link remains disabled until a live listing is verified.
+
 ## 0.3.3 — Small moments of curiosity, quietly polished
 
 2026-10-19 · App 0.3.3 · Build 9

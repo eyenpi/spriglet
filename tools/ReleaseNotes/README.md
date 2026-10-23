@@ -26,7 +26,7 @@ The check rejects malformed data, duplicate versions/builds, incorrect ordering,
 
 ## Current Store candidate
 
-The consolidated App Store candidate is **0.3.3 (build 9)**, combining PR #46’s launch preparation, PR #47’s polish, the Settings focus fixes in PRs #48–#49 and PR #50’s remapped sizes and compact Small fingertip mode. The polish branch’s 0.3.2/build 7 candidate numbering is superseded. Its user-visible changes belong in the new 0.3.3 entry; preserve the original 0.3.2 entry, published GitHub `v0.3.2` tag and release assets unchanged. Drop to Mallow (#45) is excluded. Rebuild this exact integrated revision for Apple; previous branch archives do not establish validation of the combined candidate.
+The current TestFlight candidate is **0.3.4 (build 10)**, adding PR #60’s stable drawing windows to 0.3.3/build 9, which combined PR #46’s launch preparation, PR #47’s polish, the Settings focus fixes in PRs #48–#49 and PR #50’s remapped sizes and compact Small fingertip mode. The polish branch’s 0.3.2/build 7 candidate numbering is superseded. Preserve the historical 0.3.3/build 9 entry and record the drawing fixes in 0.3.4; preserve the original 0.3.2 entry, published GitHub `v0.3.2` tag and release assets unchanged. Drop to Mallow (#45) is excluded. Rebuild this exact integrated revision for Apple; previous branch archives do not establish validation of the combined candidate.
 
 ## Publish a tag
 
