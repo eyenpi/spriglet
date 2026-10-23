@@ -82,12 +82,13 @@ import CompanionCore
         try event(.leftMouseUp, at: pointer)
         try require(store.load().homeDisplayID == main.persistentID, "Vertical release did not commit the lower display UUID")
         for _ in 0..<240 { clock.onTick?(1 / 60.0) }
-        try require(NSApp.windows.allSatisfy { !$0.isVisible || !($0.contentView is CompanionCanvasView) || $0.contentView is CompanionView },
-                    "Release retirement leaked a passive paint window")
+        try validatePresentation(snapshot: view.snapshot, context: view.context, input: input)
+        try require(NSApp.windows.compactMap { $0.isVisible ? $0.contentView as? CompanionCanvasView : nil }
+            .allSatisfy { $0.snapshot.dragGeometry == nil }, "Release retained drag geometry on a visible canvas")
         runtime.bringHome()
         try require(view.snapshot.phase == .hanging && !input.isKeyWindow, "Bring Home failed after a vertical transfer")
-        // Cancellation must remove paint windows even while both displays are
-        // touched; ordinary post-release cleanup does not exercise this path.
+        // Cancellation must retire cross-display paint even when both displays
+        // are touched. Pause retains the ordinary painter; Hide and Stop do not.
         for action in ["pause", "hide", "stop"] {
             let saved = store.load()
             let grab = try visiblePoint(view.snapshot)
@@ -103,9 +104,15 @@ import CompanionCore
             default: runtime.stop()
             }
             try require(store.load() == saved, "\(action) committed a provisional display")
-            try require(NSApp.windows.allSatisfy {
-                !$0.isVisible || !($0.contentView is CompanionCanvasView) || $0.contentView is CompanionView
-            }, "\(action) left a visible passive canvas")
+            if action == "pause" {
+                input = try LifecycleValidation.visiblePanel()
+                view = input.contentView as! CompanionView
+                try validatePresentation(snapshot: view.snapshot, context: view.context, input: input)
+                try require(view.snapshot.dragGeometry == nil, "Pause retained drag geometry")
+            } else {
+                try require(NSApp.windows.allSatisfy { !$0.isVisible || !($0.contentView is CompanionCanvasView) },
+                            "\(action) left a visible canvas")
+            }
             if action == "pause" { runtime.setPaused(false) }
             if action != "stop" {
                 runtime.bringHome()
@@ -242,24 +249,24 @@ import CompanionCore
             Rect(x: context.frame.minX + surface.bounds.minX, y: context.frame.maxY - surface.bounds.maxY,
                  width: surface.bounds.width, height: surface.bounds.height)
         } ?? []
-        let layout = snapshot.dragGeometry == nil ? nil
-            : WindowGeometry.desktopLayout(requested: requested, paint: paint, activeDisplay: context.frame, displays: displays)
-        try require(inputView.drawsSnapshot == (layout == nil), "Input view duplicates drag artwork")
-        try require(passive.count == (layout?.canvases.count ?? 0), "Unexpected passive canvas count")
+        guard let layout = WindowGeometry.desktopLayout(requested: requested, paint: paint,
+                                                        activeDisplay: context.frame, displays: displays) else {
+            throw Failure("Invalid presentation layout")
+        }
+        try require(!inputView.drawsSnapshot, "Input view duplicates canvas artwork")
+        try require(passive.count == layout.canvases.count, "Unexpected visible canvas count")
         var bitmaps: [(CompanionCanvasView, NSBitmapImageRep)] = []
-        let windows = layout == nil ? [input] : passive
+        let windows = passive
         for window in windows {
             let canvas = window.contentView as! CompanionCanvasView
             let actual = rect(window.frame)
-            if layout != nil {
-                guard let surface = layout?.canvases.first(where: { covers($0.display, actual) }) else {
-                    throw Failure("Passive canvas straddles physical displays")
-                }
-                try require(covers(actual, surface.frame), "Native placement cropped the planned canvas: actual=\(actual) expected=\(surface.frame) surface=\(surface.display)")
-                try require(window.ignoresMouseEvents && !window.canBecomeKey && !window.canBecomeMain,
-                            "Passive canvas can intercept input or focus")
-                try require(!canvas.isAccessibilityElement(), "Passive canvas duplicates accessibility")
+            guard let surface = layout.canvases.first(where: { covers($0.display, actual) }) else {
+                throw Failure("Passive canvas straddles physical displays")
             }
+            try require(covers(actual, surface.frame), "Native placement cropped the planned canvas: actual=\(actual) expected=\(surface.frame) surface=\(surface.display)")
+            try require(window.ignoresMouseEvents && !window.canBecomeKey && !window.canBecomeMain,
+                        "Passive canvas can intercept input or focus")
+            try require(!canvas.isAccessibilityElement(), "Passive canvas duplicates accessibility")
             try require(canvas.snapshot.feet == snapshot.feet && canvas.snapshot.pose == snapshot.pose
                         && canvas.snapshot.time == snapshot.time, "Canvases are drawing different simulation states")
             let crown = snapshot.geometry.root.apply(snapshot.geometry.body.apply(Point(x: 0, y: -58)))

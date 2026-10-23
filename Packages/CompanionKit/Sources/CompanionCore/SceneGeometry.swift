@@ -94,6 +94,19 @@ public enum WindowGeometry {
     public static func drawingOrigin(window: Rect, display: Rect) -> Point {
         Point(x: display.minX - window.minX, y: window.maxY - display.maxY)
     }
+    /// Retain canvas space across poses and pointer transactions. Move only
+    /// when paint leaves that space; grow only when it would otherwise clip.
+    public static func retainedCanvasFrame(covering paint: Rect, in display: Rect,
+                                           scale: Double, previous: Rect? = nil) -> Rect {
+        precondition(paint.hasFinitePositiveEdges && display.hasFinitePositiveEdges && scale.isFinite && scale > 0)
+        let left = max(display.minX, paint.minX.rounded(.down)), right = min(display.maxX, paint.maxX.rounded(.up))
+        let bottom = max(display.minY, paint.minY.rounded(.down)), top = min(display.maxY, paint.maxY.rounded(.up))
+        let width = min(display.width, max((Self.width * scale).rounded(.up), right - left, previous?.width ?? 0))
+        let height = min(display.height, max((Self.height * scale).rounded(.up), top - bottom, previous?.height ?? 0))
+        let x = max(right - width, min(max(previous?.x ?? (left + right - width) / 2, right - width), left).rounded(.down))
+        let y = max(top - height, min(max(previous?.y ?? (bottom + top - height) / 2, top - height), bottom).rounded(.down))
+        return containedFrame(Rect(x: x, y: y, width: width, height: height), in: display)
+    }
     public static func scenePoint(global: Point, display: Rect) -> Point {
         Point(x: global.x - display.minX, y: display.maxY - global.y)
     }

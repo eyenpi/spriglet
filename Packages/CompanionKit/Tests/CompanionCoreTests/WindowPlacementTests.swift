@@ -2,6 +2,53 @@ import Testing
 @testable import CompanionCore
 
 @Suite("Paint-preserving window placement") struct WindowPlacementTests {
+    @Test("Canvas placement stays put across poses, moves for travel and retains space after growth")
+    func retainedCanvas() {
+        let display = Rect(x: 0, y: 0, width: 1000, height: 800)
+        let initial = WindowGeometry.retainedCanvasFrame(covering: Rect(x: 400, y: 300, width: 80, height: 90),
+                                                         in: display, scale: 1)
+        #expect(initial == Rect(x: 330, y: 255, width: 220, height: 180))
+        let breathing = WindowGeometry.retainedCanvasFrame(covering: Rect(x: 420, y: 310, width: 80, height: 90),
+                                                           in: display, scale: 1, previous: initial)
+        #expect(breathing == initial)
+        let moved = WindowGeometry.retainedCanvasFrame(covering: Rect(x: 650, y: 300, width: 80, height: 90),
+                                                       in: display, scale: 1, previous: initial)
+        #expect(moved == Rect(x: 510, y: 255, width: 220, height: 180))
+        let grown = WindowGeometry.retainedCanvasFrame(covering: Rect(x: 600, y: 260, width: 300, height: 100),
+                                                       in: display, scale: 1, previous: moved)
+        #expect(grown == Rect(x: 600, y: 255, width: 300, height: 180))
+        #expect(WindowGeometry.retainedCanvasFrame(covering: Rect(x: 650, y: 300, width: 80, height: 90),
+                                                   in: display, scale: 1, previous: grown) == grown)
+    }
+
+    @Test("Retained canvases preserve fractional paint and remain on their own display")
+    func retainedEdges() {
+        for display in [Rect(x: 0, y: 0, width: 1000, height: 800),
+                        Rect(x: -100.25, y: -80.5, width: 100, height: 80)] {
+            for x in [display.minX, display.minX + 0.8, display.maxX - 56.2] {
+                let paint = Rect(x: x, y: display.minY + 0.7, width: 55.4, height: 40.6)
+                let frame = WindowGeometry.retainedCanvasFrame(covering: paint, in: display, scale: 0.2)
+                #expect(covers(display, frame))
+                #expect(covers(frame, paint))
+            }
+        }
+    }
+
+    @Test("Retained travel covers fractional maximum edges without leaving the display")
+    func retainedFractionalTravel() {
+        let display = Rect(x: 0.25, y: -0.5, width: 1000, height: 800)
+        let initial = Rect(x: 100, y: 100, width: 176, height: 144)
+        for paint in [Rect(x: 950, y: 300, width: 50.25, height: 90),
+                      Rect(x: 300, y: 750, width: 90, height: 49.5),
+                      Rect(x: 950, y: 750, width: 50.25, height: 49.5)] {
+            let moved = WindowGeometry.retainedCanvasFrame(covering: paint, in: display, scale: 0.8, previous: initial)
+            #expect(covers(display, moved))
+            #expect(covers(moved, paint))
+            #expect(moved.width == initial.width && moved.height == initial.height)
+            #expect(WindowGeometry.retainedCanvasFrame(covering: paint, in: display, scale: 0.8, previous: moved) == moved)
+        }
+    }
+
     @Test("Triangle seams split paint into contained canvases, independently of input ownership")
     func triangleCanvases() throws {
         let left = Rect(x: -1772, y: 982, width: 2560, height: 1440)

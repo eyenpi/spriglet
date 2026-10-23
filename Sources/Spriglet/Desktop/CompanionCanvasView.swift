@@ -21,6 +21,23 @@ import CompanionRendering
     required init?(coder: NSCoder) { fatalError("Use init(frame:snapshot:)") }
     override var isFlipped: Bool { true }
     override var isOpaque: Bool { false }
+    func present(snapshot: CompanionSnapshot, origin: Point, surface: Rect) {
+        let previous = drawsSnapshot ? localPaintBounds : .null
+        self.snapshot = snapshot; drawingOrigin = origin; surfaceBounds = surface
+        guard drawsSnapshot else { return }
+        setNeedsDisplay(previous.union(localPaintBounds).intersection(bounds))
+    }
+    private var localPaintBounds: NSRect {
+        let paint = snapshot.geometry.paintBounds(drawShadow: snapshot.phase == .grounded)
+        let padding = 4 * snapshot.scene.scale
+        var rect = NSRect(x: paint.x - padding, y: paint.y - padding,
+                          width: paint.width + 2 * padding, height: paint.height + 2 * padding)
+        if let surfaceBounds {
+            rect = rect.intersection(NSRect(x: surfaceBounds.x, y: surfaceBounds.y,
+                                            width: surfaceBounds.width, height: surfaceBounds.height))
+        }
+        return rect.offsetBy(dx: drawingOrigin.x, dy: drawingOrigin.y)
+    }
     override func draw(_ dirtyRect: NSRect) {
         guard drawsSnapshot else { return }
         let started = onDraw == nil ? nil : CACurrentMediaTime()
