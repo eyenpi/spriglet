@@ -2,6 +2,32 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "0.3.5",
+      "appVersion": "0.3.5",
+      "build": 11,
+      "date": "2026-10-24",
+      "channel": "stable",
+      "title": "A paper boat for Mallow",
+      "summary": "Mallow occasionally brings out the same paper boat during quiet idle time. Small holds it with two hands while its face stays hidden.",
+      "distribution": "Prepared TestFlight candidate. Apple processing, beta review and public Mac App Store release are separate steps.",
+      "changes": {
+        "added": [
+          "Familiar paper boat habits at all three sizes. Medium and Large can admire, adjust or doze beside the boat.",
+          "A seven-second hands-only boat gesture for Small, with its face and body hidden throughout the habit."
+        ],
+        "changed": [
+          "Boat habits share the existing idle schedule, power restrictions and motion preferences. Pointer approach, clicks and dragging interrupt them; Resume starts a fresh quiet wait.",
+          "Small's hands settle smoothly when the boat is interrupted. The boat lets clicks through and the hands remain interactive.",
+          "Regenerated app icon provenance for the shared renderer. The exported icon artwork is unchanged."
+        ]
+      },
+      "knownLimitations": [
+        "Plugins, assistant services, sound, other-app window awareness and exact Dock shelf inspection are not included.",
+        "Spoken VoiceOver, actual login delivery, Stage Manager/fullscreen focus, physical sleep/lock/display transitions and sustained battery use require human device acceptance.",
+        "A public App Store download link remains disabled until a live listing is verified."
+      ]
+    },
+    {
       "version": "0.3.4",
       "appVersion": "0.3.4",
       "build": 10,
