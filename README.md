@@ -27,12 +27,10 @@ This animation uses the production simulation and renderer on a simulated deskto
 
 | Distribution | Version | Status |
 | --- | --- | --- |
-| Approved Store version | 0.3.1 (build 6) | Apple’s October 11, 2026 review-completion email confirms approval. The maintainer confirms it has not been released publicly. |
-| [GitHub preview](https://github.com/eyenpi/spriglet/releases/tag/v0.3.0-preview.1) | 0.3.0 (build 5) | Older public Mallow preview with ad hoc signing and no Apple notarization. |
-| Next Store candidate | 0.3.5, build 11 | Adds familiar paper boat habits at all three sizes. Local preparation does not establish Apple upload, processing, approval or public availability. |
-| [GitHub source release](https://github.com/eyenpi/spriglet/releases/tag/v0.3.2) | 0.3.2 (build 7) | Source and release notes; this release does not establish Mac App Store availability. |
+| Mac App Store | 0.3.1 (build 6) | Approved on October 11, 2026; not released publicly. |
+| TestFlight candidate | 0.3.5 (build 11) | Adds familiar paper boat habits at all three sizes. Confirm upload and beta review status in App Store Connect. |
 
-The GitHub download predates the current Settings, menu controls, introduction and accessibility work described here. Choose its `LOCAL-UNSIGNED.dmg` for drag-to-Applications installation or the ZIP; macOS may block the download. Historical releases describe their own builds and characters. The site keeps its download link disabled until a public App Store listing is verified. Plugins and assistant services are not implemented.
+Spriglet is distributed only through TestFlight and the Mac App Store. The site keeps its download link disabled until a public App Store listing is verified. Plugins and assistant services are not implemented.
 
 ## Build and run
 
@@ -184,8 +182,8 @@ For repeatable CPU, redraw and live-allocation measurements, use [idle energy pr
 
 The Mallow release replaces the previous character and interaction system. The bundle identifier remains `dev.spriglet.app`; old saved preferences are neither imported nor deleted. Login launch is off for a new installation and changes only through an explicit choice using actual macOS registration; old login preferences are not imported. Startup also rejects a duplicate beside an already-launched older preview.
 
-A release goes through a PR, required security and Mac build checks, then a merge to `main`. Build and package that exact clean revision, mount and verify the DMG, create an immutable annotated tag and publish the matching changelog and checksummed downloads. The publisher refuses mismatched or dirty source. See [release instructions](tools/ReleaseNotes/README.md) and [packaging](tools/ReleaseValidation/README.md).
+A release goes through a PR, required security and Mac build checks, then a merge to `main`. Prepare the build for TestFlight, then proceed through Apple's beta review and Mac App Store submission and release flow. See [App Store delivery](tools/AppStore/README.md).
 
 The maintainer reports Apple approval for the first App Store version, 0.3.1 (build 6), on October 11, 2026. This checkout prepares 0.3.5, build 11, with familiar paper boat habits at all three sizes. Small keeps its face hidden during the habit and settles its hands smoothly when interrupted. Public availability has not been established. Archive, export, upload, beta review and public release remain separate steps. See [App Store delivery](tools/AppStore/README.md).
 
-Next steps for this update are broader physical-device acceptance (sleep/wake, display transitions, spoken VoiceOver and sustained energy use), Apple review and manual release. Additional characters are planned, not available in the current app. A future direct-download release needs its own Developer ID signing, notarization and exact-build validation. Future capabilities should use the typed command boundary; no plugin loader, assistant behavior, external-app awareness or 3D runtime is included.
+Next steps for this update are broader physical-device acceptance (sleep/wake, display transitions, spoken VoiceOver and sustained energy use), Apple review and manual release. Additional characters are planned, not available in the current app. Future capabilities should use the typed command boundary; no plugin loader, assistant behavior, external-app awareness or 3D runtime is included.
