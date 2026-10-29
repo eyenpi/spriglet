@@ -3,6 +3,7 @@ import CompanionCore
 
 @MainActor enum LittleHabitsValidation {
     static func run(screen: NSScreen) throws {
+        try ordinaryWork(screen: screen)
         let suite = "dev.spriglet.habits-validation.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
@@ -93,5 +94,55 @@ import CompanionCore
             }
         }
         print("Native habits passed at Small, Medium and Large in both homes: hidden Small face, on-demand accessible state, fresh resume, Hide/lock recovery, and injected power/motion restrictions.")
+    }
+
+    private static func ordinaryWork(screen: NSScreen) throws {
+        for size in CharacterSize.allCases {
+            let suite = "dev.spriglet.ordinary-work-validation.\(UUID().uuidString)"
+            let defaults = UserDefaults(suiteName: suite)!
+            defer { defaults.removePersistentDomain(forName: suite) }
+            let store = PreferenceStore(defaults: defaults)
+            var preferences = CompanionPreferences(); preferences.characterSize = size
+            store.save(preferences)
+            let introduction = IntroductionPreferences(defaults: defaults); introduction.recordDismissal()
+            let context = DisplayContext(screen: screen), events = NotificationCenter()
+            let environment = DesktopEnvironment(applicationCenter: events, workspaceCenter: events,
+                                                 lockCenter: events, displays: { [context] })
+            let clock = ScreenFrameClock(), host = CompanionWindowHost()
+            let runtime = CompanionRuntime(environment: environment, clock: clock, host: host,
+                                           introductionPreferences: introduction, preferenceStore: store,
+                                           boredomTiming: BoredomTiming(), idleSeed: 42,
+                                           pointerLocation: { Point(x: -1000, y: -1000) })
+            runtime.start()
+            defer { runtime.stop() }
+            environment.onConditionsChanged?(RuntimeConditions())
+            let view = LifecycleValidation.view(try LifecycleValidation.visiblePanel())
+            // Keep production durations while injecting elapsed time, a distant
+            // pointer, eligible power conditions and the outside-click callback.
+            for tick in 0..<300 * 20 {
+                if tick % 20 == 0 { environment.onOutsidePressed?() }
+                clock.onTick?(0.05)
+                try LifecycleValidation.require(view.snapshot.idleMoment == nil,
+                                                "\(size) started a habit before five quiet minutes")
+            }
+            clock.onTick?(0.05)
+            guard let habit = view.snapshot.idleMoment else {
+                throw ValidationFailure(description: "\(size) outside clicks prevented a habit after five minutes")
+            }
+            for tick in 0..<Int((habit.duration - 0.05) * 20) {
+                if tick % 20 == 0 { environment.onOutsidePressed?() }
+                clock.onTick?(0.05)
+                try LifecycleValidation.require(view.snapshot.idleMoment?.moment == habit.moment,
+                                                "\(size) outside click interrupted an active habit")
+                if size == .small {
+                    try LifecycleValidation.require(view.snapshot.homeTuck == 1 && view.snapshot.tuckedBoat != nil,
+                                                    "Small exposed its face during ordinary work")
+                }
+            }
+            for _ in 0..<2 { clock.onTick?(0.05) }
+            try LifecycleValidation.require(view.snapshot.idleMoment == nil, "\(size) habit did not finish")
+            try LifecycleValidation.assertHome(try LifecycleValidation.visiblePanel())
+        }
+        print("Ordinary work passed at Small, Medium and Large: production five-minute wait and complete habits with outside clicks every second through the environment callback; simulated clock and power conditions.")
     }
 }

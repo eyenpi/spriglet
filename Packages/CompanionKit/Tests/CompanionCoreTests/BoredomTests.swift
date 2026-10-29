@@ -183,6 +183,38 @@ import Testing
         #expect(starts == (movement < 0.5 ? 4 : 7))
         #expect(Double(activeFrames) / Double(3600 * 20) < 0.02)
     }
+    @Test("Outside clicks preserve the production wait, pending request and complete habit",
+          arguments: [MallowForm.standard, .fingertipGrip])
+    func outsideClicks(form: MallowForm) throws {
+        let scene = SceneGeometry(bounds: SceneGeometry.preview.bounds, home: SceneGeometry.preview.home,
+                                  floor: SceneGeometry.preview.floor, scale: 0.8, form: form)
+        // This seed chooses a boat first, including Small's supported habit.
+        var engine = CompanionEngine(scene: scene, idleSeed: 42)
+        for _ in 0..<300 * 20 {
+            engine.send(.outsidePressed)
+            engine.advance(by: 0.05)
+            #expect(engine.requestedIdleMoment == nil)
+        }
+        engine.advance(by: 0.05)
+        let request = try #require(engine.requestedIdleMoment)
+        engine.send(.outsidePressed)
+        #expect(engine.requestedIdleMoment == request)
+        engine.send(.command(request.command))
+        let habit = try #require(engine.snapshot.idleMoment)
+        for _ in 0..<Int((habit.duration - 0.05) * 20) {
+            let before = engine.snapshot
+            engine.send(.outsidePressed)
+            #expect(engine.snapshot.idleMoment == before.idleMoment)
+            #expect(engine.snapshot.feet == before.feet)
+            #expect(engine.snapshot.geometry.hands.map(\.palm) == before.geometry.hands.map(\.palm))
+            engine.advance(by: 0.05)
+            #expect(engine.snapshot.idleMoment?.moment == request)
+            if form == .fingertipGrip { #expect(engine.snapshot.homeTuck == 1) }
+        }
+        advance(&engine, seconds: 0.1)
+        #expect(engine.snapshot.idleMoment == nil)
+        #expect(engine.snapshot.phase == .hanging && engine.snapshot.presence == .peek)
+    }
     @Test("Zero energy, reduced motion, recovery and capture never launch overdue moments")
     func safety() {
         var engine = CompanionEngine(scene: .preview, boredomTiming: BoredomTiming(threshold: 1, cooldown: 2))
