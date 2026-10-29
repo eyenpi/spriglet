@@ -28,6 +28,60 @@ import Testing
         #expect(engine.snapshot.phase == .hanging && engine.snapshot.presence == .peek)
         #expect(abs(engine.snapshot.openness - 0.6) < 0.001)
     }
+    @Test("Returning home keeps the standard character's retreat at the motion cadence",
+          arguments: [true, false], [0.8, 1.0])
+    func returnRetreatCadence(notch: Bool, scale: Double) {
+        let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 720, height: 420),
+                                  home: Rect(x: 260, y: notch ? 0 : 13, width: 200, height: notch ? 54 : 20),
+                                  floor: 365, scale: scale, hasHardwareNotch: notch)
+        var engine = CompanionEngine(scene: scene)
+        drag(&engine, to: Point(x: 520, y: 200)); advance(&engine, seconds: 3)
+        #expect(engine.snapshot.phase == .grounded)
+        engine.send(.outsidePressed)
+        for _ in 0..<240 where engine.snapshot.phase != .hanging { engine.advance(by: 1 / 60.0) }
+        let arrived = engine.snapshot
+        #expect(arrived.phase == .hanging && arrived.presence == .peek)
+        #expect(arrived.isHomeTransitioning)
+        advance(&engine, seconds: 0.15)
+        #expect(engine.snapshot.feet.y < arrived.feet.y - 2)
+        #expect(engine.snapshot.isHomeTransitioning)
+        advance(&engine, seconds: 2)
+        #expect(!engine.snapshot.isHomeTransitioning)
+    }
+
+    @Test("Dismissing an invited standard character starts the retreat at the motion cadence")
+    func invitedRetreatCadence() {
+        var engine = CompanionEngine(scene: .preview)
+        engine.send(.activate); advance(&engine, seconds: 1)
+        engine.send(.outsidePressed)
+        #expect(engine.snapshot.phase == .hanging && engine.snapshot.presence == .peek)
+        #expect(engine.snapshot.isHomeTransitioning)
+        advance(&engine, seconds: 2)
+        #expect(!engine.snapshot.isHomeTransitioning)
+    }
+    @Test("A stationary pointer at the standard peek edge keeps the resting cadence",
+          arguments: [true, false], [true, false])
+    func stationaryHoverCadence(notch: Bool, afterReturn: Bool) {
+        let scene = SceneGeometry(bounds: Rect(x: 0, y: 0, width: 720, height: 420),
+                                  home: Rect(x: 260, y: notch ? 0 : 13, width: 200, height: notch ? 54 : 20),
+                                  floor: 365, scale: 0.8, hasHardwareNotch: notch)
+        var engine = CompanionEngine(scene: scene)
+        engine.setIdleMomentsEnabled(false)
+        if afterReturn {
+            engine.send(.activate); advance(&engine, seconds: 1)
+            engine.send(.outsidePressed)
+        }
+        let pointer = Point(x: 414.21998323943626, y: scene.home.maxY + 0.5)
+        var elapsed = 0.0, transitionTime = 0.0
+        while elapsed < 20 {
+            engine.send(.pointerMoved(pointer))
+            let moving = engine.snapshot.isHomeTransitioning
+            let step = moving ? 1 / 60.0 : 1 / 20.0
+            if moving { transitionTime += step }
+            engine.advance(by: step); elapsed += step
+        }
+        #expect(transitionTime < (afterReturn ? 1.2 : 0.2))
+    }
     @Test("Near-notch release catches smoothly instead of falling")
     func catchNotch() {
         var engine = CompanionEngine(scene: .preview)
