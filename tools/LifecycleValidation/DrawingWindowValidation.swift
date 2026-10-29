@@ -1,5 +1,6 @@
 import AppKit
 import CompanionCore
+import QuartzCore
 
 @MainActor private final class DrawingProbe: CompanionCanvasView {
     var dirtyRects: [NSRect] = []
@@ -20,6 +21,7 @@ import CompanionCore
         guard let screen = NSScreen.screens.first else {
             throw ValidationFailure(description: "Drawing window validation requires a display")
         }
+        try cadenceChange(screen: screen)
         let context = DisplayContext(screen: screen)
         let suite = "dev.spriglet.drawing-validation.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
@@ -98,6 +100,43 @@ import CompanionCore
         try adjacentCanvases(screen: screen)
         try disconnectedRelease(screen: screen)
         print("Stable drawing windows passed: 30 native click pairs, held/released drag, paint coverage, pause, hide/show and stop; no OS mouse events or saved app preferences were used.")
+    }
+
+    private static func cadenceChange(screen: NSScreen) throws {
+        let clock = ScreenFrameClock()
+        defer { clock.stop() }
+        var ticks = 0
+        var elapsedTimes: [Double] = []
+        clock.onTick = { elapsed in
+            ticks += 1
+            elapsedTimes.append(elapsed)
+            if ticks == 1 { clock.setRate(60) }
+        }
+        clock.bind(to: screen, rate: 20)
+        let selector = NSSelectorFromString("tick:")
+        let displayLink = screen.displayLink(target: clock, selector: selector)
+        defer { displayLink.invalidate() }
+        _ = clock.perform(selector, with: displayLink)
+        _ = clock.perform(selector, with: displayLink)
+        try LifecycleValidation.require(ticks == 1, "Display clock did not report its first interval")
+        _ = clock.perform(selector, with: displayLink)
+        try LifecycleValidation.require(ticks == 2, "Display clock skipped the interval after a cadence change")
+        Thread.sleep(forTimeInterval: 0.05)
+        clock.setRate(30)
+        let changedAt = CACurrentMediaTime()
+        Thread.sleep(forTimeInterval: 0.01)
+        _ = clock.perform(selector, with: displayLink)
+        let sinceChange = CACurrentMediaTime() - changedAt
+        try LifecycleValidation.require(abs(elapsedTimes.last! - sinceChange) < 0.015,
+                                        "Display clock applied pre-input time after an external cadence change")
+        clock.setRate(0); clock.setRate(20)
+        _ = clock.perform(selector, with: displayLink)
+        try LifecycleValidation.require(ticks == 3, "Display clock included time spent paused")
+        _ = clock.perform(selector, with: displayLink)
+        try LifecycleValidation.require(ticks == 4, "Display clock did not resume after a pause")
+        clock.bind(to: screen, rate: 20)
+        _ = clock.perform(selector, with: displayLink)
+        try LifecycleValidation.require(ticks == 4, "Rebinding retained an old display clock baseline")
     }
 
     private static func adjacentCanvases(screen: NSScreen) throws {
