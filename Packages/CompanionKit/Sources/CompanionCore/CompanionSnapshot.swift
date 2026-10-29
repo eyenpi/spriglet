@@ -24,10 +24,11 @@ public struct CompanionSnapshot: Sendable {
     public let homeTuck: Double
     /// Residual hand motion survives cancellation of the decorative boat.
     public let returningHandOffsets: TuckedHandOffsets
+    private let homeRetractionInMotion: Bool
     public var fingertipGrip: Double {
         scene.form == .fingertipGrip ? clamp(homeTuck, 0, 1) * clamp(homeGrip, 0, 1) : 0
     }
-    public var isHomeTransitioning: Bool { homeTuck > 0 && homeTuck < 1 }
+    public var isHomeTransitioning: Bool { homeRetractionInMotion || (homeTuck > 0 && homeTuck < 1) }
     /// The resting invitation target is independent of the painted silhouette.
     /// Only a hardware notch extends above Home; synthetic homes stay below
     /// menu controls. This is a hover region, never a click-picking shape.
@@ -84,12 +85,13 @@ public struct CompanionSnapshot: Sendable {
                 feet: Point, windowAnchor: Point, rotation: Double, openness: Double,
                 homeGrip: Double, homeAttachment: Point? = nil, dragGeometry: DragGeometry? = nil,
                 time: Double, gesture: CharacterGesture?, canCatch: Bool, idleMoment: IdleMomentFrame? = nil, homeTuck: Double = 0,
-                returningHandOffsets: TuckedHandOffsets = .zero) {
+                returningHandOffsets: TuckedHandOffsets = .zero, homeRetractionInMotion: Bool = false) {
         self.scene = scene; self.presence = presence; self.phase = phase; self.pose = pose
         self.feet = feet; self.windowAnchor = windowAnchor; self.rotation = rotation
         self.openness = openness; self.homeGrip = homeGrip
         self.homeAttachment = homeAttachment ?? Point(x: scene.home.midX, y: scene.home.maxY)
         self.homeTuck = homeTuck
+        self.homeRetractionInMotion = homeRetractionInMotion
         self.returningHandOffsets = returningHandOffsets
         self.idleMoment = idleMoment
         self.dragGeometry = dragGeometry; self.time = time; self.gesture = gesture; self.canCatch = canCatch

@@ -15,6 +15,7 @@ public struct CompanionEngine: Sendable {
     private var presentation = PoseDynamics()
     private var reveal = Spring(value: 0.6, frequency: 12, damping: 0.9)
     private var homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
+    private var homeRetreatDeadline: Double?
     private static let fingertipRetraction = 38.0
     private var homeTuck = Spring(frequency: 28, damping: 1)
     private var tuckedHands = TuckedHandDynamics()
@@ -49,6 +50,7 @@ public struct CompanionEngine: Sendable {
         idle.reset(); boredom.interrupt(at: time, cadence: idleCadence); idleOffset = Spring(frequency: 18, damping: 1)
         reveal = Spring(value: 0.6, frequency: 12, damping: 0.9); gaze = Spring(frequency: 10, damping: 1)
         homeRetraction = Spring(value: 30, frequency: 12, damping: 0.9)
+        homeRetreatDeadline = nil
         homeTuck = Spring(value: scene.form == .fingertipGrip ? 1 : 0, frequency: 28, damping: 1)
         tuckedHands = TuckedHandDynamics()
         homeGrip = Spring(value: 1, frequency: 14, damping: 1)
@@ -216,6 +218,7 @@ public struct CompanionEngine: Sendable {
     private mutating func returnHome() {
         boredom.interrupt(at: time, cadence: idleCadence)
         homePeek = HomePeekState()
+        if body.phase == .hanging && interaction.presence != .peek { homeRetreatDeadline = time + 1 }
         interaction.rest()
         if body.phase != .hanging && !body.isReturningHome {
             body.returnHome(immediately: motionPolicy == .reduced)
@@ -261,13 +264,19 @@ public struct CompanionEngine: Sendable {
     private mutating func step(_ dt: Double) {
         time += dt
         if interaction.step(dt, at: time, pointerOver: snapshot.containsHoverTarget(pointer)) { returnHome() }
+        let wasHanging = body.phase == .hanging
         body.step(dt, at: time, walkingAmount: presentation.pose.walk)
         if !hasPointerCapture, dragGeometry != nil, !body.isPendingRelease { endDesktopDrag() }
         if body.phase == .hanging && interaction.presence == .playing { interaction.rest() }
+        if !wasHanging && body.phase == .hanging && interaction.presence == .peek { homeRetreatDeadline = time + 1 }
         if body.scene.form == .fingertipGrip && body.phase == .hanging && interaction.presence == .peek {
             homePeek.step(dt, pointer: pointer, isOver: snapshot.containsHoverTarget(pointer))
         } else { homePeek = HomePeekState() }
         updateHomePresentation(dt)
+        if let deadline = homeRetreatDeadline,
+           time >= deadline || (abs(homeRetraction.value - homeRetractionTarget) <= 0.1 && abs(homeRetraction.speed) <= 1) {
+            homeRetreatDeadline = nil
+        }
         let nearby = pointer.distance(to: snapshot.feet) < 260 * body.scene.scale
         let quiet = body.phase == .hanging && interaction.presence == .peek && !hasPointerCapture && !nearby
             && (body.scene.form != .fingertipGrip || homeTuck.value == 1)
@@ -291,12 +300,24 @@ public struct CompanionEngine: Sendable {
         animator.advance(to: time, dt: dt, walkingAmount: presentation.pose.walk, idlePose: boredom.frame?.applying(to: idle.pose) ?? idle.pose)
         presentation.step(toward: targetPose, dt: dt)
     }
+    private var homeOpenTarget: Double {
+        guard body.phase == .hanging && interaction.presence == .peek else { return 1 }
+        return body.scene.form == .standard && interaction.hoverAge > 0.35 ? 0.66 : 0.6
+    }
+    private var homeRetractionTarget: Double {
+        body.phase == .hanging ? (1 - homeOpenTarget) * 75 : 0
+    }
+    private var homeRetractionInMotion: Bool {
+        guard homeRetreatDeadline != nil, body.phase == .hanging,
+              interaction.presence == .peek && motionPolicy == .full else { return false }
+        return abs(homeRetraction.value - homeRetractionTarget) > 0.1 || abs(homeRetraction.speed) > 1
+    }
     private mutating func updateHomePresentation(_ dt: Double) {
         let tucked = body.scene.form == .fingertipGrip
         let resting = body.phase == .hanging && interaction.presence == .peek
         let hovering = tucked ? homePeek.isRevealed : interaction.hoverAge > 0.35
-        let openTarget = resting ? (!tucked && hovering ? 0.66 : 0.6) : 1.0
-        let retractionTarget = body.phase == .hanging ? (1 - openTarget) * 75 : 0
+        let openTarget = homeOpenTarget
+        let retractionTarget = homeRetractionTarget
         let tuckTarget = tucked && resting && !hovering && !hasPointerCapture ? 1.0 : 0
         if hasPointerCapture && body.phase == .hanging { homeTuck.speed = 0 }
         else if motionPolicy == .reduced { homeTuck.value = tuckTarget; homeTuck.speed = 0 }
@@ -387,6 +408,7 @@ public struct CompanionEngine: Sendable {
                                  canCatch: body.canCatch, idleMoment: boredom.frame.map {
                                      IdleMomentFrame(moment: $0.moment, progress: $0.progress,
                                                      movementAmount: movementAmount, form: $0.form)
-                                 }, homeTuck: clamp(homeTuck.value, 0, 1), returningHandOffsets: tuckedHands.offsets)
+                                 }, homeTuck: clamp(homeTuck.value, 0, 1), returningHandOffsets: tuckedHands.offsets,
+                                 homeRetractionInMotion: homeRetractionInMotion)
     }
 }
