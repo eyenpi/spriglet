@@ -197,7 +197,10 @@ public struct CompanionEngine: Sendable {
         case .cancelInteraction:
             reconfigure(scene: body.scene)
         case .outsidePressed:
-            if !hasPointerCapture { returnHome() }
+            // Work in other apps dismisses engagement, but leaves resting habits alone.
+            if !hasPointerCapture && (body.phase != .hanging || interaction.presence != .peek) {
+                returnHome()
+            }
         case .activate: activate()
         case .command(let command): perform(command)
         }
