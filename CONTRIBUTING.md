@@ -26,4 +26,4 @@ Commit production source, meaningful tests, reusable tools, required artwork and
 
 Before a release, add user-visible changes and release-tooling changes to `Sources/Spriglet/Resources/Changelog.json`, preserve historical entries and render `CHANGELOG.md`. Keep Xcode version/build numbers aligned. See [release notes](tools/ReleaseNotes/README.md).
 
-PR CI requires owner approval before allocating a runner; retain the guards in [CI approval](tools/CI/README.md). A local ad hoc build is not a notarized release. Publishing, signing with distribution credentials and uploading are explicit release actions, not part of ordinary build/test commands.
+PR CI requires owner approval before allocating a runner; retain the guards in [CI approval](tools/CI/README.md). A local ad hoc build is not a notarized release. Local build/test commands do not sign with distribution credentials or upload; Xcode Cloud signs and uploads changes to `main` as described in [App Store delivery](tools/AppStore/README.md). Public release remains a separate action.
