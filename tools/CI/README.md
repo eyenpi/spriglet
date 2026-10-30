@@ -1,6 +1,8 @@
 # CI approval and runner usage
 
-Only pull requests to `main` request CI. Opening, reopening, updating, or marking a PR ready creates a **Validate Spriglet** run that waits for approval. Branch pushes without a PR, `main` pushes, tags, schedules, comments, and reviews do not start builds. There is no manual workflow-dispatch bypass.
+Only pull requests to `main` request GitHub Actions CI. Opening, reopening, updating, or marking a PR ready creates a **Validate Spriglet** run that waits for approval. Branch pushes without a PR, `main` pushes, tags, schedules, comments, and reviews do not start GitHub Actions builds. There is no manual workflow-dispatch bypass.
+
+Xcode Cloud runs separately: the **TestFlight from main** workflow is configured to start on changes to `main`, including merges. It builds and archives the Spriglet scheme for App Store Connect, which uploads successful archives to TestFlight. Builds are not automatically assigned to tester groups. Check the workflow and upload status in App Store Connect; a successful PR check does not guarantee that the later upload succeeded. See [App Store delivery](../AppStore/README.md).
 
 ## Approve a PR run
 

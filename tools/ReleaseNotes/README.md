@@ -26,7 +26,7 @@ The check rejects malformed data, duplicate versions/builds, incorrect ordering,
 
 ## Current Store candidate
 
-The current TestFlight candidate is 0.3.5, build 11, adding the paper boat habits from PR #62 to 0.3.4. Small keeps its face and body hidden during the habit and preserves its hand motion when interrupted. Medium and Large each have three boat habits. The candidate retains the stable drawing changes from PR #60 and earlier size and Settings fixes. Preserve all historical release entries and the published v0.3.2 tag and assets. Drop to Mallow from PR #45 remains excluded. Rebuild the exact integrated revision for Apple.
+The current TestFlight candidate is 0.3.5, adding the paper boat habits from PR #62 to 0.3.4. The checked-in base build number is 11; Xcode Cloud assigns its own increasing numbers to uploads. Small keeps its face and body hidden during the habit and preserves its hand motion when interrupted. Medium and Large each have three boat habits. The candidate retains the stable drawing changes from PR #60 and earlier size and Settings fixes. Preserve all historical release entries and the published v0.3.2 tag and assets. Drop to Mallow from PR #45 remains excluded. Build and validate the exact integrated revision for Apple.
 
 ## Publish a tag
 

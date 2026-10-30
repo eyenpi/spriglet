@@ -28,7 +28,7 @@ This animation uses the production simulation and renderer on a simulated deskto
 | Distribution | Version | Status |
 | --- | --- | --- |
 | Mac App Store | 0.3.1 (build 6) | Approved on October 11, 2026; not released publicly. |
-| TestFlight candidate | 0.3.5 (build 11) | Adds familiar paper boat habits at all three sizes. Confirm upload and beta review status in App Store Connect. |
+| TestFlight candidate | 0.3.5 | Adds familiar paper boat habits at all three sizes. Confirm the current build and beta review status in App Store Connect. |
 
 Spriglet is distributed only through TestFlight and the Mac App Store. The site keeps its download link disabled until a public App Store listing is verified. Plugins and assistant services are not implemented.
 
@@ -172,7 +172,7 @@ python3 tools/AppStore/validate.py
 python3 scripts/check-public-files.py --working-tree
 ```
 
-App text, help, privacy and prepared website/store content are generated from `Configuration/Shared`. Edit those sources and run the synchronizer. Nothing in a normal build publishes the website or uploads the app.
+App text, help, privacy and prepared website/store content are generated from `Configuration/Shared`. Edit those sources and run the synchronizer. Local build commands do not publish the website or upload the app.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [asset provenance](ASSETS.md), [privacy](PRIVACY.md), [release tooling](tools/ReleaseValidation/README.md) and [CI approval](tools/CI/README.md). Retired implementations and authored artwork remain recoverable in Git history rather than in the active codebase.
 
@@ -182,8 +182,8 @@ For repeatable CPU, redraw and live-allocation measurements, use [idle energy pr
 
 The Mallow release replaces the previous character and interaction system. The bundle identifier remains `dev.spriglet.app`; old saved preferences are neither imported nor deleted. Login launch is off for a new installation and changes only through an explicit choice using actual macOS registration; old login preferences are not imported. Startup also rejects a duplicate beside an already-launched older preview.
 
-A release goes through a PR, required security and Mac build checks, then a merge to `main`. Prepare the build for TestFlight, then proceed through Apple's beta review and Mac App Store submission and release flow. See [App Store delivery](tools/AppStore/README.md).
+A release goes through a PR, required security and Mac build checks, then a merge to `main`. Xcode Cloud is configured to build changes to `main` and upload successful archives to TestFlight. Confirm the upload, then proceed through Apple's beta review and Mac App Store submission and release flow. See [App Store delivery](tools/AppStore/README.md).
 
-The maintainer reports Apple approval for the first App Store version, 0.3.1 (build 6), on October 11, 2026. This checkout prepares 0.3.5, build 11, with familiar paper boat habits at all three sizes. Small keeps its face hidden during the habit and settles its hands smoothly when interrupted. Public availability has not been established. Archive, export, upload, beta review and public release remain separate steps. See [App Store delivery](tools/AppStore/README.md).
+The maintainer reports Apple approval for the first App Store version, 0.3.1 (build 6), on October 11, 2026. This checkout prepares 0.3.5 with familiar paper boat habits at all three sizes. Small keeps its face hidden during the habit and settles its hands smoothly when interrupted. Public availability has not been established. Beta review and public release remain separate steps. See [App Store delivery](tools/AppStore/README.md).
 
 Next steps for this update are broader physical-device acceptance (sleep/wake, display transitions, spoken VoiceOver and sustained energy use), Apple review and manual release. Additional characters are planned, not available in the current app. Future capabilities should use the typed command boundary; no plugin loader, assistant behavior, external-app awareness or 3D runtime is included.
